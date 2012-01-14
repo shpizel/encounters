@@ -1,0 +1,3 @@
+ApplicationEncountersBundle_homepage:
+    pattern:  /
+    defaults: { _controller: ApplicationEncountersBundle:Default:index }

@@ -1,0 +1,4 @@
+services:
+    mamba_api:
+        class: Mamba\APIBundle\API\Mamba
+        arguments: [%mamba_api.secret_key%, %mamba_api.private_key%]
