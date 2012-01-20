@@ -17,8 +17,9 @@ class AppKernel extends Kernel
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new JMS\SecurityExtraBundle\JMSSecurityExtraBundle(),
-            new Mamba\APIBundle\MambaAPIBundle(),
-            new Application\EncountersBundle\ApplicationEncountersBundle(),
+            new Mamba\MemcacheBundle\MemcacheBundle(),
+            new Mamba\PlatformBundle\MambaBundle(),
+            new Mamba\EncountersBundle\EncountersBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

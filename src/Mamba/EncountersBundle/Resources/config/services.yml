@@ -1,0 +1,7 @@
+parameters:
+#    encounters.example.class: Mamba\EncountersBundle\Example
+
+services:
+#    encounters.example:
+#        class: %encounters.example.class%
+#        arguments: [@service_id, "plain_value", %parameter%]

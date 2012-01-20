@@ -1,0 +1,7 @@
+parameters:
+#    mamba.example.class: Mamba\PlatformBundle\Example
+
+services:
+    mamba:
+        class: Mamba\PlatformBundle\API\Mamba
+        arguments: [%mamba_api.secret_key%, %mamba_api.private_key%, @session, @memcache]

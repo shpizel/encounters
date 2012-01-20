@@ -1,0 +1,11 @@
+EncountersBundle_EntryPoint:
+    pattern:  /
+    defaults: { _controller: EncountersBundle:Default:index }
+    requirements:
+        _method:  GET
+
+EncountersBundle_JsonAPI:
+    pattern:  /json-api/{method}
+    defaults: { _controller: EncountersBundle:JsonApi:index }
+    requirements:
+        _method:  GET

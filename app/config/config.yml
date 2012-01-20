@@ -14,7 +14,7 @@ framework:
     templating:      { engines: ['twig'] } #assets_version: SomeVersionScheme
     session:
         default_locale: %locale%
-        lifetime:       3600
+        lifetime:       14400
         auto_start:     true
 
 # Twig Configuration
@@ -60,6 +60,17 @@ jms_security_extra:
     secure_controllers:  true
     secure_all_services: false
 
-mamba_api:
-    private_key: '4l0vW9rt39pp2KtOp72r'
-    secret_key: '4QO8x1l5M9l8t2t2OrYv'
+mamba:
+    secret_key: 'l2l28K7K2Wl0K5z9Sj63'
+    private_key: 't5tK8jUzjYKr5xQt9O49'
+
+memcache:
+    servers:
+        server1:
+            host: localhost
+            port: 11211
+            weight: 25
+#        server2:
+#            host: localhost
+#            port: 11211
+#            weight: 75
