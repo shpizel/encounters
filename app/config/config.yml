@@ -64,6 +64,9 @@ mamba:
     secret_key: 'l2l28K7K2Wl0K5z9Sj63'
     private_key: 't5tK8jUzjYKr5xQt9O49'
 
+redis:
+    host: localhost
+
 memcache:
     servers:
         server1:

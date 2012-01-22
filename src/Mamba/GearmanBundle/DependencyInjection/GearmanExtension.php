@@ -1,6 +1,6 @@
 <?php
 
-namespace Mamba\PlatformBundle\DependencyInjection;
+namespace Mamba\GearmanBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class MambaExtension extends Extension
+class GearmanExtension extends Extension
 {
     /**
      * {@inheritDoc}
@@ -21,9 +21,6 @@ class MambaExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-
-        $container->setParameter("mamba.secret_key", $config['secret_key']);
-        $container->setParameter("mamba.private_key", $config['private_key']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

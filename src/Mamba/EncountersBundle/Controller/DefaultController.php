@@ -8,12 +8,17 @@ use Mamba\PlatformBundle\API\Mamba;
 class DefaultController extends Controller {
 
     public function indexAction() {
-        list($Session, $Memcache, $Mamba, $GET) = array(
-            $this->get('session'),
-            $this->get('memcache'),
-            $this->get('mamba'),
-            $this->getRequest()->query->all(),
-        );
+        //$this->get('redis')->set('igor', array('surname'=>'shpizel'));
+        var_dump($this->get('redis')->get('igor'));
+
+        exit();
+//        exit(var_dump($this->get('redis')->get('igor'/*, 'shpizel'*/)));
+//        list($Session, $Memcache, $Mamba, $_GET) = array(
+//            $this->get('session'),
+//            $this->get('memcache'),
+//            $this->get('mamba'),
+//            $this->getRequest()->query->all(),
+//        );
 
         $sessionVars = array_keys($Session->all());
         if (count(array_intersect(Mamba::$mambaRequiredGetParams, $sessionVars)) == count(Mamba::$mambaRequiredGetParams)) {
@@ -22,7 +27,7 @@ class DefaultController extends Controller {
              *
              * @author shpizel
              */
-        } elseif (count(array_intersect(array_keys($GET), Mamba::$mambaRequiredGetParams)) == count(Mamba::$mambaRequiredGetParams)) {
+        } elseif (count(array_intersect(array_keys($_GET), Mamba::$mambaRequiredGetParams)) == count(Mamba::$mambaRequiredGetParams)) {
             /**
              * Необходимые Мамба GET-параметры есть в запросе, получим их, проверим и запишем в сессию
              *
@@ -30,7 +35,7 @@ class DefaultController extends Controller {
              */
             $params = array();
             foreach (Mamba::$mambaRequiredGetParams as $param) {
-                $params[$param] = $GET[$param];
+                $params[$param] = $_GET[$param];
             }
 
             if ($Mamba->checkAuthKey($params)) {

@@ -20,6 +20,8 @@ class AppKernel extends Kernel
             new Mamba\MemcacheBundle\MemcacheBundle(),
             new Mamba\PlatformBundle\MambaBundle(),
             new Mamba\EncountersBundle\EncountersBundle(),
+            new Mamba\RedisBundle\RedisBundle(),
+            new Mamba\GearmanBundle\GearmanBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
