@@ -1,7 +1,7 @@
 parameters:
-#    gearman.example.class: Mamba\GearmanBundle\Example
+    gearman.class: Mamba\GearmanBundle\Gearman
 
 services:
-#    gearman.example:
-#        class: %gearman.example.class%
+    gearman:
+        class: %gearman.class%
 #        arguments: [@service_id, "plain_value", %parameter%]

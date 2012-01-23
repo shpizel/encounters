@@ -12,7 +12,7 @@ class Anketa {
      * @throws AnketaException, MambaException
      * @return array
      */
-    public function getInfo(array $ids, array $blocks = array(), $onlyIds = null) {
+    public function getInfo(array $ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other"), $onlyIds = null) {
         $max = 100;
 
         if (count($ids) > $max) {

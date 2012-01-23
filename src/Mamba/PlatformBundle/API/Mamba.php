@@ -14,11 +14,25 @@ final class Mamba {
         PLATFORM_GATEWAY_ADDRESS = 'http://api.aplatform.ru',
 
         /**
-         * Мемкеш включен
+         * Ключ для хранения user_id в сессии
          *
-         * @var bool
+         * @var str
          */
-        MEMCACHE_ENABLED = true
+        SESSION_USER_ID_KEY = 'mamba_user_id',
+
+        /**
+         * Ключ для хранения хеша пользовательских настроек платформы
+         *
+         * @var str
+         */
+        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
+
+        /**
+         * Ключ для хранения хеша кеша запросов к платформе
+         *
+         * @var str
+         */
+        REDIS_HASH_USER_API_CACHE_KEY = "user_%d_api_cache"
     ;
 
     public static
@@ -88,7 +102,7 @@ final class Mamba {
          *
          * @var bool
          */
-        $isReady = false
+        $ready = false
     ;
 
     protected static
@@ -101,18 +115,25 @@ final class Mamba {
         $Instance,
 
         /**
-         * Инстанс сессии
+         * Инстанс Session
          *
          * @var object
          */
         $Session,
 
         /**
-         * Инстанс мемкеша
+         * Инстанс Memcache
          *
          * @var Memcache
          */
-        $Memcache
+        $Memcache,
+
+        /**
+         * Инстанс Redis
+         *
+         * @var Redis
+         */
+        $Redis
     ;
 
     /**
@@ -121,91 +142,25 @@ final class Mamba {
      * @param $secretKey
      * @param $privateKey
      */
-    public function __construct($secretKey, $privateKey, $Session, $Memcache) {
-        $this->setOption('secret_key', $secretKey);
-        $this->setOption('private_key', $privateKey);
-
-        $vars = array();
-        foreach (self::$mambaRequiredGetParams as $param) {
-            $Session->has($param) &&
-                $vars[$param] = $Session->get($param);
-        }
-
-        if ($vars) {
-            $this->setOptions($vars);
-            $this->isReady = true;
-        }
+    public function __construct($secretKey, $privateKey, $Session, $Memcache, $Redis) {
+        $this->setOptions(array(
+            'secret_key'  => $secretKey,
+            'private_key' => $privateKey,
+        ));
 
         self::$Instance = $this;
-        self::$Memcache = $Memcache;
         self::$Session  = $Session;
+        self::$Memcache = $Memcache;
+        self::$Redis    = $Redis;
     }
 
     /**
-     * Возвращает готовность объекта
+     * Возвращает user_id WebUser'a из сессии
      *
-     * @return bool
+     * @return int
      */
-    public function isReady() {
-        return $this->isReady;
-    }
-
-    /**
-     * Устанавливает готовность объекта
-     *
-     * @param bool $isReady
-     */
-    public function setReady($isReady = false) {
-        $this->isReady = $isReady;
-    }
-
-    /**
-     * Возвращает валидность auth_key
-     *
-     * @param array $params
-     * @return bool
-     */
-    public function checkAuthKey($params) {
-        if (isset($params['auth_key'])) {
-            $authKey = $params['auth_key'];
-            unset($params['auth_key']);
-
-            if ($this->getServerToServerSignature($params) == $authKey) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Instance getter
-     *
-     * @static
-     * @return Mamba
-     */
-    public static function getInstance() {
-        return self::$Instance;
-    }
-
-    /**
-     * Session getter
-     *
-     * @static
-     * @return Session
-     */
-    public static function getSession() {
-        return self::$Session;
-    }
-
-    /**
-     * Memcache getter
-     *
-     * @static
-     * @return Memcache
-     */
-    public static function getMemcache() {
-        return self::$Memcache;
+    public function getWebUserId() {
+        return self::getSession()->get(self::SESSION_USER_ID_KEY);
     }
 
     /**
@@ -273,20 +228,38 @@ final class Mamba {
      * @return array
      */
     public function execute($method, array $params = array()) {
+        if (!$this->ready) {
+            if ($webUserId = $this->getWebUserId()) {
+                if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
+                    $this->setOptions($platformSettings);
+                    $this->ready = true;
+                } else {
+                    throw new MambaException("Could not get mamba platform settings for user_id=" . $webUserId);
+                }
+            } else {
+                throw new MambaException("Could not get mamba user id from session");
+            }
+        }
+
         if (strpos($method, "\\") !== false) {
             $method = explode("\\", $method);
             $method = array_pop($method);
         }
 
-        if (self::MEMCACHE_ENABLED) {
-            $cacheKey = md5("$method:" . http_build_query($params));
-            if ($result = self::$Memcache->get($cacheKey)) {
-                return $result;
-            }
+        /**
+         * Попробуем взять результат из кеша
+         *
+         * @author shpizel
+         */
+        if ($cached = self::$Redis->hGet(
+            sprintf(Mamba::REDIS_HASH_USER_API_CACHE_KEY, $this->getWebUserId()),
+            "api://$method/?".http_build_query($params)
+        )) {
+            return $cached;
         }
 
-        $lastMambaQuery = self::$Session->get('last_mamba_query');
-        if (!(is_null($lastMambaQuery) || (time() - $lastMambaQuery < 4*60*60))) {
+        $lastMambaQuery = self::getRedis()->hGet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time');
+        if ($lastMambaQuery && (time() - (int)$lastMambaQuery >= 4*60*60)) {
             throw new MambaException("Sid expired");
         }
 
@@ -303,17 +276,17 @@ final class Mamba {
 
             $httpQuery = self::PLATFORM_GATEWAY_ADDRESS . "?" . http_build_query($resultParams);
 
-            self::$Session->set('last_mamba_query', time());
+            self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
 
             if ($platformResponse = @file_get_contents($httpQuery)) {
                 $JSON = @json_decode($platformResponse, true);
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
-                    if (self::MEMCACHE_ENABLED && isset($this->cacheExpireRules[$method])) {
-                        if ($expire = $this->cacheExpireRules[$method]) {
-                            self::$Memcache->set($cacheKey, $JSON['data'], $expire);
-                        }
-                    }
+                    self::$Redis->hSet(
+                        sprintf(Mamba::REDIS_HASH_USER_API_CACHE_KEY, $this->getWebUserId()),
+                        "api://$method/?".http_build_query($params),
+                        $JSON['data']
+                    );
 
                     return $JSON['data'];
                 } else {
@@ -454,6 +427,65 @@ final class Mamba {
                 ? $this->Instances[$className]
                 : $this->Instances[$className] = new $className;
         ;
+    }
+
+    /**
+     * Возвращает валидность auth_key
+     *
+     * @param array $params
+     * @return bool
+     */
+    public function checkAuthKey($params) {
+        if (isset($params['auth_key'])) {
+            $authKey = $params['auth_key'];
+            unset($params['auth_key']);
+
+            if ($this->getServerToServerSignature($params) == $authKey) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Mamba instance getter for remote executions
+     *
+     * @static
+     * @return Mamba
+     */
+    public static function getInstance() {
+        return self::$Instance;
+    }
+
+    /**
+     * Session getter
+     *
+     * @static
+     * @return Session
+     */
+    public static function getSession() {
+        return self::$Session;
+    }
+
+    /**
+     * Memcache getter
+     *
+     * @static
+     * @return Memcache
+     */
+    public static function getMemcache() {
+        return self::$Memcache;
+    }
+
+    /**
+     * Redis getter
+     *
+     * @static
+     * @return Redis
+     */
+    public static function getRedis() {
+        return self::$Redis;
     }
 }
 

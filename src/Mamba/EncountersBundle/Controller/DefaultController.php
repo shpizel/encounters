@@ -8,56 +8,82 @@ use Mamba\PlatformBundle\API\Mamba;
 class DefaultController extends Controller {
 
     public function indexAction() {
-        //$this->get('redis')->set('igor', array('surname'=>'shpizel'));
-        var_dump($this->get('redis')->get('igor'));
-
-        exit();
-//        exit(var_dump($this->get('redis')->get('igor'/*, 'shpizel'*/)));
-//        list($Session, $Memcache, $Mamba, $_GET) = array(
-//            $this->get('session'),
-//            $this->get('memcache'),
-//            $this->get('mamba'),
-//            $this->getRequest()->query->all(),
-//        );
-
-        $sessionVars = array_keys($Session->all());
-        if (count(array_intersect(Mamba::$mambaRequiredGetParams, $sessionVars)) == count(Mamba::$mambaRequiredGetParams)) {
-            /**
-             * Необходимые Мамба GET-параметры есть в сессионных переменных и Мамба сама их использует
-             *
-             * @author shpizel
-             */
-        } elseif (count(array_intersect(array_keys($_GET), Mamba::$mambaRequiredGetParams)) == count(Mamba::$mambaRequiredGetParams)) {
-            /**
-             * Необходимые Мамба GET-параметры есть в запросе, получим их, проверим и запишем в сессию
-             *
-             * @author shpizel
-             */
-            $params = array();
-            foreach (Mamba::$mambaRequiredGetParams as $param) {
-                $params[$param] = $_GET[$param];
-            }
-
-            if ($Mamba->checkAuthKey($params)) {
-                $Mamba->setOptions($params);
-                $Mamba->setReady(true);
-                foreach ($params as $key=>$value) {
-                    $Session->set($key, $value);
-                }
-            } else {
-                return new Response("Internal error..");
-            }
-        } else {
-            return new Response("Internal error..");
-        }
+        $Request  = $this->getRequest();
+        $Session  = $this->get('session');
+        $Mamba    = $this->get('mamba');
+        $Memcache = $this->get('memcache');
+        $Redis    = $this->get('redis');
+        $Gearman  = $this->get('gearman');
 
         /**
-         * Инициализация пройдена — можно писать рабочий код
+         * Проверим новые поступления параметров
          *
          * @author shpizel
          */
-        header("Content-type: text/html; charset=utf8;");
-        var_dump($Mamba->Anketa()->getInfo(array($this->getRequest()->query->get('oid'))));
-            exit();
+        $getPlatformParams = array();
+        $getParams = $Request->query->all();
+        if (count(array_intersect(array_keys($getParams), Mamba::$mambaRequiredGetParams)) == count(Mamba::$mambaRequiredGetParams)) {
+            foreach (Mamba::$mambaRequiredGetParams as $param) {
+                $getPlatformParams[$param] = $getParams[$param];
+            }
+
+            if (!$Mamba->checkAuthKey($getPlatformParams)) {
+                $getPlatformParams = array();
+            }
+        }
+
+        /**
+         * Проверим, существует ли пользовательская сессия, и если пользовательская сессия существует
+         * попробуем взять из Redis текущие пользовательские настройки платформы
+         *
+         * @author shpizel
+         */
+        if ($userSessionExists = $Session->has(Mamba::SESSION_USER_ID_KEY)) {
+            $mambaUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
+            if ($redisPlatformParams = $Redis->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId))) {
+                if ($getPlatformParams &&
+                    $redisPlatformParams['sid'] != $getPlatformParams['sid'] &&
+                    $redisPlatformParams['oid'] == $getPlatformParams['oid'])
+                {
+                    $this->storePlatformParams($getPlatformParams);
+                }
+            } else {
+                $this->storePlatformParams($getPlatformParams);
+            }
+        } elseif ($getPlatformParams) {
+            $this->storePlatformParams($getPlatformParams);
+        } else {
+            $Response = $this->render('EncountersBundle:Default:sorry.html.twig');
+            $Response->headers->set('Content-Type', 'text/plain');
+            return $Response;
+        }
+
+//        exit(var_dump($this->get('mamba')->Anketa()->getInfo(array(560015854))));
+//        return new Response($x, 200, array('Content-type'=> 'text/plain'));
+        return $this->render('EncountersBundle:Default:index.html.twig');
+    }
+
+    /**
+     * Сохранить данные и запустить обновления
+     *
+     * @param $platformParams
+     */
+    protected function storePlatformParams($platformParams) {
+        $this->get('session')->set(
+            Mamba::SESSION_USER_ID_KEY,
+            $mambaUserId = (int) $platformParams['oid']
+        );
+
+        if (isset($platformParams['auth_key'])) {
+            unset($platformParams['auth_key']);
+        }
+
+        foreach ($platformParams as $key=>$value) {
+            $this->get('redis')->hSet(
+                sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId),
+                $key,
+                $value
+            );
+        }
     }
 }

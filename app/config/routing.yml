@@ -1,7 +1,3 @@
-GearmanBundle:
-    resource: "@GearmanBundle/Resources/config/routing.yml"
-    prefix:   /
-
 MambaEncountersBundle:
     resource: "@EncountersBundle/Resources/config/routing.yml"
     prefix:   /
