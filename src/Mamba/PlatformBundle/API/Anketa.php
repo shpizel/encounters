@@ -1,8 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
-use Mamba\PlatformBundle\API\Mamba;
 
+/**
+ * Anketa
+ *
+ * @package PlatformBundle
+ */
 class Anketa {
 
     /**
@@ -223,6 +226,11 @@ class Anketa {
     }
 }
 
+/**
+ * AnketaException
+ *
+ * @package PlatformBundle
+ */
 class AnketaException extends \Exception {
 
 }

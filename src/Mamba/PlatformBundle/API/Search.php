@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Search
+ *
+ * @package PlatformBundle
+ */
 class Search {
 
     /**
@@ -155,6 +159,11 @@ class Search {
     }
 }
 
+/**
+ * SearchException
+ *
+ * @package PlatformBundle
+ */
 class SearchException extends \Exception {
 
 }

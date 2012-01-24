@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Achievement
+ *
+ * @package PlatformBundle
+ */
 class Achievement {
 
     /**
@@ -33,6 +37,11 @@ class Achievement {
     }
 }
 
+/**
+ * AchievementException
+ *
+ * @package PlatformBundle
+ */
 class AchievementException extends \Exception {
 
 }

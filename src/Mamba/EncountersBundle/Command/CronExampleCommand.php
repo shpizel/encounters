@@ -8,12 +8,17 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * AnketaWorkerCronScriptCommand
+ * CronExampleCommand
  *
  * @package EncountersBundle
  */
-class AnketaWorkerCronScriptCommand extends CronScript {
+class CronExampleCommand extends CronScript {
 
+    /**
+     * Processor
+     *
+     * @return null
+     */
     protected function process() {
         $worker = $this->getContainer()->get('gearman')->getWorker();
 
@@ -35,6 +40,12 @@ class AnketaWorkerCronScriptCommand extends CronScript {
         }
     }
 
+    /**
+     * Upper function
+     *
+     * @param $job
+     * @return string
+     */
     public function reverse($job) {
         $details = $job->workload();
         $handle  = $job->handle();
@@ -45,6 +56,12 @@ class AnketaWorkerCronScriptCommand extends CronScript {
         return $result;
     }
 
+    /**
+     * Upper function
+     *
+     * @param $job
+     * @return string
+     */
     public function upper($job) {
         $details = $job->workload();
         $handle  = $job->handle();

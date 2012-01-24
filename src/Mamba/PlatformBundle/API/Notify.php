@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Notify
+ *
+ * @package PlatformBundle
+ */
 class Notify {
 
     /**
@@ -22,6 +26,11 @@ class Notify {
     }
 }
 
+/**
+ * NotifyException
+ *
+ * @package PlatformBundle
+ */
 class NotifyException extends \Exception {
 
 }

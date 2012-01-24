@@ -1,10 +1,15 @@
 <?php
-
 namespace Mamba\EncountersBundle\Controller;
+
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 
+/**
+ * DefaultController
+ *
+ * @package EncountersBundle
+ */
 class DefaultController extends Controller {
 
     public function indexAction() {
@@ -41,11 +46,24 @@ class DefaultController extends Controller {
         if ($userSessionExists = $Session->has(Mamba::SESSION_USER_ID_KEY)) {
             $mambaUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
             if ($redisPlatformParams = $Redis->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId))) {
-                if ($getPlatformParams &&
-                    $redisPlatformParams['sid'] != $getPlatformParams['sid'] &&
-                    $redisPlatformParams['oid'] == $getPlatformParams['oid'])
-                {
-                    $this->storePlatformParams($getPlatformParams);
+                if ($getPlatformParams && $redisPlatformParams['oid'] == $getPlatformParams['oid']) {
+                    /**
+                     * Пришли какие-то платформенные ГЕТ-параметры, неизвестно фрейм обновился или внешний фрейм
+                     *
+                     * @author shpizel
+                     */
+                    if ($getPlatformParams['sid'] != $redisPlatformParams['sid']) {
+                        $this->storePlatformParams($getPlatformParams);
+                    } elseif ($referer = $Request->server->get('HTTP_REFERER')) {
+                        if ($params = @parse_url($referer, PHP_URL_QUERY)) {
+                            @parse_str($params, $params);
+                            if (is_array($params) && isset($params['app_id'])) {
+                                if ($params['app_id'] = $Request->query->get('app_id')) {
+                                    $this->storePlatformParams($getPlatformParams);
+                                }
+                            }
+                        }
+                    }
                 }
             } else {
                 $this->storePlatformParams($getPlatformParams);
@@ -58,9 +76,8 @@ class DefaultController extends Controller {
             return $Response;
         }
 
-//        exit(var_dump($this->get('mamba')->Anketa()->getInfo(array(560015854))));
-//        return new Response($x, 200, array('Content-type'=> 'text/plain'));
-        return $this->render('EncountersBundle:Default:index.html.twig');
+        exit(var_dump($redisPlatformParams));
+        var_dump($this->get('mamba')->Anketa()->getInfo(array(724727670)));
     }
 
     /**
@@ -77,6 +94,8 @@ class DefaultController extends Controller {
         if (isset($platformParams['auth_key'])) {
             unset($platformParams['auth_key']);
         }
+
+        $platformParams['last_query_time'] = time();
 
         foreach ($platformParams as $key=>$value) {
             $this->get('redis')->hSet(

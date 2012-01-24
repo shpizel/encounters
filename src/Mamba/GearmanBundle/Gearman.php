@@ -1,5 +1,4 @@
 <?php
-
 namespace Mamba\GearmanBundle;
 
 /**
@@ -23,7 +22,16 @@ class Gearman {
          *
          * @var GearmanClient
          */
-        $Client
+        $Client,
+
+        /**
+         * Серверы
+         *
+         * @var array
+         */
+        $servers = array(
+
+        )
     ;
 
     /**
@@ -31,8 +39,8 @@ class Gearman {
      *
      * @param $servers
      */
-    public function __construct() {
-
+    public function __construct($servers) {
+        self::$servers = $servers;
     }
 
     /**
@@ -47,7 +55,10 @@ class Gearman {
         }
 
         $Client = new \GearmanClient();
-        $Client->addServer();
+        foreach (self::$servers as $server) {
+            $Client->addServer($server['host'], $server['port']);
+        }
+
         return self::$Client = $Client;
     }
 
@@ -63,7 +74,10 @@ class Gearman {
         }
 
         $Worker = new \GearmanWorker();
-        $Worker->addServer();
+        foreach (self::$servers as $server) {
+            $Worker->addServer($server['host'], $server['port']);
+        }
+
         return self::$Worker = $Worker;
     }
 }

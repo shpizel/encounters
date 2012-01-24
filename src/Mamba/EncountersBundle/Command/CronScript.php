@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * CronScriptCommand
  *
- * @package Encounters
+ * @package EncountersBundle
  */
 abstract class CronScript extends ContainerAwareCommand {
 

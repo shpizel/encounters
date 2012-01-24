@@ -66,6 +66,13 @@ mamba:
 
 redis:
     host: localhost
+    database: 0
+
+gearman:
+    servers:
+        server1:
+            host: localhost
+            port: 123
 
 memcache:
     servers:

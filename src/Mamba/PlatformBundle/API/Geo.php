@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Geo
+ *
+ * @package PlatformBundle
+ */
 class Geo {
 
     /**
@@ -72,6 +76,11 @@ class Geo {
     }
 }
 
+/**
+ * GeoException
+ *
+ * @package PlatformBundle
+ */
 class GeoException extends \Exception {
 
 }

@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Photos
+ *
+ * @package PlatformBundle
+ */
 class Photos {
 
     /**
@@ -54,6 +58,11 @@ class Photos {
     }
 }
 
+/**
+ * PhotosException
+ *
+ * @package PlatformBundle
+ */
 class PhotosException extends \Exception {
 
 }

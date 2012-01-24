@@ -1,12 +1,18 @@
 <?php
-
 namespace Mamba\EncountersBundle\Controller;
+
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 
 class JsonApiController extends Controller {
 
+    /**
+     * Index action
+     *
+     * @param $method
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function indexAction($method) {
         $JSON = array('error' => true, 'message' => "Invalid params");
         try {

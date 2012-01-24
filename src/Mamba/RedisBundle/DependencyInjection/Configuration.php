@@ -1,33 +1,42 @@
 <?php
-
 namespace Mamba\RedisBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * This is the class that validates and merges configuration from your app/config files
+ * Configuration
  *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html#cookbook-bundles-extension-config-class}
+ * @package RedisBundle
  */
-class Configuration implements ConfigurationInterface
-{
+class Configuration implements ConfigurationInterface {
+
     /**
-     * {@inheritDoc}
+     * Config builder
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder
      */
-    public function getConfigTreeBuilder()
-    {
+    public function getConfigTreeBuilder() {
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('redis');
 
         $rootNode
             ->children()
                 ->scalarNode('host')
-                    ->isRequired()->cannotBeEmpty()->end()
+                    ->isRequired()
+                    ->cannotBeEmpty()
+                    ->end()
                 ->scalarNode('port')
-                    ->defaultValue(6379)->cannotBeEmpty()->end()
+                    ->defaultValue(6379)
+                    ->cannotBeEmpty()
+                    ->end()
                 ->scalarNode('timeout')
-                    ->defaultValue(0)->end()
+                    ->defaultValue(0)
+                    ->end()
+                ->scalarNode('database')
+                    ->isRequired()
+                    ->defaultValue(0)
+                    ->end()
             ->end()
         ;
 

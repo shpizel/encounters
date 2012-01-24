@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Contacts
+ *
+ * @package PlatformBundle
+ */
 class Contacts {
 
     /**
@@ -72,6 +76,11 @@ class Contacts {
     }
 }
 
+/**
+ * ContactsException
+ *
+ * @package PlatformBundle
+ */
 class ContactsException extends \Exception {
 
 }

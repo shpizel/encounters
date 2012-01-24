@@ -18,16 +18,23 @@ class Redis extends \Redis {
         USE_PERSISTENT_CONNECTION = false
     ;
 
-    public function __construct($host, $port, $timeout) {
+    public function __construct($host, $port, $timeout, $database) {
         parent::__construct();
 
         $connect = self::USE_PERSISTENT_CONNECTION ? "pconnect" : "connect";
         $this->$connect($host, $port, $timeout);
 
-        $this->setOption(\Redis::OPT_SERIALIZER, \Redis::SERIALIZER_IGBINARY);
+        $this->setOption(self::OPT_SERIALIZER, self::SERIALIZER_IGBINARY);
+        $database &&
+            $this->select($database);
     }
 }
 
+/**
+ * RedisException
+ *
+ * @package RedisBundle
+ */
 class RedisException extends \Exception {
 
 }

@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Mamba
+ *
+ * @package PlatformBundle
+ */
 final class Mamba {
 
     const
@@ -25,14 +29,7 @@ final class Mamba {
          *
          * @var str
          */
-        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
-
-        /**
-         * Ключ для хранения хеша кеша запросов к платформе
-         *
-         * @var str
-         */
-        REDIS_HASH_USER_API_CACHE_KEY = "user_%d_api_cache"
+        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params"
     ;
 
     public static
@@ -143,7 +140,7 @@ final class Mamba {
      * @param $privateKey
      */
     public function __construct($secretKey, $privateKey, $Session, $Memcache, $Redis) {
-        $this->setOptions(array(
+        $this->set(array(
             'secret_key'  => $secretKey,
             'private_key' => $privateKey,
         ));
@@ -160,63 +157,67 @@ final class Mamba {
      * @return int
      */
     public function getWebUserId() {
-        return self::getSession()->get(self::SESSION_USER_ID_KEY);
-    }
-
-    /**
-     * Возвращает параметр настройки коннектора
-     *
-     * @param string $optionName
-     * @throws MambaException
-     * @return mixed|null
-     */
-    public function getOption($optionName) {
-        if (isset($this->options[$optionName])) {
-            return $this->options[$optionName];
-        }
-
-        throw new MambaException("Option $optionName not found");
+        return
+            self::getSession()
+                ->get(self::SESSION_USER_ID_KEY)
+        ;
     }
 
     /**
      * Возвращает параметры настройки коннектора
      *
-     * @param array $options = array($optionName1, .., $optionNameN)
+     * @param mixed
      * @throws MambaException
-     * @return array|null
+     * @return scalar|array(key=>value)|null
      */
-    public function getOptions($options) {
-        $result = array();
-        foreach ($options as $optionName) {
-            if ($optionValue = $this->getOption($optionName)) {
-                $result[$optionName] = $optionValue;
+    public function get(/* args */) {
+        $argc = func_num_args();
+        if ($argc == 1) {
+            if ($argument = func_get_arg(0)) {
+                if (is_array($argument)) {
+                    $result = array();
+                    foreach ($argument as $optionName) {
+                        $result[$optionName] = $this->get($optionName);
+                    }
+
+                    return $result;
+                } else {
+                    if (isset($this->options[$argument])) {
+                        return $this->options[$argument];
+                    }
+
+                    throw new MambaException("Option $argument not found");
+                }
             }
         }
 
-        return $result;
+        throw new MambaException("Invalid getter params");
     }
 
     /**
      * Устанавливает параметр настройки коннектора
      *
-     * @param string $optionName
-     * @param scalar $optionValue
      * @return null
      */
-    public function setOption($optionName, $optionValue) {
-        $this->options[$optionName] = $optionValue;
-    }
+    public function set(/* args */) {
+        $argc = func_num_args();
 
-    /**
-     * Устанавливает параметры настройки коннектора
-     *
-     * @param array $options = array($optionName=>$optionValue)
-     * @return null
-     */
-    public function setOptions(array $options) {
-        foreach ($options as $optionName => $optionValue) {
-            $this->setOption($optionName, $optionValue);
+        if ($argc == 2) {
+            $optionName  = func_get_arg(0);
+            $optionValue = func_get_arg(1);
+
+            return $this->options[$optionName] = $optionValue;
+        } elseif ($argc == 1) {
+            $argument = func_get_arg(0);
+            if (is_array($argument) && $argument) {
+                foreach ($argument as $optionName=>$optionValue) {
+                    $this->set($optionName, $optionValue);
+                }
+            }
+            return;
         }
+
+        throw new MambaException("Invalid setter params");
     }
 
     /**
@@ -231,7 +232,7 @@ final class Mamba {
         if (!$this->ready) {
             if ($webUserId = $this->getWebUserId()) {
                 if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
-                    $this->setOptions($platformSettings);
+                    $this->set($platformSettings);
                     $this->ready = true;
                 } else {
                     throw new MambaException("Could not get mamba platform settings for user_id=" . $webUserId);
@@ -251,10 +252,7 @@ final class Mamba {
          *
          * @author shpizel
          */
-        if ($cached = self::$Redis->hGet(
-            sprintf(Mamba::REDIS_HASH_USER_API_CACHE_KEY, $this->getWebUserId()),
-            "api://$method/?".http_build_query($params)
-        )) {
+        if ($cached = self::$Memcache->get("api://" . $this->getWebUserId() . "@$method/?".http_build_query($params))) {
             return $cached;
         }
 
@@ -263,14 +261,14 @@ final class Mamba {
             throw new MambaException("Sid expired");
         }
 
-        if ($staticParams = $this->getOptions(array('app_id', 'format', 'secure', 'sid'))) {
+        if ($staticParams = $this->get(array('app_id', 'format', 'secure', 'sid'))) {
             $dynamicParams = array(
                 'method' => $method,
             );
 
             $resultParams = array_merge($staticParams, $dynamicParams, $params);
 
-            $resultParams['sig'] = ($this->getOption('secure'))
+            $resultParams['sig'] = ($this->get('secure'))
                 ? $this->getServerToServerSignature($resultParams)
                 : $this->getClientToServerSignature($resultParams);
 
@@ -282,11 +280,14 @@ final class Mamba {
                 $JSON = @json_decode($platformResponse, true);
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
-                    self::$Redis->hSet(
-                        sprintf(Mamba::REDIS_HASH_USER_API_CACHE_KEY, $this->getWebUserId()),
-                        "api://$method/?".http_build_query($params),
-                        $JSON['data']
-                    );
+
+                    isset($this->cacheExpireRules[$method]) &&
+                        self::$Memcache->set(
+                            "api://" . $this->getWebUserId() . "@$method/?".http_build_query($params),
+                            $JSON['data'],
+                            $this->cacheExpireRules[$method]
+                        )
+                    ;
 
                     return $JSON['data'];
                 } else {
@@ -323,7 +324,7 @@ final class Mamba {
         foreach ($params as $key => $value) {
             $signature .= "$key=$value";
         }
-        return md5($signature . $this->getOption('secret_key'));
+        return md5($signature . $this->get('secret_key'));
     }
 
     /**
@@ -338,7 +339,7 @@ final class Mamba {
         foreach ($params as $key => $value) {
             $signature .= "$key=$value";
         }
-        return md5($this->getOption('oid') . $signature . $this->getOption('private_key'));
+        return md5($this->get('oid') . $signature . $this->get('private_key'));
     }
 
     /**
@@ -490,9 +491,9 @@ final class Mamba {
 }
 
 /**
- * MambaAppPlatformException
+ * MambaException
  *
- * @package Mamba
+ * @package PlatformBundle
  */
 class MambaException extends \Exception {
 

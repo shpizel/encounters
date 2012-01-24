@@ -1,7 +1,11 @@
 <?php
-
 namespace Mamba\PlatformBundle\API;
 
+/**
+ * Diary
+ *
+ * @package PlatformBundle
+ */
 class Diary {
 
     /**
@@ -16,6 +20,11 @@ class Diary {
     }
 }
 
+/**
+ * DiaryException
+ *
+ * @package PlatformBundle
+ */
 class DiaryException extends \Exception {
 
 }
