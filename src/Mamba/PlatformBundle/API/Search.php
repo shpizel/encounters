@@ -15,7 +15,7 @@ class Search {
      * @param string $lookingFor Кого ищу? (M, F, MM, FF, MF, N)
      * @param int $ageFrom Возраст от
      * @param int $ageTo Возраст до
-     * @param array $target Цель знакомства ("friendship", "love", "marriage", "sex", "other")
+     * @param string $target Цель знакомства -> ("friendship", "love", "marriage", "sex", "other")
      * @param bool $onlyWithPhoto Только с фото
      * @param bool $onlyReal Только реал
      * @param bool $onlyWithWebCam Только с вебкой
@@ -27,6 +27,7 @@ class Search {
      * @param int $offset Смещение
      * @param array $blocks Блоки анкеты (about, location, flags, familiarity, type, favour,other)
      * @param bool $idsOnly Только айдишники
+     * @throws Searchception, MambaException
      * @return array
      */
     public function get(
@@ -44,7 +45,7 @@ class Search {
         $cityId         = null,
         $metroId        = null,
         $offset         = 0,
-        array $blocks   = array(),
+        array $blocks   = array("about", "location", "flags", "familiarity", "type", "favour", "other"),
         $idsOnly        = false
     ) {
         $arguments = array();
@@ -82,7 +83,7 @@ class Search {
 
         if ($target) {
             $target = strtolower($target);
-            if (!in_array($target, array("about", "location", "flags", "familiarity", "type", "favour", "other"))) {
+            if (!in_array($target, array("friendship", "love", "marriage", "sex", "other"))) {
                 throw new SearchException("Invalid target: " . $target);
             }
             $arguments['target'] = $target;
@@ -136,10 +137,15 @@ class Search {
             if (!is_int($offset)) {
                 throw new SearchException("Invalid data type for offset: " . gettype($offset));
             }
+
+            if ($offset % 10 != 0) {
+                throw new SearchException("Invalid offset: " . $offset);
+            }
+
             $arguments['offset'] = $offset;
         }
 
-        if (count($blocks)) {
+        if ($blocks) {
             $availableBlocks = array("about", "location", "flags", "familiarity", "type", "favour", "other");
             foreach ($blocks as &$block) {
                 $block = strtolower($block);

@@ -25,7 +25,12 @@ class Photos {
         );
 
         $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+
+        if (isset($dataArray['albums'])) {
+            return $dataArray['albums'];
+        }
+
+        throw new PhotosException("'albums' field was not found");
     }
 
     /**
@@ -54,7 +59,12 @@ class Photos {
         }
 
         $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+
+        if (isset($dataArray['photos'])) {
+            return $dataArray['photos'];
+        }
+
+        throw new PhotosException("'photos' field was not found");
     }
 }
 

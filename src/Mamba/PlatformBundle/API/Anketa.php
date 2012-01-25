@@ -11,13 +11,31 @@ class Anketa {
     /**
      * Получение всех полей анкеты
      *
-     * @param array $ids (MAX 100 oid анкет или logins)
+     * @param array|int|str|string_array $ids (anketa ids) max 100
+     * @param array blocks = ("about", "location", "flags", "familiarity", "type", "favour", "other")
+     * @param bool onlyIds
      * @throws AnketaException, MambaException
      * @return array
      */
-    public function getInfo(array $ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other"), $onlyIds = null) {
-        $max = 100;
+    public function getInfo($ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other"), $onlyIds = null) {
+        if (!is_array($ids)) {
+            if (is_string($ids)) {
+                $ids = str_replace(" ", "", $ids);
+                $ids = explode(",", $ids);
+            } elseif (is_int($ids)) {
+                $ids = array($ids);
+            } else {
+                throw new AnketaException("Invalid ids param");
+            }
 
+            $ids = array_filter($ids, function($id) {
+                return (bool) $id;
+            });
+
+            return $this->getInfo($ids, $blocks, $onlyIds);
+        }
+
+        $max = 100;
         if (count($ids) > $max) {
             $ids = array_slice($ids, 0, $max);
         }
@@ -75,13 +93,17 @@ class Anketa {
     /**
      * Получение интересов
      *
-     * @param int $oid Anketa id
+     * @param int|str $oid anketa_id
      * @throws AnketaException, MambaException
      * @return array
      */
     public function getInterests($oid) {
         if (!is_int($oid)) {
-            throw new AnketaException('Invalid oid: expected int');
+            if (is_string($oid) && is_numeric($oid)) {
+                $oid = (int) $oid;
+            } else {
+                throw new AnketaException('Invalid oid');
+            }
         }
 
         $arguments = array(
@@ -95,13 +117,17 @@ class Anketa {
     /**
      * Получение объявлений из попутчиков
      *
-     * @param int $oid Anketa id
+     * @param int $oid anketa_id
      * @throws AnketaException, MambaException
      * @return array
      */
     public function getTravel($oid) {
         if (!is_int($oid)) {
-            throw new PhotosException('Invalid oid: expected int');
+            if (is_string($oid) && is_numeric($oid)) {
+                $oid = (int) $oid;
+            } else {
+                throw new AnketaException('Invalid oid');
+            }
         }
 
         $arguments = array(
@@ -115,14 +141,35 @@ class Anketa {
     /**
      * Получение списка флагов любой анкеты: VIP, реал, лидер, maketop, интим за деньги
      *
-     * @param array $ids (anketa ids)
+     * @param array|int|str|string_array $ids (anketa ids)
      * @throws AnketaException, MambaException
-     * @return array(anketa_id=>array(data), ..)
+     * @return array
      */
-    public function getFlags(array $ids) {
-        foreach ($ids as $id) {
+    public function getFlags($ids) {
+        if (!is_array($ids)) {
+            if (is_string($ids)) {
+                $ids = str_replace(" ", "", $ids);
+                $ids = explode(",", $ids);
+            } elseif (is_int($ids)) {
+                $ids = array($ids);
+            } else {
+                throw new AnketaException("Invalid ids param");
+            }
+
+            $ids = array_filter($ids, function($id) {
+                return (bool) $id;
+            });
+
+            return $this->getFlags($ids);
+        }
+
+        foreach ($ids as &$id) {
             if (!is_int($id)) {
-                throw new AnketaException('Invalid type of param: ' . gettype($id) . ", expected int");
+                if (is_numeric($id)) {
+                    $id = (int) $id;
+                } else {
+                    throw new AnketaException("Invalid id type: ". gettype($id));
+                }
             }
         }
 
@@ -131,28 +178,41 @@ class Anketa {
         );
 
         $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        $result = array();
-
-        foreach ($dataArray as $item) {
-            $anketaId = $item['anketa_id'];
-            unset($item['anketa_id']);
-            $result[$anketaId] = $item;
-        }
-
-        return $result;
+        return $dataArray;
     }
 
     /**
      * Статус online или когда был крайний раз на сайте, если не надета шапка-невидимка
      *
-     * @param array $ids (anketa ids)
+     * @param array|int|str|string_array $ids (anketa ids)
      * @throws AnketaException, MambaException
-     * @return array(anketa_id => online, ..)
+     * @return array
      */
-    public function isOnline(array $ids) {
-        foreach ($ids as $id) {
+    public function isOnline($ids) {
+        if (!is_array($ids)) {
+            if (is_string($ids)) {
+                $ids = str_replace(" ", "", $ids);
+                $ids = explode(",", $ids);
+            } elseif (is_int($ids)) {
+                $ids = array($ids);
+            } else {
+                throw new AnketaException("Invalid ids param");
+            }
+
+            $ids = array_filter($ids, function($id) {
+                return (bool) $id;
+            });
+
+            return $this->isOnline($ids);
+        }
+
+        foreach ($ids as &$id) {
             if (!is_int($id)) {
-                throw new AnketaException('Invalid type of param: ' . gettype($id) . ", expected int");
+                if (is_numeric($id)) {
+                    $id = (int) $id;
+                } else {
+                    throw new AnketaException("Invalid id type: ". gettype($id));
+                }
             }
         }
 
@@ -161,46 +221,50 @@ class Anketa {
         );
 
         $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        $result = array();
-
-        foreach ($dataArray as $item) {
-            $result[$item['anketa_id']] = $item['is_online'] ;
-        }
-
-        return $result;
+        return $dataArray;
     }
 
     /**
      * Проверка установлено ли указанное приложение у указанной анкеты
      *
-     * @param array $ids (anketa ids) OR int $id
+     * @param array|int|str|string_array $ids (anketa ids)
      * @throws AnketaException, MambaException
-     * @return array(anketa_id => (bool) AppUser)|bool
+     * @return array
      */
-    public function isAppUser($params = null) {
-        if (is_int($params)) {
-            $ids = array($oid = $params);
-        } elseif (is_array($params) && count($params)) {
-            $ids = $params;
-        } else {
-            throw new AnketaException("Invalid params, expected array of ints or int");
+    public function isAppUser($ids) {
+        if (!is_array($ids)) {
+            if (is_string($ids)) {
+                $ids = str_replace(" ", "", $ids);
+                $ids = explode(",", $ids);
+            } elseif (is_int($ids)) {
+                $ids = array($ids);
+            } else {
+                throw new AnketaException("Invalid ids param");
+            }
+
+            $ids = array_filter($ids, function($id) {
+                return (bool) $id;
+            });
+
+            return $this->isAppUser($ids);
         }
 
-        foreach ($ids as $id) {
+        foreach ($ids as &$id) {
             if (!is_int($id)) {
-                throw new AnketaException('Invalid type of param: ' . gettype($id) . ", expected int");
+                if (is_numeric($id)) {
+                    $id = (int) $id;
+                } else {
+                    throw new AnketaException("Invalid id type: ". gettype($id));
+                }
             }
         }
 
-        $result = array();
-        $arguments = array('oids' => implode(",", $ids), );
+        $arguments = array(
+            'oids' => implode(",", $ids),
+        );
 
-        $dataArray = $arguments ? Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments) : array();
-        foreach ($dataArray as $item) {
-            $result[$item['anketa_id']] = (bool) $item['is_app_user'];
-        }
-
-        return count($result) > 1 ? $result : array_pop($result);
+        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        return $dataArray;
     }
 
     /**

@@ -13,6 +13,7 @@ class Achievement {
      *
      * @param string $caption
      * @param string $params строка дополнительных параметров, которые будут переданы в ссылку на приложение, в выводе данных метода. максимальная длина 255 символов.
+     * @throws AchievementException, MambaException
      * @return array
      */
     public function set($caption, $params = null) {

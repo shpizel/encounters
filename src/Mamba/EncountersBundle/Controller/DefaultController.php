@@ -38,15 +38,22 @@ class DefaultController extends Controller {
         }
 
         /**
-         * Проверим, существует ли пользовательская сессия, и если пользовательская сессия существует
-         * попробуем взять из Redis текущие пользовательские настройки платформы
+         * Попробуем узнать айдишник Мамба-юзера и попробуем взять его пользовательские настройки платформы из Redis
          *
          * @author shpizel
          */
+        $mambaUserId = null;
         if ($userSessionExists = $Session->has(Mamba::SESSION_USER_ID_KEY)) {
             $mambaUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
+        } elseif ($getPlatformParams) {
+            $mambaUserId = (int) $getPlatformParams['oid'];
+            $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $mambaUserId);
+        }
+
+        if ($mambaUserId) {
             if ($redisPlatformParams = $Redis->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId))) {
                 if ($getPlatformParams && $redisPlatformParams['oid'] == $getPlatformParams['oid']) {
+
                     /**
                      * Пришли какие-то платформенные ГЕТ-параметры, неизвестно фрейм обновился или внешний фрейм
                      *
@@ -68,29 +75,26 @@ class DefaultController extends Controller {
             } else {
                 $this->storePlatformParams($getPlatformParams);
             }
-        } elseif ($getPlatformParams) {
-            $this->storePlatformParams($getPlatformParams);
         } else {
             $Response = $this->render('EncountersBundle:Default:sorry.html.twig');
             $Response->headers->set('Content-Type', 'text/plain');
             return $Response;
         }
 
-        exit(var_dump($redisPlatformParams));
+        header("content-type: text/html; charset=utf8;");
+//        exit(print_r($this->get('mamba')->Search()->get(
+//            'M', 'M', 18, 18, 'love', false, false, false, false, null, null, null, null, 20, array(), true
+//        )));
+        exit(var_dump($this->get('mamba')->Anketa()->inFavourites(560015854)));
         var_dump($this->get('mamba')->Anketa()->getInfo(array(724727670)));
     }
 
     /**
-     * Сохранить данные и запустить обновления
+     * (пере)Записать параметры платформы в Redis
      *
      * @param $platformParams
      */
     protected function storePlatformParams($platformParams) {
-        $this->get('session')->set(
-            Mamba::SESSION_USER_ID_KEY,
-            $mambaUserId = (int) $platformParams['oid']
-        );
-
         if (isset($platformParams['auth_key'])) {
             unset($platformParams['auth_key']);
         }
@@ -99,7 +103,7 @@ class DefaultController extends Controller {
 
         foreach ($platformParams as $key=>$value) {
             $this->get('redis')->hSet(
-                sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId),
+                sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, (int) $platformParams['oid']),
                 $key,
                 $value
             );

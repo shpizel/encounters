@@ -5,6 +5,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 
+/**
+ * JsonApiController
+ *
+ * @package EncountersBundle
+ */
 class JsonApiController extends Controller {
 
     /**

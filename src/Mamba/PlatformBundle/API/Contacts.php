@@ -11,6 +11,7 @@ class Contacts {
     /**
      * Получение списка папок «моих сообщений» со счетчиками контактов
      *
+     * @throws ContactsException, MambaException
      * @return array
      */
     public function getFolderList() {
@@ -21,6 +22,7 @@ class Contacts {
     /**
      * Получение списка контактов из заданной папки
      *
+     * @throws ContactsException, MambaException
      * @return array
      */
     public function getFolderContactList() {
@@ -42,6 +44,7 @@ class Contacts {
     /**
      * Получение списка контактов по заданому лимиту
      *
+     * @throws ContactsException, MambaException
      * @return array
      */
     public function getContactList() {
@@ -61,6 +64,7 @@ class Contacts {
     /**
      * Написать сообщение в мессенджер от имени пользователя
      *
+     * @throws ContactsException, MambaException
      * @return array
      */
     public function sendMessage() {

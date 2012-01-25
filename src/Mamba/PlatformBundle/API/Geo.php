@@ -11,6 +11,7 @@ class Geo {
     /**
      * Получение списка стран
      *
+     * @throws MambaException
      * @return array
      */
     public function getCountries() {
@@ -22,6 +23,7 @@ class Geo {
      * Получение списка регионов страны
      *
      * @param int $countryId
+     * @throws GeoException, MambaException
      * @return array
      */
     public function getRegions($countryId) {
@@ -41,6 +43,7 @@ class Geo {
      * Получение списка городов региона
      *
      * @param int $regionId
+     * @throws GeoException, MambaException
      * @return array
      */
     public function getCities($regionId) {
@@ -60,6 +63,7 @@ class Geo {
      * Получение списка станций метро города
      *
      * @param int $cityId
+     * @throws GeoException, MambaException
      * @return array
      */
     public function getMetro($cityId) {

@@ -29,7 +29,14 @@ final class Mamba {
          *
          * @var str
          */
-        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params"
+        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
+
+        /**
+         * Включено ли мемкеш-кеширование
+         *
+         * @var bool
+         */
+        MEMCACHE_ENABLED = true
     ;
 
     public static
@@ -86,12 +93,63 @@ final class Mamba {
         $Instances = array(),
 
         /**
-         * Правила кеширования методов в секундах протухания (0 значит не кешируем)
+         * Правила кеширования методов в секундах протухания (0 — навсегда)
          *
          * @var array
          */
         $cacheExpireRules = array(
-            'anketa.getInfo' => 100,
+
+            /** Получение списка включенных альбомов */
+            'photos.getAlbums' => 3600,
+
+            /** Получение списка фотографий для заданного включенного альбома */
+            'photos.get' => 3600,
+
+            /** Получение списка постов дневника — заголовки и ссылки на посты */
+            'diary.getPosts' => 86400,
+
+            /** Отослать извещение в мессенджер от имени пользователя «Менеджер приложений» */
+            'notify.sendMessage' => -1,
+
+            /** Получение списка стран */
+            'geo.getCountries' => 0,
+
+            /** Получение списка регионов страны */
+            'geo.getRegions' => 0,
+
+            /** Получение списка городов региона */
+            'geo.getCities' => 0,
+
+            /** Получение списка станций метро города */
+            'geo.getMetro' => 0,
+
+            /** Обновить запись на доске достижений */
+            'achievement.set' => -1,
+
+            /** Отослать извещение в мессенджер от имени пользователя «Менеджер приложений» */
+            'notify.sendMessage' => -1,
+
+            /** Получение всех полей анкеты */
+            'anketa.getInfo' => 86400,
+
+            /** Получение интересов */
+            'anketa.getInterests' => 86400,
+
+            /** Получение объявлений из попутчиков */
+            'anketa.getTravel' => 0,
+
+            /** Получение списка флагов любой анкеты: VIP, реал, лидер, maketop, интим за деньги */
+            'anketa.getFlags' => 86400,
+
+            /** Статус online или когда был крайний раз на сайте, если не надета шапка-невидимка */
+            'anketa.isOnline' => 300,
+
+            /** Проверка установлено ли указанное приложение у указанной анкеты */
+            'anketa.isAppUser' => 86400,
+
+            /** Дефолтное */
+            'default' => 60,
+
         ),
 
         /**
@@ -252,7 +310,7 @@ final class Mamba {
          *
          * @author shpizel
          */
-        if ($cached = self::$Memcache->get("api://" . $this->getWebUserId() . "@$method/?".http_build_query($params))) {
+        if (self::MEMCACHE_ENABLED && ($cached = self::$Memcache->get("api://" . $this->getWebUserId() . "@$method/?".http_build_query($params)))) {
             return $cached;
         }
 
@@ -281,17 +339,22 @@ final class Mamba {
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
 
-                    isset($this->cacheExpireRules[$method]) &&
-                        self::$Memcache->set(
-                            "api://" . $this->getWebUserId() . "@$method/?".http_build_query($params),
-                            $JSON['data'],
-                            $this->cacheExpireRules[$method]
-                        )
-                    ;
+                    $expire = -1;
+                    if (isset($this->cacheExpireRules[$method])) {
+                        $expire = $this->cacheExpireRules[$method];
+                    } elseif (isset($this->cacheExpireRules['default'])) {
+                        $expire = $this->cacheExpireRules['default'];
+                    }
+
+                    ($expire >= 0) && self::$Memcache->set(
+                        "api://" . $this->getWebUserId() . "@$method/?".http_build_query($params),
+                        $JSON['data'],
+                        $expire
+                    );
 
                     return $JSON['data'];
                 } else {
-                    throw new MambaException($JSON["status"], $JSON['message']);
+                    throw new MambaException($JSON['message'], $JSON["status"]);
                 }
             }
 
