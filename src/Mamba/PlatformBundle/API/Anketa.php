@@ -37,7 +37,7 @@ class Anketa {
 
         $max = 100;
         if (count($ids) > $max) {
-            $ids = array_slice($ids, 0, $max);
+            throw new AnketaException("Maximum ids array size exceed: " . count($ids));
         }
 
         reset($ids);
@@ -70,7 +70,7 @@ class Anketa {
         foreach ($blocks as &$block) {
             $block = strtolower($block);
             if (!in_array($block, $availableBlocks)) {
-                throw new AnketaException("Invalid block type: " . $block);
+                throw new AnketaException("Invalid block type: " . gettype($block));
             }
         }
 
@@ -163,6 +163,11 @@ class Anketa {
             return $this->getFlags($ids);
         }
 
+        $max = 30;
+        if (count($ids) > $max) {
+            throw new AnketaException("Maximum ids array size exceed: " . count($ids));
+        }
+
         foreach ($ids as &$id) {
             if (!is_int($id)) {
                 if (is_numeric($id)) {
@@ -206,6 +211,11 @@ class Anketa {
             return $this->isOnline($ids);
         }
 
+        $max = 30;
+        if (count($ids) > $max) {
+            throw new AnketaException("Maximum ids array size exceed: " . count($ids));
+        }
+
         foreach ($ids as &$id) {
             if (!is_int($id)) {
                 if (is_numeric($id)) {
@@ -247,6 +257,11 @@ class Anketa {
             });
 
             return $this->isAppUser($ids);
+        }
+
+        $max = 30;
+        if (count($ids) > $max) {
+            throw new AnketaException("Maximum ids array size exceed: " . count($ids));
         }
 
         foreach ($ids as &$id) {

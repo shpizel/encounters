@@ -81,12 +81,14 @@ class DefaultController extends Controller {
             return $Response;
         }
 
-        header("content-type: text/html; charset=utf8;");
-//        exit(print_r($this->get('mamba')->Search()->get(
-//            'M', 'M', 18, 18, 'love', false, false, false, false, null, null, null, null, 20, array(), true
-//        )));
-        exit(var_dump($this->get('mamba')->Anketa()->inFavourites(560015854)));
-        var_dump($this->get('mamba')->Anketa()->getInfo(array(724727670)));
+        $Mamba
+            ->multi()-
+
+        exit(print_r($this->get('mamba')->Search()->get(
+            'M', 'F'
+        )));
+
+        return $this->render('EncountersBundle:Default:index.html.twig');
     }
 
     /**

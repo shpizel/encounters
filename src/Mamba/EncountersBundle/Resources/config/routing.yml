@@ -4,6 +4,12 @@ EncountersBundle_EntryPoint:
     requirements:
         _method:  GET
 
+EncountersBundle_OptionsPoint:
+    pattern:  /options
+    defaults: { _controller: EncountersBundle:Options:index }
+    requirements:
+        _method:  GET
+
 EncountersBundle_JsonAPI:
     pattern:  /json-api/{method}
     defaults: { _controller: EncountersBundle:JsonApi:index }

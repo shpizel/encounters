@@ -32,11 +32,39 @@ final class Mamba {
         REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
 
         /**
-         * Включено ли мемкеш-кеширование
+         * Включено ли кеширование
          *
          * @var bool
          */
-        MEMCACHE_ENABLED = true
+        CACHE_ENABLED = true,
+
+        /**
+         * Redis cache backend
+         *
+         * @var int
+         */
+        REDIS_CACHE_BACKEND = 1,
+
+        /**
+         * Memcache cache backend
+         *
+         * @var int
+         */
+        MEMCACHE_CACHE_BACKEND = 2,
+
+        /**
+         * Single mode
+         *
+         * @var int
+         */
+        SINGLE_MODE = 1,
+
+        /**
+         * Multi mode
+         *
+         * @var int
+         */
+        MULTI_MODE = 2
     ;
 
     public static
@@ -97,59 +125,217 @@ final class Mamba {
          *
          * @var array
          */
-        $cacheExpireRules = array(
+        $cachingOptions = array(
 
-            /** Получение списка включенных альбомов */
-            'photos.getAlbums' => 3600,
+            /**
+             * Правила кеширования платформенных методов семейства anketa.*
+             *
+             * @var array
+             */
+            'anketa' => array(
 
-            /** Получение списка фотографий для заданного включенного альбома */
-            'photos.get' => 3600,
+                /** Получение всех полей анкеты */
+                'getInfo' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 21600,
+                ),
 
-            /** Получение списка постов дневника — заголовки и ссылки на посты */
-            'diary.getPosts' => 86400,
+                /** Получение интересов */
+                'getInterests' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 3600,
+                ),
 
-            /** Отослать извещение в мессенджер от имени пользователя «Менеджер приложений» */
-            'notify.sendMessage' => -1,
+                /** Получение объявлений из попутчиков */
+                'getTravel' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 3600,
+                ),
 
-            /** Получение списка стран */
-            'geo.getCountries' => 0,
+                /** Получение списка флагов любой анкеты: VIP, реал, лидер, maketop, интим за деньги */
+                'getFlags' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 3600,
+                ),
 
-            /** Получение списка регионов страны */
-            'geo.getRegions' => 0,
+                /** Статус online или когда был крайний раз на сайте, если не надета шапка-невидимка */
+                'isOnline' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 600,
+                ),
 
-            /** Получение списка городов региона */
-            'geo.getCities' => 0,
+                /** Проверка установлено ли указанное приложение у указанной анкеты */
+                'isAppUser' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 3600,
+                ),
 
-            /** Получение списка станций метро города */
-            'geo.getMetro' => 0,
+                /** Проверка, является ли пользователь владельцем приложения */
+                'isAppOwner' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => true,
+                    'expire'  => 86400,
+                ),
 
-            /** Обновить запись на доске достижений */
-            'achievement.set' => -1,
+                /** Проверка, стоит ли приложение в «Избранных» у пользователя */
+                'inFavourites' => array(
+                    'backend' => false,
+                ),
+            ),
 
-            /** Отослать извещение в мессенджер от имени пользователя «Менеджер приложений» */
-            'notify.sendMessage' => -1,
+            /**
+             * Правила кеширования платформенных методов семейства achievement.*
+             *
+             * @var array
+             */
+            'achievement' => array(
 
-            /** Получение всех полей анкеты */
-            'anketa.getInfo' => 86400,
+                /** Обновить запись на доске достижений */
+                'set' => array(
+                    'backend' => false,
+                ),
+            ),
 
-            /** Получение интересов */
-            'anketa.getInterests' => 86400,
+            /**
+             * Правила кеширования платформенных методов семейства contacts.*
+             *
+             * @var array
+             */
+            'contacts' => array(
 
-            /** Получение объявлений из попутчиков */
-            'anketa.getTravel' => 0,
+                /** Получение списка папок «моих сообщений» со счетчиками контактов */
+                'getFolderList' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => true,
+                    'expire'  => 600,
+                ),
 
-            /** Получение списка флагов любой анкеты: VIP, реал, лидер, maketop, интим за деньги */
-            'anketa.getFlags' => 86400,
+                /** Получение списка контактов из заданной папки */
+                'getFolderContactList' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => true,
+                    'expire'  => 600,
+                ),
 
-            /** Статус online или когда был крайний раз на сайте, если не надета шапка-невидимка */
-            'anketa.isOnline' => 300,
+                /** Получение списка контактов по заданому лимиту */
+                'getContactList' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => true,
+                    'expire'  => 600,
+                ),
 
-            /** Проверка установлено ли указанное приложение у указанной анкеты */
-            'anketa.isAppUser' => 86400,
+                /** Написать сообщение в мессенджер от имени пользователя */
+                'sendMessage' => array(
+                    'backend' => false,
+                ),
+            ),
 
-            /** Дефолтное */
-            'default' => 60,
+            /**
+             * Правила кеширования платформенных методов семейства diary.*
+             *
+             * @var array
+             */
+            'diary' => array(
 
+                /** Получение списка постов дневника — заголовки и ссылки на посты */
+                'getPosts' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 86400,
+                ),
+            ),
+
+            /**
+             * Правила кеширования платформенных методов семейства geo.*
+             *
+             * @var array
+             */
+            'geo' => array(
+
+                /** Получение списка стран */
+                'getCountries' => array(
+                    'backend' => self::REDIS_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => false,
+                ),
+
+                /** Получение списка регионов страны */
+                'getRegions' => array(
+                    'backend' => self::REDIS_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => false,
+                ),
+
+                /** Получение списка городов региона */
+                'getCities' => array(
+                    'backend' => self::REDIS_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => false,
+                ),
+
+                /** Получение списка станций метро города */
+                'getMetro' => array(
+                    'backend' => self::REDIS_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => false,
+                )
+            ),
+
+            /**
+             * Правила кеширования платформенных методов семейства notify.*
+             *
+             * @var array
+             */
+            'notify' => array(
+
+                /** Отослать извещение в мессенджер от имени пользователя «Менеджер приложений» */
+                'sendMessage' => array(
+                    'backend' => false,
+                ),
+            ),
+
+            /**
+             * Правила кеширования платформенных методов семейства photos.*
+             *
+             * @var array
+             */
+            'photos' => array(
+
+                /** Получение списка включенных альбомов */
+                'getAlbums' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 3600,
+                ),
+
+                /** Получение списка фотографий для заданного включенного альбома */
+                'get' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 3600,
+                ),
+            ),
+
+            /**
+             * Правила кеширования платформенных методов семейства photos.*
+             *
+             * @var array
+             */
+            'search' => array(
+
+                /** Стандартный краткий поиск мамбы */
+                'get' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => false,
+                    'expire'  => 300,
+                ),
+            ),
         ),
 
         /**
@@ -157,7 +343,21 @@ final class Mamba {
          *
          * @var bool
          */
-        $ready = false
+        $ready = false,
+
+        /**
+         * Режим работы класса
+         *
+         * @var int
+         */
+        $mode = self::SINGLE_MODE,
+
+        /**
+         * Multi queue
+         *
+         * @var array
+         */
+        $multiQueue = array()
     ;
 
     protected static
@@ -279,6 +479,112 @@ final class Mamba {
     }
 
     /**
+     * Генерирует ключ для хранения кеша
+     *
+     * @return string
+     */
+    private function getCacheKey($method, $params) {
+        list($namespace, $method) = explode(".", $method);
+        if (!isset($this->cachingOptions[$namespace][$method])) {
+            throw new MambaException("$namespace.$method has no caching options");
+        }
+
+        $cachingOptions = $this->cachingOptions[$namespace][$method];
+
+        if (self::CACHE_ENABLED && $cachingOptions['backend']) {
+            $signed = $cachingOptions['signed'];
+            $cachingKey =  "api://" . ($signed ? ($this->getWebUserId() . "@") : '') . "$namespace.$method";
+            if ($getParams = http_build_query($params)) {
+                $cachingKey .= "/?" . $getParams;
+            }
+            return $cachingKey;
+        }
+    }
+
+    /**
+     * Дергает кеш в соответствии с настройками
+     *
+     * @return string
+     */
+    private function getCache($method, $params) {
+        if ($cachingKey = $this->getCacheKey($method, $params)) {
+            list($namespace, $method) = explode(".", $method);
+            $cachingBackend = $this->cachingOptions[$namespace][$method]['backend'];
+            $result = null;
+            if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
+                $result = self::getRedis()->get($cachingKey);
+            } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
+                $result = self::getMemcache()->get($cachingKey);
+            } else {
+                throw new MambaException("Invalid caching backend");
+            }
+
+            return $result;
+        }
+    }
+
+    /**
+     * Сохраняет кеш в соответствии с настройками
+     *
+     * @return string
+     */
+    private function setCache($method, $params, $data) {
+        if ($cachingKey = $this->getCacheKey($method, $params)) {
+            list($namespace, $method) = explode(".", $method);
+            $cachingOptions = $this->cachingOptions[$namespace][$method];
+            $cachingBackend = $cachingOptions['backend'];
+            if (!isset($cachingOptions['expire'])) {
+                throw new MambaException('Invalid expire field');
+            }
+            $expire = $cachingOptions['expire'];
+
+            if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
+                if ($expire) {
+                    return self::getRedis()->setex($cachingKey, (int) $expire, $data);
+                }
+                return self::getRedis()->set($cachingKey, $data);
+            } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
+                return self::getMemcache()->set($cachingKey, $data, (int) $expire);
+            }
+
+            throw new MambaException("Invalid caching backend");
+        }
+    }
+
+    /**
+     * Пытается проинициализировать объект и возвращает его готовность
+     *
+     * @return bool,
+     */
+    public function getReady() {
+        if ($this->ready) {
+            return $this->ready;
+        }
+
+        if ($webUserId = $this->getWebUserId()) {
+            if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
+                $this->set($platformSettings);
+                return $this->ready = true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Возвращает настройки платформы
+     *
+     * @return null|array
+     */
+    public function getPlatformSettings() {
+        if ($webUserId = $this->getWebUserId()) {
+            if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
+                return $platformSettings;
+            }
+        }
+    }
+
+    /**
      * Выполняет запрос к шлюзу платформы и возращает ответ
      *
      * @param string $method
@@ -287,17 +593,9 @@ final class Mamba {
      * @return array
      */
     public function execute($method, array $params = array()) {
-        if (!$this->ready) {
-            if ($webUserId = $this->getWebUserId()) {
-                if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
-                    $this->set($platformSettings);
-                    $this->ready = true;
-                } else {
-                    throw new MambaException("Could not get mamba platform settings for user_id=" . $webUserId);
-                }
-            } else {
-                throw new MambaException("Could not get mamba user id from session");
-            }
+
+        if (!$this->getReady()) {
+            throw new MambaException("Mamba is not ready to work");
         }
 
         if (strpos($method, "\\") !== false) {
@@ -305,13 +603,16 @@ final class Mamba {
             $method = array_pop($method);
         }
 
-        /**
-         * Попробуем взять результат из кеша
-         *
-         * @author shpizel
-         */
-        if (self::MEMCACHE_ENABLED && ($cached = self::$Memcache->get("api://" . $this->getWebUserId() . "@$method/?".http_build_query($params)))) {
-            return $cached;
+        if ($cacheResult = $this->getCache($method, $params)) {
+            if ($this->mode == self::MULTI_MODE ) {
+                $this->multiQueue[] = array(
+                    'cached' => $cacheResult
+                );
+
+                return $this;
+            }
+
+            return $cacheResult;
         }
 
         $lastMambaQuery = self::getRedis()->hGet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time');
@@ -332,26 +633,22 @@ final class Mamba {
 
             $httpQuery = self::PLATFORM_GATEWAY_ADDRESS . "?" . http_build_query($resultParams);
 
-            self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
+            if ($this->mode == self::MULTI_MODE) {
+                $this->multiQueue[] = array(
+                    'url' => $httpQuery,
+                    'method' => $method,
+                    'params' => $params,
+                );
+
+                return $this;
+            }
 
             if ($platformResponse = @file_get_contents($httpQuery)) {
+                self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
                 $JSON = @json_decode($platformResponse, true);
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
-
-                    $expire = -1;
-                    if (isset($this->cacheExpireRules[$method])) {
-                        $expire = $this->cacheExpireRules[$method];
-                    } elseif (isset($this->cacheExpireRules['default'])) {
-                        $expire = $this->cacheExpireRules['default'];
-                    }
-
-                    ($expire >= 0) && self::$Memcache->set(
-                        "api://" . $this->getWebUserId() . "@$method/?".http_build_query($params),
-                        $JSON['data'],
-                        $expire
-                    );
-
+                    $this->setCache($method, $params, $JSON['data']);
                     return $JSON['data'];
                 } else {
                     throw new MambaException($JSON['message'], $JSON["status"]);
@@ -550,6 +847,112 @@ final class Mamba {
      */
     public static function getRedis() {
         return self::$Redis;
+    }
+
+    /**
+     * Мультипликатор
+     *
+     * @return Mamba
+     */
+    public function multi() {
+        $this->mode = self::MULTI_MODE;
+        $this->multiQueue = array();
+        return $this;
+    }
+
+    /**
+     * Мультипликационный экзекутор
+     *
+     * @param bool $strict ругаться
+     * @return array
+     */
+    public function exec($strict = false) {
+        if ($this->mode != self::MULTI_MODE) {
+            throw new MambaException("Mamba must be configured to MULTI mode");
+        }
+
+        if (!count($this->multiQueue)) {
+            throw new MambaException("Request queue is empty");
+        }
+
+        $mh = curl_multi_init();
+        $singleCurlInstances = array();
+        foreach ($this->multiQueue as $item) {
+            if (isset($item['url'])) {
+                $ch = curl_init($item['url']);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $singleCurlInstances[] = $ch;
+                curl_multi_add_handle($mh, $ch);
+            }
+        }
+
+        $active = null;
+        do {
+            $mrc = curl_multi_exec($mh, $active);
+        }
+        while ($mrc == CURLM_CALL_MULTI_PERFORM);
+
+        while ($active && $mrc == CURLM_OK) {
+            if (curl_multi_select($mh) != -1) {
+                do {
+                    $mrc = curl_multi_exec($mh, $active);
+                }
+                while ($mrc == CURLM_CALL_MULTI_PERFORM);
+            }
+        }
+
+        self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
+
+        foreach ($singleCurlInstances as $ch) {
+            list($url, $code, $platformResponse) = array(
+                curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
+                curl_getinfo($ch, CURLINFO_HTTP_CODE),
+                curl_multi_getcontent($ch)
+            );
+
+            foreach ($this->multiQueue as $key=>&$item) {
+                if (isset($item['url']) && $item['url'] == $url  && !isset($item['content'])) {
+                    $JSON = @json_decode($platformResponse, true);
+
+                    if ($code != 200) {
+                        $item = new MambaException("Could not fetch platform url: $url");
+                        if ($strict) {
+                            throw $item;
+                        }
+                    }
+
+                    if ($JSON['status'] === 0 && !$JSON['message']) {
+                        $this->setCache($item['method'], $item['params'], $JSON['data']);
+                        $item['content'] = $JSON['data'];
+                    } else {
+                        $item = new MambaException($JSON['message'], $JSON["status"]);
+                        if ($strict) {
+                            throw $item;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            curl_multi_remove_handle($mh, $ch);
+        }
+        curl_multi_close($mh);
+
+        $this->mode = self::SINGLE_MODE;
+
+        foreach ($this->multiQueue as &$item) {
+            if (isset($item['cached'])) {
+                $item = $item['cached'];
+            } elseif (isset($item['content'])) {
+                $item = $item['content'];
+            }
+        }
+
+        $result = $this->multiQueue;
+        $this->multiQueue = array();
+
+        return $result;
     }
 }
 
