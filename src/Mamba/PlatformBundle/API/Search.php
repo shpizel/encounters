@@ -138,9 +138,9 @@ class Search {
                 throw new SearchException("Invalid data type for offset: " . gettype($offset));
             }
 
-//            if ($offset % 10 != 0) {
-//                throw new SearchException("Invalid offset: " . $offset);
-//            }
+            if ($offset % 10 != 0) {
+                throw new SearchException("Invalid offset: " . $offset);
+            }
 
             $arguments['offset'] = $offset;
         }

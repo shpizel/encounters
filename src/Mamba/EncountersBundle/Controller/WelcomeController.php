@@ -6,12 +6,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 
 /**
- * DefaultController
+ * WelcomeController
  *
  * @package EncountersBundle
  */
-class DefaultController extends Controller {
+class WelcomeController extends Controller {
 
+    /**
+     * Index action
+     *
+     * @return \Symfony\Bundle\FrameworkBundle\Controller\RedirectResponse|\Symfony\Bundle\FrameworkBundle\Controller\Response
+     */
     public function indexAction() {
         $Request  = $this->getRequest();
         $Session  = $this->get('session');
@@ -52,8 +57,7 @@ class DefaultController extends Controller {
 
         if ($mambaUserId) {
             if ($redisPlatformParams = $Redis->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId))) {
-                if ($getPlatformParams && $redisPlatformParams['oid'] == $getPlatformParams['oid']) {
-
+                if ($getPlatformParams && ($redisPlatformParams['oid'] == $getPlatformParams['oid'])) {
                     /**
                      * Пришли какие-то платформенные ГЕТ-параметры, неизвестно фрейм обновился или внешний фрейм
                      *
@@ -81,14 +85,17 @@ class DefaultController extends Controller {
             return $Response;
         }
 
-        $Mamba
-            ->multi()-
+        /**
+         * Если нет предустановленных параметров поиска — кидаем на настройки
+         *
+         * @author shpizel
+         */
+        if (!$Redis->hLen(sprintf(Mamba::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Session->get(Mamba::SESSION_USER_ID_KEY)))) {
+            return $this->redirect($this->generateUrl('preferences'));
+        }
 
-        exit(print_r($this->get('mamba')->Search()->get(
-            'M', 'F'
-        )));
-
-        return $this->render('EncountersBundle:Default:index.html.twig');
+        /** В общем случае кидаем на игру */
+        return $this->redirect($this->generateUrl('game'));
     }
 
     /**

@@ -32,6 +32,13 @@ final class Mamba {
         REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
 
         /**
+         * Ключ для хранения хеша пользовательских настроек поиска
+         *
+         * @var str
+         */
+        REDIS_HASH_USER_SEARCH_PREFERENCES_KEY = "user_%d_search_preferences",
+
+        /**
          * Включено ли кеширование
          *
          * @var bool
@@ -64,7 +71,14 @@ final class Mamba {
          *
          * @var int
          */
-        MULTI_MODE = 2
+        MULTI_MODE = 2,
+
+        /**
+         * Количество урлов загружаемых мультикурлом за раз
+         *
+         * @var int
+         */
+         MULTI_FETCH_CHUNK_SIZE = 10
     ;
 
     public static
@@ -173,6 +187,13 @@ final class Mamba {
                 'isAppUser' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
+                    'expire'  => 3600,
+                ),
+
+                /** Получение хитлиста */
+                'getHitlist' => array(
+                    'backend' => self::MEMCACHE_CACHE_BACKEND,
+                    'signed'  => true,
                     'expire'  => 3600,
                 ),
 
@@ -571,18 +592,18 @@ final class Mamba {
         return false;
     }
 
-    /**
-     * Возвращает настройки платформы
-     *
-     * @return null|array
-     */
-    public function getPlatformSettings() {
-        if ($webUserId = $this->getWebUserId()) {
-            if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
-                return $platformSettings;
-            }
-        }
-    }
+//    /**
+//     * Возвращает настройки платформы
+//     *
+//     * @return null|array
+//     */
+//    public function getPlatformSettings() {
+//        if ($webUserId = $this->getWebUserId()) {
+//            if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
+//                return $platformSettings;
+//            }
+//        }
+//    }
 
     /**
      * Выполняет запрос к шлюзу платформы и возращает ответ
@@ -593,7 +614,6 @@ final class Mamba {
      * @return array
      */
     public function execute($method, array $params = array()) {
-
         if (!$this->getReady()) {
             throw new MambaException("Mamba is not ready to work");
         }
@@ -875,51 +895,22 @@ final class Mamba {
             throw new MambaException("Request queue is empty");
         }
 
-        $mh = curl_multi_init();
-        $singleCurlInstances = array();
+        $urls = array();
         foreach ($this->multiQueue as $item) {
             if (isset($item['url'])) {
-                $ch = curl_init($item['url']);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $singleCurlInstances[] = $ch;
-                curl_multi_add_handle($mh, $ch);
+                $urls[] = $item['url'];
             }
         }
 
-        $active = null;
-        do {
-            $mrc = curl_multi_exec($mh, $active);
-        }
-        while ($mrc == CURLM_CALL_MULTI_PERFORM);
+        $platformResponses = count($urls) ? $this->urlMultiFetch($urls) : array();
+        count($urls) &&
+            self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
 
-        while ($active && $mrc == CURLM_OK) {
-            if (curl_multi_select($mh) != -1) {
-                do {
-                    $mrc = curl_multi_exec($mh, $active);
-                }
-                while ($mrc == CURLM_CALL_MULTI_PERFORM);
-            }
-        }
-
-        self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
-
-        foreach ($singleCurlInstances as $ch) {
-            list($url, $code, $platformResponse) = array(
-                curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
-                curl_getinfo($ch, CURLINFO_HTTP_CODE),
-                curl_multi_getcontent($ch)
-            );
-
+        if ($platformResponses) {
             foreach ($this->multiQueue as $key=>&$item) {
-                if (isset($item['url']) && $item['url'] == $url  && !isset($item['content'])) {
+                if (isset($item['url']) && !isset($item['content'])) {
+                    $platformResponse = $platformResponses[$item['url']];
                     $JSON = @json_decode($platformResponse, true);
-
-                    if ($code != 200) {
-                        $item = new MambaException("Could not fetch platform url: $url");
-                        if ($strict) {
-                            throw $item;
-                        }
-                    }
 
                     if ($JSON['status'] === 0 && !$JSON['message']) {
                         $this->setCache($item['method'], $item['params'], $JSON['data']);
@@ -931,13 +922,11 @@ final class Mamba {
                         }
                     }
 
-                    break;
+                    continue;
                 }
             }
-
-            curl_multi_remove_handle($mh, $ch);
         }
-        curl_multi_close($mh);
+
 
         $this->mode = self::SINGLE_MODE;
 
@@ -952,6 +941,70 @@ final class Mamba {
         $result = $this->multiQueue;
         $this->multiQueue = array();
 
+        return $result;
+    }
+
+    /**
+     * Дернуть урлы
+     *
+     * @param array $urls Список урлов
+     * @param int $chunkSize Размер одновременно загружаемых урлов
+     * @throws MambaException
+     * @return array(
+     *     'url' => $content
+     * )
+     */
+    private function urlMultiFetch(array $urls, $chunkSize = self::MULTI_FETCH_CHUNK_SIZE) {
+        $result = array();
+
+        if (!count($urls)) {
+            throw new MambaException("Empty urls list");
+        } elseif (count($urls) <= $chunkSize) {
+            $mh = curl_multi_init();
+            $singleCurlInstances = array();
+            foreach ($urls as $url) {
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                $singleCurlInstances[] = $ch;
+                curl_multi_add_handle($mh, $ch);
+            }
+
+            $active = null;
+            do {
+                $mrc = curl_multi_exec($mh, $active);
+            } while ($mrc == CURLM_CALL_MULTI_PERFORM);
+
+            while ($active && $mrc == CURLM_OK) {
+                if (curl_multi_select($mh) != -1) {
+                    do {
+                        $mrc = curl_multi_exec($mh, $active);
+                    } while ($mrc == CURLM_CALL_MULTI_PERFORM);
+                }
+            }
+
+            foreach ($singleCurlInstances as $ch) {
+                list($url, $content) = array(
+                    curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
+                    curl_multi_getcontent($ch),
+                );
+
+                if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+                    throw new MambaException("$url has returned $code code");
+                }
+
+                $result[$url] = $content;
+                curl_multi_remove_handle($mh, $ch);
+            }
+            curl_multi_close($mh);
+            return $result;
+        }
+
+        $chunks = array_chunk($urls, $chunkSize);
+        foreach ($chunks as $urls) {
+            foreach ($this->urlMultiFetch($urls, $chunkSize) as $url=>$content) {
+                $result[$url] = $content;
+            }
+        }
         return $result;
     }
 }

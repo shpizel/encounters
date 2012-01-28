@@ -1,17 +1,36 @@
-EncountersBundle_EntryPoint:
-    pattern:  /
-    defaults: { _controller: EncountersBundle:Default:index }
+# Точка входа в приложение
+welcome:
+    pattern: /
+    defaults: { _controller: EncountersBundle:Welcome:index }
     requirements:
         _method:  GET
 
-EncountersBundle_OptionsPoint:
-    pattern:  /options
-    defaults: { _controller: EncountersBundle:Options:index }
-    requirements:
-        _method:  GET
+# Страница настроек приложения
+preferences:
+    pattern: /preferences
+    defaults: { _controller: EncountersBundle:Preferences:index }
 
-EncountersBundle_JsonAPI:
-    pattern:  /json-api/{method}
-    defaults: { _controller: EncountersBundle:JsonApi:index }
-    requirements:
-        _method:  GET
+# Страница игры
+game:
+    pattern: /game
+    defaults: { _controller: EncountersBundle:Game:index }
+
+# Страница взаимных симпатий
+mutual:
+    pattern: /mutual
+    defaults: { _controller: EncountersBundle:Mutual:index }
+
+# Страница моего хитлиста
+visitors:
+    pattern: /visitors
+    defaults: { _controller: EncountersBundle:Visitors:index }
+
+# Страница мной просмотренных
+mychoice:
+    pattern: /mychoice
+    defaults: { _controller: EncountersBundle:MyChoice:index }
+
+# Страница профиля
+profile:
+    pattern: /profile
+    defaults: { _controller: EncountersBundle:Profile:index }

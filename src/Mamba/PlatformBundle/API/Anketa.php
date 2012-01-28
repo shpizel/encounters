@@ -294,6 +294,56 @@ class Anketa {
     }
 
     /**
+     * Получение хитлиста
+     *
+     * @param int $period = (-1, -7, -30)
+     * @param int $limit
+     * @param int $offset
+     * @param array blocks = ("about", "location", "flags", "familiarity", "type", "favour", "other")
+     * @param bool onlyIds
+     * @throws AnketaException, MambaException
+     * @return array
+     */
+    public function getHitlist($period = -1, $limit = null, $offset = null, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other"), $onlyIds = null) {
+        $arguments = array();
+
+        if (!in_array($period, array(-1, -7, -30))) {
+            throw new AnketaException("Invalid period");
+        }
+
+//        $arguments['period'] = $period;
+
+        if ($limit && !is_int($limit)) {
+            throw new AnketaException("Invalid limit type: " . gettype($limit));
+        }
+
+        $arguments['limit'] = $limit;
+
+        if ($offset && !is_int($offset)) {
+            throw new AnketaException("Invalid offset type: " . gettype($offset));
+        }
+
+        $availableBlocks = array("about", "location", "flags", "familiarity", "type", "favour", "other");
+        foreach ($blocks as &$block) {
+            $block = strtolower($block);
+            if (!in_array($block, $availableBlocks)) {
+                throw new AnketaException("Invalid block type: " . gettype($block));
+            }
+        }
+
+        if (!empty($blocks)) {
+            $arguments['blocks'] = implode(",", $blocks);
+        }
+
+        if ($onlyIds) {
+            $arguments['ids_only'] = 1;
+        }
+
+        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        return $dataArray;
+    }
+
+    /**
      * Проверка, стоит ли приложение в «Избранных» у пользователя
      *
      * @throws AnketaException, MambaException
