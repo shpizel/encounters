@@ -72,7 +72,7 @@ gearman:
     servers:
         server1:
             host: localhost
-            port: 123
+            #port: 123
 
 memcache:
     servers:

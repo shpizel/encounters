@@ -4,6 +4,7 @@ namespace Mamba\EncountersBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
+use Mamba\EncountersBundle\EncountersBundle;
 
 /**
  * PreferencesController
@@ -18,40 +19,41 @@ class PreferencesController extends Controller {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        $Request = $this->getRequest();
         $Mamba = $this->get('Mamba');
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $searchPreferences = $this->get('redis')->hGetAll(sprintf(Mamba::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Mamba->get('oid')));
+        $redisSearchPreferences = $this->get('redis')->hGetAll(
+            sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Mamba->get('oid'))
+        );
 
-        if ($Request->getMethod() == 'POST') {
-            $postParams = $Request->request->all();
-            $requiredParams = array('gender', 'age_from', 'age_to');
-            if (count(array_intersect(array_keys($postParams), $requiredParams)) == count($requiredParams)) {
-                $searchPreferences = array();
-                foreach ($requiredParams as $param) {
-                    $searchPreferences[$param] = $postParams[$param];
-                }
+        if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
+            $searchPreferences['geo'] = $this->getUserGeoParams($Mamba->get('oid'));
 
-                $searchPreferences['age_from'] = intval($searchPreferences['age_from']);
-                $searchPreferences['age_to'] = intval($searchPreferences['age_to']);
-
-                if (in_array($searchPreferences['gender'], array('M', 'F')) && $searchPreferences['age_from'] >= 18 && $searchPreferences['age_to'] <= 80 && $searchPreferences['age_to'] >= 18) {
-                    foreach ($searchPreferences as $key=>$value) {
-                        $this->get('redis')->hSet(sprintf(Mamba::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Mamba->get('oid')), $key, $value);
-                    }
-                    return $this->redirect($this->generateUrl('welcome'));
-                }
+            foreach ($searchPreferences as $key=>$value) {
+                $this->get('redis')->hSet(
+                    sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Mamba->get('oid')),
+                    $key,
+                    $value
+                );
             }
+
+            /**
+             * Изменились ли настройки?
+             *
+             * @author shpizel
+             */
+            if (array_diff($redisSearchPreferences, $searchPreferences)) {
+                $this->cleanUserQueues();
+                $this->regenerateUserQueues();
+            }
+
+            return $this->redirect($this->generateUrl('welcome'));
+        } else {
+            $searchPreferences = $redisSearchPreferences;
         }
 
-        /**
-         * У нас могут быть настройки в Redis'e, но может их не быть (значит надо получить)
-         *
-         * @author shpizel
-         */
         if (!$searchPreferences) {
             if ($anketaInfo = $Mamba->Anketa()->getInfo($Mamba->get('oid'))) {
                 $anketaInfo = array_shift($anketaInfo);
@@ -89,32 +91,136 @@ class PreferencesController extends Controller {
 
         return $this->render('EncountersBundle:Preferences:preferences.html.twig', $searchPreferences);
     }
+
+    /**
+     * Возвращает гео-параметры юзера (ids)
+     *
+     * @return array
+     */
+    private function getUserGeoParams($userId) {
+        $Mamba = $this->get('mamba');
+        $userInfo = $Mamba->Anketa()->getInfo($userId);
+        $userGeoParams = $userInfo[0]['location'];
+
+        $geoParams = array(
+            'country_id' => null,
+            'region_id'  => null,
+            'city_id'    => null,
+        );
+
+        list($countryName, $regionName, $cityName) = array_values($userGeoParams);
+        if ($geoParams['country_id'] = $this->parseCountryId($countryName)) {
+            if ($geoParams['region_id'] = $this->parseRegionId($geoParams['country_id'], $regionName)) {
+                $geoParams['city_id'] = $this->parseCityId($geoParams['region_id'], $cityName);
+            }
+        }
+
+        return $geoParams;
+    }
+
+    /**
+     * Возвращает id страны по имени
+     *
+     * @return str|null
+     */
+    private function parseCountryId($countryName) {
+        foreach ($this->get('mamba')->Geo()->getCountries() as $country) {
+            list($id, $name) = array_values($country);
+            if ($name == $countryName) {
+                return $id;
+            }
+        }
+    }
+
+    /**
+     * Возвращает id региона по имени и id страны
+     *
+     * @param $countryId
+     * @param $regionName
+     */
+    private function parseRegionId($countryId, $regionName) {
+        foreach ($this->get('mamba')->Geo()->getRegions($countryId) as $region) {
+            list($id, $name) = array_values($region);
+            if ($name == $regionName) {
+                return $id;
+            }
+        }
+    }
+
+    /**
+     * Возвращает id города по имени и id региона
+     *
+     * @param $regionId
+     * @param $cityName
+     */
+    private function parseCityId($regionId, $cityName) {
+        foreach ($this->get('mamba')->Geo()->getCities($regionId) as $city) {
+            list($id, $name) = array_values($city);
+            if ($name == $cityName) {
+                return $id;
+            }
+        }
+    }
+
+    /**
+     * Возвращает массив поисковых предпочтений, полученных из запроса
+     *
+     * @return array|null
+     */
+    private function getSearchPreferencesFromRequest() {
+        $Request = $this->getRequest();
+        if ($Request->getMethod() == 'POST') {
+            $postParams = $Request->request->all();
+            $requiredParams = array('gender', 'age_from', 'age_to');
+            if (count(array_intersect(array_keys($postParams), $requiredParams)) == count($requiredParams)) {
+                $searchPreferences = array();
+                foreach ($requiredParams as $param) {
+                    $searchPreferences[$param] = $postParams[$param];
+                }
+
+                $searchPreferences['age_from'] = intval($searchPreferences['age_from']);
+                $searchPreferences['age_to'] = intval($searchPreferences['age_to']);
+
+                if (in_array($searchPreferences['gender'], array('M', 'F')) &&
+                    $searchPreferences['age_from'] >= 18 &&
+                    $searchPreferences['age_to'] <= 80 &&
+                    $searchPreferences['age_to'] >= 18
+                ) {
+                    return $searchPreferences;
+                }
+            }
+        }
+    }
+
+    /**
+     * Очищает пользовательские очереди
+     *
+     * @return mixed
+     */
+    private function cleanUserQueues() {
+        $Mamba = $this->get('mamba');
+        return
+            $this->get('redis')
+                ->multi()
+                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')))
+                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')))
+                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')))
+//                    ->delete(sprintf(Mamba::REDIS_ZSET_USER_MAIN_QUEUE_KEY, $Mamba->get('oid')))
+                ->exec()
+        ;
+    }
+
+    /**
+     * Отправляет задания крон-скриптам на перегенерацию очередей
+     *
+     * @return null
+     */
+    private function regenerateUserQueues() {
+        $GearmanClient = $this->get('gearman')->getClient();
+        $Mamba = $this->get('mamba');
+
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
+    }
 }
-
-/**
-$Mamba = $this->get('mamba');
-if ($platformSettings = $Mamba->getPlatformSettings()) {
-$familiarity = $Mamba->Anketa()->getInfo($platformSettings['oid'], array('familiarity'));
-header('content-type: text/html; charset=utf8');
-if (preg_match("!(\d+)\D(\d+)\sлет!i", $familiarity[0]['familiarity']['lookfor'], $r)) {
-//var_dump($r);
-}
-
-$s = $Mamba->Search()->get('M', 'F');
-$total = $s['total'];
-
-$Mamba->multi();
-for ($i=1;$i<$total/12;$i++)
-{
-$Mamba->Search()->get('M', 'F', null, null, null, null, null, null, null, null, null, null, null, 12);
-break;
-}
-
-
-$x = $Mamba->exec();
-var_dump($x[0]);
-exit();
-var_dump($Mamba->exec());
-
-exit();
- */

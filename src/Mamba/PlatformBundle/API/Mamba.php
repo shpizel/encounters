@@ -18,27 +18,6 @@ final class Mamba {
         PLATFORM_GATEWAY_ADDRESS = 'http://api.aplatform.ru',
 
         /**
-         * Ключ для хранения user_id в сессии
-         *
-         * @var str
-         */
-        SESSION_USER_ID_KEY = 'mamba_user_id',
-
-        /**
-         * Ключ для хранения хеша пользовательских настроек платформы
-         *
-         * @var str
-         */
-        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
-
-        /**
-         * Ключ для хранения хеша пользовательских настроек поиска
-         *
-         * @var str
-         */
-        REDIS_HASH_USER_SEARCH_PREFERENCES_KEY = "user_%d_search_preferences",
-
-        /**
          * Включено ли кеширование
          *
          * @var bool
@@ -78,7 +57,21 @@ final class Mamba {
          *
          * @var int
          */
-         MULTI_FETCH_CHUNK_SIZE = 10
+         MULTI_FETCH_CHUNK_SIZE = 10,
+
+        /**
+         * Ключ для хранения user_id в сессии
+         *
+         * @var str
+         */
+        SESSION_USER_ID_KEY = 'mamba_user_id',
+
+        /**
+         * Ключ для хранения хеша пользовательских настроек платформы
+         *
+         * @var str
+         */
+        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params"
     ;
 
     public static
@@ -436,10 +429,11 @@ final class Mamba {
      * @return int
      */
     public function getWebUserId() {
-        return
-            self::getSession()
-                ->get(self::SESSION_USER_ID_KEY)
-        ;
+        if (isset($this->options['oid'])) {
+            return $this->options['oid'];
+        } elseif ($webUserId = self::getSession()->get(self::SESSION_USER_ID_KEY)) {
+            return $webUserId;
+        }
     }
 
     /**
@@ -883,10 +877,10 @@ final class Mamba {
     /**
      * Мультипликационный экзекутор
      *
-     * @param bool $strict ругаться
+     * @param int $chunkSize Размер одновременно загружаемых урлов
      * @return array
      */
-    public function exec($strict = false) {
+    public function exec($chunkSize = self::MULTI_FETCH_CHUNK_SIZE) {
         if ($this->mode != self::MULTI_MODE) {
             throw new MambaException("Mamba must be configured to MULTI mode");
         }
@@ -902,9 +896,12 @@ final class Mamba {
             }
         }
 
-        $platformResponses = count($urls) ? $this->urlMultiFetch($urls) : array();
-        count($urls) &&
+        if ($urls) {
+            $platformResponses = $this->urlMultiFetch($urls, $chunkSize);
             self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
+        } else {
+            $platformResponses = array();
+        }
 
         if ($platformResponses) {
             foreach ($this->multiQueue as $key=>&$item) {
@@ -916,17 +913,12 @@ final class Mamba {
                         $this->setCache($item['method'], $item['params'], $JSON['data']);
                         $item['content'] = $JSON['data'];
                     } else {
-                        $item = new MambaException($JSON['message'], $JSON["status"]);
-                        if ($strict) {
-                            throw $item;
-                        }
+                        throw new MambaException($JSON['message'], $JSON["status"]);
                     }
-
                     continue;
                 }
             }
         }
-
 
         $this->mode = self::SINGLE_MODE;
 

@@ -64,9 +64,9 @@ abstract class CronScript extends ContainerAwareCommand {
 
         $this
             ->setName($scriptName)
-            ->setDescription(self::SCRIPT_DESCRIPTION)
-            ->addOption('copy', null, InputOption::VALUE_OPTIONAL, 'Number of copy', self::DEFAULT_COPY_NUMBER)
-            ->addOption('iterations', null, InputOption::VALUE_OPTIONAL, 'Iterations to restart', self::DEFAULT_ITERATIONS_COUNT)
+            ->setDescription(static::SCRIPT_DESCRIPTION)
+            ->addOption('copy', null, InputOption::VALUE_OPTIONAL, 'Number of copy', static::DEFAULT_COPY_NUMBER)
+            ->addOption('iterations', null, InputOption::VALUE_OPTIONAL, 'Iterations to restart', static::DEFAULT_ITERATIONS_COUNT)
         ;
 
         $this->scriptName = $scriptName;

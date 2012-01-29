@@ -160,8 +160,7 @@ class Search {
         $idsOnly &&
             $arguments['ids_only'] = 1;
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 }
 

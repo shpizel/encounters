@@ -1,3 +1,5 @@
+# Страницы
+
 # Точка входа в приложение
 welcome:
     pattern: /
@@ -34,3 +36,19 @@ mychoice:
 profile:
     pattern: /profile
     defaults: { _controller: EncountersBundle:Profile:index }
+
+# AJAX методы
+
+# Прием голосований
+vote.set:
+    pattern: /ajax/vote.set
+    defaults: { _controller: EncountersBundle:Vote:ajaxVoteSet }
+    requirements:
+        #_method: POST раскоментить для продакшена
+
+# Прием голосований
+queue.get:
+    pattern: /ajax/queue.get
+    defaults: { _controller: EncountersBundle:Queue:ajaxQueueGet }
+    requirements:
+        #_method: POST раскоментить для продакшена

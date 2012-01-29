@@ -15,13 +15,7 @@ class Contacts {
      * @return array
      */
     public function getFolderList() {
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
-
-        if (isset($dataArray['folders'])) {
-            return $dataArray['folders'];
-        }
-
-        throw new ContactsException("'folders' field was not found");
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
     }
 
     /**
@@ -85,13 +79,7 @@ class Contacts {
             $arguments['only_ids'] = true;
         }
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-
-        if (isset($dataArray['contacts'])) {
-            return $dataArray['contacts'];
-        }
-
-        throw new ContactsException("'contacts' field was not found");
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -136,12 +124,7 @@ class Contacts {
             $arguments['only_ids'] = true;
         }
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        if (isset($dataArray['contacts'])) {
-            return $dataArray['contacts'];
-        }
-
-        throw new ContactsException("'contacts' field was not found");
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -176,8 +159,7 @@ class Contacts {
             $arguments['extra_params'] = $extraParams;
         }
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 }
 

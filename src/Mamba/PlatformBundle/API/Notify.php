@@ -67,8 +67,7 @@ class Notify {
             $arguments['extra_params'] = $params;
         }
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 }
 

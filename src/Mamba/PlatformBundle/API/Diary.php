@@ -31,13 +31,7 @@ class Diary {
             'offset' => $offset,
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-
-        if (isset($dataArray['posts'])) {
-            return $dataArray['posts'];
-        }
-
-        throw new DiaryException("'posts' field was not found");
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 }
 

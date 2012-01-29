@@ -15,8 +15,7 @@ class Geo {
      * @return array
      */
     public function getCountries() {
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
     }
 
     /**
@@ -35,8 +34,7 @@ class Geo {
             'country_id' => $countryId,
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -55,8 +53,7 @@ class Geo {
             'region_id' => $regionId,
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -75,8 +72,7 @@ class Geo {
             'city_id' => $cityId,
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 }
 

@@ -4,6 +4,7 @@ namespace Mamba\EncountersBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
+use Mamba\EncountersBundle\EncountersBundle;
 
 /**
  * WelcomeController
@@ -37,7 +38,7 @@ class WelcomeController extends Controller {
                 $getPlatformParams[$param] = $getParams[$param];
             }
 
-            if (!$Mamba->checkAuthKey($getPlatformParams)) {
+            if (!$Mamba->checkAuthKey($getParams)) {
                 $getPlatformParams = array();
             }
         }
@@ -90,7 +91,7 @@ class WelcomeController extends Controller {
          *
          * @author shpizel
          */
-        if (!$Redis->hLen(sprintf(Mamba::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Session->get(Mamba::SESSION_USER_ID_KEY)))) {
+        if (!$Redis->hLen(sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Session->get(Mamba::SESSION_USER_ID_KEY)))) {
             return $this->redirect($this->generateUrl('preferences'));
         }
 

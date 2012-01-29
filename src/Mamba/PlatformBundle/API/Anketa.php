@@ -86,8 +86,7 @@ class Anketa {
             $arguments['ids_only'] = 1;
         }
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -110,8 +109,7 @@ class Anketa {
             'oid' => $oid,
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -134,8 +132,7 @@ class Anketa {
             'oid' => $oid,
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -182,8 +179,7 @@ class Anketa {
             'oids' => implode(",", $ids),
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -230,8 +226,7 @@ class Anketa {
             'oids' => implode(",", $ids),
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -278,8 +273,7 @@ class Anketa {
             'oids' => implode(",", $ids),
         );
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -289,8 +283,7 @@ class Anketa {
      * @return array
      */
     public function isAppOwner() {
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
     }
 
     /**
@@ -339,8 +332,7 @@ class Anketa {
             $arguments['ids_only'] = 1;
         }
 
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**
@@ -350,8 +342,7 @@ class Anketa {
      * @return array
      */
     public function inFavourites() {
-        $dataArray = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
-        return $dataArray;
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__);
     }
 }
 
