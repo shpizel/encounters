@@ -33,6 +33,11 @@ class WelcomeController extends Controller {
          */
         $getPlatformParams = array();
         $getParams = $Request->query->all();
+
+        if (isset($getParams['extra'])) {
+            $getParams['extra'] = urlencode($getParams['extra']);
+        }
+
         if (count(array_intersect(array_keys($getParams), Mamba::$mambaRequiredGetParams)) == count(Mamba::$mambaRequiredGetParams)) {
             foreach (Mamba::$mambaRequiredGetParams as $param) {
                 $getPlatformParams[$param] = $getParams[$param];
@@ -86,6 +91,7 @@ class WelcomeController extends Controller {
             return $Response;
         }
 
+        exit();
         /**
          * Если нет предустановленных параметров поиска — кидаем на настройки
          *

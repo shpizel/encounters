@@ -8,11 +8,20 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * ClearEnviroment
+ * ClearEnviromentCommand
  *
  * @package EncountersBundle
  */
-class ClearEnviroment extends ContainerAwareCommand {
+class ClearEnviromentCommand extends ContainerAwareCommand {
+
+    /**
+     * Конфигурирование крон-скрипта
+     *
+     *
+     */
+    protected function configure() {
+        $this->setName('ClearEnviroment');
+    }
 
     /**
      * Экзекутор
@@ -22,6 +31,16 @@ class ClearEnviroment extends ContainerAwareCommand {
      * @return mixed
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
-        print 1;
+        if (posix_getuid()) {
+            throw new \LogicException("This script should be run from super user!");
+        }
+
+        /** Чистим redis */
+        $this->getContainer()->get('redis')->flushAll();
+
+        /** Чистим php crons */
+        system("killall php");
+
+        /** Чистим базу */
     }
 }

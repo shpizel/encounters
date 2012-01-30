@@ -36,6 +36,8 @@ class GameController extends Controller {
     public function indexAction() {
         $Mamba = $this->get('Mamba');
         if ($platformSettings = $Mamba->getReady()) {
+            var_dump($Mamba->Anketa()->getHitlist());
+            exit();
             $Redis = $this->get('redis');
 
             /**

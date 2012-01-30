@@ -87,8 +87,15 @@ abstract class CronScript extends ContainerAwareCommand {
             (int) $input->getOption('iterations')
         );
 
-        if (!$this->hasAnotherInstances()) {
-            $this->process();
+        if ($pid = pcntl_fork() == 0) {
+            if (!$this->hasAnotherInstances()) {
+                $this->process();
+
+                fclose($this->lockFilePointer);
+                unlink($this->lockFileName);
+            }
+        } else {
+            exit();
         }
     }
 
@@ -98,10 +105,13 @@ abstract class CronScript extends ContainerAwareCommand {
      * @return bool
      */
     protected function hasAnotherInstances() {
-        $lockFileName = "/tmp/" . $this->scriptName . "." . $this->copy .  ".lock";
-        if ($this->lockFilePointer = @fopen($lockFileName, 'w')) {
+        $this->lockFileName = "/tmp/" . $this->scriptName . "." . $this->copy .  ".lock";
+
+        if ($this->lockFilePointer = @fopen($this->lockFileName, 'w')) {
             return !flock($this->lockFilePointer, LOCK_EX | LOCK_NB);
         }
+
+        throw new CronScriptException("Unable to open lock file: " . $this->lockFileName);
     }
 
     /**
@@ -110,4 +120,13 @@ abstract class CronScript extends ContainerAwareCommand {
      * @abstract
      */
     abstract protected function process();
+}
+
+/**
+ * CronScriptException
+ *
+ * @package Encounters
+ */
+class CronScriptException extends \Exception {
+
 }

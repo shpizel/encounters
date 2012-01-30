@@ -304,13 +304,15 @@ class Anketa {
             throw new AnketaException("Invalid period");
         }
 
-//        $arguments['period'] = $period;
+        $arguments['period'] = $period;
 
         if ($limit && !is_int($limit)) {
             throw new AnketaException("Invalid limit type: " . gettype($limit));
         }
 
-        $arguments['limit'] = $limit;
+        if ($limit) {
+            $arguments['limit'] = $limit;
+        }
 
         if ($offset && !is_int($offset)) {
             throw new AnketaException("Invalid offset type: " . gettype($offset));
@@ -332,7 +334,7 @@ class Anketa {
             $arguments['ids_only'] = 1;
         }
 
-        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments = array());
     }
 
     /**

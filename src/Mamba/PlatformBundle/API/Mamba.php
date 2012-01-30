@@ -22,7 +22,7 @@ final class Mamba {
          *
          * @var bool
          */
-        CACHE_ENABLED = true,
+        CACHE_ENABLED = false,
 
         /**
          * Redis cache backend

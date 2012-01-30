@@ -31,7 +31,6 @@ class ContactsQueueUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $this->getContainer()->get('gearman')->getClient()->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(560015854, 1)));
         $worker = $this->getContainer()->get('gearman')->getWorker();
 
         $class = $this;

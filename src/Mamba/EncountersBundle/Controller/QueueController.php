@@ -7,11 +7,11 @@ use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * VoteController
+ * QueueController
  *
  * @package EncountersBundle
  */
-class VoteController extends Controller {
+class QueueController extends Controller {
 
     protected
 
