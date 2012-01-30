@@ -31,7 +31,8 @@ class HitlistQueueUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $this->getContainer()->get('gearman')->getClient()->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(560015854, 1)));
+
+                $this->getContainer()->get('gearman')->getClient()->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, 560015854);
         $worker = $this->getContainer()->get('gearman')->getWorker();
 
         $class = $this;
@@ -54,13 +55,13 @@ class HitlistQueueUpdateCommand extends CronScript {
     }
 
     /**
-     * Обновляет пользовательскую очередь из поиска
+     * Обновляет пользовательскую очередь из хитлиста
      *
      * @param $job
      */
     public function updateHitlistQueue($job) {
         $Mamba = $this->getContainer()->get('mamba');
-        if (list($userId, $limit) = unserialize($job->workload())) {
+        if ($userId = (int) $job->workload()) {
             $Mamba->set('oid', $userId);
             if (!$Mamba->getReady()) {
                 return;
@@ -74,21 +75,28 @@ class HitlistQueueUpdateCommand extends CronScript {
             return;
         }
 
-        $hitList = $Mamba->Anketa()->getHitlist();
-        foreach ($hitList['visitors'] as $user) {
-            $userInfo = $user['info'];
-            list($gender, $age) = array($userInfo['gender'], $userInfo['age']);
+        if ($hitList = $Mamba->Anketa()->getHitlist()) {
+            foreach ($hitList['visitors'] as $user) {
+                $userInfo = $user['info'];
+                list($userId, $gender, $age) = array($userInfo['oid'], $userInfo['gender'], $userInfo['age']);
 
-            if ($gender == $searchPreferences['gender']) {
-                if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
-                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
-                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')), 1, $userId);
+                if (isset($userInfo['medium_photo_url']) && $userInfo['medium_photo_url']) {
+                    if ($gender == $searchPreferences['gender']) {
+                        if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
+                            if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
+                                $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')), 1, $userId);
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        $Redis->set(sprinft(EncountersBundle::REDIS_USER_LAST_HITLIST_QUEUE_UPDATED_KEY, $Mamba->get('oid')), time());
+            $Redis->hSet(
+                sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $Mamba->get('oid')),
+                EncountersBundle::REDIS_HASH_KEY_HITLIST_QUEUE_UPDATED,
+                time()
+            );
+        }
     }
 
     /**

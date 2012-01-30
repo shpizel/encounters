@@ -52,13 +52,13 @@ class ContactsQueueUpdateCommand extends CronScript {
     }
 
     /**
-     * Обновляет пользовательскую очередь из поиска
+     * Обновляет пользовательскую очередь из контактов
      *
      * @param $job
      */
     public function updateContactsQueue($job) {
         $Mamba = $this->getContainer()->get('mamba');
-        if (list($userId, $limit) = unserialize($job->workload())) {
+        if ($userId = (int)$job->workload()) {
             $Mamba->set('oid', $userId);
             if (!$Mamba->getReady()) {
                 return;
@@ -72,21 +72,28 @@ class ContactsQueueUpdateCommand extends CronScript {
             return;
         }
 
-        $contactList = $Mamba->Contacts()->getContactList();
-        foreach ($contactList as $contact) {
-            $contactInfo = $contact['info'];
-            list($gender, $age) = array($contactInfo['gender'], $contactInfo['age']);
+        if ($contactList = $Mamba->Contacts()->getContactList()) {
+            foreach ($contactList as $contact) {
+                $contactInfo = $contact['info'];
+                list($userId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
 
-            if ($gender == $searchPreferences['gender']) {
-                if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
-                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
-                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')), 1, $userId);
+                if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
+                    if ($gender == $searchPreferences['gender']) {
+                        if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
+                            if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
+                                $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')), 1, $userId);
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        $Redis->set(sprinft(EncountersBundle::REDIS_USER_LAST_CONTACTS_QUEUE_UPDATED_KEY, $Mamba->get('oid')), time());
+            $Redis->hSet(
+                sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $Mamba->get('oid')),
+                EncountersBundle::REDIS_HASH_KEY_CONTACTS_QUEUE_UPDATED,
+                time()
+            );
+        }
     }
 
     /**

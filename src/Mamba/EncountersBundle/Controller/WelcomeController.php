@@ -82,8 +82,12 @@ class WelcomeController extends Controller {
                         }
                     }
                 }
-            } else {
+            } elseif ($getPlatformParams) {
                 $this->storePlatformParams($getPlatformParams);
+            } else {
+                $Response = $this->render('EncountersBundle:Default:sorry.html.twig');
+                $Response->headers->set('Content-Type', 'text/plain');
+                return $Response;
             }
         } else {
             $Response = $this->render('EncountersBundle:Default:sorry.html.twig');
@@ -91,7 +95,6 @@ class WelcomeController extends Controller {
             return $Response;
         }
 
-        exit();
         /**
          * Если нет предустановленных параметров поиска — кидаем на настройки
          *

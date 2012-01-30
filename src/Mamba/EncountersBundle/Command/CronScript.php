@@ -67,6 +67,8 @@ abstract class CronScript extends ContainerAwareCommand {
             ->setDescription(static::SCRIPT_DESCRIPTION)
             ->addOption('copy', null, InputOption::VALUE_OPTIONAL, 'Number of copy', static::DEFAULT_COPY_NUMBER)
             ->addOption('iterations', null, InputOption::VALUE_OPTIONAL, 'Iterations to restart', static::DEFAULT_ITERATIONS_COUNT)
+            ->addOption('daemon', null, InputOption::VALUE_OPTIONAL, 'Daemonize', 'yes')
+            ->addOption('debug', null, InputOption::VALUE_OPTIONAL, 'Debug', 'no')
         ;
 
         $this->scriptName = $scriptName;
@@ -80,22 +82,33 @@ abstract class CronScript extends ContainerAwareCommand {
      * @return mixed
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
-        list($this->input, $this->output, $this->copy, $this->iterations) = array(
+        list($this->input, $this->output, $this->copy, $this->iterations, $this->daemon, $this->debug) = array(
             $input,
             $output,
             (int) $input->getOption('copy'),
-            (int) $input->getOption('iterations')
+            (int) $input->getOption('iterations'),
+            $input->getOption('daemon') == 'yes',
+            $input->getOption('debug')  == 'yes',
         );
 
-        if ($pid = pcntl_fork() == 0) {
+        if ($this->daemon) {
+            if ($pid = pcntl_fork() == 0) {
+                if (!$this->hasAnotherInstances()) {
+                    $this->process();
+
+                    fclose($this->lockFilePointer);
+                    unlink($this->lockFileName);
+                }
+            } else {
+                exit();
+            }
+        } else {
             if (!$this->hasAnotherInstances()) {
                 $this->process();
 
                 fclose($this->lockFilePointer);
                 unlink($this->lockFileName);
             }
-        } else {
-            exit();
         }
     }
 

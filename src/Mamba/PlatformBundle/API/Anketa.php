@@ -300,11 +300,13 @@ class Anketa {
     public function getHitlist($period = -1, $limit = null, $offset = null, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other"), $onlyIds = null) {
         $arguments = array();
 
-        if (!in_array($period, array(-1, -7, -30))) {
+        if ($period && !in_array($period, array(-1, -7, -30))) {
             throw new AnketaException("Invalid period");
         }
 
-        $arguments['period'] = $period;
+        if ($period) {
+            $arguments['period'] = $period;
+        }
 
         if ($limit && !is_int($limit)) {
             throw new AnketaException("Invalid limit type: " . gettype($limit));
@@ -334,7 +336,7 @@ class Anketa {
             $arguments['ids_only'] = 1;
         }
 
-        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments = array());
+        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
     }
 
     /**

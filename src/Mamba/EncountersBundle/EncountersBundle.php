@@ -76,6 +76,13 @@ class EncountersBundle extends Bundle {
         GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME = 'updateSearchQueue',
 
         /**
+         * Имя функции обновления очереди
+         *
+         * @var str
+         */
+        GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME = 'updateCurrentQueue',
+
+        /**
          * Ключ для хранения хеша проголосованных юзеров
          *
          * @var str
@@ -101,6 +108,48 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        REDIS_USER_LAST_SEARCH_QUEUE_UPDATED_KEY = 'user_%d_last_search_queue_updated'
+        REDIS_USER_LAST_SEARCH_QUEUE_UPDATED_KEY = 'user_%d_last_search_queue_updated',
+
+        /**
+         * Ключ для хранения инфы о кронах
+         *
+         * @var str
+         */
+        REDIS_HASH_USER_CRON_DETAILS_KEY = "user_%d_cron_details",
+
+        /**
+         * Хеш-ключ последнего обновления очереди поиска
+         *
+         * @var int
+         */
+        REDIS_HASH_KEY_SEARCH_QUEUE_UPDATED = 1,
+
+        /**
+         * Хеш-ключ последнего обновления очереди контактов
+         *
+         * @var int
+         */
+        REDIS_HASH_KEY_CONTACTS_QUEUE_UPDATED = 2,
+
+        /**
+         * Хеш-ключ последнего обновления очереди хитлиста
+         *
+         * @var int
+         */
+        REDIS_HASH_KEY_HITLIST_QUEUE_UPDATED = 3,
+
+        /**
+         * Хеш-ключ последнего обновления главной очереди
+         *
+         * @var int
+         */
+        REDIS_HASH_KEY_MAIN_QUEUE_UPDATED = 4,
+
+        /**
+         * Хеш-ключ последнего обновления текущей очереди
+         *
+         * @var int
+         */
+        REDIS_HASH_KEY_CURRENT_QUEUE_UPDATED = 5
     ;
 }

@@ -44,7 +44,7 @@ class PreferencesController extends Controller {
              *
              * @author shpizel
              */
-            if (array_diff($redisSearchPreferences, $searchPreferences)) {
+            if (array_diff($redisSearchPreferences, $searchPreferences) || !$redisSearchPreferences) {
                 $this->cleanUserQueues();
                 $this->regenerateUserQueues();
             }
@@ -205,7 +205,7 @@ class PreferencesController extends Controller {
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')))
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')))
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')))
-//                    ->delete(sprintf(Mamba::REDIS_ZSET_USER_MAIN_QUEUE_KEY, $Mamba->get('oid')))
+                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')))
                 ->exec()
         ;
     }
@@ -222,5 +222,6 @@ class PreferencesController extends Controller {
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
+
     }
 }

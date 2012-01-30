@@ -22,7 +22,7 @@ final class Mamba {
          *
          * @var bool
          */
-        CACHE_ENABLED = false,
+        CACHE_ENABLED = true,
 
         /**
          * Redis cache backend
@@ -880,7 +880,7 @@ final class Mamba {
      * @param int $chunkSize Размер одновременно загружаемых урлов
      * @return array
      */
-    public function exec($chunkSize = self::MULTI_FETCH_CHUNK_SIZE) {
+    public function exec($chunkSize = self::MULTI_FETCH_CHUNK_SIZE, $strict = false) {
         if ($this->mode != self::MULTI_MODE) {
             throw new MambaException("Mamba must be configured to MULTI mode");
         }
@@ -911,10 +911,12 @@ final class Mamba {
 
                     if ($JSON['status'] === 0 && !$JSON['message']) {
                         $this->setCache($item['method'], $item['params'], $JSON['data']);
-                        $item['content'] = $JSON['data'];
-                    } else {
-                        throw new MambaException($JSON['message'], $JSON["status"]);
+                    } elseif ($strict) {
+                        throw new MambaException($JSON['message'], $JSON['code']);
                     }
+
+                    $item['content'] = $JSON['data'];
+
                     continue;
                 }
             }

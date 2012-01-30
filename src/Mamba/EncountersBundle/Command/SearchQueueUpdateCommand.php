@@ -58,7 +58,7 @@ class SearchQueueUpdateCommand extends CronScript {
      */
     public function updateSearchQueue($job) {
         $Mamba = $this->getContainer()->get('mamba');
-        if (list($userId, $limit) = unserialize($job->workload())) {
+        if ($userId = (int)$job->workload()) {
             $Mamba->set('oid', $userId);
             if (!$Mamba->getReady()) {
                 return;
@@ -111,7 +111,11 @@ class SearchQueueUpdateCommand extends CronScript {
             return isset($item['users']) && count($item['users']);
         }));
 
-        $Redis->set(sprinft(EncountersBundle::REDIS_USER_LAST_SEARCH_QUEUE_UPDATED_KEY, $Mamba->get('oid')), time());
+        $Redis->hSet(
+            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $Mamba->get('oid')),
+            EncountersBundle::REDIS_HASH_KEY_SEARCH_QUEUE_UPDATED,
+            time()
+        );
     }
 
     /**
