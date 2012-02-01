@@ -8,9 +8,10 @@
     <link rel="stylesheet" href="{{ asset_url }}" />
 {% endstylesheets %}
 {% javascripts
-    '@EncountersBundle/Resources/public/js/jquery.js'
-    '@EncountersBundle/Resources/public/js/Tools.js'
-    '@EncountersBundle/Resources/public/js/*'
+    '@EncountersBundle/Resources/public/js/core/*'
+    '@EncountersBundle/Resources/public/js/tools/*'
+    '@EncountersBundle/Resources/public/js/pages/*'
+    '@EncountersBundle/Resources/public/js/elements/*'
     filter="?yui_js"
 %}
         <script src="{{ asset_url }}"></script>
@@ -37,8 +38,8 @@
             <button id="maybe">Maybe</button>
             <button id="no">No</button>
 
-            <img id="bigphoto"/>
-            
+            <div><img id="bigphoto"/></div>
+
             <div id="photos"/>
 
         {% endblock %}

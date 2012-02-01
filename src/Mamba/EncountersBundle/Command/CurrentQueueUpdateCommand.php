@@ -25,7 +25,7 @@ class CurrentQueueUpdateCommand extends CronScript {
         SCRIPT_DESCRIPTION = "Current queue updater"
     ;
 
-    protected static
+    public static
 
         /**
          * Баланс
@@ -71,7 +71,7 @@ class CurrentQueueUpdateCommand extends CronScript {
      *
      * @param $job
      */
-    public function updateContactsQueue($job) {
+    public function updateCurrentQueue($job) {
         $Mamba = $this->getContainer()->get('mamba');
         if ($userId = (int)$job->workload()) {
             $Mamba->set('oid', $userId);

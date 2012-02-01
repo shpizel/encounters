@@ -12,5 +12,14 @@ $Mutual = {
      */
     initUI: function() {
         
+    },
+
+    /**
+     * Запуск страницы
+     *
+     * @return null
+     */
+    run: function() {
+
     }
 }

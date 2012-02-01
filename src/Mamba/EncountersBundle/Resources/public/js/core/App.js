@@ -11,16 +11,16 @@ $App = {
      * @return App
      */
     init: function($path) {
-        if (($route = $Routing.getRoute($path)) == 'game') {
+        if ((this.$route = $Routing.getRoute($path)) == 'game') {
 
             /** Инициализируем интерфейс */
-            $Interface.init($route);
+            $Interface.init(this.$route);
             return this;
         }
     },
 
     /** Запуск приложения */
-    run: function() {
-
+    run: function($debug) {
+        window["$" + Tools.ucfirst(this.$route)].run($debug);
     }
 }
