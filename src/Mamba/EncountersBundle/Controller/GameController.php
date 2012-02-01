@@ -23,7 +23,7 @@ class GameController extends Controller {
         if ($platformSettings = $Mamba->getReady()) {
             $Redis = $this->get('redis');
 
-
+            return $this->render("EncountersBundle:Game:game.html.twig");
         }
 
         return $this->redirect($this->generateUrl('welcome'));

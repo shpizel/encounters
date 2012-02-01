@@ -1,0 +1,37 @@
+{# app/Resources/views/base.html.twig #}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>{% block title %}Encounters{% endblock %}</title>
+{% stylesheets '@EncountersBundle/Resources/public/css/*' filter="?yui_css" %}
+    <link rel="stylesheet" href="{{ asset_url }}" />
+{% endstylesheets %}
+{% javascripts '@EncountersBundle/Resources/public/js/*' filter="?yui_js" %}
+        <script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+    </head>
+    <body>
+        <div id="menu">
+            {% block menu %}
+            <ul>
+
+                <li><a href="/game">Игра</a></li>
+                <li><a href="/">Я выбрал</a></li>
+                <li><a href="/">Меня смотрели</a></li>
+                <li><a href="/">Взаимные</a></li>
+                <li><a href="/">Профиль</a></li>
+
+            </ul>
+            {% endblock %}
+        </div>
+
+        <div id="content">
+            {% block body %}
+
+            хуйня всякая
+
+            {% endblock %}
+        </div>
+    </body>
+</html>

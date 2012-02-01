@@ -85,12 +85,12 @@ class WelcomeController extends Controller {
             } elseif ($getPlatformParams) {
                 $this->storePlatformParams($getPlatformParams);
             } else {
-                $Response = $this->render('EncountersBundle:Default:sorry.html.twig');
+                $Response = $this->render('EncountersBundle:Welcome:sorry.html.twig');
                 $Response->headers->set('Content-Type', 'text/plain');
                 return $Response;
             }
         } else {
-            $Response = $this->render('EncountersBundle:Default:sorry.html.twig');
+            $Response = $this->render('EncountersBundle:Welcome:sorry.html.twig');
             $Response->headers->set('Content-Type', 'text/plain');
             return $Response;
         }
