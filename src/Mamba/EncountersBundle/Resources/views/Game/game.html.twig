@@ -28,10 +28,18 @@
 
         <div id="content">
             {% block body %}
+            <button id="yes">Yes</button>
+            <button id="maybe"/>Maybe</button>
+            <button id="no"/>No</button>
 
-            хуйня всякая
+            <img id="bigphoto"/>
 
             {% endblock %}
         </div>
+        <script>
+            $(window).ready(function() {
+                $App.prepare().run();
+            });
+        </script>
     </body>
 </html>

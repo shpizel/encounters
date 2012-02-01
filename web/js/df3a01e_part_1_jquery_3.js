@@ -1,5 +1,3 @@
-$App={init:function(){$Interface.init();return this},run:function(){alert("run")}};
-$Interface={init:function(){return this}};
 /*!
  * jQuery JavaScript Library v1.7.1
  * http://jquery.com/

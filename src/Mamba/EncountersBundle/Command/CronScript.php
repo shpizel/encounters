@@ -35,7 +35,7 @@ abstract class CronScript extends ContainerAwareCommand {
          *
          * @var int
          */
-        DEFAULT_ITERATIONS_COUNT = 500
+        DEFAULT_ITERATIONS_COUNT = 100
     ;
 
     protected
@@ -92,15 +92,33 @@ abstract class CronScript extends ContainerAwareCommand {
         );
 
         if ($this->daemon) {
-            if ($pid = pcntl_fork() == 0) {
-                if (!$this->hasAnotherInstances()) {
-                    $this->process();
 
-                    fclose($this->lockFilePointer);
-                    unlink($this->lockFileName);
+            if ($pid = pcntl_fork() == 0) {
+
+                chdir("/");
+                umask(0);
+
+                if (posix_setsid() == -1) {
+                    exit(-1);
+                }
+
+                if ($pid = pcntl_fork() == 0) {
+
+                    pcntl_signal(SIGINT, function() { exit(SIGINT); });
+                    pcntl_signal(SIGTERM, function() { exit(SIGTERM); });
+                    pcntl_signal(SIGHUP, function() { exit(SIGHUP); });
+
+                    if (!$this->hasAnotherInstances()) {
+                        $this->process();
+
+                        fclose($this->lockFilePointer);
+                        unlink($this->lockFileName);
+                    }
+                } else {
+                    exit;
                 }
             } else {
-                exit();
+                exit;
             }
         } else {
             if (!$this->hasAnotherInstances()) {

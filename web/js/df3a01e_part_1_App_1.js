@@ -1,0 +1,1 @@
+$App={init:function(){$Interface.init();return this},run:function(){alert("run")}};
