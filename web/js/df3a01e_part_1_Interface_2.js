@@ -1,1 +1,0 @@
-$Interface={init:function(){return this}};

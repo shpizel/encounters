@@ -7,7 +7,12 @@
 {% stylesheets '@EncountersBundle/Resources/public/css/*' filter="?yui_css" %}
     <link rel="stylesheet" href="{{ asset_url }}" />
 {% endstylesheets %}
-{% javascripts '@EncountersBundle/Resources/public/js/*' filter="?yui_js" %}
+{% javascripts
+    '@EncountersBundle/Resources/public/js/jquery.js'
+    '@EncountersBundle/Resources/public/js/Tools.js'
+    '@EncountersBundle/Resources/public/js/*'
+    filter="?yui_js"
+%}
         <script src="{{ asset_url }}"></script>
 {% endjavascripts %}
     </head>
@@ -27,19 +32,19 @@
         </div>
 
         <div id="content">
-            {% block body %}
+        {% block body %}
             <button id="yes">Yes</button>
-            <button id="maybe"/>Maybe</button>
-            <button id="no"/>No</button>
+            <button id="maybe">Maybe</button>
+            <button id="no">No</button>
 
             <img id="bigphoto"/>
+            
+            <div id="photos"/>
 
-            {% endblock %}
+        {% endblock %}
         </div>
         <script>
-            $(window).ready(function() {
-                $App.prepare().run();
-            });
+            $App.init(location.pathname).run();
         </script>
     </body>
 </html>

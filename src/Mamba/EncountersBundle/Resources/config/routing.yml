@@ -44,11 +44,11 @@ vote.set:
     pattern: /ajax/vote.set
     defaults: { _controller: EncountersBundle:Vote:ajaxVoteSet }
     requirements:
-        #_method: POST раскоментить для продакшена
+        _method: POST
 
 # Прием голосований
 queue.get:
     pattern: /ajax/queue.get
     defaults: { _controller: EncountersBundle:Queue:ajaxQueueGet }
     requirements:
-        #_method: POST раскоментить для продакшена
+        _method: POST
