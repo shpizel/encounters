@@ -91,7 +91,7 @@ class CurrentQueueUpdateCommand extends CronScript {
          */
         while (!$Redis->zSize(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')))) {
             $searchQueueChunk   = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['search'] -1);
-            $mainQueueChunk     = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_MAIN_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['main'] - 1);
+            $mainQueueChunk     = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_PRIORITY_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['main'] - 1);
             $hitlistQueueChunk  = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['search'] - 1);
             $contactsQueueChunk = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['search'] - 1);
 
@@ -100,7 +100,7 @@ class CurrentQueueUpdateCommand extends CronScript {
             }
 
             foreach ($mainQueueChunk as $userId) {
-                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_MAIN_QUEUE_KEY, $Mamba->get('oid')), $userId);
+                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_PRIORITY_QUEUE_KEY, $Mamba->get('oid')), $userId);
             }
 
             foreach ($hitlistQueueChunk as $userId) {

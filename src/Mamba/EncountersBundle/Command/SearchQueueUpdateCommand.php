@@ -61,6 +61,7 @@ class SearchQueueUpdateCommand extends CronScript {
         if ($userId = (int)$job->workload()) {
             $Mamba->set('oid', $userId);
             if (!$Mamba->getReady()) {
+                $this->log("Mamba is not ready");
                 return;
             }
         } else {

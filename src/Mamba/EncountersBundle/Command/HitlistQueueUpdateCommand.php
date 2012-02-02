@@ -31,8 +31,7 @@ class HitlistQueueUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-
-                $this->getContainer()->get('gearman')->getClient()->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, 560015854);
+        $this->getContainer()->get('gearman')->getClient()->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, 560015854);
         $worker = $this->getContainer()->get('gearman')->getWorker();
 
         $class = $this;
@@ -40,7 +39,7 @@ class HitlistQueueUpdateCommand extends CronScript {
             try {
                 return $class->updateHitlistQueue($job);
             } catch (\Exception $e) {
-                var_dump($e);
+                $this->log($e->getMessage());
                 return;
             }
         });
@@ -64,14 +63,17 @@ class HitlistQueueUpdateCommand extends CronScript {
         if ($userId = (int) $job->workload()) {
             $Mamba->set('oid', $userId);
             if (!$Mamba->getReady()) {
+                $this->log("Mamba is not ready");
                 return;
             }
         } else {
+            $this->log("Could not get user id");
             return;
         }
 
         $Redis = $this->getContainer()->get('redis');
         if (!($searchPreferences = $this->getSearchPreferences())) {
+            $this->log("Could not get search preferences");
             return;
         }
 
@@ -96,6 +98,8 @@ class HitlistQueueUpdateCommand extends CronScript {
                 EncountersBundle::REDIS_HASH_KEY_HITLIST_QUEUE_UPDATED,
                 time()
             );
+        } else {
+            $this->log("Could not get hitlist");
         }
     }
 

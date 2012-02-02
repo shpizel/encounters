@@ -82,14 +82,22 @@ abstract class CronScript extends ContainerAwareCommand {
      * @return mixed
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
-        list($this->input, $this->output, $this->copy, $this->iterations, $this->daemon, $this->debug) = array(
-            $input,
-            $output,
-            (int) $input->getOption('copy'),
-            (int) $input->getOption('iterations'),
-            $input->getOption('daemon') == 'yes',
-            $input->getOption('debug')  == 'yes',
-        );
+        $copy = (int) $input->getOption('copy');
+        $iterations = (int) $input->getOption('iterations');
+        $daemon = $input->getOption('daemon') == 'yes';
+        $debug = $input->getOption('debug') == 'yes';
+
+        if ($copy < 1) {
+            throw new CronScriptException("Invalid --copy param");
+        }
+
+        if ($daemon && $debug) {
+            throw new CronScriptException("Could not start daemon with debug");
+        }
+
+
+        list($this->input, $this->output, $this->copy, $this->iterations, $this->daemon, $this->debug)
+            = array($input, $output, $copy, $iterations, $daemon, $debug);
 
         if ($this->daemon) {
 
@@ -104,9 +112,9 @@ abstract class CronScript extends ContainerAwareCommand {
 
                 if ($pid = pcntl_fork() == 0) {
 
-                    pcntl_signal(SIGINT, function() { exit(SIGINT); });
-                    pcntl_signal(SIGTERM, function() { exit(SIGTERM); });
-                    pcntl_signal(SIGHUP, function() { exit(SIGHUP); });
+                    pcntl_signal(SIGINT, $exit = function() {exit(1);});
+                    pcntl_signal(SIGTERM, $exit);
+                    pcntl_signal(SIGHUP, $exit);
 
                     if (!$this->hasAnotherInstances()) {
                         $this->process();
@@ -143,6 +151,17 @@ abstract class CronScript extends ContainerAwareCommand {
         }
 
         throw new CronScriptException("Unable to open lock file: " . $this->lockFileName);
+    }
+
+    /**
+     * Логгер
+     *
+     * @return null
+     */
+    protected function log($message) {
+        if ($this->debug) {
+            echo "[" . date("H:i:s") . "]" . trim($message) . PHP_EOL;
+        }
     }
 
     /**

@@ -206,6 +206,9 @@ class PreferencesController extends Controller {
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')))
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')))
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')))
+
+                    //->delete(sprintf(EncountersBundle::REDIS_SET_USER_REVERSE_QUEUE_KEY, $Mamba->get('oid')))
+
                 ->exec()
         ;
     }

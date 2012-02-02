@@ -41,11 +41,18 @@ class EncountersBundle extends Bundle {
         REDIS_ZSET_USER_SEARCH_QUEUE_KEY = "user_%d_search_queue",
 
         /**
-         * Ключ для хранения главной очереди
+         * Ключ для хранения приоритетной очереди
          *
          * @var str
          */
-        REDIS_ZSET_USER_MAIN_QUEUE_KEY = "user_%d_main_queue",
+        REDIS_ZSET_USER_PRIORITY_QUEUE_KEY = "user_%d_priority_queue",
+
+        /**
+         * Ключ для хранения реверсной очереди
+         *
+         * @var str
+         */
+        REDIS_SET_USER_REVERSE_QUEUE_KEY = "user_%d_reverse_queue",
 
         /**
          * Ключ для хранения текущей очереди
