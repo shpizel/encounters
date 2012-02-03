@@ -67,8 +67,8 @@ abstract class CronScript extends ContainerAwareCommand {
             ->setDescription(static::SCRIPT_DESCRIPTION)
             ->addOption('copy', null, InputOption::VALUE_OPTIONAL, 'Number of copy', static::DEFAULT_COPY_NUMBER)
             ->addOption('iterations', null, InputOption::VALUE_OPTIONAL, 'Iterations to restart', static::DEFAULT_ITERATIONS_COUNT)
-            ->addOption('daemon', null, InputOption::VALUE_OPTIONAL, 'Daemonize', 'yes')
-            ->addOption('debug', null, InputOption::VALUE_OPTIONAL, 'Debug', 'no')
+            ->addOption('daemon', null, InputOption::VALUE_OPTIONAL, 'Daemonize', 'no')
+            ->addOption('debug', null, InputOption::VALUE_OPTIONAL, 'Debug', 'yes')
         ;
 
         $this->scriptName = $scriptName;
@@ -94,7 +94,6 @@ abstract class CronScript extends ContainerAwareCommand {
         if ($daemon && $debug) {
             throw new CronScriptException("Could not start daemon with debug");
         }
-
 
         list($this->input, $this->output, $this->copy, $this->iterations, $this->daemon, $this->debug)
             = array($input, $output, $copy, $iterations, $daemon, $debug);

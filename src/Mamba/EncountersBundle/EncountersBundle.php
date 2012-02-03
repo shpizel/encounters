@@ -13,13 +13,6 @@ class EncountersBundle extends Bundle {
     const
 
         /**
-         * Ключ для хранения хеша пользовательских настроек поиска
-         *
-         * @var str
-         */
-        REDIS_HASH_USER_SEARCH_PREFERENCES_KEY = "user_%d_search_preferences",
-
-        /**
          * Ключ для хранения очереди хитлиста
          *
          * @var str

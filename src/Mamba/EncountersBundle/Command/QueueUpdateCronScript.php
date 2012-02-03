@@ -6,7 +6,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Mamba\EncountersBundle\EncountersBundle;
+
+use Mamba\EncountersBundle\Battery;
+use Mamba\EncountersBundle\Energy;
+use Mamba\EncountersBundle\Hitlist;
+use Mamba\EncountersBundle\Preferences;
 
 /**
  * QueueUpdateCronScript
@@ -15,26 +19,83 @@ use Mamba\EncountersBundle\EncountersBundle;
  */
 abstract class QueueUpdateCronScript extends CronScript {
 
+    private static
+
+        /**
+         * Инстансы объектов
+         *
+         * @var array
+         */
+        $Instances = array()
+    ;
+
     /**
-     * Возвращает поисковые предпочтения для указанного юзера
+     * Redis getter
      *
-     * @return mixed
+     * @return Redis
      */
-    protected function getSearchPreferences($mambaUserId) {
-        return
-            $this->getContainer()->get('redis')
-                ->hGetAll(sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $mambaUserId))
-        ;
+    public function getRedis() {
+        return $this->getContainer()->get('redis');
     }
 
     /**
+     * Memcache getter
      *
-     *
-     * @param string $queue
-     * @param int $webUserId
-     * @param int $currentUserId
+     * @return Memcache
      */
-    protected function putQueue($queue, $webUserId, $currentUserId) {
+    public function getMemcache() {
+        return $this->getContainer()->get('memcache');
+    }
 
+    /**
+     * Battery getter
+     *
+     * @return Battery
+     */
+    public function getBatteryObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis(), $this->getMemcache());
+    }
+
+    /**
+     * Energy getter
+     *
+     * @return Energy
+     */
+    public function getEnergyObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis(), $this->getMemcache());
+    }
+
+    /**
+     * Hitlist getter
+     *
+     * @return Hitlist
+     */
+    public function getHitlistObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
+    }
+
+    /**
+     * Preferences getter
+     *
+     * @return Preferences
+     */
+    public function getPreferencesObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Preferences($this->getRedis());
     }
 }

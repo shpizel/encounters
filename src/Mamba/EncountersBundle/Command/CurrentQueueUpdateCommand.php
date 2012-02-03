@@ -125,19 +125,4 @@ class CurrentQueueUpdateCommand extends CronScript {
             time()
         );
     }
-
-    /**
-     * Возвращает поисковые преференции для текущего юзера
-     *
-     * @return mixed
-     */
-    private function getSearchPreferences() {
-        return
-            $this->getContainer()->get('redis')
-                ->hGetAll(
-                    sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY,
-                    $this->getContainer()->get('mamba')->get('oid'))
-                )
-        ;
-    }
 }
