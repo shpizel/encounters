@@ -1,6 +1,8 @@
 <?php
 namespace Mamba\PlatformBundle\API;
 
+use Mamba\EncountersBundle\PlatformSettings;
+
 /**
  * Mamba
  *
@@ -430,9 +432,9 @@ final class Mamba {
      */
     public function getWebUserId() {
         if (isset($this->options['oid'])) {
-            return $this->options['oid'];
+            return (int)$this->options['oid'];
         } elseif ($webUserId = self::getSession()->get(self::SESSION_USER_ID_KEY)) {
-            return $webUserId;
+            return (int)$webUserId;
         }
     }
 
@@ -478,6 +480,8 @@ final class Mamba {
         if ($argc == 2) {
             $optionName  = func_get_arg(0);
             $optionValue = func_get_arg(1);
+
+            $this->ready = false;
 
             return $this->options[$optionName] = $optionValue;
         } elseif ($argc == 1) {
@@ -577,27 +581,14 @@ final class Mamba {
         }
 
         if ($webUserId = $this->getWebUserId()) {
-            if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
-                $this->set($platformSettings);
+            if ($platformParams = $this->getPlatformSettingsObject()->get($webUserId)) {
+                $this->set($platformParams);
                 return $this->ready = true;
             }
         }
 
         return false;
     }
-
-//    /**
-//     * Возвращает настройки платформы
-//     *
-//     * @return null|array
-//     */
-//    public function getPlatformSettings() {
-//        if ($webUserId = $this->getWebUserId()) {
-//            if ($platformSettings = self::getRedis()->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $webUserId))) {
-//                return $platformSettings;
-//            }
-//        }
-//    }
 
     /**
      * Выполняет запрос к шлюзу платформы и возращает ответ
@@ -629,7 +620,7 @@ final class Mamba {
             return $cacheResult;
         }
 
-        $lastMambaQuery = self::getRedis()->hGet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time');
+        $lastMambaQuery = $this->getPlatformSettingsObject()->getLastQueryTime($this->getWebUserId());
         if ($lastMambaQuery && (time() - (int)$lastMambaQuery >= 4*60*60)) {
             throw new MambaException("Sid expired");
         }
@@ -658,7 +649,7 @@ final class Mamba {
             }
 
             if ($platformResponse = @file_get_contents($httpQuery)) {
-                self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
+                $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
                 $JSON = @json_decode($platformResponse, true);
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
@@ -864,6 +855,19 @@ final class Mamba {
     }
 
     /**
+     * Platform settings getter
+     *
+     * @return PlatformSettings
+     */
+    public function getPlatformSettingsObject() {
+        if (isset($this->Instances[__FUNCTION__])) {
+            return $this->Instances[__FUNCTION__];
+        }
+
+        return $this->Instances[__FUNCTION__] = new PlatformSettings(self::getRedis());
+    }
+
+    /**
      * Мультипликатор
      *
      * @return Mamba
@@ -898,7 +902,7 @@ final class Mamba {
 
         if ($urls) {
             $platformResponses = $this->urlMultiFetch($urls, $chunkSize);
-            self::getRedis()->hSet(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $this->getWebUserId()), 'last_query_time', time());
+            $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
         } else {
             $platformResponses = array();
         }

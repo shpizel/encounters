@@ -155,11 +155,27 @@ abstract class CronScript extends ContainerAwareCommand {
     /**
      * Логгер
      *
+     * @param string $message
+     * @param int $code (16 — error,
      * @return null
      */
-    protected function log($message) {
+    public function log($message, $code = 0) {
+        $colorize = function($message, $code) {
+            if ($code == 64) {
+                return "<info>$message</info>";
+            } elseif ($code == 48) {
+                return "<comment>$message</comment>";
+            } elseif ($code == 32) {
+                return "<question>$message</question>";
+            } elseif ($code == 16) {
+                return "<error>$message</error>";
+            }
+
+            return $message;
+        };
+
         if ($this->debug) {
-            echo "[" . date("H:i:s") . "]" . trim($message) . PHP_EOL;
+            $this->output->writeln($colorize("[" . date("d.m.y H:i:s") . "] " . trim($message), $code));
         }
     }
 

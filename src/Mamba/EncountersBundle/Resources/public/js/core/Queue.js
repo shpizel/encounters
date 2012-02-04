@@ -10,7 +10,7 @@ $Queue = {
      *
      * @var object
      */
-    __storage__: [],
+    $storage: [],
 
     /**
      * Добавляет элемент в очередь
@@ -19,7 +19,7 @@ $Queue = {
      * @return $Queue
      */
     put: function($queueElement) {
-        this.__storage__.push($queueElement);
+        this.$storage.push($queueElement);
         return this;
     },
 
@@ -29,7 +29,7 @@ $Queue = {
      * @return mixed
      */
     get: function() {
-        return this.__storage__.pop();
+        return this.$storage.pop();
     },
 
     /**
@@ -38,6 +38,6 @@ $Queue = {
      * @return int
      */
     qsize: function() {
-        return this.__storage__.length;
+        return this.$storage.length;
     }
 }

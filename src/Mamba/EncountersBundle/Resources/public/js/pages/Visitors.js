@@ -1,17 +1,17 @@
 /**
- * Preferences
+ * Visitors
  *
  * @author shpizel
  */
-$Preferences = {
+$Visitors = {
 
     /**
      * Инициализация интерфейса
      *
-     * @init
+     * @init UI
      */
     initUI: function() {
-
+        
     },
 
     /**
@@ -21,7 +21,7 @@ $Preferences = {
      */
     run: function() {
         if (window.$debug) {
-            console.log("$Preferences has runned");
+            console.log("$Visitors has runned");
         }
     }
 }

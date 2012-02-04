@@ -8,7 +8,7 @@ $Speedo = {
     /**
      * Инициализация интерфейса элемента
      *
-     * @return null
+     * @init UI
      */
     initUI: function() {
 

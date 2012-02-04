@@ -1,17 +1,15 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Response;
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
-use Mamba\EncountersBundle\EncountersBundle;
 
 /**
  * WelcomeController
  *
  * @package EncountersBundle
  */
-class WelcomeController extends Controller {
+class WelcomeController extends ApplicationController {
 
     /**
      * Index action
@@ -20,11 +18,11 @@ class WelcomeController extends Controller {
      */
     public function indexAction() {
         $Request  = $this->getRequest();
-        $Session  = $this->get('session');
-        $Mamba    = $this->get('mamba');
-        $Memcache = $this->get('memcache');
-        $Redis    = $this->get('redis');
-        $Gearman  = $this->get('gearman');
+        $Session  = $this->getSession();
+        $Mamba    = $this->getMamba();
+        $Redis    = $this->getRedis();
+
+        $PlatformSettings = $this->getPlatformSettingsObject();
 
         /**
          * Проверим новые поступления параметров
@@ -62,28 +60,29 @@ class WelcomeController extends Controller {
         }
 
         if ($mambaUserId) {
-            if ($redisPlatformParams = $Redis->hGetAll(sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, $mambaUserId))) {
+            if ($redisPlatformParams = $PlatformSettings->get($mambaUserId)) {
                 if ($getPlatformParams && ($redisPlatformParams['oid'] == $getPlatformParams['oid'])) {
+
                     /**
                      * Пришли какие-то платформенные ГЕТ-параметры, неизвестно фрейм обновился или внешний фрейм
                      *
                      * @author shpizel
                      */
                     if ($getPlatformParams['sid'] != $redisPlatformParams['sid']) {
-                        $this->storePlatformParams($getPlatformParams);
+                        $PlatformSettings->set($getPlatformParams);
                     } elseif ($referer = $Request->server->get('HTTP_REFERER')) {
                         if ($params = @parse_url($referer, PHP_URL_QUERY)) {
                             @parse_str($params, $params);
                             if (is_array($params) && isset($params['app_id'])) {
                                 if ($params['app_id'] = $Request->query->get('app_id')) {
-                                    $this->storePlatformParams($getPlatformParams);
+                                    $PlatformSettings->set($getPlatformParams);
                                 }
                             }
                         }
                     }
                 }
             } elseif ($getPlatformParams) {
-                $this->storePlatformParams($getPlatformParams);
+                $PlatformSettings->set($getPlatformParams);
             } else {
                 $Response = $this->render('EncountersBundle:Welcome:sorry.html.twig');
                 $Response->headers->set('Content-Type', 'text/plain');
@@ -100,32 +99,11 @@ class WelcomeController extends Controller {
          *
          * @author shpizel
          */
-        if (!$Redis->hLen(sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Session->get(Mamba::SESSION_USER_ID_KEY)))) {
+        if (!$this->getPreferencesObject()->get($mambaUserId)) {
             return $this->redirect($this->generateUrl('preferences'));
         }
 
         /** В общем случае кидаем на игру */
         return $this->redirect($this->generateUrl('game'));
-    }
-
-    /**
-     * (пере)Записать параметры платформы в Redis
-     *
-     * @param $platformParams
-     */
-    protected function storePlatformParams($platformParams) {
-        if (isset($platformParams['auth_key'])) {
-            unset($platformParams['auth_key']);
-        }
-
-        $platformParams['last_query_time'] = time();
-
-        foreach ($platformParams as $key=>$value) {
-            $this->get('redis')->hSet(
-                sprintf(Mamba::REDIS_HASH_USER_PLATFORM_PARAMS_KEY, (int) $platformParams['oid']),
-                $key,
-                $value
-            );
-        }
     }
 }

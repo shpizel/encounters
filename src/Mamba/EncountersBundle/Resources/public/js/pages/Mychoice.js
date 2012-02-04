@@ -8,9 +8,20 @@ $Mychoice = {
     /**
      * Инициализация интерфейса
      *
-     * @return null
+     * @init
      */
     initUI: function() {
-        
+
+    },
+
+    /**
+     * Запуск страницы
+     *
+     * @run page
+     */
+    run: function() {
+        if (window.$debug) {
+            console.log("$Mychoice has runned");
+        }
     }
 }

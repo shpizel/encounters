@@ -6,14 +6,17 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+
+use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
 use Mamba\EncountersBundle\EncountersBundle;
+use Mamba\EncountersBundle\Popularity;
 
 /**
  * SearchQueueUpdateCommand
  *
  * @package EncountersBundle
  */
-class SearchQueueUpdateCommand extends CronScript {
+class SearchQueueUpdateCommand extends QueueUpdateCronScript {
 
     const
 
@@ -31,23 +34,27 @@ class SearchQueueUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $worker = $this->getContainer()->get('gearman')->getWorker();
+
+
+        $worker = $this->getGearman()->getWorker();
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
             try {
                 return $class->updateSearchQueue($job);
             } catch (\Exception $e) {
+                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
                 return;
             }
         });
 
-        while ($worker->work() && $this->iterations) {
+        $this->log("Iterations: {$this->iterations}", 64);
+        while ($worker->work() && --$this->iterations) {
+            $this->log("Iterations: {$this->iterations}", 64);
+
             if ($worker->returnCode() != GEARMAN_SUCCESS) {
                 break;
             }
-
-            $this->iterations--;
         }
     }
 
@@ -57,20 +64,29 @@ class SearchQueueUpdateCommand extends CronScript {
      * @param $job
      */
     public function updateSearchQueue($job) {
-        $Mamba = $this->getContainer()->get('mamba');
-        if ($userId = (int)$job->workload()) {
+        $Mamba = $this->getMamba();
+        $Redis = $this->getRedis();
+
+        if ($userId = (int) $job->workload()) {
             $Mamba->set('oid', $userId);
+
+            /**
+             * Ошибка
+             *
+             * @author shpizel
+             */
+
             if (!$Mamba->getReady()) {
-                $this->log("Mamba is not ready");
+                $this->log("Mamba is not ready!", 16);
                 return;
             }
         } else {
-            return;
+            throw new CronScriptException("Invalid workload");
         }
 
-        $Redis = $this->getContainer()->get('redis');
-        if (!($searchPreferences = $this->getSearchPreferences())) {
-            return;
+
+        if (!($searchPreferences = $this->getPreferencesObject()->get($Mamba->get('oid')))) {
+            throw new CronScriptException("Could not get search preferences for user: " . $Mamba->get('oid'));
         }
 
         $offset = -10;
@@ -99,15 +115,23 @@ class SearchQueueUpdateCommand extends CronScript {
             }
 
             $result = $Mamba->exec();
+
+            $usersAddedCount = 0;
+
             foreach ($result as $item) {
                 if (isset($item['users'])) {
                     foreach ($item['users'] as $userId) {
                         if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
-                            $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')), 1, $userId);
+                            $Redis->zAdd(
+                                sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')),
+                                Popularity::getPopularity($this->getEnergyObject()->get($userId)), $userId
+                            ) && $usersAddedCount++;
                         }
                     }
                 }
             }
+
+            $this->log("[Searxch Queue][$user$Id] Users added count: {$usersAddedCount}");
         } while (array_filter($result, function($item) {
             return isset($item['users']) && count($item['users']);
         }));
@@ -117,20 +141,5 @@ class SearchQueueUpdateCommand extends CronScript {
             EncountersBundle::REDIS_HASH_KEY_SEARCH_QUEUE_UPDATED,
             time()
         );
-    }
-
-    /**
-     * Возвращает поисковые преференции для текущего юзера
-     *
-     * @return mixed
-     */
-    private function getSearchPreferences() {
-        return
-            $this->getContainer()->get('redis')
-                ->hGetAll(
-                    sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY,
-                    $this->getContainer()->get('mamba')->get('oid'))
-                )
-        ;
     }
 }

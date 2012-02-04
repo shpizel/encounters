@@ -1,17 +1,15 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Response;
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
-use Mamba\EncountersBundle\EncountersBundle;
 
 /**
  * GameController
  *
  * @package EncountersBundle
  */
-class GameController extends Controller {
+class GameController extends ApplicationController {
 
     /**
      * Index action
@@ -20,12 +18,10 @@ class GameController extends Controller {
      */
     public function indexAction() {
         $Mamba = $this->get('Mamba');
-        if ($platformSettings = $Mamba->getReady()) {
-            $Redis = $this->get('redis');
-
-            return $this->render("EncountersBundle:Game:game.html.twig");
+        if (!$Mamba->getReady()) {
+            return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->redirect($this->generateUrl('welcome'));
+        return $this->render("EncountersBundle:Game:game.html.twig");
     }
 }

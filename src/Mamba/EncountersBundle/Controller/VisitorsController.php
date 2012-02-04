@@ -1,8 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Response;
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
 
 /**
@@ -10,7 +9,7 @@ use Mamba\PlatformBundle\API\Mamba;
  *
  * @package EncountersBundle
  */
-class VisitorsController extends Controller {
+class VisitorsController extends ApplicationController {
 
     /**
      * Index action
@@ -19,10 +18,10 @@ class VisitorsController extends Controller {
      */
     public function indexAction() {
         $Mamba = $this->get('Mamba');
-        if ($platformSettings = $Mamba->getReady()) {
-            return new Response("<h1>Visitors</h1>");
+        if (!$Mamba->getReady()) {
+            return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->redirect($this->generateUrl('welcome'));
+        return $this->render("EncountersBundle:Visitors:visitors.html.twig");
     }
 }

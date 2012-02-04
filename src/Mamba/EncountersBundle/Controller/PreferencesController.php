@@ -1,17 +1,17 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Response;
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
+use Mamba\EncountersBundle\Preferences;
 
 /**
  * PreferencesController
  *
  * @package EncountersBundle
  */
-class PreferencesController extends Controller {
+class PreferencesController extends ApplicationController {
 
     /**
      * Index action
@@ -19,32 +19,23 @@ class PreferencesController extends Controller {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        $Mamba = $this->get('Mamba');
+        $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $redisSearchPreferences = $this->get('redis')->hGetAll(
-            sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Mamba->get('oid'))
-        );
+        $redisSearchPreferences = $this->getPreferencesObject()->get($Mamba->get('oid'));
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
             $searchPreferences['geo'] = $this->getUserGeoParams($Mamba->get('oid'));
-
-            foreach ($searchPreferences as $key=>$value) {
-                $this->get('redis')->hSet(
-                    sprintf(EncountersBundle::REDIS_HASH_USER_SEARCH_PREFERENCES_KEY, $Mamba->get('oid')),
-                    $key,
-                    $value
-                );
-            }
+            $this->getPreferencesObject()->set($Mamba->get('oid'), $searchPreferences);
 
             /**
              * Изменились ли настройки?
              *
              * @author shpizel
              */
-            if (array_diff($redisSearchPreferences, $searchPreferences) || !$redisSearchPreferences) {
+            if (!$redisSearchPreferences || array_diff($redisSearchPreferences, $searchPreferences)) {
                 $this->cleanUserQueues();
                 $this->regenerateUserQueues();
             }

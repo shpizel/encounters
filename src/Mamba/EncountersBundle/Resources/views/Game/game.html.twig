@@ -22,11 +22,11 @@
             {% block menu %}
             <ul>
 
-                <li><a href="/game">Игра</a></li>
-                <li><a href="/">Я выбрал</a></li>
-                <li><a href="/">Меня смотрели</a></li>
-                <li><a href="/">Взаимные</a></li>
-                <li><a href="/">Профиль</a></li>
+                <li><b>Игра</b></li>
+                <li><a href="/mychoice">Я выбрал</a></li>
+                <li><a href="/visitors">Меня смотрели</a></li>
+                <li><a href="/mutual">Взаимные</a></li>
+                <li><a href="/profile">Профиль</a></li>
 
             </ul>
             {% endblock %}
@@ -45,6 +45,7 @@
         {% endblock %}
         </div>
         <script>
+            $debug = true;
             $App.init(location.pathname).run();
         </script>
     </body>

@@ -1,7 +1,6 @@
 <?php
 namespace Mamba\EncountersBundle;
 
-use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\RedisBundle\Redis;
 use Mamba\MemcacheBundle\Memcache;
 
@@ -15,7 +14,14 @@ class Energy {
     const
 
         /**
-         * Минимальный заряд
+         * Энергия по умолчанию
+         *
+         * @var int
+         */
+        DEFAULT_ENERGY = 512,
+
+        /**
+         * Минимальная энергия
          *
          * @var int
          */
@@ -84,7 +90,12 @@ class Energy {
      * @return mixed
      */
     public function get($userId) {
-        return $this->Redis->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
+        $energy = $this->Redis->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
+        if ($energy === false) {
+            $this->set($userId, $energy = self::DEFAULT_ENERGY);
+        }
+
+        return $energy;
     }
 
     /**

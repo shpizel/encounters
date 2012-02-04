@@ -1,7 +1,6 @@
 <?php
 namespace Mamba\EncountersBundle;
 
-use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\RedisBundle\Redis;
 use Mamba\MemcacheBundle\Memcache;
 

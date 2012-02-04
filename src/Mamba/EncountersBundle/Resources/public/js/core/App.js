@@ -8,10 +8,10 @@ $App = {
     /**
      * Конструктор
      *
-     * @return App
+     * @return $App
      */
     init: function($path) {
-        if ((this.$route = $Routing.getRoute($path)) == 'game') {
+        if (this.$route = $Routing.getRoute($path)) {
 
             /** Инициализируем интерфейс */
             $Interface.init(this.$route);
@@ -19,8 +19,12 @@ $App = {
         }
     },
 
-    /** Запуск приложения */
-    run: function($debug) {
-        window["$" + Tools.ucfirst(this.$route)].run($debug);
+    /**
+     * Запуск приложения
+     *
+     * @run $App
+     */
+    run: function() {
+        return window["$" + Tools.ucfirst(this.$route)].run();
     }
 }

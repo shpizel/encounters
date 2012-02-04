@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle;
 
-use Mamba\EncountersBundle\Enegy;
+use Mamba\EncountersBundle\Energy;
 
 /**
  * Popularity
@@ -27,7 +27,7 @@ class Popularity {
      * @return float
      */
     public static function getPopularity($energy, $base = self::LOG_BASE) {
-        if (is_int($energy) && $energy >= Enegy::MINIMUM_ENERGY && $energy <= Enegy::MAXIMUM_ENERGY) {
+        if (is_int($energy) && $energy >= Energy::MINIMUM_ENERGY && $energy <= Energy::MAXIMUM_ENERGY) {
             return log($energy, $base);
         }
 

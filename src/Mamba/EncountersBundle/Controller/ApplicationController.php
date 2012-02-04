@@ -1,26 +1,21 @@
 <?php
-namespace Mamba\EncountersBundle\Command;
+namespace Mamba\EncountersBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\PlatformBundle\API\Mamba;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Mamba\EncountersBundle\Preferences;
 use Mamba\EncountersBundle\Battery;
 use Mamba\EncountersBundle\Energy;
 use Mamba\EncountersBundle\Hitlist;
-use Mamba\EncountersBundle\Preferences;
+use Mamba\EncountersBundle\PlatformSettings;
 
 /**
- * QueueUpdateCronScript
+ * ApplicationController
  *
  * @package EncountersBundle
  */
-abstract class QueueUpdateCronScript extends CronScript {
+abstract class ApplicationController extends Controller {
 
-    private static
+    protected static
 
         /**
          * Инстансы объектов
@@ -31,21 +26,12 @@ abstract class QueueUpdateCronScript extends CronScript {
     ;
 
     /**
-     * Redis getter
+     * Session getter
      *
-     * @return Redis
+     * @return Session
      */
-    public function getRedis() {
-        return $this->getContainer()->get('redis');
-    }
-
-    /**
-     * Memcache getter
-     *
-     * @return Memcache
-     */
-    public function getMemcache() {
-        return $this->getContainer()->get('memcache');
+    public function getSession() {
+        return $this->get('session');
     }
 
     /**
@@ -54,7 +40,25 @@ abstract class QueueUpdateCronScript extends CronScript {
      * @return Mamba
      */
     public function getMamba() {
-        return $this->getContainer()->get('mamba');
+        return $this->get('mamba');
+    }
+
+    /**
+     * Memcache getter
+     *
+     * @return Memcache
+     */
+    public function getMemcache() {
+        return $this->get('memcache');
+    }
+
+    /**
+     * Redis getter
+     *
+     * @return Redis
+     */
+    public function getRedis() {
+        return $this->get('redis');
     }
 
     /**
@@ -63,7 +67,7 @@ abstract class QueueUpdateCronScript extends CronScript {
      * @return Gearman
      */
     public function getGearman() {
-        return $this->getContainer()->get('gearman');
+        return $this->get('gearman');
     }
 
     /**
@@ -118,5 +122,16 @@ abstract class QueueUpdateCronScript extends CronScript {
         return self::$Instances[__FUNCTION__] = new Preferences($this->getRedis());
     }
 
+    /**
+     * Platform settings getter
+     *
+     * @return PlatformSettings
+     */
+    public function getPlatformSettingsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
 
+        return self::$Instances[__FUNCTION__] = new PlatformSettings($this->getRedis());
+    }
 }

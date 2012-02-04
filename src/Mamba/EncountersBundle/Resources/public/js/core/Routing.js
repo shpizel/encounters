@@ -10,7 +10,7 @@ $Routing = {
      *
      * @var object
      */
-    routes: {
+    $routes: {
 
         /**
          * Основные правила маршрутизации
@@ -41,9 +41,9 @@ $Routing = {
      * @return string | null
      */
     getRoute: function($path) {
-        for (var key in this.routes) {
-            if ($path == this.routes[key]) {
-                return key;
+        for (var $key in this.$routes) {
+            if ($path == this.$routes[$key]) {
+                return $key;
             }
         }
     },
@@ -54,7 +54,7 @@ $Routing = {
      * @return string
      */
     getCurrentQueueGetter: function() {
-        return this.routes['ajax']['queue.get'];
+        return this.$routes['ajax']['queue.get'];
     },
 
     /**
@@ -63,6 +63,6 @@ $Routing = {
      * @return string
      */
     getVotesSetter: function() {
-        return this.routes['ajax']['votes.set'];
+        return this.$routes['ajax']['votes.set'];
     }
 }

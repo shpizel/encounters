@@ -8,7 +8,7 @@ $Mutual = {
     /**
      * Инициализация интерфейса
      *
-     * @return null
+     * @init UI
      */
     initUI: function() {
         
@@ -17,9 +17,11 @@ $Mutual = {
     /**
      * Запуск страницы
      *
-     * @return null
+     * @run page
      */
     run: function() {
-
+        if (window.$debug) {
+            console.log("$Mutual has runned");
+        }
     }
 }

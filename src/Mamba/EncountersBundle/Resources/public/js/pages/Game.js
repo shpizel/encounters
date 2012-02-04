@@ -6,11 +6,11 @@
 $Game = {
 
     /**
-     * Сторедж
+     * Storage
      *
      * @var object
      */
-    __storage__: {
+    $storage: {
 
     },
 
@@ -26,7 +26,7 @@ $Game = {
     /**
      * Залочить UI
      *
-     * @return null
+     * @lock UI
      */
     lockUI: function() {
 
@@ -35,16 +35,16 @@ $Game = {
     /**
      * Разлочить UI
      *
-     * @return null
+     * @unlock UI
      */
     unlockUI: function() {
-        this.run();
+
     },
 
     /**
      * Инициализирует кнопки
      *
-     * @return null
+     * @init decision buttons
      */
     initDecisionButtons: function() {
         $("button#yes").click(function(){return $Game.makeDecision(1);});
@@ -53,9 +53,9 @@ $Game = {
     },
 
     /**
-     * Отправляет  голосование
+     * Отправляет голосование
      *
-     * @return null
+     * @request vote.set
      */
     makeDecision: function($decision) {
         alert($decision);
@@ -64,9 +64,13 @@ $Game = {
     /**
      * Запуск страницы
      *
-     * @return null
+     * @run page
      */
     run: function() {
+        if (window.$debug) {
+            console.log("$Game has runned");
+        }
+
         if (!$Queue.qsize()) {
             this.loadQueue(function(){
                 return $Game.unlockUI();
@@ -74,7 +78,7 @@ $Game = {
             return this.lockUI();
         }
 
-        this.__storage__['currentQueueElement'] = $currentQueueElement = $Queue.get();
+        this.$storage['currentQueueElement'] = $currentQueueElement = $Queue.get();
 
         $("img#bigphoto").attr('src', $currentQueueElement['photos'][0]['huge_photo_url']);
         for (var $i=0;$i<$currentQueueElement['photos'].length;$i++) {
@@ -86,6 +90,11 @@ $Game = {
         });
     },
 
+    /**
+     * Загрузчик текущей очереди
+     *
+     * @param $callback
+     */
     loadQueue: function($callback) {
         $.post($Routing.getCurrentQueueGetter(), function($data) {
             if ($data.status == 0 && $data.message == "") {

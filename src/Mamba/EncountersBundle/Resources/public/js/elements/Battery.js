@@ -8,7 +8,7 @@ $Battery = {
     /**
      * Инициализация интерфейса
      *
-     * @return null
+     * @init UI
      */
     initUI: function() {
 
