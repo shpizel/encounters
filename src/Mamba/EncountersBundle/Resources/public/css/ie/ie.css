@@ -1,0 +1,34 @@
+.app-image-member .app-image,
+.app-lenta .app-lenta-img {
+	border: 1px solid #e2e2e2
+}
+
+.app-main .app-set{
+	border: 1px solid #e2e2e2;
+}
+
+.app-lenta .app-lenta-img {
+	display: inline;
+}
+
+
+
+.ie-shadow { height: 100%; width: 100%; position: absolute; display: block; z-index: 1; }
+.ie-shadow b.tl, .ie-shadow b.tr,
+.ie-shadow b.bl, .ie-shadow b.br { background-image: url('/bundles/encounters/images/ui-layer-shadowR.png'); background-repeat: no-repeat; height: 24px; width: 24px; position: absolute; }
+.ie-shadow b.tb, .ie-shadow b.bb { background-image: url('/bundles/encounters/images/ui-layer-tbB.png'); background-repeat: repeat-x; height: 24px; width: 100%; left: 0px; position: absolute; }
+.ie-shadow b.lb, .ie-shadow b.rb { background-image: url('/bundles/encounters/images/ui-layer-lrB.png'); background-repeat: repeat-y; height: 100%; width: 24px; top: 0; position: absolute; }
+
+.ie-shadow b.tb { background-position: left top; top: -24px; }
+.ie-shadow b.rb { background-position: right top; right: -24px; }
+.ie-shadow b.bb { background-position: left bottom; bottom: -24px; }
+.ie-shadow b.lb { background-position: left top; left: -24px; }
+
+.ie-shadow b.tl { background-position: right bottom; top: -24px; left: -24px; }
+.ie-shadow b.tr { background-position: left bottom; top: -24px; right: -24px; }
+.ie-shadow b.bl { background-position: right top; bottom: -24px; left: -24px; }
+.ie-shadow b.br { background-position: left top; bottom: -24px; right: -24px; }
+
+.app-layer .close {
+	top: 20px; right: 0px;
+}

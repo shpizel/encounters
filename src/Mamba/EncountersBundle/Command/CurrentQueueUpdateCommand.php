@@ -6,6 +6,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+
+use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -13,7 +15,7 @@ use Mamba\EncountersBundle\EncountersBundle;
  *
  * @package EncountersBundle
  */
-class CurrentQueueUpdateCommand extends CronScript {
+class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
 
     const
 
@@ -34,7 +36,7 @@ class CurrentQueueUpdateCommand extends CronScript {
          */
         $balance = array(
             'search'   => 5 /** 7 */,
-            'main'     => 1,
+            'priority' => 1,
             'hitlist'  => 1,
             'contacts' => 1,
         )
@@ -46,23 +48,25 @@ class CurrentQueueUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $worker = $this->getContainer()->get('gearman')->getWorker();
+        $worker = $this->getGearman()->getWorker();
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
             try {
                 return $class->updateCurrentQueue($job);
             } catch (\Exception $e) {
+                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
                 return;
             }
         });
 
-        while ($worker->work() && $this->iterations) {
+        $this->log("Iterations: {$this->iterations}", 64);
+        while ($worker->work() && --$this->iterations) {
+            $this->log("Iterations: {$this->iterations}", 64);
+
             if ($worker->returnCode() != GEARMAN_SUCCESS) {
                 break;
             }
-
-            $this->iterations--;
         }
     }
 
@@ -72,55 +76,80 @@ class CurrentQueueUpdateCommand extends CronScript {
      * @param $job
      */
     public function updateCurrentQueue($job) {
-        $Mamba = $this->getContainer()->get('mamba');
-        if ($userId = (int)$job->workload()) {
-            $Mamba->set('oid', $userId);
+        $Mamba = $this->getMamba();
+        $Redis = $this->getRedis();
+
+        if ($webUserId = (int) $job->workload()) {
+            $Mamba->set('oid', $webUserId);
+
             if (!$Mamba->getReady()) {
+                $this->log("Mamba is not ready!", 16);
                 return;
             }
         } else {
-            return;
+            throw new CronScriptException("Invalid workload");
         }
-
-        $Redis = $this->getContainer()->get('redis');
 
         /**
          * Наполним очередь согласно балансу
          *
          * @author shpizel
          */
-        while (!$Redis->zSize(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')))) {
-            $searchQueueChunk   = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['search'] -1);
-            $mainQueueChunk     = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_PRIORITY_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['main'] - 1);
-            $hitlistQueueChunk  = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['search'] - 1);
-            $contactsQueueChunk = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')), 0, self::$balance['search'] - 1);
+        while (!$Redis->zSize(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId))) {
 
+            $searchQueueChunk = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY,$webUserId), 0, self::$balance['search'] - 1);
+            $usersAddedCount = 0;
             foreach ($searchQueueChunk as $userId) {
-                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')), $userId);
-            }
-
-            foreach ($mainQueueChunk as $userId) {
-                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_PRIORITY_QUEUE_KEY, $Mamba->get('oid')), $userId);
-            }
-
-            foreach ($hitlistQueueChunk as $userId) {
-                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')), $userId);
-            }
-
-            foreach ($contactsQueueChunk as $userId) {
-                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')), $userId);
-            }
-
-            $currentQueueIds = array_merge($searchQueueChunk, $mainQueueChunk, $hitlistQueueChunk, $contactsQueueChunk);
-            foreach ($currentQueueIds as $userId) {
-                if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
-                    $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')), 1, $userId);
+                var_dump($userId);
+                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY,$webUserId), $userId);
+                if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
+                    $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, $userId) && $usersAddedCount++;
                 }
             }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from search queue;");
+
+            $priorityCount = self::$balance['priority'];
+            $usersAddedCount = 0;
+            while ($priorityCount--) {
+                if ($userId = $Redis->sPop(sprintf(EncountersBundle::REDIS_SET_USER_PRIORITY_QUEUE_KEY, $webUserId))) {
+                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
+                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, $userId) && $usersAddedCount++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from priority queue;");
+
+            $hitlistCount = self::$balance['hitlist'];
+            $usersAddedCount = 0;
+            while ($hitlistCount--) {
+                if ($userId = $Redis->sPop(sprintf(EncountersBundle::REDIS_SET_USER_HITLIST_QUEUE_KEY, $webUserId))) {
+                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
+                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, $userId) && $usersAddedCount++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from hitlist queue;");
+
+            $contactsCount = self::$balance['contacts'];
+            $usersAddedCount = 0;
+            while ($contactsCount--) {
+                if ($userId = $Redis->sPop(sprintf(EncountersBundle::REDIS_SET_USER_CONTACTS_QUEUE_KEY, $webUserId))) {
+                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
+                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId),  0, $userId) && $usersAddedCount++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
         }
 
         $Redis->hSet(
-            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $Mamba->get('oid')),
+            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $webUserId),
             EncountersBundle::REDIS_HASH_KEY_CURRENT_QUEUE_UPDATED,
             time()
         );

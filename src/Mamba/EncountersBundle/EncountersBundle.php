@@ -17,14 +17,14 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        REDIS_ZSET_USER_HITLIST_QUEUE_KEY = "user_%d_hitlist_queue",
+        REDIS_SET_USER_HITLIST_QUEUE_KEY = "user_%d_hitlist_queue",
 
         /**
          * Ключ для хранения очереди контактов
          *
          * @var str
          */
-        REDIS_ZSET_USER_CONTACTS_QUEUE_KEY = "user_%d_contacts_queue",
+        REDIS_SET_USER_CONTACTS_QUEUE_KEY = "user_%d_contacts_queue",
 
         /**
          * Ключ для хранения очереди поиска
@@ -38,7 +38,7 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        REDIS_ZSET_USER_PRIORITY_QUEUE_KEY = "user_%d_priority_queue",
+        REDIS_SET_USER_PRIORITY_QUEUE_KEY = "user_%d_priority_queue",
 
         /**
          * Ключ для хранения реверсной очереди

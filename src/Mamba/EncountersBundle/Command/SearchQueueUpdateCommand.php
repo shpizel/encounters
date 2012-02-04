@@ -34,8 +34,6 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
      * @return null
      */
     protected function process() {
-
-
         $worker = $this->getGearman()->getWorker();
 
         $class = $this;
@@ -67,14 +65,8 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
         $Mamba = $this->getMamba();
         $Redis = $this->getRedis();
 
-        if ($userId = (int) $job->workload()) {
-            $Mamba->set('oid', $userId);
-
-            /**
-             * Ошибка
-             *
-             * @author shpizel
-             */
+        if ($webUserId = (int) $job->workload()) {
+            $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
                 $this->log("Mamba is not ready!", 16);
@@ -84,9 +76,8 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Invalid workload");
         }
 
-
-        if (!($searchPreferences = $this->getPreferencesObject()->get($Mamba->get('oid')))) {
-            throw new CronScriptException("Could not get search preferences for user: " . $Mamba->get('oid'));
+        if (!($searchPreferences = $this->getPreferencesObject()->get($webUserId))) {
+            throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
         $offset = -10;
@@ -121,23 +112,24 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
             foreach ($result as $item) {
                 if (isset($item['users'])) {
                     foreach ($item['users'] as $userId) {
-                        if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId)) {
+                        if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
                             $Redis->zAdd(
-                                sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')),
-                                Popularity::getPopularity($this->getEnergyObject()->get($userId)), $userId
+                                sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $webUserId),
+                                Popularity::getPopularity($this->getEnergyObject()->get($userId)),
+                                $userId
                             ) && $usersAddedCount++;
                         }
                     }
                 }
             }
 
-            $this->log("[Searxch Queue][$user$Id] Users added count: {$usersAddedCount}");
+            $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
         } while (array_filter($result, function($item) {
             return isset($item['users']) && count($item['users']);
         }));
 
         $Redis->hSet(
-            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $Mamba->get('oid')),
+            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $webUserId),
             EncountersBundle::REDIS_HASH_KEY_SEARCH_QUEUE_UPDATED,
             time()
         );

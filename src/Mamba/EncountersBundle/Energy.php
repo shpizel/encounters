@@ -18,7 +18,7 @@ class Energy {
          *
          * @var int
          */
-        DEFAULT_ENERGY = 512,
+        DEFAULT_ENERGY = 256,
 
         /**
          * Минимальная энергия

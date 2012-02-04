@@ -13,6 +13,9 @@ use Mamba\EncountersBundle\Energy;
 use Mamba\EncountersBundle\Hitlist;
 use Mamba\EncountersBundle\Preferences;
 
+use Mamba\RedisBundle\Redis;
+use Mamba\MemcacheBundle\Memcache;
+
 /**
  * QueueUpdateCronScript
  *

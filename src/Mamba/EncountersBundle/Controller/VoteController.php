@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
@@ -11,7 +11,7 @@ use Mamba\EncountersBundle\EncountersBundle;
  *
  * @package EncountersBundle
  */
-class VoteController extends Controller {
+class VoteController extends ApplicationController {
 
     protected
 
@@ -30,7 +30,7 @@ class VoteController extends Controller {
 
         $requiredParams = array(
             'user_id',
-            'verdict',
+            'decision',
         )
     ;
 
@@ -40,73 +40,69 @@ class VoteController extends Controller {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function ajaxVoteSetAction() {
-        $Mamba = $this->get('mamba');
+        $Mamba = $this->getMamba();
+        $Redis = $this->getRedis();
+
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
-        }
-
-        $Redis = $this->get('redis');
-
-        if (!($params = $this->getParams())) {
+        } elseif (!$this->validateParams()) {
             list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
         } else {
-            list($userId, $verdict) = array_values($params);
 
-            /** Проверим не слишком ли часто этот пользователь голосует */
-            if (false == "СЛИШКОМ ЧАСТО") {
-                list($this->json['status'], $this->json['message']) = array(3, "");
-            }
+            # Увеличить энергию WebUser'a
+            try {
+                $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
-            /** Вставить юзера в список уже оцененных */
-            $Redis->zAdd(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $Mamba->get('oid')), $userId, array('ts'=>time(), 'verdict'=>$verdict));
+                # энергия webuser'a увеличилась, а следовательно — нужно обновить его приоритет в чужих очередях
+                # ставим задачу
+            } catch (\Exception $e) {
 
-            /** Удалить из текущей очереди */
-            $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')), $userId);
+            };
 
-            /** Сформировать массив данных на выход */
-            $this->json['data'] = array(/** если все ок то может быть тут ничего и не нужно */);
+            # проверить не слишком ли мы часто голосуем епт
+
+            # а мы не совпали случайно?!
+
+            # записать голосование как-то надо в базу (через задачу)
+
+            # спам?
+
+            # удалим юзера из текущей очереди
+            $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $this->webUserId), $this->currentUserId);
+
+            # вставим юзера в список уже оцененных
+            $Redis->zAdd(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $this->webUserId), $this->currentUserId, array('ts' => time(), 'decision' => $this->decision));
         }
 
         return new Response(json_encode($this->json), 200, array("application/json"));
     }
 
     /**
-     * Проверяет и возвращает параметры или false в случае если что-то пошло не так
+     * Проверяет пришедшие пар-ры
      *
      * @return bool
      */
-    private function getParams() {
-        $Request = $this->getRequest();
-        $Redis = $this->get('redis');
-        $Mamba = $this->get('mamba');
-        $postParams = $Request->request->all();
-        if (array_intersect(array_keys($postParams), $this->requiredParams) == count($this->requiredParams)) {
+    private function validateParams() {
+        $postParams = $this->getRequest()->request->all();
+
+        if (count(array_intersect(array_keys($postParams), $this->requiredParams)) == count($this->requiredParams)) {
             $params = array();
             foreach ($this->requiredParams as $param) {
-                $params[$params] = $postParams[$param];
+                $params[$param] = $postParams[$param];
             }
 
-            list($userId, $verdict) = array_values($params);
-            if (is_numeric($userId) && is_numeric($verdict)) {
-                $userId  = (int) $userId;
-                $verdict = (int) $verdict;
+            list($userId, $decision) = array_values($params);
+            $userId = (int) $userId;
+            $decision = (int) $decision;
 
-                /**
-                 * Есть ли этот юзер в текущей очереди
-                 *
-                 * @author shpizel
-                 */
-                if ($Redis->zScore(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')), $userId)) {
-                    if ($verdict >= -1 && $verdict <= 1) {
-                        return array(
-                            'user_id' => $userId,
-                            'verdict' => $verdict,
-                        );
-                    }
+            if ($userId && $decision >= -1 && $decision <= 1) {
+                if (false !== $this->getRedis()->zScore(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $this->webUserId = $this->getMamba()->get('oid')), $userId)) {
+                    $this->currentUserId = $userId;
+                    $this->decision = $decision;
+
+                    return true;
                 }
             }
         }
-
-        return false;
     }
 }

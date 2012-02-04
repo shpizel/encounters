@@ -193,8 +193,8 @@ class PreferencesController extends ApplicationController {
         return
             $this->get('redis')
                 ->multi()
-                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')))
-                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')))
+                    ->delete(sprintf(EncountersBundle::REDIS_SET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')))
+                    ->delete(sprintf(EncountersBundle::REDIS_SET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')))
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')))
                     ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')))
 

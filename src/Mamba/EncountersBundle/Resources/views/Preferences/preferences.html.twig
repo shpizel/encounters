@@ -1,4 +1,41 @@
-<h1>Настройки </h1>
+{# app/Resources/views/base.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{% block title %}Encounters{% endblock %}</title>
+    {% stylesheets '@EncountersBundle/Resources/public/css/*' filter="?yui_css" %}
+    <link rel="stylesheet" href="{{ asset_url }}" />
+    {% endstylesheets %}
+    {% javascripts
+    '@EncountersBundle/Resources/public/js/core/*'
+    '@EncountersBundle/Resources/public/js/tools/*'
+    '@EncountersBundle/Resources/public/js/pages/*'
+    '@EncountersBundle/Resources/public/js/elements/*'
+    filter="?yui_js"
+%}
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+</head>
+<body>
+<div id="menu">
+    {% block menu %}
+    <ul>
+
+        <li><a href="/game">Игра</a></li>
+        <li><a href="/mychoice">Я выбрал</a></li>
+        <li><a href="/visitors">Меня смотрели</a></li>
+        <li><a href="/mutual">Взаимные</a></li>
+        <li><a href="/profile">Профиль</a></li>
+        <li><b>Настройка</b></li>
+
+    </ul>
+    {% endblock %}
+</div>
+
+<div id="content">
+    {% block body %}
+    <h1>Настройки </h1>
 
 <form method="post">
     Ищу: <br>
@@ -144,3 +181,11 @@
     <br><br>
     <input type=submit value="Сохранить">
 </form>
+    {% endblock %}
+</div>
+<script>
+    $debug = true;
+    $App.init(location.pathname).run();
+</script>
+</body>
+</html>

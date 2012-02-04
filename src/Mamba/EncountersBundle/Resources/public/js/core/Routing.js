@@ -31,7 +31,7 @@ $Routing = {
          */
         ajax: {
             'queue.get': "/ajax/queue.get",
-            'votes.set': "/ajax/votes.set"
+            'vote.set': "/ajax/vote.set"
         }
     },
 
@@ -62,7 +62,7 @@ $Routing = {
      *
      * @return string
      */
-    getVotesSetter: function() {
-        return this.$routes['ajax']['votes.set'];
+    getVoteSetter: function() {
+        return this.$routes['ajax']['vote.set'];
     }
 }

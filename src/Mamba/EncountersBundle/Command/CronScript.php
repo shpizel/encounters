@@ -175,7 +175,7 @@ abstract class CronScript extends ContainerAwareCommand {
         };
 
         if ($this->debug) {
-            $this->output->writeln($colorize("[" . date("d.m.y H:i:s") . "] " . trim($message), $code));
+            $this->output->writeln("[" . date("d.m.y H:i:s") . "] " . $colorize(trim($message), $code));
         }
     }
 
