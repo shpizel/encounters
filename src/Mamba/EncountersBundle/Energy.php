@@ -91,7 +91,7 @@ class Energy {
      */
     public function get($userId) {
         $energy = $this->Redis->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
-        if ($energy === false) {
+        if (false === $energy) {
             $this->set($userId, $energy = self::DEFAULT_ENERGY);
         }
 

@@ -18,7 +18,7 @@ $Routing = {
          * @author shpizel
          */
         preferences : '/preferences',
-        game        : '/game',
+        search      : '/search',
         mutual      : '/mutual',
         visitors    : '/visitors',
         mychoice    : '/mychoice',

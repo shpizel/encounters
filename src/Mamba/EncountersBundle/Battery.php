@@ -83,7 +83,11 @@ class Battery {
      * @return mixed
      */
     public function get($userId) {
-        return $this->Redis->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
+        $charge = $this->Redis->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
+        if (false === $charge) {
+            $this->set($userId, $charge = self::MAXIMUM_CHARGE);
+        }
+        return $charge;
     }
 
     /**

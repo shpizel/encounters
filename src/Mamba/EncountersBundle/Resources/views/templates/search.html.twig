@@ -1,0 +1,65 @@
+{% extends 'EncountersBundle:templates:layout.html.twig' %}
+{% block title %}Поиск{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    <div class="app-menu-bar">
+        <i class="l-menu-rounder"></i>
+        <i class="l-rounder"></i>
+        <i class="r-rounder"></i>
+        <div class="app-menu-bar-inner">
+            <ul class="info-meet">
+                <li class="item-game active"><a><b>Поиск</b></a></li>
+                <li class="item-mychoice"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if stats.mychoice %}{{stats.mychoice}}{% endif %}</i></a></li>
+                <li class="item-visitors"><a href="/visitors"><b>Меня смотрели</b> <i>{% if stats.visitors %}{{stats.visitors}}{% endif %}</i></a></li>
+                <li class="item-mutual"><a href="/mutual"><b>Взаимные</b>{% if stats.mutual %} <i class="heart">{{ stats.mutual }}</i>{% endif %}</a></li>
+                <li class="item-popul"><div><b>Низкая</b> популярность</div></li>
+                <li class="item-setting"><a href="/preferences"></a></li>
+                <li class="item-energy">
+                    <b class="battery"><b style="width:{{ stats.charge*15 }}%"></b></b> <i>{{ stats.charge*20 }}%</i>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="app-main">
+    <div class="app-page">
+
+        <div class="app-block-no-popular" style="display: none;">
+            <i class="arrow"></i>
+            <div class="info-block">
+                <div class="photo"><img src="http://face.lovesupport.ru/7/1/9/658217719/733095236_small_face.jpg?updated=20120121125815"></div>
+                <div class="message">
+                    <div class="message-alert">У вас ужасающе низкая популярность</div>
+                    <div class="message-help">Станьте популярней &mdash; <a href="#">получите 100 дополнительных показов</a></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="app-title">Вы бы встретились с {{ who.instrumental }}?</div>
+        <div class="app-meet-button">
+            <a href="javascript:void(0);" class="yes app-menu1">Да!</a>
+            <a href="javascript:void(0);" class="maybe app-menu2">Возможно</a>
+            <a href="javascript:void(0);" class="no app-menu3">Нет</a>
+        </div>
+
+        <p class="app-see-block">{{ who.nominative|title }} уже видел{% if who.nominative != 'он' %}а{%endif%} ваше фото? <a href="#">Узнайте</a></p>
+
+        <div class="app-image-member">
+            <center><img class="app-image"/></center>
+        </div>
+
+        <div class="app-lenta">
+            <a href="#" class="lf arr"></a>
+            <div class="app-lenta-img"></div>
+            <a href="#" class="rt arr"></a>
+        </div>
+
+        <div class="app-info-user"><a href="#">Машенька</a>  <i class="ico female"></i> <span>>22</span</div>
+    </div>
+
+        {% include 'EncountersBundle:layers:layers.html.twig' %}
+</div>
+</div>
+{% endblock %}

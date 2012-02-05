@@ -12,17 +12,36 @@ $Interface = {
      * @return $Interface
      */
     init: function($route) {
+
+        if (window.top == window.self) {
+            top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
+        } else {
+            mamba.init(function() {
+                mamba.method("resizeWindow", 770, 1000);
+//                window.setInterval(function() {
+//                    $Interface.autoresize();
+//                }, 1000);
+            });
+        }
+
         this['init' + Tools.ucfirst($route) + 'UI']();
         return this;
     },
 
     /**
-     * Game UI init
+     * Автоматически ресайзит страницу
+     */
+    autoresize: function() {
+        //mamba.method("resizeWindow", "100%", $(document).height() + 50);
+    },
+
+    /**
+     * Search UI init
      *
      * @init UI
      */
-    initGameUI: function() {
-        $Game.initUI();
+    initSearchUI: function() {
+        $Search.initUI();
     },
 
     /**

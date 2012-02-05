@@ -22,6 +22,10 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:Visitors:visitors.html.twig");
+        if (!$this->getPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+            return $this->redirect($this->generateUrl('welcome'));
+        }
+
+        return $this->render("EncountersBundle:templates:visitors.html.twig");
     }
 }

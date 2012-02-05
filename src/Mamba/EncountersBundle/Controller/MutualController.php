@@ -22,6 +22,10 @@ class MutualController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:Mutual:mutual.html.twig");
+        if (!$this->getPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+            return $this->redirect($this->generateUrl('welcome'));
+        }
+
+        return $this->render("EncountersBundle:templates:mutual.html.twig");
     }
 }

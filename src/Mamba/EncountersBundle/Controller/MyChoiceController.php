@@ -22,6 +22,10 @@ class MyChoiceController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:MyChoice:mychoice.html.twig");
+        if (!$this->getPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+            return $this->redirect($this->generateUrl('welcome'));
+        }
+
+        return $this->render("EncountersBundle:templates:mychoice.html.twig");
     }
 }

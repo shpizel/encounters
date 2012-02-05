@@ -12,10 +12,10 @@ preferences:
     pattern: /preferences
     defaults: { _controller: EncountersBundle:Preferences:index }
 
-# Страница игры
-game:
-    pattern: /game
-    defaults: { _controller: EncountersBundle:Game:index }
+# Страница поиска
+search:
+    pattern: /search
+    defaults: { _controller: EncountersBundle:Search:index }
 
 # Страница взаимных симпатий
 mutual:
@@ -31,11 +31,6 @@ visitors:
 mychoice:
     pattern: /mychoice
     defaults: { _controller: EncountersBundle:MyChoice:index }
-
-# Страница профиля
-profile:
-    pattern: /profile
-    defaults: { _controller: EncountersBundle:Profile:index }
 
 # AJAX методы
 

@@ -20,9 +20,8 @@ class WelcomeController extends ApplicationController {
         $Request  = $this->getRequest();
         $Session  = $this->getSession();
         $Mamba    = $this->getMamba();
-        $Redis    = $this->getRedis();
 
-        $PlatformSettings = $this->getPlatformSettingsObject();
+        $PlatformSettingsObject = $this->getPlatformSettingsObject();
 
         /**
          * Проверим новые поступления параметров
@@ -47,20 +46,20 @@ class WelcomeController extends ApplicationController {
         }
 
         /**
-         * Попробуем узнать айдишник Мамба-юзера и попробуем взять его пользовательские настройки платформы из Redis
+         * Попробуем узнать айдишник web-юзера и попробуем взять его пользовательские настройки платформы из Redis
          *
          * @author shpizel
          */
-        $mambaUserId = null;
+        $webUserId = null;
         if ($userSessionExists = $Session->has(Mamba::SESSION_USER_ID_KEY)) {
-            $mambaUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
+            $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
         } elseif ($getPlatformParams) {
-            $mambaUserId = (int) $getPlatformParams['oid'];
-            $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $mambaUserId);
+            $webUserId = (int) $getPlatformParams['oid'];
+            $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
         }
 
-        if ($mambaUserId) {
-            if ($redisPlatformParams = $PlatformSettings->get($mambaUserId)) {
+        if ($webUserId) {
+            if ($redisPlatformParams = $PlatformSettingsObject->get($webUserId)) {
                 if ($getPlatformParams && ($redisPlatformParams['oid'] == $getPlatformParams['oid'])) {
 
                     /**
@@ -69,20 +68,20 @@ class WelcomeController extends ApplicationController {
                      * @author shpizel
                      */
                     if ($getPlatformParams['sid'] != $redisPlatformParams['sid']) {
-                        $PlatformSettings->set($getPlatformParams);
+                        $PlatformSettingsObject->set($getPlatformParams);
                     } elseif ($referer = $Request->server->get('HTTP_REFERER')) {
                         if ($params = @parse_url($referer, PHP_URL_QUERY)) {
                             @parse_str($params, $params);
                             if (is_array($params) && isset($params['app_id'])) {
                                 if ($params['app_id'] = $Request->query->get('app_id')) {
-                                    $PlatformSettings->set($getPlatformParams);
+                                    $PlatformSettingsObject->set($getPlatformParams);
                                 }
                             }
                         }
                     }
                 }
             } elseif ($getPlatformParams) {
-                $PlatformSettings->set($getPlatformParams);
+                $PlatformSettingsObject->set($getPlatformParams);
             } else {
                 $Response = $this->render('EncountersBundle:Welcome:sorry.html.twig');
                 $Response->headers->set('Content-Type', 'text/plain');
@@ -99,11 +98,11 @@ class WelcomeController extends ApplicationController {
          *
          * @author shpizel
          */
-        if (!$this->getPreferencesObject()->get($mambaUserId)) {
+        if (!$this->getPreferencesObject()->get($webUserId)) {
             return $this->redirect($this->generateUrl('preferences'));
         }
 
-        /** В общем случае кидаем на игру */
-        return $this->redirect($this->generateUrl('game'));
+        /** В общем случае кидаем на поиск */
+        return $this->redirect($this->generateUrl('search'));
     }
 }
