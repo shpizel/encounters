@@ -26,8 +26,8 @@
 <script src="http://js.aplatform.ru/app.js"></script>
 <script>
 {% autoescape false %}
-{#$Config.set('platform', {{platformSettings}});#}
-{#$Config.set('search', {{searchPreferences}});#}
+$Config.set('platform', {{platformSettings}});
+$Config.set('search', {{searchPreferences}});
 {% endautoescape %}
 $(document).ready(function() {
     $App.init(location.pathname).run();

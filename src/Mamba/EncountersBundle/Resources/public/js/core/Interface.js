@@ -17,7 +17,7 @@ $Interface = {
             top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
         } else {
             mamba.init(function() {
-                mamba.method("resizeWindow", 770, 1000);
+                mamba.method("resizeWindow", '100%', 1000);
 //                window.setInterval(function() {
 //                    $Interface.autoresize();
 //                }, 1000);

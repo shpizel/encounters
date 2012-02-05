@@ -153,7 +153,6 @@ h5{ font-size: 100%; }
 	text-decoration: underline;
 }
 
-
 .info-meet li.item-popul b{
 	color: #2a2a2a;
 	font-weight: bold;
@@ -168,7 +167,7 @@ h5{ font-size: 100%; }
 }
 
 .info-meet li.item-popul {
-	background: url('/bundles/encounters/images/separate-meet-menu.png') no-repeat left top;
+	/*background: url('/bundles/encounters/images/separate-meet-menu.png') no-repeat left top;*/
 	width: 160px;
 	margin: 0;
 }
