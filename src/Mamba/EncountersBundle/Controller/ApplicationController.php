@@ -134,4 +134,32 @@ abstract class ApplicationController extends Controller {
 
         return self::$Instances[__FUNCTION__] = new PlatformSettings($this->getRedis());
     }
+
+    /**
+     * Возвращает массив данных, общих по всему приложению
+     *
+     * @return array
+     */
+    public function getInitialData() {
+        $data = array(
+            'settings' => array(),
+            'user'     => array(),
+            'stats'    => array(),
+        );
+
+        $data['settings']['platform'] = json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid')));
+        $data['settings']['search']   = json_encode($preferences = $this->getPreferencesObject()->get($webUserId));
+
+        $data['who'] = array(
+            'instrumental' => $preferences['gender'] == 'F' ? 'ней' : 'ним',
+            'nominative' => $preferences['gender'] == 'F' ? 'она' : 'он'
+        );
+
+        $data['stats']['charge']   = $this->getBatteryObject()->get($webUserId);
+        $data['stats']['mychoice'] = 10;
+        $data['stats']['visitors'] = 10;
+        $data['stats']['mutual']   = 10;
+
+        return $data;
+    }
 }

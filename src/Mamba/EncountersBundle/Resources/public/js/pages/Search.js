@@ -21,6 +21,9 @@ $Search = {
      */
     initUI: function() {
         this.initDecisionButtons();
+        $("img.app-image").click(function() {
+            $Search.listNextPhoto();
+        });
     },
 
     /**
@@ -34,6 +37,8 @@ $Search = {
         $("div.app-info-user").hide();
         $("p.app-see-block").fadeTo('fast', 0.6);
         $("div.app-image-member img").hide();
+        $("a.rarr").hide();
+        $("a.larr").hide();
         $Search.$storage['locked'] = true;
     },
 
@@ -56,6 +61,16 @@ $Search = {
         $("div.app-meet-button a.yes").click(function(){return $Search.makeDecision(1);});
         $("div.app-meet-button a.maybe").click(function(){return $Search.makeDecision(0);});
         $("div.app-meet-button a.no").click(function(){return $Search.makeDecision(-1);});
+
+        $("a.larr").click(function() {
+            $Search.listPreviousPhoto();
+            return false;
+        });
+
+        $("a.rarr").click(function() {
+            $Search.listNextPhoto();
+            return false;
+        });
     },
 
     /**
@@ -86,25 +101,11 @@ $Search = {
      * @queue next
      */
     showNextPhoto: function() {
+        var $currentQueueElement;
+
         if (this.$storage['currentQueueElement'] = $currentQueueElement = $Queue.get()) {
-            if ($currentQueueElement['photos'].length > 1) {
-                $("div.app-lenta-img").html("");
-                for (var $i=0;$i<$currentQueueElement['photos'].length;$i++) {
-                    var $html = "<a class='" + (!$i ? 'select' : '') + "' href=\"#\" pid='" + $i + "' style=\"background-image: url('" +  $currentQueueElement['photos'][$i]['small_photo_url'] + "')\"></a>";
-                    $("div.app-lenta-img").append($html);
-                }
-
-                $("div.app-lenta-img a").click(function() {
-                    $("div.app-image-member img").attr('src', $currentQueueElement['photos'][$(this).attr('pid')]['huge_photo_url']);
-                    $('div.app-lenta-img a').removeClass('select');
-                    $(this).addClass('select');
-                });
-
-                $("div.app-lenta").show();
-            } else {
-                $("div.app-lenta").hide();
-            }
-
+            this.$storage['currentPhotoNumber'] = 0;
+            this.rebuildThumbsPanel();
 
             $("div.app-info-user a").html($currentQueueElement['info']['name']).attr({target:'_blank','href':$Config.get('platform').partner_url + "anketa.phtml?oid=" + $currentQueueElement['info']['id']});
             if ($currentQueueElement['info']['age']) {
@@ -134,6 +135,109 @@ $Search = {
             });
             return this.lockUI();
         }
+    },
+
+    /**
+     * Перестроить панель тумб
+     *
+     * @rebuild thumbs
+     */
+    rebuildThumbsPanel: function() {
+        var
+            $currentQueueElement = this.$storage['currentQueueElement'],
+            $photosCount = $currentQueueElement['photos'].length
+        ;
+
+        if ($currentQueueElement['photos'].length > 1) {
+
+            var
+                $html = "",
+                $currentPhotoNumber = this.$storage['currentPhotoNumber'],
+                $photosPerPage = 6
+            ;
+
+            if ($currentQueueElement['photos'].length-1 < $photosPerPage) {
+                $("a.rarr").hide();
+                $("a.larr").hide();
+            } else {
+                $("a.rarr").show();
+                $("a.larr").show();
+            }
+
+            console.log('current photo number: '+$currentPhotoNumber);
+            console.log('photos count: '+ $photosCount);
+
+            var $withOffset = ($currentPhotoNumber >= ($photosCount > $photosPerPage ? $photosPerPage: $photosCount));
+            console.log('with offset: ' + $withOffset);
+            var $from = ($withOffset ? ($currentPhotoNumber + 1 - ($photosCount > $photosPerPage ? $photosPerPage: $photosCount)) : 0);
+            if ($from + $photosPerPage >= $photosCount) {
+                var $to = $photosCount;
+            } else {
+                var $to = $from + $photosPerPage;
+            }
+
+            console.log('from:' + $from);
+            console.log('to: ' + $to);
+
+            for (var $i = $from;$i<$to;$i++) {
+                $html += "<a class='" + ($i == this.$storage['currentPhotoNumber'] ? 'select' : '') + "' href=\"#\" pid='" + $i + "' style=\"background-image: url('" +  $currentQueueElement['photos'][$i]['small_photo_url'] + "')\"></a>";
+            }
+
+            $("div#thumbs").html($html);
+
+            $("div#thumbs a").click(function() {
+                $("div.app-image-member img").attr('src', $currentQueueElement['photos'][$Search.$storage['currentPhotoNumber'] = $(this).attr('pid')]['huge_photo_url']);
+                $('div.app-lenta-img a').removeClass('select');
+                $(this).addClass('select');
+                return false;
+            });
+
+            $("div.app-lenta").show();
+        } else {
+            $("div.app-lenta").hide();
+        }
+    },
+
+    /**
+     * Показывает следующую фотку по списку минифоток
+     *
+     * @shows next pic
+     */
+    listNextPhoto: function() {
+        var
+            $currentId = parseInt(this.$storage['currentPhotoNumber']),
+            $size      = this.$storage['currentQueueElement'].photos.length
+        ;
+
+        var $nextId;
+
+        if (($nextId = $currentId + 1) >= $size) {
+            $nextId = 0;
+        }
+
+        $("div.app-image-member img").attr('src', this.$storage['currentQueueElement']['photos'][this.$storage['currentPhotoNumber'] = $nextId]['huge_photo_url']);
+        this.rebuildThumbsPanel();
+    },
+
+    /**
+     * Показывает предыдущую фотку по списку минифоток
+     *
+     * @shows prev pic
+     */
+    listPreviousPhoto: function() {
+        var
+            $currentId = parseInt(this.$storage['currentPhotoNumber']),
+            $size      = this.$storage['currentQueueElement'].photos.length
+            ;
+
+        var $nextId;
+
+        if (($nextId = $currentId - 1) < 0) {
+            $nextId = this.$storage['currentQueueElement']['photos'].length - 1;
+        }
+
+        $("div.app-image-member img").attr('src', this.$storage['currentQueueElement']['photos'][this.$storage['currentPhotoNumber'] = $nextId]['huge_photo_url']);
+        this.rebuildThumbsPanel();
     },
 
     /**

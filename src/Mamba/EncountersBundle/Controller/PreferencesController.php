@@ -80,7 +80,7 @@ class PreferencesController extends ApplicationController {
             }
         }
 
-        return $this->render('EncountersBundle:templates:preferences.html.twig', $searchPreferences);
+        return $this->render('EncountersBundle:templates:preferences.html.twig', array_merge($searchPreferences, $this->getInitialData()));
     }
 
     /**

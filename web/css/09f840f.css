@@ -455,6 +455,21 @@ h5{ font-size: 100%; }
 	height: 80px;
 }
 
+.app-lenta .larr {
+    position: relative;
+    bottom: 30px;
+    font-size:130%;
+    right:10px;
+}
+
+.app-lenta .rarr {
+    position: relative;
+    bottom: 30px;
+    left:10px;
+    border: 0;
+}
+
+
 .app-lenta .app-lenta-img a{
 	display: inline-block;
 	height: 62px;

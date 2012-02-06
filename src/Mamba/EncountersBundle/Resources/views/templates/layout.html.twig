@@ -26,8 +26,12 @@
 <script src="http://js.aplatform.ru/app.js"></script>
 <script>
 {% autoescape false %}
-$Config.set('platform', {{platformSettings}});
-$Config.set('search', {{searchPreferences}});
+{% if settings.platform %}
+$Config.set('platform', {{settings.platform}});
+{% endif %}
+{% if settings.search %}
+$Config.set('search', {{settings.search}});
+{% endif %}
 {% endautoescape %}
 $(document).ready(function() {
     $App.init(location.pathname).run();
