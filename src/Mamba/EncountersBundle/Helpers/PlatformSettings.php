@@ -17,7 +17,7 @@ class PlatformSettings {
          *
          * @var str
          */
-        REDIS_HASH_USERS_PLATFORM_PARAMS_KEY = "users_platform_params",
+        REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY = "users_platform_settings",
 
         /**
          * Ключ для хранения хеша последних обращений к платформенному интерфейсу
@@ -55,7 +55,7 @@ class PlatformSettings {
      */
     public function get($userId) {
         if (is_int($userId)) {
-            return $this->Redis->hGet(self::REDIS_HASH_USERS_PLATFORM_PARAMS_KEY, $userId);
+            return $this->Redis->hGet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $userId);
         }
 
         throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
@@ -73,7 +73,7 @@ class PlatformSettings {
                 unset($platformParams['auth_key']);
             }
 
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_PARAMS_KEY, $mambaUserId, $platformParams);
+            return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $mambaUserId, $platformParams);
         }
 
         throw new PlatformParamsException("Invalid platform params: \n" . var_export($platformParams, true));
