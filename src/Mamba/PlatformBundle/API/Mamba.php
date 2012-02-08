@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\PlatformBundle\API;
 
-use Mamba\EncountersBundle\PlatformSettings;
+use Mamba\EncountersBundle\Helpers\PlatformSettings;
 
 /**
  * Mamba

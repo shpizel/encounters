@@ -2,28 +2,6 @@
 {% block title %}Поиск{% endblock %}
 
 {% block body %}
-<div class="app-layout">
-    <div class="app-menu-bar">
-        <i class="l-menu-rounder"></i>
-        <i class="l-rounder"></i>
-        <i class="r-rounder"></i>
-        <div class="app-menu-bar-inner">
-            <ul class="info-meet" style="float:right;">
-                <li class="item-popul"><div><b>Низкая</b> популярность</div></li>
-                <li class="item-setting"><a href="/preferences"></a></li>
-                <li class="item-energy">
-                    <b class="battery"><b style="width:{{ stats.charge*15 }}%"></b></b> <i>{{ stats.charge*20 }}%</i>
-                </li>
-            </ul>
-            <ul class="info-meet">
-                <li class="item-game active"><a><b>Поиск</b></a></li>
-                <li class="item-mychoice"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if stats.mychoice %}{{stats.mychoice}}{% endif %}</i></a></li>
-                <li class="item-visitors"><a href="/visitors"><b>Меня смотрели</b> <i>{% if stats.visitors %}{{stats.visitors}}{% endif %}</i></a></li>
-                <li class="item-mutual"><a href="/mutual"><b>Взаимные</b>{% if stats.mutual %} <i class="heart">{{ stats.mutual }}</i>{% endif %}</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
 <div class="app-main">
     <div class="app-page">
 

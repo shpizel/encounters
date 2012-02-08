@@ -189,17 +189,15 @@ class PreferencesController extends ApplicationController {
      * @return mixed
      */
     private function cleanUserQueues() {
-        $Mamba = $this->get('mamba');
+        $webUserId = $this->getMamba()->get('oid');
+
         return
-            $this->get('redis')
+            $this->getRedis()
                 ->multi()
-                    ->delete(sprintf(EncountersBundle::REDIS_SET_USER_HITLIST_QUEUE_KEY, $Mamba->get('oid')))
-                    ->delete(sprintf(EncountersBundle::REDIS_SET_USER_CONTACTS_QUEUE_KEY, $Mamba->get('oid')))
-                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $Mamba->get('oid')))
-                    ->delete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $Mamba->get('oid')))
-
-                    //->delete(sprintf(EncountersBundle::REDIS_SET_USER_REVERSE_QUEUE_KEY, $Mamba->get('oid')))
-
+                    ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId))
+                    ->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId))
+                    ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId))
+                    ->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
                 ->exec()
         ;
     }
@@ -210,12 +208,10 @@ class PreferencesController extends ApplicationController {
      * @return null
      */
     private function regenerateUserQueues() {
-        $GearmanClient = $this->get('gearman')->getClient();
-        $Mamba = $this->get('mamba');
-
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $Mamba->get('oid'));
+        $GearmanClient = $this->getGearman()->getClient();
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $webUserId = $this->getMamba()->get('oid'));
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
 
     }
 }

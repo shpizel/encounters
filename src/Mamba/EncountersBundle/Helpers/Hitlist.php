@@ -1,8 +1,7 @@
 <?php
-namespace Mamba\EncountersBundle;
+namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\RedisBundle\Redis;
-use Mamba\MemcacheBundle\Memcache;
 
 /**
  * Hitlist

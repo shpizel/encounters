@@ -1,5 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle;
+namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\RedisBundle\Redis;
 
@@ -68,7 +68,7 @@ class PlatformSettings {
      * @return mixed
      */
     public function set(array $platformParams) {
-        if (isset($platformParams['oid']) && ($mambaUserId = (int)$platformParams['oid'])) {
+        if (isset($platformParams['oid']) && ($mambaUserId = $platformParams['oid'] = (int)$platformParams['oid'])) {
             if (isset($platformParams['auth_key'])) {
                 unset($platformParams['auth_key']);
             }

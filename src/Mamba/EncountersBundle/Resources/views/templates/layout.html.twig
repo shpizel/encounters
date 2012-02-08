@@ -12,6 +12,26 @@
 {% endstylesheets %}
 </head>
 <body>
+<div class="app-layout">
+    <div class="app-menu-bar">
+        <i class="l-menu-rounder"></i>
+        <i class="l-rounder"></i>
+        <i class="r-rounder"></i>
+        <div class="app-menu-bar-inner">
+            <ul class="info-meet" style="float:right;">
+                <li class="item-popul"><div class="{{ webuser.popularity.class }}"><b>{{ webuser.popularity.title }}</b> популярность</div></li>
+                <li class="item-setting"><a href="/preferences"></a></li>
+                <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery.charge*15 }}%"></b></b> <i>{{ webuser.battery.charge*20 }}%</i></li>
+            </ul>
+            <ul class="info-meet">
+                <li class="item-game active"><a href="/search"><b>Поиск</b></a></li>
+                <li class="item-mychoice"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
+                <li class="item-visitors"><a href="/visitors"><b>Меня смотрели</b> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
+                <li class="item-mutual"><a href="/mutual"><b>Взаимные</b>{% if webuser.stats.mutual %} <i class="heart">{{ webuser.stats.mutual }}</i>{% endif %}</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
 {% block body %}{% endblock %}
 {% block javascripts %}{% endblock %}
 {% javascripts
@@ -25,6 +45,7 @@
 {% endjavascripts %}
 <script src="http://js.aplatform.ru/app.js"></script>
 <script>
+$Config.set('debug', {{ app.debug }});
 {% autoescape false %}
 {% if settings.platform %}
 $Config.set('platform', {{settings.platform}});
@@ -33,8 +54,9 @@ $Config.set('platform', {{settings.platform}});
 $Config.set('search', {{settings.search}});
 {% endif %}
 {% endautoescape %}
-$(document).ready(function() {
+$(document).ready(function(){
     $App.init(location.pathname).run();
+    $Layers.showLayerAnswerMaybe();
 });
 </script>
 </body>

@@ -24,7 +24,14 @@ class ContactsQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Contacts queue updater"
+        SCRIPT_DESCRIPTION = "Contacts queue updater",
+
+        /**
+         * Лимит
+         *
+         * @var int
+         */
+        LIMIT = 25
     ;
 
     /**
@@ -79,17 +86,22 @@ class ContactsQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
+        if ($this->getContactsQueueObject()->getSize($webUserId) >= self::LIMIT) {
+            return;
+        }
+
         if ($contactList = $Mamba->Contacts()->getContactList()) {
             $usersAddedCount = 0;
 
             foreach ($contactList['contacts'] as $contact) {
                 $contactInfo = $contact['info'];
-                list($userId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
+                list($currentUserId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
                 if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
                     if ($gender == $searchPreferences['gender']) {
                         if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
-                            if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                                $Redis->sAdd(sprintf(EncountersBundle::REDIS_SET_USER_CONTACTS_QUEUE_KEY, $webUserId), $userId) && $usersAddedCount++;
+                            if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                                $this->getContactsQueueObject()->put($webUserId, $currentUserId)
+                                    && $usersAddedCount++;
                             }
                         }
                     }
@@ -97,12 +109,6 @@ class ContactsQueueUpdateCommand extends QueueUpdateCronScript {
             }
 
             $this->log("[Contacts queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-
-            $Redis->hSet(
-                sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $webUserId),
-                EncountersBundle::REDIS_HASH_KEY_CONTACTS_QUEUE_UPDATED,
-                time()
-            );
         } else {
             throw new CronScriptException("Could not fetch contact list for user_id=$webUserId");
         }

@@ -1,8 +1,7 @@
 <?php
-namespace Mamba\EncountersBundle;
+namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\RedisBundle\Redis;
-use Mamba\MemcacheBundle\Memcache;
 
 /**
  * Energy
@@ -114,7 +113,14 @@ class Energy {
             throw new EnergyException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        return $this->Redis->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
+        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
+        if ($incrementResult < self::MINIMUM_ENERGY) {
+            return $this->set($userId, self::MINIMUM_ENERGY);
+        } elseif ($incrementResult > self::MAXIMUM_ENERGY) {
+            return $this->set($userId, self::MAXIMUM_ENERGY);
+        }
+
+        return $incrementResult;
     }
 
     /**

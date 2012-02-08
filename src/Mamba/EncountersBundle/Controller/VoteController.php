@@ -49,29 +49,38 @@ class VoteController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
         } else {
 
-            # Увеличить энергию WebUser'a
-            try {
-                $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
+            /** Пишем в хитлист */
+            $this->getHitlistObject()->incr($this->currentUserId);
 
-                # энергия webuser'a увеличилась, а следовательно — нужно обновить его приоритет в чужих очередях
-                # ставим задачу
-            } catch (\Exception $e) {
+            /** Увеличить энергию WebUser'a */
+            $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
-            };
+            /** Ставим задачу на обновление памяти */
+            $this->getGearman()->getClient()->doLowBackground('', serialize(array(
 
-            # проверить не слишком ли мы часто голосуем епт
+            )));
 
-            # а мы не совпали случайно?!
+            /** Ставим задачу на спам */
+            $this->getGearman()->getClient()->doLowBackground('', serialize(array(
 
-            # записать голосование как-то надо в базу (через задачу)
+            )));
 
-            # спам?
+            /** Ставим задачу на обноления базы */
+            $this->getGearman()->getClient()->doLowBackground('', serialize(array(
 
-            # удалим юзера из текущей очереди
-            $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $this->webUserId), $this->currentUserId);
+            )));
 
-            # вставим юзера в список уже оцененных
-            $Redis->zAdd(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $this->webUserId), $this->currentUserId, array('ts' => time(), 'decision' => $this->decision));
+            /** Не спишком ли часто мы спамим? */
+
+
+            /** Может мы совпали? */
+
+
+            /** Удалим currentUser'a из текущей очереди webUser'a */
+            $this->getCurrentQueueObject()->remove($this->webUserId, $this->currentUserId);
+
+            /** Добавим currentUser'a в список уже просмотренных webUser'ом */
+            $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'desicion'=>$this->decision));
         }
 
         return new Response(json_encode($this->json), 200, array("application/json"));
@@ -96,8 +105,8 @@ class VoteController extends ApplicationController {
             $decision = (int) $decision;
 
             if ($userId && $decision >= -1 && $decision <= 1) {
-                if (false !== $this->getRedis()->zScore(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $this->webUserId = $this->getMamba()->get('oid')), $userId)) {
-                    $this->currentUserId = $userId;
+                if (false !== $this->getRedis()->zScore(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $this->webUserId = (int) $this->getMamba()->get('oid')), $userId)) {
+                    $this->currentUserId = (int) $userId;
                     $this->decision = $decision;
 
                     return true;

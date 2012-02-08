@@ -2,11 +2,20 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Mamba\EncountersBundle\Preferences;
-use Mamba\EncountersBundle\Battery;
-use Mamba\EncountersBundle\Energy;
-use Mamba\EncountersBundle\Hitlist;
-use Mamba\EncountersBundle\PlatformSettings;
+
+use Mamba\EncountersBundle\Helpers\Preferences;
+use Mamba\EncountersBundle\Helpers\Battery;
+use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\Hitlist;
+use Mamba\EncountersBundle\Helpers\PlatformSettings;
+
+use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
+use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
+use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
+use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
+use Mamba\EncountersBundle\Helpers\Queues\ReverseQueue;
+use Mamba\EncountersBundle\Helpers\Queues\SearchQueue;
+use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 
 /**
  * ApplicationController
@@ -80,7 +89,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis(), $this->getMemcache());
+        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
     }
 
     /**
@@ -93,7 +102,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis(), $this->getMemcache());
+        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
     }
 
     /**
@@ -136,6 +145,97 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
+     * Contacts queue getter
+     *
+     * @return ContactsQueue
+     */
+    public function getContactsQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
+    }
+
+    /**
+     * Current queue getter
+     *
+     * @return CurrentQueue
+     */
+    public function getCurrentQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
+    }
+
+    /**
+     * Hitlist queue getter
+     *
+     * @return HitlistQueue
+     */
+    public function getHitlistQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
+    }
+
+    /**
+     * Priority queue getter
+     *
+     * @return PriorityQueue
+     */
+    public function getPriorityQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
+    }
+
+    /**
+     * Reverse queue getter
+     *
+     * @return ReverseQueue
+     */
+    public function getReverseQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ReverseQueue($this->getRedis());
+    }
+
+    /**
+     * Search queue getter
+     *
+     * @return SearchQueue
+     */
+    public function getSearchQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
+    }
+
+    /**
+     * Viewed queue getter
+     *
+     * @return ViewedQueue
+     */
+    public function getViewedQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
+    }
+
+    /**
      * Возвращает массив данных, общих по всему приложению
      *
      * @return array
@@ -143,7 +243,7 @@ abstract class ApplicationController extends Controller {
     public function getInitialData() {
         $data = array(
             'settings' => array(),
-            'user'     => array(),
+            'webuser'  => array(),
             'stats'    => array(),
         );
 
@@ -159,6 +259,14 @@ abstract class ApplicationController extends Controller {
         $data['stats']['mychoice'] = 10;
         $data['stats']['visitors'] = 10;
         $data['stats']['mutual']   = 10;
+
+        $data['webuser']['popularity'] = array('title'=>'Низкая', 'class'=>'high');
+        $data['webuser']['battery'] = array('charge'=>2);
+        $data['webuser']['stats'] = array(
+            'visitors' => 1,
+            'mutual' => 1,
+            'mychoice' => 10,
+        );
 
         return $data;
     }

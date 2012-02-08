@@ -25,7 +25,14 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Search queue updater"
+        SCRIPT_DESCRIPTION = "Search queue updater",
+
+        /**
+         * Лимит
+         *
+         * @var int
+         */
+        LIMIT = 25
     ;
 
     /**
@@ -80,58 +87,44 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
+        if ($this->getSearchQueueObject()->getSize($webUserId) >= self::LIMIT) {
+            return;
+        }
+
         $offset = -10;
+        $usersAddedCount = 0;
         do {
-            $Mamba->multi();
+            $result = $Mamba->Search()->get(
+                $whoAmI         = null,
+                $lookingFor     = $searchPreferences['gender'],
+                $ageFrom        = $searchPreferences['age_from'],
+                $ageTo          = $searchPreferences['age_to'],
+                $target         = null,
+                $onlyWithPhoto  = true,
+                $onlyReal       = true,
+                $onlyWithWebCam = false,
+                $noIntim        = true,
+                $countryId      = $searchPreferences['geo']['country_id'],
+                $regionId       = $searchPreferences['geo']['region_id'],
+                $cityId         = $searchPreferences['geo']['city_id'],
+                $metroId        = null,
+                $offset         = $offset + 10,
+                $blocks         = array(),
+                $idsOnly        = true
+            );
 
-            for ($i=0;$i<10;$i++) {
-                $Mamba->Search()->get(
-                    $whoAmI         = null,
-                    $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = $searchPreferences['age_from'],
-                    $ageTo          = $searchPreferences['age_to'],
-                    $target         = null,
-                    $onlyWithPhoto  = true,
-                    $onlyReal       = true,
-                    $onlyWithWebCam = false,
-                    $noIntim        = true,
-                    $countryId      = $searchPreferences['geo']['country_id'],
-                    $regionId       = $searchPreferences['geo']['region_id'],
-                    $cityId         = $searchPreferences['geo']['city_id'],
-                    $metroId        = null,
-                    $offset         = $offset + 10,
-                    $blocks         = array(),
-                    $idsOnly        = true
-                );
-            }
+            if (isset($result['users'])) {
+                foreach ($result['users'] as $currentUserId) {
+                    if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                        $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                            && $usersAddedCount++;
 
-            $result = $Mamba->exec();
-
-            $usersAddedCount = 0;
-
-            foreach ($result as $item) {
-                if (isset($item['users'])) {
-                    foreach ($item['users'] as $userId) {
-                        if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                            $Redis->zAdd(
-                                sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY, $webUserId),
-                                Popularity::getPopularity($this->getEnergyObject()->get($userId)),
-                                $userId
-                            ) && $usersAddedCount++;
-                        }
+                        $this->getReverseQueueObject()->put($webUserId, $currentUserId);
                     }
                 }
             }
 
             $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-        } while (array_filter($result, function($item) {
-            return isset($item['users']) && count($item['users']);
-        }));
-
-        $Redis->hSet(
-            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $webUserId),
-            EncountersBundle::REDIS_HASH_KEY_SEARCH_QUEUE_UPDATED,
-            time()
-        );
+        } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
     }
 }

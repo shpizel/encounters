@@ -45,9 +45,7 @@ class QueueController extends ApplicationController {
 
         $webUserId = $Mamba->get('oid');
 
-        if ($Redis->zSize(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId)) &&
-            $currentQueue = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, array_sum(CurrentQueueUpdateCommand::$balance))) {
-
+        if ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId)) {
             foreach ($Mamba->Anketa()->getInfo($currentQueue) as $dataArray) {
                 $this->json['data'][] = array(
                     'info' => array(
@@ -78,7 +76,7 @@ class QueueController extends ApplicationController {
                 if (!isset($dataArray['photos'])) {
                     unset($this->json['data'][$key]);
 
-                    $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), $userId);
+                    $this->getCurrentQueueObject()->remove($webUserId, $userId);
                 }
             }
 

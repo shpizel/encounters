@@ -1,5 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle;
+namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\EncountersBundle\Energy;
 

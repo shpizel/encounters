@@ -8,13 +8,21 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Mamba\PlatformBundle\API\Mamba;
-use Mamba\EncountersBundle\Battery;
-use Mamba\EncountersBundle\Energy;
-use Mamba\EncountersBundle\Hitlist;
-use Mamba\EncountersBundle\Preferences;
+use Mamba\EncountersBundle\Helpers\Battery;
+use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\Hitlist;
+use Mamba\EncountersBundle\Helpers\Preferences;
 
 use Mamba\RedisBundle\Redis;
 use Mamba\MemcacheBundle\Memcache;
+
+use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
+use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
+use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
+use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
+use Mamba\EncountersBundle\Helpers\Queues\ReverseQueue;
+use Mamba\EncountersBundle\Helpers\Queues\SearchQueue;
+use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 
 /**
  * QueueUpdateCronScript
@@ -121,5 +129,94 @@ abstract class QueueUpdateCronScript extends CronScript {
         return self::$Instances[__FUNCTION__] = new Preferences($this->getRedis());
     }
 
+    /**
+     * Contacts queue getter
+     *
+     * @return ContactsQueue
+     */
+    public function getContactsQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
 
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
+    }
+
+    /**
+     * Current queue getter
+     *
+     * @return CurrentQueue
+     */
+    public function getCurrentQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
+    }
+
+    /**
+     * Hitlist queue getter
+     *
+     * @return HitlistQueue
+     */
+    public function getHitlistQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
+    }
+
+    /**
+     * Priority queue getter
+     *
+     * @return PriorityQueue
+     */
+    public function getPriorityQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
+    }
+
+    /**
+     * Reverse queue getter
+     *
+     * @return ReverseQueue
+     */
+    public function getReverseQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ReverseQueue($this->getRedis());
+    }
+
+    /**
+     * Search queue getter
+     *
+     * @return SearchQueue
+     */
+    public function getSearchQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
+    }
+
+    /**
+     * Viewed queue getter
+     *
+     * @return ViewedQueue
+     */
+    public function getViewedQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
+    }
 }

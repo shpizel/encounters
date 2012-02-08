@@ -4,11 +4,11 @@ namespace Mamba\EncountersBundle\Helpers;
 use Mamba\RedisBundle\Redis;
 
 /**
- * Hitlist
+ * Counters
  *
  * @package EncountersBundle
  */
-class Hitlist {
+class Counters {
 
     const
 
@@ -17,7 +17,7 @@ class Hitlist {
          *
          * @var str
          */
-        REDIS_HASH_USER_HITLIST_KEY = "hitlist_by_%d"
+        REDIS_HASH_USER_COUNTERS_KEY = "counters_by_%d"
     ;
 
     private
@@ -33,65 +33,52 @@ class Hitlist {
     /**
      * Конструктор
      *
-     * @param $userId
-     * @return null
+     * @param \Mamba\RedisBundle\Redis $Redis
      */
     public function __construct(Redis $Redis) {
         $this->Redis = $Redis;
     }
 
     /**
-     * Hitlist getter
+     * Counter getter
      *
      * @param int $userId
-     * @param int $period days
+     * @param string $key
      * @return mixed
      */
-    public function get($userId, $period = 1) {
+    public function get($userId, $key) {
         if (!is_int($userId)) {
-            throw new HitlistException("Invalid user id: \n" . var_export($userId, true));
+            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if (!is_int($period)) {
-            throw new HitlistException("Invalid period: \n" . var_export($period, true));
-        }
-
-        $this->Redis->multi();
-        for ($i=0;$i<$period*24;$i++) {
-            $this->Redis->hGet(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH', strtotime("-$i hours")));
-        }
-
-        $hitsArray = array_filter($this->Redis->exec(), function($item) {
-            return (bool) $item;
-        });
-
-        return array_sum($hitsArray);
+        return $this->Redis->hGet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key);
     }
 
     /**
-     * Atomic increment
+     * Counter increment
      *
      * @param int $userId
+     * @param string $key
      * @param int $rate
      */
-    public function incr($userId, $rate = 1) {
+    public function incr($userId, $key, $rate) {
         if (!is_int($userId)) {
-            throw new HitlistException("Invalid user id: \n" . var_export($userId, true));
+            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
         }
 
         if (!is_int($rate)) {
-            throw new HitlistException("Invalid rate: \n" . var_export($rate, true));
+            throw new CountersException("Invalid rate: \n" . var_export($rate, true));
         }
 
-        return $this->Redis->hIncrBy(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH') , $rate);
+        return $this->Redis->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $rate);
     }
 }
 
 /**
- * HitlistException
+ * CountersException
  *
  * @package EncountersBundle
  */
-class HitlistException extends \Exception {
+class CountersException extends \Exception {
 
 }

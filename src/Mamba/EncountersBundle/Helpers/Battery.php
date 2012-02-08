@@ -1,8 +1,7 @@
 <?php
-namespace Mamba\EncountersBundle;
+namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\RedisBundle\Redis;
-use Mamba\MemcacheBundle\Memcache;
 
 /**
  * Battery
@@ -106,7 +105,14 @@ class Battery {
             throw new BatteryException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        return $this->Redis->hIncrBy(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $rate);
+        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $rate);
+        if ($incrementResult < self::MINIMUM_CHARGE) {
+            $this->set($userId, self::MINIMUM_CHARGE);
+        } elseif ($incrementResult > self::MAXIMUM_CHARGE) {
+            $this->set($userId, self::MAXIMUM_CHARGE);
+        }
+
+        return $incrementResult;
     }
 
     /**

@@ -24,7 +24,14 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Hitlist queue updater"
+        SCRIPT_DESCRIPTION = "Hitlist queue updater",
+
+        /**
+         * Лимит
+         *
+         * @var int
+         */
+        LIMIT = 25
     ;
 
     /**
@@ -79,19 +86,23 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
+        if ($this->getHitlistQueueObject()->getSize($webUserId) >= self::LIMIT) {
+            return;
+        }
+
         if ($hitList = $Mamba->Anketa()->getHitlist(-30)) {
-
             $usersAddedCount = 0;
-
             foreach ($hitList['visitors'] as $user) {
                 $userInfo = $user['info'];
-                list($userId, $gender, $age) = array($userInfo['oid'], $userInfo['gender'], $userInfo['age']);
+                list($currentUserId, $gender, $age) = array($userInfo['oid'], $userInfo['gender'], $userInfo['age']);
 
                 if (isset($userInfo['medium_photo_url']) && $userInfo['medium_photo_url']) {
                     if ($gender == $searchPreferences['gender']) {
                         if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
-                            if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                                $Redis->sAdd(sprintf(EncountersBundle::REDIS_SET_USER_HITLIST_QUEUE_KEY, $webUserId), $userId) && $usersAddedCount++;
+
+                            if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                                $this->getHitlistQueueObject()->put($webUserId, $currentUserId)
+                                    && $usersAddedCount++;
                             }
                         }
                     }
@@ -99,12 +110,6 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
             }
 
             $this->log("[Hitlist queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-
-            $Redis->hSet(
-                sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $webUserId),
-                EncountersBundle::REDIS_HASH_KEY_HITLIST_QUEUE_UPDATED,
-                time()
-            );
         } else {
             throw new CronScriptException("Could not fetch hitlist for user_id=$webUserId");
         }

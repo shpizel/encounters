@@ -90,68 +90,62 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Invalid workload");
         }
 
-        /**
-         * Наполним очередь согласно балансу
-         *
-         * @author shpizel
-         */
-        while (!$Redis->zSize(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId))) {
-
-            $searchQueueChunk = $Redis->zRange(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY,$webUserId), 0, self::$balance['search'] - 1);
-            $usersAddedCount = 0;
-            foreach ($searchQueueChunk as $userId) {
-                var_dump($userId);
-                $Redis->zDelete(sprintf(EncountersBundle::REDIS_ZSET_USER_SEARCH_QUEUE_KEY,$webUserId), $userId);
-                if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                    $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, $userId) && $usersAddedCount++;
-                }
+        $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
+        $usersAddedCount = 0;
+        foreach ($searchQueueChunk as $currentUserId) {
+            $this->getSearchQueueObject()->remove($webUserId, $currentUserId);
+            if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                    && $usersAddedCount++;
             }
-            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from search queue;");
-
-            $priorityCount = self::$balance['priority'];
-            $usersAddedCount = 0;
-            while ($priorityCount--) {
-                if ($userId = $Redis->sPop(sprintf(EncountersBundle::REDIS_SET_USER_PRIORITY_QUEUE_KEY, $webUserId))) {
-                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, $userId) && $usersAddedCount++;
-                    }
-                } else {
-                    break;
-                }
-            }
-            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from priority queue;");
-
-            $hitlistCount = self::$balance['hitlist'];
-            $usersAddedCount = 0;
-            while ($hitlistCount--) {
-                if ($userId = $Redis->sPop(sprintf(EncountersBundle::REDIS_SET_USER_HITLIST_QUEUE_KEY, $webUserId))) {
-                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId), 0, $userId) && $usersAddedCount++;
-                    }
-                } else {
-                    break;
-                }
-            }
-            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from hitlist queue;");
-
-            $contactsCount = self::$balance['contacts'];
-            $usersAddedCount = 0;
-            while ($contactsCount--) {
-                if ($userId = $Redis->sPop(sprintf(EncountersBundle::REDIS_SET_USER_CONTACTS_QUEUE_KEY, $webUserId))) {
-                    if (!$Redis->hExists(sprintf(EncountersBundle::REDIS_HASH_USER_VIEWED_USERS_KEY, $webUserId), $userId)) {
-                        $Redis->zAdd(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $webUserId),  0, $userId) && $usersAddedCount++;
-                    }
-                } else {
-                    break;
-                }
-            }
-            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
         }
+        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from search queue;");
 
-        $Redis->hSet(
-            sprintf(EncountersBundle::REDIS_HASH_USER_CRON_DETAILS_KEY, $webUserId),
-            EncountersBundle::REDIS_HASH_KEY_CURRENT_QUEUE_UPDATED,
-            time()
-        );
+        $priorityCount = self::$balance['priority'];
+        $usersAddedCount = 0;
+        while ($priorityCount--) {
+            if ($currentUserId = $this->getPriorityQueueObject()->pop($webUserId)) {
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                    $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                        && $usersAddedCount++;
+                }
+            } else {
+                break;
+            }
+        }
+        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from priority queue;");
+
+        $hitlistCount = self::$balance['hitlist'];
+        $usersAddedCount = 0;
+        while ($hitlistCount--) {
+            if ($currentUserId = $this->getHitlistQueueObject()->pop($webUserId)) {
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                    $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                        && $usersAddedCount++;
+                }
+            } else {
+                break;
+            }
+        }
+        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from hitlist queue;");
+
+        $contactsCount = self::$balance['contacts'];
+        $usersAddedCount = 0;
+        while ($contactsCount--) {
+            if ($currentUserId = $this->getContactsQueueObject()->pop($webUserId)) {
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                    $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                        && $usersAddedCount++;
+                }
+            } else {
+                break;
+            }
+        }
+        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
+
+        $GearmanClient = $this->getGearman()->getClient();
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
     }
 }
