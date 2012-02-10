@@ -82,7 +82,7 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Invalid workload");
         }
 
-        if (!($searchPreferences = $this->getPreferencesObject()->get($webUserId))) {
+        if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
             throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 

@@ -52,29 +52,33 @@ class VoteController extends ApplicationController {
             /** Пишем в хитлист */
             $this->getHitlistObject()->incr($this->currentUserId);
 
+            /** Инкрементируем счетчик выбора у webUser'a */
+            $this->getCountersObject()->incr($this->webUserId, 'mychoice');
+
+            /** Инкрементируем счетчик просмотров у currentUser'a */
+            $this->getCountersObject()->incr($this->currentUserId, 'visited');
+
             /** Увеличить энергию WebUser'a */
             $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
-            /** Ставим задачу на обновление памяти */
-            $this->getGearman()->getClient()->doLowBackground('', serialize(array(
-
-            )));
+            /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
+            if ($this->decision) {
+                $this->getPriorityQueueObject()->put($this->currentUserId, $this->webUserId);
+            }
 
             /** Ставим задачу на спам */
-            $this->getGearman()->getClient()->doLowBackground('', serialize(array(
-
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray = array(
+                'webUserId' => $this->webUserId,
+                'currentUserId' => $this->currentUserId,
+                'decision' => $this->decision,
             )));
 
             /** Ставим задачу на обноления базы */
-            $this->getGearman()->getClient()->doLowBackground('', serialize(array(
-
-            )));
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Не спишком ли часто мы спамим? */
 
-
-            /** Может мы совпали? */
-
+            /** Может быть мы совпали? */
 
             /** Удалим currentUser'a из текущей очереди webUser'a */
             $this->getCurrentQueueObject()->remove($this->webUserId, $this->currentUserId);
@@ -100,13 +104,13 @@ class VoteController extends ApplicationController {
                 $params[$param] = $postParams[$param];
             }
 
-            list($userId, $decision) = array_values($params);
-            $userId = (int) $userId;
+            list($currentUserId, $decision) = array_values($params);
+            $currentUserId = (int) $currentUserId;
             $decision = (int) $decision;
 
-            if ($userId && $decision >= -1 && $decision <= 1) {
-                if (false !== $this->getRedis()->zScore(sprintf(EncountersBundle::REDIS_ZSET_USER_CURRENT_QUEUE_KEY, $this->webUserId = (int) $this->getMamba()->get('oid')), $userId)) {
-                    $this->currentUserId = (int) $userId;
+            if ($currentUserId && $decision >= -1 && $decision <= 1) {
+                if (false !== $this->getCurrentQueueObject()->exists($this->webUserId = (int) $this->getMamba()->get('oid'), $currentUserId)) {
+                    $this->currentUserId = (int) $currentUserId;
                     $this->decision = $decision;
 
                     return true;

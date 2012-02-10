@@ -11,11 +11,11 @@ use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * SpamSenderCommand
+ * DatabaseUpdateCommand
  *
  * @package EncountersBundle
  */
-class SpamSenderCommand extends QueueUpdateCronScript {
+class DatabaseUpdateCommand extends QueueUpdateCronScript {
 
     const
 
@@ -24,14 +24,7 @@ class SpamSenderCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Hitlist queue updater",
-
-        /**
-         * Лимит
-         *
-         * @var int
-         */
-        LIMIT = 25
+        SCRIPT_DESCRIPTION = "Hitlist queue updater"
     ;
 
     /**
@@ -43,9 +36,9 @@ class SpamSenderCommand extends QueueUpdateCronScript {
         $worker = $this->getGearman()->getWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_UPDATE_FUNCTION_NAME, function($job) use($class) {
             try {
-                return $class->updateHitlistQueue($job);
+                return $class->updateDatabase($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
                 return;
@@ -63,11 +56,12 @@ class SpamSenderCommand extends QueueUpdateCronScript {
     }
 
     /**
-     * Обновляет пользовательскую очередь из хитлиста
+     * Обновляет базу данных
      *
      * @param $job
      */
-    public function updateHitlistQueue($job) {
+    public function updateDatabase($job) {
+
 
     }
 }

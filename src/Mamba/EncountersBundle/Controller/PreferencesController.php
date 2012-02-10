@@ -24,11 +24,11 @@ class PreferencesController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $redisSearchPreferences = $this->getPreferencesObject()->get($Mamba->get('oid'));
+        $redisSearchPreferences = $this->getSearchPreferencesObject()->get($Mamba->get('oid'));
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
             $searchPreferences['geo'] = $this->getUserGeoParams($Mamba->get('oid'));
-            $this->getPreferencesObject()->set($Mamba->get('oid'), $searchPreferences);
+            $this->getSearchPreferencesObject()->set($Mamba->get('oid'), $searchPreferences);
 
             /**
              * Изменились ли настройки?

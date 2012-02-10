@@ -8,7 +8,7 @@ use Mamba\RedisBundle\Redis;
  *
  * @package EncountersBundle
  */
-class Preferences {
+class SearchPreferences extends Helper {
 
     const
 
@@ -20,25 +20,6 @@ class Preferences {
         REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY = "users_search_preferences"
     ;
 
-    private
-
-        /**
-         * Redis
-         *
-         * @var Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @return null
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
-
     /**
      * Preferences getter
      *
@@ -46,7 +27,7 @@ class Preferences {
      * @return mixed
      */
     public function get($userId) {
-        return $this->Redis->hGet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId);
+        return $this->getRedis()->hGet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId);
     }
 
     /**
@@ -58,7 +39,7 @@ class Preferences {
      */
     public function set($userId, array $data) {
         if ($data) {
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, $data);
+            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, $data);
         }
 
         throw new PreferencesException("Invalid data: \n" . var_export($data, true));

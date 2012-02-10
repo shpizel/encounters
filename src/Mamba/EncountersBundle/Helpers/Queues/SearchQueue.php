@@ -1,14 +1,14 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers\Queues;
 
-use Mamba\RedisBundle\Redis;
+use Mamba\EncountersBundle\Helpers\Helper;
 
 /**
  * SearchQueue
  *
  * @package EncountersBundle
  */
-class SearchQueue {
+class SearchQueue extends Helper {
 
     const
 
@@ -19,25 +19,6 @@ class SearchQueue {
          */
         REDIS_ZSET_USER_SEARCH_QUEUE_KEY = "user_%d_search_queue"
     ;
-
-    private
-
-        /**
-         * Redis
-         *
-         * @var \Mamba\RedisBundle\Redis $Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param \Mamba\RedisBundle\Redis $Redis
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
 
     /**
      * Добавляет элемент в очередь
@@ -56,7 +37,7 @@ class SearchQueue {
             throw new SearchQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->zAdd($this->getRedisQueueKey($webUserId), $energy, $currentUserId);
+        return $this->getRedis()->zAdd($this->getRedisQueueKey($webUserId), $energy, $currentUserId);
     }
 
     /**
@@ -70,7 +51,7 @@ class SearchQueue {
             throw new SearchQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->zSize($this->getRedisQueueKey($userId));
+        return $this->getRedis()->zSize($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -93,7 +74,7 @@ class SearchQueue {
             throw new SearchQueueException("Invalid to parameter: \n" . var_export($to, true));
         }
 
-        return $this->Redis->zRange($this->getRedisQueueKey($userId), $from, $to);
+        return $this->getRedis()->zRange($this->getRedisQueueKey($userId), $from, $to);
     }
 
     /**
@@ -111,7 +92,7 @@ class SearchQueue {
             throw new SearchQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        $this->Redis->zDelete($this->getRedisQueueKey($webUserId), $currentUserId);
+        $this->getRedis()->zDelete($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -131,7 +112,7 @@ class SearchQueue {
             throw new SearchQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->zIncrBy($zKey = $this->getRedisQueueKey($webUserId), $energy - $this->zScore($zKey, $currentUserId), $currentUserId);
+        return $this->getRedis()->zIncrBy($zKey = $this->getRedisQueueKey($webUserId), $energy - $this->zScore($zKey, $currentUserId), $currentUserId);
     }
 
     /**

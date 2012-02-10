@@ -1,14 +1,14 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers\Queues;
 
-use Mamba\RedisBundle\Redis;
+use Mamba\EncountersBundle\Helpers\Helper;
 
 /**
  * CurrentQueue
  *
  * @package EncountersBundle
  */
-class CurrentQueue {
+class CurrentQueue extends Helper {
 
     const
 
@@ -19,25 +19,6 @@ class CurrentQueue {
          */
         REDIS_SET_USER_CURRENT_QUEUE_KEY = 'user_%d_current_queue'
     ;
-
-    private
-
-        /**
-         * Redis
-         *
-         * @var \Mamba\RedisBundle\Redis $Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param \Mamba\RedisBundle\Redis $Redis
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
 
     /**
      * Добавляет currentUser'a в текущую очередь webUser'а
@@ -55,7 +36,26 @@ class CurrentQueue {
             throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
+    }
+
+    /**
+     * Проверяет наличие current'a в текущей очереди webuser'a
+     *
+     * @param int $webUserId
+     * @param int $currentUserId
+     * @return bool
+     */
+    public function exists($webUserId, $currentUserId) {
+        if (!is_int($webUserId)) {
+            throw new CurrentQueueException("Invalid web user id: \n" . var_export($webUserId, true));
+        }
+
+        if (!is_int($currentUserId)) {
+            throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
+        }
+        
+        return $this->getRedis()->sContains($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -69,7 +69,7 @@ class CurrentQueue {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sMembers($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sMembers($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -88,7 +88,7 @@ class CurrentQueue {
             throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sRemove($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sRemove($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -102,7 +102,7 @@ class CurrentQueue {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sPop($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sPop($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -116,7 +116,7 @@ class CurrentQueue {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sSize($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sSize($this->getRedisQueueKey($userId));
     }
 
     /**

@@ -98,7 +98,7 @@ class WelcomeController extends ApplicationController {
          *
          * @author shpizel
          */
-        if (!$this->getPreferencesObject()->get($webUserId)) {
+        if (!$this->getSearchPreferencesObject()->get($webUserId)) {
             return $this->redirect($this->generateUrl('preferences'));
         }
 

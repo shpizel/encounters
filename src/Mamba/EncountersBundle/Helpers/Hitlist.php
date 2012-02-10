@@ -8,7 +8,7 @@ use Mamba\RedisBundle\Redis;
  *
  * @package EncountersBundle
  */
-class Hitlist {
+class Hitlist extends Helper {
 
     const
 
@@ -19,26 +19,6 @@ class Hitlist {
          */
         REDIS_HASH_USER_HITLIST_KEY = "hitlist_by_%d"
     ;
-
-    private
-
-        /**
-         * Redis
-         *
-         * @var Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param $userId
-     * @return null
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
 
     /**
      * Hitlist getter
@@ -56,12 +36,12 @@ class Hitlist {
             throw new HitlistException("Invalid period: \n" . var_export($period, true));
         }
 
-        $this->Redis->multi();
+        $this->getRedis()->multi();
         for ($i=0;$i<$period*24;$i++) {
-            $this->Redis->hGet(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH', strtotime("-$i hours")));
+            $this->getRedis()->hGet(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH', strtotime("-$i hours")));
         }
 
-        $hitsArray = array_filter($this->Redis->exec(), function($item) {
+        $hitsArray = array_filter($this->getRedis()->exec(), function($item) {
             return (bool) $item;
         });
 
@@ -83,7 +63,7 @@ class Hitlist {
             throw new HitlistException("Invalid rate: \n" . var_export($rate, true));
         }
 
-        return $this->Redis->hIncrBy(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH') , $rate);
+        return $this->getRedis()->hIncrBy(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH') , $rate);
     }
 }
 

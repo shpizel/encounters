@@ -22,7 +22,7 @@ class MutualController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 

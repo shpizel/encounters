@@ -83,7 +83,7 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
             throw new CronScriptException("Invalid workload");
         }
 
-        if (!($searchPreferences = $this->getPreferencesObject()->get($webUserId))) {
+        if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
             throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
@@ -118,8 +118,6 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
                     if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
                         $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
                             && $usersAddedCount++;
-
-                        $this->getReverseQueueObject()->put($webUserId, $currentUserId);
                     }
                 }
             }

@@ -3,10 +3,11 @@ namespace Mamba\EncountersBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-use Mamba\EncountersBundle\Helpers\Preferences;
+use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Hitlist;
+use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
@@ -89,7 +90,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Battery($this->container);
     }
 
     /**
@@ -102,7 +103,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Energy($this->container);
     }
 
     /**
@@ -115,20 +116,20 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->container);
     }
 
     /**
-     * Preferences getter
+     * Search preferences getter
      *
-     * @return Preferences
+     * @return SearchPreferences
      */
-    public function getPreferencesObject() {
+    public function getSearchPreferencesObject() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Preferences($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->container);
     }
 
     /**
@@ -154,7 +155,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->container);
     }
 
     /**
@@ -167,7 +168,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->container);
     }
 
     /**
@@ -180,7 +181,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->container);
     }
 
     /**
@@ -193,20 +194,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
-    }
-
-    /**
-     * Reverse queue getter
-     *
-     * @return ReverseQueue
-     */
-    public function getReverseQueueObject() {
-        if (isset(self::$Instances[__FUNCTION__])) {
-            return self::$Instances[__FUNCTION__];
-        }
-
-        return self::$Instances[__FUNCTION__] = new ReverseQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->container);
     }
 
     /**
@@ -219,7 +207,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->container);
     }
 
     /**
@@ -232,7 +220,20 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->container);
+    }
+
+    /**
+     * Counters object getter
+     *
+     * @return Counters
+     */
+    public function getCountersObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Counters($this->container);
     }
 
     /**
@@ -248,7 +249,7 @@ abstract class ApplicationController extends Controller {
         );
 
         $data['settings']['platform'] = json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid')));
-        $data['settings']['search']   = json_encode($preferences = $this->getPreferencesObject()->get($webUserId));
+        $data['settings']['search']   = json_encode($preferences = $this->getSearchPreferencesObject()->get($webUserId));
 
         $data['who'] = array(
             'instrumental' => $preferences['gender'] == 'F' ? 'ней' : 'ним',

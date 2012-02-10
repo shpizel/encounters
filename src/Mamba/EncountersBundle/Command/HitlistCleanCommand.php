@@ -11,11 +11,11 @@ use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * SpamSenderCommand
+ * HitlistCleanCommand
  *
  * @package EncountersBundle
  */
-class SpamSenderCommand extends QueueUpdateCronScript {
+class HitlistCleanCommand extends QueueUpdateCronScript {
 
     const
 
@@ -24,14 +24,7 @@ class SpamSenderCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Hitlist queue updater",
-
-        /**
-         * Лимит
-         *
-         * @var int
-         */
-        LIMIT = 25
+        SCRIPT_DESCRIPTION = "Hitlist queue updater"
     ;
 
     /**

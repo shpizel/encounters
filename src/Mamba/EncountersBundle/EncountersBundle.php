@@ -41,10 +41,17 @@ class EncountersBundle extends Bundle {
         GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME = 'updateCurrentQueue',
 
         /**
-         * Имя функции обновления памяти при изменении энергии
+         * Имя функции рассылки нотификаций
          *
          * @var str
          */
-        GEARMAN_ = ''
+        GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME = 'sendNotifications',
+
+        /**
+         * Имя функции для обновления базы
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_UPDATE_FUNCTION_NAME = 'updateDatabase'
     ;
 }

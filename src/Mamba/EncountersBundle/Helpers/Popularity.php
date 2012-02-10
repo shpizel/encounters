@@ -8,16 +8,16 @@ use Mamba\EncountersBundle\Energy;
  *
  * @package EncountersBundle
  */
-class Popularity {
+class Popularity extends Helper {
 
     const
 
         /**
-         * База логарифма
+         * Делитель энергии
          *
          * @var float
          */
-        LOG_BASE = 2.0
+        DIVIDER = 2.0
     ;
 
     /**
@@ -26,9 +26,9 @@ class Popularity {
      * @param int $energy
      * @return float
      */
-    public static function getPopularity($energy, $base = self::LOG_BASE) {
+    public static function getPopularity($energy, $divider = self::DIVIDER) {
         if (is_int($energy) && $energy >= Energy::MINIMUM_ENERGY && $energy <= Energy::MAXIMUM_ENERGY) {
-            return log($energy, $base);
+            return $energy / $divider;
         }
 
         throw new PopularityException("Invalid energy rate: \n" . var_export($energy, true));

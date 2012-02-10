@@ -8,7 +8,7 @@ use Mamba\RedisBundle\Redis;
  *
  * @package EncountersBundle
  */
-class PlatformSettings {
+class PlatformSettings extends Helper {
 
     const
 
@@ -48,6 +48,15 @@ class PlatformSettings {
     }
 
     /**
+     * Redis getter
+     *
+     * @return \Mamba\RedisBundle\Redis
+     */
+    public function getRedis() {
+        return $this->Redis;
+    }
+
+    /**
      * Platform params getter
      *
      * @param int $userId
@@ -55,7 +64,7 @@ class PlatformSettings {
      */
     public function get($userId) {
         if (is_int($userId)) {
-            return $this->Redis->hGet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $userId);
+            return $this->getRedis()->hGet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $userId);
         }
 
         throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
@@ -73,7 +82,7 @@ class PlatformSettings {
                 unset($platformParams['auth_key']);
             }
 
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $mambaUserId, $platformParams);
+            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $mambaUserId, $platformParams);
         }
 
         throw new PlatformParamsException("Invalid platform params: \n" . var_export($platformParams, true));
@@ -99,7 +108,7 @@ class PlatformSettings {
             throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId, $timestamp);
+        return $this->getRedis()->hSet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId, $timestamp);
     }
 
     /**
@@ -110,7 +119,7 @@ class PlatformSettings {
      */
     public function getLastQueryTime($userId) {
         if (is_int($userId)) {
-            return $this->Redis->hGet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId);
+            return $this->getRedis()->hGet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId);
         }
 
         throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));

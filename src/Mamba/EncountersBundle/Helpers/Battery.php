@@ -8,7 +8,7 @@ use Mamba\RedisBundle\Redis;
  *
  * @package EncountersBundle
  */
-class Battery {
+class Battery extends Helper {
 
     const
 
@@ -34,25 +34,6 @@ class Battery {
         REDIS_HASH_USERS_BATTERY_CHARGES_KEY = "batteries"
     ;
 
-    private
-
-        /**
-         * Redis
-         *
-         * @var Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param \Mamba\RedisBundle\Redis $Redis
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
-
     /**
      * Charge getter
      *
@@ -64,7 +45,7 @@ class Battery {
             throw new BatteryException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $charge = $this->Redis->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
+        $charge = $this->getRedis()->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
         if (false === $charge) {
             $this->set($userId, $charge = self::MAXIMUM_CHARGE);
         }
@@ -84,7 +65,7 @@ class Battery {
         }
 
         if (is_int($charge) && $charge >= self::MINIMUM_CHARGE && $charge <= self::MAXIMUM_CHARGE) {
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $charge);
+            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $charge);
         }
 
         throw new BatteryException("Invalid charge: \n" . var_export($charge, true));
@@ -105,7 +86,7 @@ class Battery {
             throw new BatteryException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $rate);
+        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $rate);
         if ($incrementResult < self::MINIMUM_CHARGE) {
             $this->set($userId, self::MINIMUM_CHARGE);
         } elseif ($incrementResult > self::MAXIMUM_CHARGE) {

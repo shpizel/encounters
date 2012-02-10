@@ -8,7 +8,7 @@ use Mamba\RedisBundle\Redis;
  *
  * @package EncountersBundle
  */
-class Energy {
+class Energy extends Helper {
 
     const
 
@@ -41,25 +41,6 @@ class Energy {
         REDIS_HASH_USERS_ENERGIES_KEY = "energies"
     ;
 
-    private
-
-        /**
-         * Redis
-         *
-         * @var Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param \Mamba\RedisBundle\Redis $Redis
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
-
     /**
      * Energy getter
      *
@@ -71,7 +52,7 @@ class Energy {
             throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $energy = $this->Redis->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
+        $energy = $this->getRedis()->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
         if (false === $energy) {
             $this->set($userId, $energy = self::DEFAULT_ENERGY);
         }
@@ -92,7 +73,7 @@ class Energy {
         }
 
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $energy);
+            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $energy);
         }
 
         throw new EnergyException("Invalid energy: \n" . var_export($energy, true));
@@ -113,7 +94,7 @@ class Energy {
             throw new EnergyException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
+        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
         if ($incrementResult < self::MINIMUM_ENERGY) {
             return $this->set($userId, self::MINIMUM_ENERGY);
         } elseif ($incrementResult > self::MAXIMUM_ENERGY) {

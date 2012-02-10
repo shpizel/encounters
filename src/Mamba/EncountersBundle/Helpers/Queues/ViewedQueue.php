@@ -1,14 +1,14 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers\Queues;
 
-use Mamba\RedisBundle\Redis;
+use Mamba\EncountersBundle\Helpers\Helper;
 
 /**
  * ViewedQueue
  *
  * @package EncountersBundle
  */
-class ViewedQueue {
+class ViewedQueue extends Helper {
 
     const
 
@@ -19,25 +19,6 @@ class ViewedQueue {
          */
         REDIS_HASH_USER_VIEWED_QUEUE_KEY = 'user_%d_viewed_queue'
     ;
-
-    private
-
-        /**
-         * Redis
-         *
-         * @var \Mamba\RedisBundle\Redis $Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param \Mamba\RedisBundle\Redis $Redis
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
 
     /**
      * Добавляет currentUser'a в очередь просмотренных webUser'ом
@@ -56,7 +37,7 @@ class ViewedQueue {
             throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->hSetNx($this->getRedisQueueKey($webUserId), $currentUserId, $data);
+        return $this->getRedis()->hSetNx($this->getRedisQueueKey($webUserId), $currentUserId, $data);
     }
 
     /**
@@ -70,7 +51,7 @@ class ViewedQueue {
             throw new ViewedQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->lSize($this->getRedisQueueKey($userId));
+        return $this->getRedis()->lSize($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -80,7 +61,7 @@ class ViewedQueue {
      * @param int $currentUserId
      */
     public function exists($webUserId, $currentUserId) {
-        return $this->Redis->hExists($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->hExists($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**

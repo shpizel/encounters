@@ -1,14 +1,14 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers\Queues;
 
-use Mamba\RedisBundle\Redis;
+use Mamba\EncountersBundle\Helpers\Helper;
 
 /**
  * HitlistQueue
  *
  * @package EncountersBundle
  */
-class HitlistQueue {
+class HitlistQueue extends Helper {
 
     const
 
@@ -19,25 +19,6 @@ class HitlistQueue {
          */
         REDIS_SET_USER_HITLIST_QUEUE_KEY = "user_%d_hitlist_queue"
     ;
-
-    private
-
-        /**
-         * Redis
-         *
-         * @var \Mamba\RedisBundle\Redis $Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param \Mamba\RedisBundle\Redis $Redis
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
 
     /**
      * Добавляет currentUser'a в очередь просмотренных webUser'ом
@@ -55,7 +36,7 @@ class HitlistQueue {
             throw new HitlistQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -69,7 +50,7 @@ class HitlistQueue {
             throw new HitlistQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sPop($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sPop($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -83,7 +64,7 @@ class HitlistQueue {
             throw new HitlistQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sSize($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sSize($this->getRedisQueueKey($userId));
     }
 
     /**
