@@ -26,6 +26,6 @@ class MutualController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:templates:mutual.html.twig");
+        return $this->render("EncountersBundle:templates:mutual.html.twig", $this->getInitialData());
     }
 }

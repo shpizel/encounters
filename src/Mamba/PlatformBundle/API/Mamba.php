@@ -2,6 +2,14 @@
 namespace Mamba\PlatformBundle\API;
 
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
+use Mamba\PlatformBundle\API\Achievement;
+use Mamba\PlatformBundle\API\Anketa;
+use Mamba\PlatformBundle\API\Contacts;
+use Mamba\PlatformBundle\API\Diary;
+use Mamba\PlatformBundle\API\Geo;
+use Mamba\PlatformBundle\API\Notify;
+use Mamba\PlatformBundle\API\Photos;
+use Mamba\PlatformBundle\API\Search;
 
 /**
  * Mamba

@@ -26,6 +26,6 @@ class MyChoiceController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:templates:mychoice.html.twig");
+        return $this->render("EncountersBundle:templates:mychoice.html.twig", $this->getInitialData());
     }
 }

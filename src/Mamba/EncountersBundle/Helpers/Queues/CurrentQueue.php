@@ -54,7 +54,7 @@ class CurrentQueue extends Helper {
         if (!is_int($currentUserId)) {
             throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
-        
+
         return $this->getRedis()->sContains($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 

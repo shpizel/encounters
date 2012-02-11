@@ -37,15 +37,10 @@ class QueueController extends ApplicationController {
      */
     public function ajaxQueueGetAction() {
         $Mamba = $this->getMamba();
-        $Redis = $this->getRedis();
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
-        }
-
-        $webUserId = $Mamba->get('oid');
-
-        if ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId)) {
+        } elseif ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId = $Mamba->get('oid'))) {
             foreach ($Mamba->Anketa()->getInfo($currentQueue) as $dataArray) {
                 $this->json['data'][] = array(
                     'info' => array(
@@ -60,31 +55,49 @@ class QueueController extends ApplicationController {
                 );
             }
 
-            $Mamba->multi();
-            foreach ($currentQueue as $userId) {
-                $Mamba->Photos()->get($userId);
-            }
-
-            foreach ($Mamba->exec() as $key=>$dataArray) {
-                if (isset($dataArray['photos'])) {
-                    $this->json['data'][$key]['photos'] = $dataArray['photos'];
+            /**
+             * Пересчет currentUser'ов
+             *
+             * @author shpizel
+             */
+            $currentUsers = array();
+            foreach ($this->json['data'] as $userInfo) {
+                if (isset($userInfo['info']['id'])) {
+                    $currentUsers[] = $userInfo['info']['id'];
                 }
             }
 
-            foreach ($this->json['data'] as $key=>$dataArray) {
-                $userId = $dataArray['info']['id'];
-                if (!isset($dataArray['photos'])) {
-                    unset($this->json['data'][$key]);
+            if ($currentUsers) {
+                $Mamba->multi();
+                foreach ($currentUsers as $currentUserId) {
+                    $Mamba->Photos()->get($currentUserId);
+                }
 
-                    $this->getCurrentQueueObject()->remove($webUserId, $userId);
+                foreach ($Mamba->exec() as $key=>$dataArray) {
+                    if (isset($dataArray['photos'])) {
+                        $this->json['data'][$key]['photos'] = $dataArray['photos'];
+                    }
+                }
+
+                foreach ($this->json['data'] as $key=>$dataArray) {
+                    $currentUserId = $dataArray['info']['id'];
+                    if (!isset($dataArray['photos'])) {
+                        unset($this->json['data'][$key]);
+
+                        $this->getCurrentQueueObject()->remove($webUserId, $currentUserId);
+                    }
                 }
             }
+        }
 
-        } else {
+        if (!$this->json['data']) {
             list($this->json['status'], $this->json['message']) = array(2, "Current queue is not ready");
 
             $this->get('gearman')->getClient()
-                ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
+                ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                'user_id'   => $webUserId,
+                'timestamp' => time(),
+            )));
         }
 
         return new Response(json_encode($this->json), 200, array("application/json"));

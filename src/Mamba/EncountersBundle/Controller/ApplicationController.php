@@ -9,12 +9,14 @@ use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
+use Mamba\EncountersBundle\Helpers\Popularity;
+
+use Mamba\PlatformBundle\API\Mamba;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
 use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
 use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
 use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
-use Mamba\EncountersBundle\Helpers\Queues\ReverseQueue;
 use Mamba\EncountersBundle\Helpers\Queues\SearchQueue;
 use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 
@@ -242,33 +244,63 @@ abstract class ApplicationController extends Controller {
      * @return array
      */
     public function getInitialData() {
-        $data = array(
+
+        $dataArray = array(
             'settings' => array(),
             'webuser'  => array(),
             'stats'    => array(),
         );
 
-        $data['settings']['platform'] = json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid')));
-        $data['settings']['search']   = json_encode($preferences = $this->getSearchPreferencesObject()->get($webUserId));
+        $dataArray['settings']['platform'] = json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid')));
+        $dataArray['settings']['search']   = json_encode($preferences = $this->getSearchPreferencesObject()->get($webUserId));
 
-        $data['who'] = array(
+        $dataArray['who'] = array(
             'instrumental' => $preferences['gender'] == 'F' ? 'ней' : 'ним',
             'nominative' => $preferences['gender'] == 'F' ? 'она' : 'он'
         );
 
-        $data['stats']['charge']   = $this->getBatteryObject()->get($webUserId);
-        $data['stats']['mychoice'] = 10;
-        $data['stats']['visitors'] = 10;
-        $data['stats']['mutual']   = 10;
+        $dataArray['stats']['charge']   = $this->getBatteryObject()->get($webUserId);
 
-        $data['webuser']['popularity'] = array('title'=>'Низкая', 'class'=>'high');
-        $data['webuser']['battery'] = array('charge'=>2);
-        $data['webuser']['stats'] = array(
-            'visitors' => 1,
-            'mutual' => 1,
-            'mychoice' => 10,
+        $dataArray['webuser']['anketa'] = $this->getMamba()->Anketa()->getInfo($webUserId);
+        $dataArray['webuser']['popularity'] = array('title'=>'x', 'class'=>'x');
+        $dataArray['webuser']['battery'] = array('charge'=>$this->getBatteryObject()->get($webUserId));
+        $dataArray['webuser']['stats'] = array(
+            'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
+            'visitors' => $this->getCountersObject()->get($webUserId, 'visitors'),
+            'mutual'   => $this->getCountersObject()->get($webUserId, 'mutual'),
         );
 
-        return $data;
+        $controllerName = get_called_class();
+        $controllerName = explode("\\", $controllerName);
+        $controllerName = array_pop($controllerName);
+        $dataArray['controller'] = strtolower(str_replace("Controller", "", $controllerName));
+        return $dataArray;
+    }
+
+    /**
+     * Определитель популярности
+     *
+     * @return array
+     */
+    private function getPopularity() {
+        $webUserId = (int) $this->getMamba()->get('oid');
+        $popularity = Popularity::getPopularity($this->getEnergyObject()->get($webUserId));
+
+        $dataArray = array('title' => 'Низкая', 'class' => 'low');
+        if ($popularity < 4) {
+            $dataArray['title'] = 'Низкая';
+            $dataArray['class'] = 'low';
+        } elseif ($popularity >= 4 && $popularity < 8) {
+            $dataArray['title'] = 'Средняя';
+            $dataArray['class'] = 'normal';
+        } elseif ($popularity >= 8 && $popularity < 12) {
+            $dataArray['title'] = 'Высокая';
+            $dataArray['class'] = 'high';
+        } elseif ($popularity >= 12) {
+            $dataArray['title'] = 'Супер';
+            $dataArray['class'] = 'super';
+        }
+
+        return $dataArray;
     }
 }

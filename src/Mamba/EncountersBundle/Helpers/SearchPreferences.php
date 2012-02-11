@@ -39,6 +39,7 @@ class SearchPreferences extends Helper {
      */
     public function set($userId, array $data) {
         if ($data) {
+            $data['changed'] = time();
             return $this->getRedis()->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, $data);
         }
 

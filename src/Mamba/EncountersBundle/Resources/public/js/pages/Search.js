@@ -71,6 +71,11 @@ $Search = {
             $Search.listNextPhoto();
             return false;
         });
+
+        $("div.message-help a#getmore").click(function() {
+            alert(1);
+            return false;
+        });
     },
 
     /**
@@ -274,11 +279,11 @@ $Search = {
                 if ($status == 1) {
                     window.setTimeout(function() {
                         $Search.loadQueue($callback);
-                    }, 1000);
+                    }, 1750);
                 } else if ($status == 2) {
                     window.setTimeout(function() {
                         $Search.loadQueue($callback);
-                    }, 1000);
+                    }, 1750);
                 }
             }
         }, 'json');

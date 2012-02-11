@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers;
 
-use Mamba\EncountersBundle\Energy;
+use Mamba\EncountersBundle\Helpers\Energy;
 
 /**
  * Popularity
@@ -17,7 +17,7 @@ class Popularity extends Helper {
          *
          * @var float
          */
-        DIVIDER = 2.0
+        DIVIDER = 128.0
     ;
 
     /**

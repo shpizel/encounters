@@ -35,9 +35,10 @@ class PreferencesController extends ApplicationController {
              *
              * @author shpizel
              */
-            if (!$redisSearchPreferences || array_diff($redisSearchPreferences, $searchPreferences)) {
-                $this->cleanUserQueues();
-                $this->regenerateUserQueues();
+            if (!$redisSearchPreferences || $diff = array_diff($redisSearchPreferences, $searchPreferences)) {
+                if (!(isset($diff['changed']) && count($diff) == 1)) {
+                    $this->cleanUserQueues();
+                }
             }
 
             return $this->redirect($this->generateUrl('welcome'));
@@ -189,29 +190,14 @@ class PreferencesController extends ApplicationController {
      * @return mixed
      */
     private function cleanUserQueues() {
-        $webUserId = $this->getMamba()->get('oid');
-
         return
             $this->getRedis()
                 ->multi()
-                    ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId))
+                    ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')))
                     ->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId))
-                    ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId))
+                    ->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId))
                     ->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
                 ->exec()
         ;
-    }
-
-    /**
-     * Отправляет задания крон-скриптам на перегенерацию очередей
-     *
-     * @return null
-     */
-    private function regenerateUserQueues() {
-        $GearmanClient = $this->getGearman()->getClient();
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $webUserId = $this->getMamba()->get('oid'));
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
-
     }
 }

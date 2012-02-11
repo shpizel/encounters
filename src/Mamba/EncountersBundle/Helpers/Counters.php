@@ -17,7 +17,7 @@ class Counters extends Helper {
          *
          * @var str
          */
-        REDIS_HASH_USER_COUNTERS_KEY = "counters_by_%d"
+        REDIS_HASH_USER_CUSTOM_COUNTER_KEY = "%s_by_%d"
     ;
 
     /**
@@ -32,7 +32,7 @@ class Counters extends Helper {
             throw new CountersException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hGet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key);
+        return $this->getRedis()->get(sprintf(self::REDIS_HASH_USER_CUSTOM_COUNTER_KEY, $key, $userId));
     }
 
     /**
@@ -51,7 +51,7 @@ class Counters extends Helper {
             throw new CountersException("Invalid rate: \n" . var_export($rate, true));
         }
 
-        return $this->getRedis()->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $rate);
+        return $this->getRedis()->incr(sprintf(self::REDIS_HASH_USER_CUSTOM_COUNTER_KEY, $key, $userId), $rate);
     }
 }
 

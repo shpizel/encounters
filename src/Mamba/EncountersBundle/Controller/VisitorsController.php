@@ -26,6 +26,6 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:templates:visitors.html.twig");
+        return $this->render("EncountersBundle:templates:visitors.html.twig", $this->getInitialData());
     }
 }

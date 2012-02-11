@@ -20,8 +20,6 @@ $Preferences = {
      * @run page
      */
     run: function() {
-        if (window.$debug) {
-            console.log("$Preferences has runned");
-        }
+
     }
 }

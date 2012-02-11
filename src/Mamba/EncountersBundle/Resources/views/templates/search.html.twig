@@ -5,15 +5,14 @@
 <div class="app-main">
     <div class="app-page">
 
-        <div class="app-block-no-popular" style="display: none;">
+        <div class="app-block-no-popular" style="display: block;">
             <i class="arrow"></i>
             <div class="info-block">
-                <div class="photo"><img src="http://face.lovesupport.ru/7/1/9/658217719/733095236_small_face.jpg?updated=20120121125815"></div>
+                <div class="photo">{% if webuser.anketa.0.info.small_photo_url %}<img src="{{ webuser.anketa.0.info.small_photo_url }}">{% endif %}</div>
                 <div class="message">
                     <div class="message-alert">У вас ужасающе низкая популярность</div>
-                    <div class="message-help">Станьте популярней &mdash; <a href="#">получите 100 дополнительных показов</a></div>
+                    <div class="message-help">Станьте популярней &mdash; <a id="getmore" href="#">получите 100 дополнительных показов</a></div>
                 </div>
-
             </div>
         </div>
 
@@ -41,7 +40,7 @@
         <div class="app-info-user"><a href="#"></a>  <i class="ico"></i> <span></span></div>
     </div>
 
-        {% include 'EncountersBundle:layers:layers.html.twig' %}
+    {% include 'EncountersBundle:layers:layers.html.twig' %}
 </div>
 </div>
 {% endblock %}

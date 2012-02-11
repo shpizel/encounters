@@ -76,20 +76,7 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
      * @param $job
      */
     public function updateCurrentQueue($job) {
-        $Mamba = $this->getMamba();
-        $Redis = $this->getRedis();
-
-        if ($webUserId = (int) $job->workload()) {
-            $Mamba->set('oid', $webUserId);
-
-            if (!$Mamba->getReady()) {
-                $this->log("Mamba is not ready!", 16);
-                return;
-            }
-        } else {
-            throw new CronScriptException("Invalid workload");
-        }
-
+        list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
         $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
         $usersAddedCount = 0;
         foreach ($searchQueueChunk as $currentUserId) {
@@ -144,8 +131,20 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
         $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
 
         $GearmanClient = $this->getGearman()->getClient();
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, $webUserId);
+
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+            'user_id'   => $webUserId,
+            'timestamp' => time(),
+        )));
+
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+            'user_id'   => $webUserId,
+            'timestamp' => time(),
+        )));
+
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+            'user_id'   => $webUserId,
+            'timestamp' => time(),
+        )));
     }
 }

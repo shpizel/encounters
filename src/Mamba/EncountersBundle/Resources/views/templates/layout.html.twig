@@ -11,23 +11,31 @@
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
 </head>
+<!-- I hope you enjoy reading my source code. -->
 <body>
 <div class="app-layout">
     <div class="app-menu-bar">
+        {% if controller == 'search' %}
         <i class="l-menu-rounder"></i>
+        {% endif %}
         <i class="l-rounder"></i>
         <i class="r-rounder"></i>
         <div class="app-menu-bar-inner">
             <ul class="info-meet" style="float:right;">
                 <li class="item-popul"><div class="{{ webuser.popularity.class }}"><b>{{ webuser.popularity.title }}</b> популярность</div></li>
-                <li class="item-setting"><a href="/preferences"></a></li>
+                <li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>
                 <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery.charge*15 }}%"></b></b> <i>{{ webuser.battery.charge*20 }}%</i></li>
             </ul>
             <ul class="info-meet">
-                <li class="item-game active"><a href="/search"><b>Поиск</b></a></li>
-                <li class="item-mychoice"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
-                <li class="item-visitors"><a href="/visitors"><b>Меня смотрели</b> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
-                <li class="item-mutual"><a href="/mutual"><b>Взаимные</b>{% if webuser.stats.mutual %} <i class="heart">{{ webuser.stats.mutual }}</i>{% endif %}</a></li>
+                <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
+                <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
+                <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
+                <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b>{% if webuser.stats.mutual %} <i class="heart">{{ webuser.stats.mutual }}</i>{% endif %}</a></li>
+
+                <!-- Бонус для читателей комментариев:
+                    <li class="item-fishki"><a href="http://fishki.net"><b>Фишки.нет</b></a></li>
+                -->
+
             </ul>
         </div>
     </div>
@@ -56,8 +64,8 @@ $Config.set('search', {{settings.search}});
 {% endautoescape %}
 $(document).ready(function(){
     $App.init(location.pathname).run();
-    $Layers.showLayerAnswerMaybe();
 });
 </script>
 </body>
 </html>
+<!-- I'll be back, cocksuckers.. -->

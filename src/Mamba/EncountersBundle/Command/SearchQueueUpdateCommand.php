@@ -32,7 +32,7 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var int
          */
-        LIMIT = 25
+        LIMIT = 12
     ;
 
     /**
@@ -72,7 +72,8 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
         $Mamba = $this->getMamba();
         $Redis = $this->getRedis();
 
-        if ($webUserId = (int) $job->workload()) {
+        list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+        if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
@@ -85,6 +86,10 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
 
         if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
             throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
+        }
+
+        if ($searchPreferences['changed'] > $timestamp) {
+            return;
         }
 
         if ($this->getSearchQueueObject()->getSize($webUserId) >= self::LIMIT) {
@@ -118,6 +123,10 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
                     if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
                         $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
                             && $usersAddedCount++;
+
+                        if ($usersAddedCount >= self::LIMIT) {
+                            break;
+                        }
                     }
                 }
             }

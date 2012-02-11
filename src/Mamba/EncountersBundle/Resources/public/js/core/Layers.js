@@ -11,14 +11,16 @@ $Layers = {
      * @init UI
      */
     initUI: function() {
+        $("body").append("<div class='overflow'></div>");
+
         $("div.app-layer a.close").click(function() {
-            $(this).parent().hide();
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
         });
     },
 
     showLayerAnswerMaybe: function() {
         $("div.layer-maybe").show();
-        this.renderLayerPosition();
         this.showLayer();
     },
 
@@ -29,14 +31,9 @@ $Layers = {
      */
     showLayer: function() {
         $("div.app-layer").show();
-    },
-
-    /**
-     * Настраивает позицию слоя
-     *
-     * @render layer position
-     */
-    renderLayerPosition: function() {
-
+        $("div#overflow").show().click(function() {
+            $(this).hide();
+            $("div.app-layer").hide();
+        });
     }
 }
