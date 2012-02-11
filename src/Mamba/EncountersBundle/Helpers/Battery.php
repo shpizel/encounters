@@ -45,7 +45,7 @@ class Battery extends Helper {
             throw new BatteryException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $charge = $this->getRedis()->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
+        $charge = $this->Redis->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
         if (false === $charge) {
             $this->set($userId, $charge = self::MAXIMUM_CHARGE);
         }
@@ -65,7 +65,7 @@ class Battery extends Helper {
         }
 
         if (is_int($charge) && $charge >= self::MINIMUM_CHARGE && $charge <= self::MAXIMUM_CHARGE) {
-            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $charge);
+            return $this->Redis->hSet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $charge);
         }
 
         throw new BatteryException("Invalid charge: \n" . var_export($charge, true));
@@ -86,7 +86,7 @@ class Battery extends Helper {
             throw new BatteryException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $rate);
+        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId, $rate);
         if ($incrementResult < self::MINIMUM_CHARGE) {
             $this->set($userId, self::MINIMUM_CHARGE);
         } elseif ($incrementResult > self::MAXIMUM_CHARGE) {

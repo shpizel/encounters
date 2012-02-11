@@ -73,7 +73,12 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-            alert(1);
+//            $Layers.showLayerAnswerMaybe();
+//            $Layers.showLayerAnswerNo();
+//            $Layers.showLayerAnswerYes();
+            $Layers.showEnergyLayer();
+//            $Layers.showPopularityLayer();
+//            $Layers.showAnswerNotSeeYetLayer();
             return false;
         });
     },

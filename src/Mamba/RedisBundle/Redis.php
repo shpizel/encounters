@@ -24,9 +24,7 @@ class Redis extends \Redis {
         $connect = self::USE_PERSISTENT_CONNECTION ? "pconnect" : "connect";
         $this->$connect($host, $port, $timeout);
 
-        $this->setOption(self::OPT_SERIALIZER, self::SERIALIZER_IGBINARY);
-        $database &&
-            $this->select($database);
+        $database && $this->select($database);
     }
 }
 

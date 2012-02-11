@@ -36,12 +36,12 @@ class Hitlist extends Helper {
             throw new HitlistException("Invalid period: \n" . var_export($period, true));
         }
 
-        $this->getRedis()->multi();
+        $this->Redis->multi();
         for ($i=0;$i<$period*24;$i++) {
-            $this->getRedis()->hGet(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH', strtotime("-$i hours")));
+            $this->Redis->hGet(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH', strtotime("-$i hours")));
         }
 
-        $hitsArray = array_filter($this->getRedis()->exec(), function($item) {
+        $hitsArray = array_filter($this->Redis->exec(), function($item) {
             return (bool) $item;
         });
 
@@ -63,7 +63,7 @@ class Hitlist extends Helper {
             throw new HitlistException("Invalid rate: \n" . var_export($rate, true));
         }
 
-        return $this->getRedis()->hIncrBy(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH') , $rate);
+        return $this->Redis->hIncrBy(sprintf(self::REDIS_HASH_USER_HITLIST_KEY, $userId), date('YmdH') , $rate);
     }
 }
 

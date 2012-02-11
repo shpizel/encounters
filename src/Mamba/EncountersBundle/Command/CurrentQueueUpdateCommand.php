@@ -80,7 +80,7 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
         $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
         $usersAddedCount = 0;
         foreach ($searchQueueChunk as $currentUserId) {
-            $this->getSearchQueueObject()->remove($webUserId, $currentUserId);
+            $this->getSearchQueueObject()->remove($webUserId, $currentUserId = (int) $currentUserId);
             if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
                 $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
                     && $usersAddedCount++;
@@ -92,7 +92,7 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
         $usersAddedCount = 0;
         while ($priorityCount--) {
             if ($currentUserId = $this->getPriorityQueueObject()->pop($webUserId)) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
                     $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
                         && $usersAddedCount++;
                 }
@@ -106,7 +106,7 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
         $usersAddedCount = 0;
         while ($hitlistCount--) {
             if ($currentUserId = $this->getHitlistQueueObject()->pop($webUserId)) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
                     $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
                         && $usersAddedCount++;
                 }
@@ -120,7 +120,7 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
         $usersAddedCount = 0;
         while ($contactsCount--) {
             if ($currentUserId = $this->getContactsQueueObject()->pop($webUserId)) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
                     $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
                         && $usersAddedCount++;
                 }

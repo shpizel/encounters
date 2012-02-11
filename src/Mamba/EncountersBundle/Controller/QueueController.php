@@ -44,13 +44,16 @@ class QueueController extends ApplicationController {
             foreach ($Mamba->Anketa()->getInfo($currentQueue) as $dataArray) {
                 $this->json['data'][] = array(
                     'info' => array(
-                        'id'      => $dataArray['info']['oid'],
-                        'login'   => $dataArray['info']['login'],
-                        'name'    => $dataArray['info']['name'],
-                        'gender'  => $dataArray['info']['gender'],
-                        'age'     => $dataArray['info']['age'],
-                        'country' => $dataArray['location']['country'],
-                        'city'    => $dataArray['location']['city'],
+                        'id'               => $dataArray['info']['oid'],
+//                        'login'            => $dataArray['info']['login'],
+                        'name'             => $dataArray['info']['name'],
+                        'gender'           => $dataArray['info']['gender'],
+                        'age'              => $dataArray['info']['age'],
+                        'small_photo_url'  => $dataArray['info']['small_photo_url'],
+                        'medium_photo_url' => $dataArray['info']['medium_photo_url'],
+                        'is_app_user'      => $dataArray['info']['is_app_user'],
+//                        'country'          => $dataArray['location']['country'],
+//                        'city'             => $dataArray['location']['city'],
                     ),
                 );
             }

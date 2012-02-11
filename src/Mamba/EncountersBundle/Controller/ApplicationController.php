@@ -92,7 +92,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Battery($this->container);
+        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
     }
 
     /**
@@ -105,7 +105,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Energy($this->container);
+        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
     }
 
     /**
@@ -118,7 +118,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->container);
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
     }
 
     /**
@@ -131,7 +131,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->container);
+        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getRedis());
     }
 
     /**
@@ -157,7 +157,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->container);
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
     }
 
     /**
@@ -170,7 +170,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->container);
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
     }
 
     /**
@@ -183,7 +183,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->container);
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
     }
 
     /**
@@ -196,7 +196,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->container);
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
     }
 
     /**
@@ -209,7 +209,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchQueue($this->container);
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
     }
 
     /**
@@ -222,7 +222,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->container);
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
     }
 
     /**
@@ -235,7 +235,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Counters($this->container);
+        return self::$Instances[__FUNCTION__] = new Counters($this->getRedis());
     }
 
     /**
@@ -244,37 +244,41 @@ abstract class ApplicationController extends Controller {
      * @return array
      */
     public function getInitialData() {
-
-        $dataArray = array(
-            'settings' => array(),
-            'webuser'  => array(),
-            'stats'    => array(),
+        $dataArray = array();
+        $dataArray['settings'] = array(
+            'platform' => json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid'))),
+            'search'   => json_encode($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))
         );
 
-        $dataArray['settings']['platform'] = json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid')));
-        $dataArray['settings']['search']   = json_encode($preferences = $this->getSearchPreferencesObject()->get($webUserId));
-
-        $dataArray['who'] = array(
-            'instrumental' => $preferences['gender'] == 'F' ? 'ней' : 'ним',
-            'nominative' => $preferences['gender'] == 'F' ? 'она' : 'он'
+        $dataArray['webuser'] = array(
+            'anketa'      => $this->getMamba()->Anketa()->getInfo($webUserId),
+            'popularity'  => $this->getPopularity(),
+            'battery'     => $this->getBatteryObject()->get($webUserId),
+            'preferences' => $searchPreferences,
+            'stats'       => array(
+                'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
+                'visitors' => $this->getCountersObject()->get($webUserId, 'visitors'),
+                'mutual'   => $this->getCountersObject()->get($webUserId, 'mutual'),
+            ),
         );
 
-        $dataArray['stats']['charge']   = $this->getBatteryObject()->get($webUserId);
-
-        $dataArray['webuser']['anketa'] = $this->getMamba()->Anketa()->getInfo($webUserId);
-        $dataArray['webuser']['popularity'] = array('title'=>'x', 'class'=>'x');
-        $dataArray['webuser']['battery'] = array('charge'=>$this->getBatteryObject()->get($webUserId));
-        $dataArray['webuser']['stats'] = array(
-            'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
-            'visitors' => $this->getCountersObject()->get($webUserId, 'visitors'),
-            'mutual'   => $this->getCountersObject()->get($webUserId, 'mutual'),
+        $dataArray['webuser']['json'] = array(
+            'anketa' => json_encode($dataArray['webuser']['anketa']),
         );
 
-        $controllerName = get_called_class();
-        $controllerName = explode("\\", $controllerName);
-        $controllerName = array_pop($controllerName);
-        $dataArray['controller'] = strtolower(str_replace("Controller", "", $controllerName));
+        $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         return $dataArray;
+    }
+
+    /**
+     * Возвращает имя контроллера по имени класса
+     *
+     * @return str
+     */
+    private function getControllerName($className) {
+        $className = explode("\\", $className);
+        $className = array_pop($className);
+        return str_replace("Controller", "", $className);
     }
 
     /**

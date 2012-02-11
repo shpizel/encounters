@@ -11,7 +11,7 @@
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
 </head>
-<!-- I hope you enjoy reading my source code. -->
+<!-- A clean hand wants no washing.. -->
 <body>
 <div class="app-layout">
     <div class="app-menu-bar">
@@ -24,7 +24,7 @@
             <ul class="info-meet" style="float:right;">
                 <li class="item-popul"><div class="{{ webuser.popularity.class }}"><b>{{ webuser.popularity.title }}</b> популярность</div></li>
                 <li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>
-                <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery.charge*15 }}%"></b></b> <i>{{ webuser.battery.charge*20 }}%</i></li>
+                <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery*15 }}%"></b></b> <i>{{ webuser.battery*20 }}%</i></li>
             </ul>
             <ul class="info-meet">
                 <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
@@ -34,6 +34,8 @@
 
                 <!-- Бонус для читателей комментариев:
                     <li class="item-fishki"><a href="http://fishki.net"><b>Фишки.нет</b></a></li>
+                    <li class="item-bidla"><a href="http://bidla.net"><b>Быдла.нет</b></a></li>
+                    <li class="item-lenta"><a href="http://fishki.net"><b>Лента.ру</b></a></li>
                 -->
 
             </ul>
@@ -68,4 +70,3 @@ $(document).ready(function(){
 </script>
 </body>
 </html>
-<!-- I'll be back, cocksuckers.. -->

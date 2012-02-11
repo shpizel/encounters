@@ -86,7 +86,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Battery($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
     }
 
     /**
@@ -99,7 +99,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Energy($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
     }
 
     /**
@@ -125,7 +125,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getRedis());
     }
 
     /**
@@ -138,7 +138,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
     }
 
     /**
@@ -151,7 +151,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
     }
 
     /**
@@ -177,7 +177,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
     }
 
     /**
@@ -190,7 +190,7 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
     }
 
     /**
@@ -203,6 +203,6 @@ abstract class QueueUpdateCronScript extends CronScript {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
     }
 }

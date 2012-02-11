@@ -477,6 +477,7 @@ h5{ font-size: 100%; }
     bottom: 30px;
     font-size:130%;
     right:10px;
+    display: none;
 }
 
 .app-lenta .rarr {
@@ -484,6 +485,7 @@ h5{ font-size: 100%; }
     bottom: 30px;
     left:10px;
     border: 0;
+    display: none;
 }
 
 
@@ -794,4 +796,8 @@ div.content {
 div.content div.title {
     font: bold italic 24px/50px Georgia;
     margin-bottom: 15px;
+}
+
+a.close {
+    cursor:pointer;
 }

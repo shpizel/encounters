@@ -37,7 +37,7 @@ class ViewedQueue extends Helper {
             throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->getRedis()->hSetNx($this->getRedisQueueKey($webUserId), $currentUserId, $data);
+        return $this->Redis->hSetNx($this->getRedisQueueKey($webUserId), $currentUserId, $data);
     }
 
     /**
@@ -51,7 +51,8 @@ class ViewedQueue extends Helper {
             throw new ViewedQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->lSize($this->getRedisQueueKey($userId));
+        /** ? чзх бля */
+        return $this->Redis->lSize($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -61,7 +62,7 @@ class ViewedQueue extends Helper {
      * @param int $currentUserId
      */
     public function exists($webUserId, $currentUserId) {
-        return $this->getRedis()->hExists($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->Redis->hExists($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**

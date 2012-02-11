@@ -16,14 +16,14 @@
             </div>
         </div>
 
-        <div class="app-title">Вы бы встретились с {{ who.instrumental }}?</div>
+        <div class="app-title">Вы бы встретились с {% if webuser.preferences.gender == 'F' %}ней{% else %}ним{% endif %}?</div>
         <div class="app-meet-button">
             <a href="javascript:void(0);" class="yes app-menu1">Да!</a>
             <a href="javascript:void(0);" class="maybe app-menu2">Возможно</a>
             <a href="javascript:void(0);" class="no app-menu3">Нет</a>
         </div>
 
-        <p class="app-see-block">{{ who.nominative|title }} уже видел{% if who.nominative != 'он' %}а{%endif%} ваше фото? <a href="#">Узнайте</a></p>
+        <p class="app-see-block">{% if webuser.preferences.gender == 'F' %}Она уже видела{% else %}Он уже видел{% endif %} ваше фото? <a href="#">Узнайте</a></p>
 
         <div class="app-image-member">
             <center><img class="app-image"/></center>

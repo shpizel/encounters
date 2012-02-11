@@ -52,12 +52,12 @@ class Energy extends Helper {
             throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $energy = $this->getRedis()->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
+        $energy = $this->Redis->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
         if (false === $energy) {
             $this->set($userId, $energy = self::DEFAULT_ENERGY);
         }
 
-        return $energy;
+        return (int) $energy;
     }
 
     /**
@@ -73,7 +73,7 @@ class Energy extends Helper {
         }
 
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
-            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $energy);
+            return $this->Redis->hSet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $energy);
         }
 
         throw new EnergyException("Invalid energy: \n" . var_export($energy, true));
@@ -94,7 +94,7 @@ class Energy extends Helper {
             throw new EnergyException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
+        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
         if ($incrementResult < self::MINIMUM_ENERGY) {
             return $this->set($userId, self::MINIMUM_ENERGY);
         } elseif ($incrementResult > self::MAXIMUM_ENERGY) {

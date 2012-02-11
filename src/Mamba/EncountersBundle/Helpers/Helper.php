@@ -1,6 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers;
 
+use Mamba\RedisBundle\Redis;
+
 /**
  * Helper
  *
@@ -11,11 +13,11 @@ abstract class Helper {
     protected
 
         /**
-         * Container
+         * Redis
          *
-         * @var object
+         * @var Redis
          */
-        $container = null
+        $Redis = null
     ;
 
     /**
@@ -23,43 +25,7 @@ abstract class Helper {
      *
      * @return null
      */
-    public function __construct($container) {
-        $this->container = $container;
-    }
-
-    /**
-     * Redis getter
-     *
-     * @return Redis
-     */
-    public function getRedis() {
-        return $this->container->get('redis');
-    }
-
-    /**
-     * Memcache getter
-     *
-     * @return Memcache
-     */
-    public function getMemcache() {
-        return $this->container->get('memcache');
-    }
-
-    /**
-     * Mamba getter
-     *
-     * @return Mamba
-     */
-    public function getMamba() {
-        return $this->container->get('mamba');
-    }
-
-    /**
-     * Gearman getter
-     *
-     * @return Gearman
-     */
-    public function getGearman() {
-        return $this->container->get('gearman');
+    public function __construct(Redis $Redis) {
+        $this->Redis = $Redis;
     }
 }

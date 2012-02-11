@@ -24,7 +24,7 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Hitlist queue updater"
+        SCRIPT_DESCRIPTION = "Notifications sender"
     ;
 
     /**
@@ -61,23 +61,68 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      * @param $job
      */
     public function sendNotifications($job) {
+        $Mamba = $this->getMamba();
+        $Redis = $this->getRedis();
+
+        list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
+        if ($webUserId = (int) $webUserId) {
+            $Mamba->set('oid', $webUserId);
+
+            if (!$Mamba->getReady()) {
+                $this->log("Mamba is not ready!", 16);
+                return;
+            }
+        } else {
+            throw new CronScriptException("Invalid workload");
+        }
 
         /**
          * Нужно проспамить в личку, если возможно
          *
          * @author shpizel
          */
+        $Mamba->Contacts()->sendMessage($currentUserId, $this->getPersonalMessage());
 
         /**
          * Нужно проспамить в нотификацию, если возможно
          *
          * @author shpizel
          */
+        $Mamba->Notify()->sendMessage($currentUserId, $this->getNotifyMessage());
 
         /**
-         * Нужно проспамить на стене достижений
+         * Нужно проспамить на стену достижений
          *
-         * @author shpizel
+         * @author
          */
+        $Mamba->Achievement()->set($this->getAchievementText($webUserId));
+    }
+
+    /**
+     * Генерирует и возвращает ачивку
+     *
+     * @param int $userId
+     * @return str
+     */
+    private function getAchievement($userId) {
+
+    }
+
+    /**
+     * Генерирует и возвращает сообщение от менеджера сообщений
+     *
+     * @return str
+     */
+    private function getNotifyMessage() {
+
+    }
+
+    /**
+     * Генерирует и возвращает персональное сообщение
+     *
+     * @return str
+     */
+    private function getPersonalMessage() {
+
     }
 }

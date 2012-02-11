@@ -1,6 +1,6 @@
 <div class="layer-no" style="display: none;">
-    <div class="title">Она ответила нет</div>
-    <div class="photo"><img src="styles/images/people.jpg"/></div>
-    <div class="content-center">К сожалению, Daria ответила «нет» на предложение встретиться с вами</div>
+    <div class="title{% if webuser.preferences.gender == 'F' %} female{% else %} male{% endif %}">{% if webuser.preferences.gender == 'F' %}Она ответила{% else %}Он ответил{% endif %} нет</div>
+    <div class="photo"><img/></div>
+    <div class="content-center">К сожалению, <span class='name'></span> {% if webuser.preferences.gender == 'F' %}ответила{% else %}ответил{% endif %} «нет» на&nbsp;предложение встретиться с&nbsp;вами</div>
     <div class="center"><a href="#" class="close">Закрыть окно</a></div>
 </div>

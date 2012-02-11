@@ -27,35 +27,6 @@ class PlatformSettings extends Helper {
         REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY = "users_platform_last_query"
     ;
 
-    private
-
-        /**
-         * Redis
-         *
-         * @var Redis
-         */
-        $Redis = null
-    ;
-
-    /**
-     * Конструктор
-     *
-     * @param $userId
-     * @return null
-     */
-    public function __construct(Redis $Redis) {
-        $this->Redis = $Redis;
-    }
-
-    /**
-     * Redis getter
-     *
-     * @return \Mamba\RedisBundle\Redis
-     */
-    public function getRedis() {
-        return $this->Redis;
-    }
-
     /**
      * Platform params getter
      *
@@ -63,11 +34,13 @@ class PlatformSettings extends Helper {
      * @return mixed
      */
     public function get($userId) {
-        if (is_int($userId)) {
-            return $this->getRedis()->hGet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $userId);
+        if (!is_int($userId)) {
+            throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
+        if (false !== $data = $this->Redis->hGet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $userId)) {
+            return json_decode($data, true);
+        }
     }
 
     /**
@@ -82,7 +55,7 @@ class PlatformSettings extends Helper {
                 unset($platformParams['auth_key']);
             }
 
-            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $mambaUserId, $platformParams);
+            return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $mambaUserId, json_encode($platformParams));
         }
 
         throw new PlatformParamsException("Invalid platform params: \n" . var_export($platformParams, true));
@@ -108,7 +81,7 @@ class PlatformSettings extends Helper {
             throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hSet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId, $timestamp);
+        return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId, $timestamp);
     }
 
     /**
@@ -119,7 +92,7 @@ class PlatformSettings extends Helper {
      */
     public function getLastQueryTime($userId) {
         if (is_int($userId)) {
-            return $this->getRedis()->hGet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId);
+            return $this->Redis->hGet(self::REDIS_HASH_USERS_PLATFORM_LAST_QUERY_TIME_KEY, $userId);
         }
 
         throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));

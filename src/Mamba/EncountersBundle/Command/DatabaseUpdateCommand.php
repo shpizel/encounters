@@ -24,7 +24,7 @@ class DatabaseUpdateCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Hitlist queue updater"
+        SCRIPT_DESCRIPTION = "Database updater"
     ;
 
     /**
@@ -61,7 +61,6 @@ class DatabaseUpdateCommand extends QueueUpdateCronScript {
      * @param $job
      */
     public function updateDatabase($job) {
-
 
     }
 }

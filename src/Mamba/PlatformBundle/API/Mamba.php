@@ -539,7 +539,9 @@ final class Mamba {
             $cachingBackend = $this->cachingOptions[$namespace][$method]['backend'];
             $result = null;
             if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
-                $result = self::getRedis()->get($cachingKey);
+                if (false !== $result = self::getRedis()->get($cachingKey)) {
+                    return json_decode($result, true);
+                }
             } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
                 $result = self::getMemcache()->get($cachingKey);
             } else {
@@ -567,9 +569,9 @@ final class Mamba {
 
             if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
                 if ($expire) {
-                    return self::getRedis()->setex($cachingKey, (int) $expire, $data);
+                    return self::getRedis()->setex($cachingKey, (int)$expire, json_encode($data));
                 }
-                return self::getRedis()->set($cachingKey, $data);
+                return self::getRedis()->set($cachingKey, json_encode($data));
             } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
                 return self::getMemcache()->set($cachingKey, $data, (int) $expire);
             }

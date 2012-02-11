@@ -796,3 +796,7 @@ div.content div.title {
     font: bold italic 24px/50px Georgia;
     margin-bottom: 15px;
 }
+
+a.close {
+    cursor:pointer;
+}

@@ -36,7 +36,7 @@ class ContactsQueue extends Helper {
             throw new ContactsQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->getRedis()->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->Redis->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -50,7 +50,7 @@ class ContactsQueue extends Helper {
             throw new ContactsQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->sPop($this->getRedisQueueKey($userId));
+        return $this->Redis->sPop($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -64,7 +64,7 @@ class ContactsQueue extends Helper {
             throw new ContactsQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->sSize($this->getRedisQueueKey($userId));
+        return $this->Redis->sSize($this->getRedisQueueKey($userId));
     }
 
     /**

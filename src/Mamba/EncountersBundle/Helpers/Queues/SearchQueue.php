@@ -37,7 +37,7 @@ class SearchQueue extends Helper {
             throw new SearchQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->getRedis()->zAdd($this->getRedisQueueKey($webUserId), $energy, $currentUserId);
+        return $this->Redis->zAdd($this->getRedisQueueKey($webUserId), $energy, $currentUserId);
     }
 
     /**
@@ -51,7 +51,7 @@ class SearchQueue extends Helper {
             throw new SearchQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->zSize($this->getRedisQueueKey($userId));
+        return $this->Redis->zSize($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -74,7 +74,7 @@ class SearchQueue extends Helper {
             throw new SearchQueueException("Invalid to parameter: \n" . var_export($to, true));
         }
 
-        return $this->getRedis()->zRange($this->getRedisQueueKey($userId), $from, $to);
+        return $this->Redis->zRange($this->getRedisQueueKey($userId), $from, $to);
     }
 
     /**
@@ -92,7 +92,7 @@ class SearchQueue extends Helper {
             throw new SearchQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        $this->getRedis()->zDelete($this->getRedisQueueKey($webUserId), $currentUserId);
+        $this->Redis->zDelete($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -112,7 +112,7 @@ class SearchQueue extends Helper {
             throw new SearchQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->getRedis()->zIncrBy($zKey = $this->getRedisQueueKey($webUserId), $energy - $this->zScore($zKey, $currentUserId), $currentUserId);
+        return $this->Redis->zIncrBy($zKey = $this->getRedisQueueKey($webUserId), $energy - $this->zScore($zKey, $currentUserId), $currentUserId);
     }
 
     /**
