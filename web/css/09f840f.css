@@ -648,9 +648,16 @@ h5{ font-size: 100%; }
 
 
 .layer-no .title{
-	background: url('/bundles/encounters/images/title-say-no.gif') no-repeat center top;
 	text-indent: -330em; margin:10px 0 30px 0;
 	height: 37px; 
+}
+
+.layer-no .male {
+    background: url('/bundles/encounters/images/texts/male/title-say-no.gif') no-repeat center top;
+}
+
+.layer-no .female {
+    background: url('/bundles/encounters/images/texts/female/title-say-no.gif') no-repeat center top;
 }
 
 .layer-no .photo,
@@ -663,7 +670,8 @@ h5{ font-size: 100%; }
 
 .content-center{
 	text-align: center;
-	margin: 0 100px 20px 100px;
+	/*margin: 0 100px 20px 100px;*/
+    margin: 0 50px 20px 50px;
 	font-size: 18px;
 }
 
@@ -696,21 +704,74 @@ h5{ font-size: 100%; }
 
 
 .layer-maybe .title{
-	background: url('/bundles/encounters/images/title-say-maybe.gif') no-repeat center top;
 	text-indent: -330em; margin:10px 0 30px 0;
 	height: 37px; 
 }
 
+.layer-maybe .male {
+    background: url('/bundles/encounters/images/texts/male/title-say-maybe.gif') no-repeat center top;
+}
+
+.layer-maybe .female {
+    background: url('/bundles/encounters/images/texts/female/title-say-maybe.gif') no-repeat center top;
+}
+
 .layer-maybe .center .close,
-.layer-yes .center .close{
+.layer-yes .center .close,
+.layer-mutual .center .close{
 	position: absolute;
 	right: 0px; top: 0px;
 }
 
+.layer-mutual div.photo {
+
+    height:171px;
+    width:251px;
+    margin-bottom:20px;
+    margin-left:auto;
+    margin-right: auto;
+    position: relative;
+}
+
+.layer-mutual div.z {
+    position: absolute;
+    height: 100%;
+    width:100%;
+    z-index: 300;
+    background: url('/bundles/encounters/images/mutual-ramka.png') no-repeat center top;
+}
+
+.layer-mutual div.photo div.current {
+    position: absolute;
+    right:10px;
+    top:10px;
+    z-index:10;
+    height:150px;
+    width:110px;
+
+}
+
+.layer-mutual div.photo div.web {
+    position: absolute;
+    left:10px;
+    top:10px;
+    z-index:10;
+    height:150px;
+    width:110px;
+
+}
+
 .layer-yes .title{
-	background: url('/bundles/encounters/images/title-say-yes.gif') no-repeat center top;
 	text-indent: -330em; margin:10px 0 30px 0;
 	height: 37px; 
+}
+
+.layer-yes .male {
+    background: url('/bundles/encounters/images/texts/male/title-say-yes.gif') no-repeat center top;
+}
+
+.layer-yes .female {
+    background: url('/bundles/encounters/images/texts/female/title-say-yes.gif') no-repeat center top;
 }
 
 .layer-not-see-yet {
@@ -718,9 +779,26 @@ h5{ font-size: 100%; }
 }
 
 .layer-not-see-yet .title{
-	background: url('/bundles/encounters/images/title-not-see.gif') no-repeat center top;
 	text-indent: -330em; margin:10px 0 30px 0;
 	height: 37px; 
+}
+
+.layer-mutual{
+    display: none;
+}
+
+.layer-mutual .title {
+    background: url('/bundles/encounters/images/texts/title-ura.gif') no-repeat center top;
+    text-indent: -330em; margin:10px 0 30px 0;
+    height: 37px;
+}
+
+.layer-not-see-yet .male {
+    background: url('/bundles/encounters/images/texts/male/title-not-see.gif') no-repeat center top;
+}
+
+.layer-not-see-yet .female {
+    background: url('/bundles/encounters/images/texts/female/title-not-see.gif') no-repeat center top;
 }
 
 .coint{
@@ -728,8 +806,6 @@ h5{ font-size: 100%; }
 	display: inline-block;
 	width: 13px; height: 12px;
 }
-
-
 
 .ui-btn {
 	background: #52a80a url("/bundles/encounters/images/ui-btn.png") 0 -2px repeat-x;
@@ -793,9 +869,38 @@ div.content {
     padding:10px;
 }
 
-div.content div.title {
+div.content div.none div.title {
     font: bold italic 24px/50px Georgia;
     margin-bottom: 15px;
+    text-align: center;
+}
+
+div.content div.none div.info {
+    margin: 0 25% 0 25%;
+    text-align: center;
+    line-height: 25px;
+    padding:32px;
+    background: #fff1d2;
+    border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px;
+    margin-bottom: 25px;
+}
+
+div.content div.none a.button {
+    background: url('/bundles/encounters/images/btn-start_2.png') no-repeat center center;
+    border: 0px;
+    font-size: 20px;
+    padding: 9px 20px;
+    color: #419801;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+div.content div.none a.long {
+    background: url('/bundles/encounters/images/btn-start_1.png') no-repeat center center;
+}
+
+div.content div.none a.button:link, div.content div.none a.button:hover, div.content div.none a.button:active, div.content div.none a.button:visited {
+    text-decoration: none;
 }
 
 a.close {

@@ -50,12 +50,15 @@ class PlatformSettings extends Helper {
      * @return mixed
      */
     public function set(array $platformParams) {
-        if (isset($platformParams['oid']) && ($mambaUserId = $platformParams['oid'] = (int)$platformParams['oid'])) {
+        if (isset($platformParams['oid']) && ($userId = $platformParams['oid'] = (int)$platformParams['oid'])) {
             if (isset($platformParams['auth_key'])) {
                 unset($platformParams['auth_key']);
             }
 
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $mambaUserId, json_encode($platformParams));
+            $this->Redis->hSet(self::REDIS_HASH_USERS_PLATFORM_SETTINGS_KEY, $userId, json_encode($platformParams));
+            $this->setLastQueryTime($userId);
+
+            return;
         }
 
         throw new PlatformParamsException("Invalid platform params: \n" . var_export($platformParams, true));

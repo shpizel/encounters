@@ -11,7 +11,7 @@
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
 </head>
-<!-- A clean hand wants no washing.. -->
+<!-- A clean hand wants no washing -->
 <body>
 <div class="app-layout">
     <div class="app-menu-bar">
@@ -43,6 +43,7 @@
     </div>
 </div>
 {% block body %}{% endblock %}
+{% include 'EncountersBundle:tools:ym.html.twig' %}
 {% block javascripts %}{% endblock %}
 {% javascripts
     '@EncountersBundle/Resources/public/js/core/*'
@@ -63,6 +64,7 @@ $Config.set('platform', {{settings.platform}});
 {% if settings.search %}
 $Config.set('search', {{settings.search}});
 {% endif %}
+$Config.set('webuser', {{ webuser.json }});
 {% endautoescape %}
 $(document).ready(function(){
     $App.init(location.pathname).run();

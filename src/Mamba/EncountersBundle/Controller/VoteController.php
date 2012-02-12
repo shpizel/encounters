@@ -62,7 +62,7 @@ class VoteController extends ApplicationController {
             $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
             /** Уменьшить энергию CurrentUser'a */
-            $this->getEnergyObject()->decr($this->cureentUserId, $this->decision + 2);
+            $this->getEnergyObject()->decr($this->currentUserId, $this->decision + 2);
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision) {

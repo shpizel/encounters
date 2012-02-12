@@ -73,12 +73,13 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-//            $Layers.showLayerAnswerMaybe();
-//            $Layers.showLayerAnswerNo();
-//            $Layers.showLayerAnswerYes();
-            $Layers.showEnergyLayer();
+//            $Layers.showAnswerMaybeLayer();
+//            $Layers.showAnswerNoLayer();
+//            $Layers.showAnswerYesLayer();
+//            $Layers.showEnergyLayer();
 //            $Layers.showPopularityLayer();
 //            $Layers.showAnswerNotSeeYetLayer();
+            $Layers.showMutualLayer();
             return false;
         });
     },

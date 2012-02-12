@@ -47,3 +47,9 @@ queue.get:
     defaults: { _controller: EncountersBundle:Queue:ajaxQueueGet }
     requirements:
         _method: POST
+
+# Gateway
+
+billing:
+    pattern: /gateway/billing
+    defaults: { _controller: EncountersBundle:Billing:index }

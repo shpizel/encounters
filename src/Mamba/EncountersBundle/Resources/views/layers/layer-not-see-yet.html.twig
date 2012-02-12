@@ -1,6 +1,6 @@
 <div class="layer-not-see-yet" style="display: none;">
     <div class="title{% if webuser.preferences.gender == 'F' %} female{% else %} male{% endif %}">{% if webuser.preferences.gender == 'F' %}Она еще не видела{% else %}Он еще не видел{% endif %} твоих фоток</div>
     <div class="photo"><img/></div>
-    <div class="content-center">Станьте первыми в списке просматриваемых ею фото</div>
+    <div class="content-center">Станьте первыми в списке просматриваемых {% if webuser.preferences.gender == 'F' %}ею{% else %}им{% endif %} фото</div>
     <div class="center"><a href="#" class="ui-btn ui-btn-big">Стать первым за 1<i class="coint"></i></a></div>
 </div>

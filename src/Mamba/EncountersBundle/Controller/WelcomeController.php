@@ -73,7 +73,7 @@ class WelcomeController extends ApplicationController {
                         if ($params = @parse_url($referer, PHP_URL_QUERY)) {
                             @parse_str($params, $params);
                             if (is_array($params) && isset($params['app_id'])) {
-                                if ($params['app_id'] = $Request->query->get('app_id')) {
+                                if ($params['app_id'] == $Request->query->get('app_id')) {
                                     $PlatformSettingsObject->set($getPlatformParams);
                                 }
                             }

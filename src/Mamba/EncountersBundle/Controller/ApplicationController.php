@@ -262,9 +262,8 @@ abstract class ApplicationController extends Controller {
             ),
         );
 
-        $dataArray['webuser']['json'] = array(
-            'anketa' => json_encode($dataArray['webuser']['anketa']),
-        );
+        $dataArray['webuser']['anketa'] = array_shift($dataArray['webuser']['anketa']);
+        $dataArray['webuser']['json'] = json_encode($dataArray['webuser']);
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         return $dataArray;

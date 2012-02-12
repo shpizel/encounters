@@ -20,8 +20,6 @@ $Mychoice = {
      * @run page
      */
     run: function() {
-        if (window.$debug) {
-            console.log("$Mychoice has runned");
-        }
+
     }
 }
