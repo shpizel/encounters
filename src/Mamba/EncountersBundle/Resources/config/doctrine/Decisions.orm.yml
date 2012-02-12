@@ -1,0 +1,32 @@
+Mamba\EncountersBundle\Entity\Decisions:
+  type: entity
+  table: Decisions
+  fields:
+    id:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+    webUserId:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: web_user_id
+    currentUserId:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: current_user_id
+    decision:
+      type: integer
+      unsigned: false
+      nullable: true
+    time:
+      type: datetime
+      nullable: true
+    opened:
+      type: boolean
+      nullable: true
+  lifecycleCallbacks: {  }
