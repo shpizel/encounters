@@ -2,12 +2,14 @@
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="Decisions" table="Decisions">
     <change-tracking-policy>DEFERRED_IMPLICIT</change-tracking-policy>
-    <id name="id" type="integer" column="id"/>
-    <id name="webUserId" type="integer" column="web_user_id"/>
-    <id name="currentUserId" type="integer" column="current_user_id"/>
+    <id name="id" type="integer" column="id">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="webUserId" type="integer" column="web_user_id"/>
+    <field name="currentUserId" type="integer" column="current_user_id"/>
     <field name="decision" type="integer" column="decision"/>
-    <field name="time" type="datetime" column="time"/>
-    <field name="opened" type="boolean" column="opened"/>
+    <field name="changed" type="integer" column="changed"/>
+    <field name="opened" type="integer" column="opened"/>
     <lifecycle-callbacks/>
   </entity>
 </doctrine-mapping>

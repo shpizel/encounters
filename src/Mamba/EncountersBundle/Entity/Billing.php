@@ -6,58 +6,84 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Mamba\EncountersBundle\Entity\Billing
+ *
+ * @ORM\Table(name="Billing")
+ * @ORM\Entity
  */
 class Billing
 {
     /**
      * @var integer $id
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
      * @var integer $appId
+     *
+     * @ORM\Column(name="app_id", type="integer", nullable=true)
      */
     private $appId;
 
     /**
      * @var integer $userId
+     *
+     * @ORM\Column(name="user_id", type="integer", nullable=true)
      */
     private $userId;
 
     /**
      * @var integer $operationId
+     *
+     * @ORM\Column(name="operation_id", type="integer", nullable=true)
      */
     private $operationId;
 
     /**
      * @var float $amount
+     *
+     * @ORM\Column(name="amount", type="float", nullable=true)
      */
     private $amount;
 
     /**
      * @var float $amountDeveloper
+     *
+     * @ORM\Column(name="amount_developer", type="float", nullable=true)
      */
     private $amountDeveloper;
 
     /**
      * @var integer $validationId
+     *
+     * @ORM\Column(name="validation_id", type="integer", nullable=true)
      */
     private $validationId;
 
     /**
      * @var integer $time
+     *
+     * @ORM\Column(name="time", type="integer", nullable=true)
      */
     private $time;
 
     /**
      * @var string $sig
+     *
+     * @ORM\Column(name="sig", type="string", length=64, nullable=true)
      */
     private $sig;
 
     /**
      * @var boolean $billed
+     *
+     * @ORM\Column(name="billed", type="boolean", nullable=true)
      */
     private $billed;
+
 
 
     /**

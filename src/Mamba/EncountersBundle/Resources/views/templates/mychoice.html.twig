@@ -4,12 +4,15 @@
 {% block body %}
 <div class="content">
 
+    {% if data == null %}
     <div class="none">
         <div class="title">Кого я выбрал</div>
         <div class="info">На этой странице будут храниться фотографии тех,<br>кого вы выбрали. Как только кто-то ответит вам взаимностью, мы бросим все дела и сразу же сообщим вам об этом!<br><br><a href="/search" class="button">Начните поиск пары прямо сейчас</a></div>
-
-
     </div>
-
+    {% else %}
+    {% for item in data %}
+        {{ item.getId() }} : {{ item.getWebUserId }} &rarr; {{ item.getCurrentUserId}} at {{ item.getChanged() }} for {{ item.getDecision() }} <br>
+    {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}

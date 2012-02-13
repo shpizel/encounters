@@ -10,6 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
+use Mamba\EncountersBundle\Entity\Decisions;
+
 /**
  * DatabaseUpdateCommand
  *
@@ -61,6 +63,29 @@ class DatabaseUpdateCommand extends QueueUpdateCronScript {
      * @param $job
      */
     public function updateDatabase($job) {
+        $Mamba = $this->getMamba();
 
+        list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
+        if ($webUserId = (int) $webUserId) {
+            $Mamba->set('oid', $webUserId);
+
+            if (!$Mamba->getReady()) {
+                $this->log("Mamba is not ready!", 16);
+                return;
+            }
+        } else {
+            throw new CronScriptException("Invalid workload");
+        }
+
+        $DecisionsItem = new Decisions();
+        $DecisionsItem->setWebUserId($webUserId);
+        $DecisionsItem->setCurrentUserId($currentUserId);
+        $DecisionsItem->setDecision($decision);
+        $DecisionsItem->setChanged(time());
+        $DecisionsItem->setOpened(0);
+
+        $em = $this->getContainer()->get('doctrine')->getEntityManager();
+        $em->persist($DecisionsItem);
+        $em->flush();
     }
 }

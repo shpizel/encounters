@@ -4,9 +4,15 @@
 {% block body %}
 <div class="content">
 
+    {% if data == null %}
     <div class="none">
         <div class="title">Вас еще никто не смотрел</div>
         <div class="info">Мы показываем ваши фотографии другим людям так часто, <br>насколько вы оцениваете других людей!<br><br><a href="/search" class="button long">Начните смотреть и оценивать прямо сейчас</a><div style="padding-top:15px;padding-bottom: 15px;">или</div><a class="ui-btn-big ui-btn">Купите 100 показов за 1<i class="coint"></i></a></div>
     </div>
+    {% else %}
+    {% for item in data %}
+    {{ item.getId() }} : {{ item.getWebUserId }} &rarr; {{ item.getCurrentUserId}} at {{ item.getChanged() }} for {{ item.getDecision() }} <br>
+    {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}

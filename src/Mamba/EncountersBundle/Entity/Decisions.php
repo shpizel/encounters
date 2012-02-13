@@ -6,49 +6,57 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Mamba\EncountersBundle\Entity\Decisions
+ *
+ * @ORM\Table(name="Decisions")
+ * @ORM\Entity
  */
 class Decisions
 {
     /**
      * @var integer $id
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
      * @var integer $webUserId
+     *
+     * @ORM\Column(name="web_user_id", type="integer", nullable=true)
      */
     private $webUserId;
 
     /**
      * @var integer $currentUserId
+     *
+     * @ORM\Column(name="current_user_id", type="integer", nullable=true)
      */
     private $currentUserId;
 
     /**
      * @var integer $decision
+     *
+     * @ORM\Column(name="decision", type="integer", nullable=true)
      */
     private $decision;
 
     /**
-     * @var datetime $time
+     * @var integer $changed
+     *
+     * @ORM\Column(name="changed", type="integer", nullable=true)
      */
-    private $time;
+    private $changed;
 
     /**
-     * @var boolean $opened
+     * @var integer $opened
+     *
+     * @ORM\Column(name="opened", type="integer", nullable=true)
      */
     private $opened;
 
 
-    /**
-     * Set id
-     *
-     * @param integer $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
 
     /**
      * Get id
@@ -121,29 +129,29 @@ class Decisions
     }
 
     /**
-     * Set time
+     * Set changed
      *
-     * @param datetime $time
+     * @param integer $changed
      */
-    public function setTime($time)
+    public function setChanged($changed)
     {
-        $this->time = $time;
+        $this->changed = $changed;
     }
 
     /**
-     * Get time
+     * Get changed
      *
-     * @return datetime 
+     * @return integer 
      */
-    public function getTime()
+    public function getChanged()
     {
-        return $this->time;
+        return $this->changed;
     }
 
     /**
      * Set opened
      *
-     * @param boolean $opened
+     * @param integer $opened
      */
     public function setOpened($opened)
     {
@@ -153,7 +161,7 @@ class Decisions
     /**
      * Get opened
      *
-     * @return boolean 
+     * @return integer 
      */
     public function getOpened()
     {

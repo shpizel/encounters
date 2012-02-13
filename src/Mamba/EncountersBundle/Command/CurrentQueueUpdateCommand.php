@@ -35,7 +35,7 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
          * @var array
          */
         $balance = array(
-            'search'   => 5 /** 7 */,
+            'search'   => 7,
             'priority' => 1,
             'hitlist'  => 1,
             'contacts' => 1,

@@ -1,0 +1,60 @@
+<?php
+
+namespace Mamba\EncountersBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Mamba\EncountersBundle\Entity\Decisions
+ *
+ * @ORM\Table(name="Decisions")
+ * @ORM\Entity
+ */
+class Decisions
+{
+    /**
+     * @var integer $id
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $id;
+
+    /**
+     * @var integer $webUserId
+     *
+     * @ORM\Column(name="web_user_id", type="integer", nullable=true)
+     */
+    private $webUserId;
+
+    /**
+     * @var integer $currentUserId
+     *
+     * @ORM\Column(name="current_user_id", type="integer", nullable=true)
+     */
+    private $currentUserId;
+
+    /**
+     * @var integer $decision
+     *
+     * @ORM\Column(name="decision", type="integer", nullable=true)
+     */
+    private $decision;
+
+    /**
+     * @var integer $changed
+     *
+     * @ORM\Column(name="changed", type="integer", nullable=true)
+     */
+    private $changed;
+
+    /**
+     * @var integer $opened
+     *
+     * @ORM\Column(name="opened", type="integer", nullable=true)
+     */
+    private $opened;
+
+
+}

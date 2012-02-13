@@ -26,6 +26,16 @@ class MyChoiceController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:templates:mychoice.html.twig", $this->getInitialData());
+        $myChoice = $this->getDoctrine()
+            ->getEntityManager()
+                ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId ORDER BY d.changed ASC')
+                    ->setParameter('webUserId', $webUserId)
+                ->getResult()
+        ;
+
+        $dataArray = $this->getInitialData();
+        $dataArray['data'] = $myChoice ?: null;
+
+        return $this->render("EncountersBundle:templates:mychoice.html.twig", $dataArray);
     }
 }

@@ -26,6 +26,16 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        return $this->render("EncountersBundle:templates:visitors.html.twig", $this->getInitialData());
+        $visitors = $this->getDoctrine()
+            ->getEntityManager()
+            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed ASC')
+            ->setParameter('webUserId', $webUserId)
+            ->getResult()
+        ;
+
+        $dataArray = $this->getInitialData();
+        $dataArray['data'] = $visitors ?: null;
+
+        return $this->render("EncountersBundle:templates:visitors.html.twig", $dataArray);
     }
 }

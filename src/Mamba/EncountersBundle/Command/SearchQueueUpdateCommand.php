@@ -32,7 +32,7 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var int
          */
-        LIMIT = 12
+        LIMIT = 18
     ;
 
     /**
