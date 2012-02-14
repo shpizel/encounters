@@ -63,8 +63,8 @@ jms_security_extra:
     secure_all_services: false
 
 mamba:
-    secret_key: 'l2l28K7K2Wl0K5z9Sj63'
-    private_key: 't5tK8jUzjYKr5xQt9O49'
+    secret_key: 'jn6OUU2pS5nz7O37Srj9'
+    private_key: 'Ot018UW4jOYQSWKpQ2l9'
 
 redis:
     host: localhost
