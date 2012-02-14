@@ -875,7 +875,9 @@ div.content div.none div.title {
 }
 
 div.content div.none div.info {
-    margin: 0 25% 0 25%;
+    margin: 0 auto 0 auto;
+    min-width: 485px;
+    width:485px;
     text-align: center;
     line-height: 25px;
     padding:32px;
