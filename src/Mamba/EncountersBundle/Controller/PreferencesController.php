@@ -60,6 +60,9 @@ class PreferencesController extends ApplicationController {
                     if (preg_match("!(\d+)\D(\d+)\sлет!i", $lookfor, $ages)) {
                         $searchPreferences['age_to'] = (int) array_pop($ages);
                         $searchPreferences['age_from'] = (int) array_pop($ages);
+                    }  elseif ($age = $anketaInfo['info']['age']) {
+                        $searchPreferences['age_from'] = $age -5;
+                        $searchPreferences['age_to'] = $age + 5;
                     }
                 } elseif (isset($anketaInfo['info']['gender']) && isset($anketaInfo['info']['age'])) {
                     list($gender, $age) = array(
@@ -79,6 +82,9 @@ class PreferencesController extends ApplicationController {
             } else {
                 throw new \LogicException("Could not get search preferences");
             }
+
+            $searchPreferences['age_from'] = $searchPreferences['age_from'] ?: 18;
+            $searchPreferences['age_to'] = $searchPreferences['age_to'] ?: 25;
         }
 
         return $this->render('EncountersBundle:templates:preferences.html.twig', array_merge($searchPreferences, $this->getInitialData()));
