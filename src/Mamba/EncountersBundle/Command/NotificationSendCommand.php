@@ -24,7 +24,28 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Notifications sender"
+        SCRIPT_DESCRIPTION = "Notifications sender",
+
+        /**
+         * Ачивка
+         *
+         * @var str
+         */
+        ACHIEVEMENT_MESSAGE = "Ничего себе! Меня оценили уже %d человек :)",
+
+        /**
+         * Сообщение в личку
+         *
+         * @var str
+         */
+        PERSONAL_MESSAGE = "Ура! Я отметил тебя в приложении Знакомства для свиданий! Перейдите по ссылке чтобы узнать больше ;-)",
+
+        /**
+         * Сообщение от менеджера приложений
+         *
+         * @var str
+         */
+        NOTIFY_MESSAGE = "Вот это да! Кто-то отметил, что хочет встретиться с вами. Перейдите по ссылке чтобы узнать больше ;-)"
     ;
 
     /**
@@ -95,7 +116,9 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @author
          */
-        $Mamba->Achievement()->set($this->getAchievementText($webUserId));
+        if ($achievement = $this->getAchievement($webUserId)) {
+            $Mamba->Achievement()->set($achievement);
+        }
     }
 
     /**
@@ -105,7 +128,9 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      * @return str
      */
     private function getAchievement($userId) {
-
+        if ($visitors = $this->getCountersObject()->get($userId, 'visitors')) {
+            return sprintf(self::ACHIEVEMENT_MESSAGE, $this->getCountersObject()->get($userId, 'visitors'));
+        }
     }
 
     /**
@@ -114,7 +139,7 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      * @return str
      */
     private function getNotifyMessage() {
-
+        return self::NOTIFY_MESSAGE;
     }
 
     /**
@@ -123,6 +148,6 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      * @return str
      */
     private function getPersonalMessage() {
-
+        return self::PERSONAL_MESSAGE;
     }
 }

@@ -10,6 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 
@@ -205,4 +206,18 @@ abstract class QueueUpdateCronScript extends CronScript {
 
         return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
     }
+
+    /**
+     * Counters object getter
+     *
+     * @return Counters
+     */
+    public function getCountersObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Counters($this->getRedis());
+    }
+
 }
