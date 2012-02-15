@@ -867,6 +867,7 @@ div.content {
     margin-left:30px;
     margin-right: 30px;
     padding:10px;
+    padding-top:2px;
 }
 
 div.content div.none div.title {
@@ -907,4 +908,84 @@ div.content div.none a.button:link, div.content div.none a.button:hover, div.con
 
 a.close {
     cursor:pointer;
+}
+
+div.content div.pictures div.title {
+    font: bold italic 24px/50px Georgia;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+div.content div.pictures div.mcpic {
+    float:left;
+    width:142px;
+    height:222px;
+    font-size:11px;
+}
+
+div.content div.pictures div.mcpic img {
+    padding-bottom: 9px;
+}
+
+div.content div.pictures div.mcpic div.info {
+    color:#666;
+    line-height: 20px;
+}
+
+div.content div.pictures div.mcpic div.link {
+    display:none;
+    line-height: 20px;
+    font-size:13px;
+}
+
+div.content div.pictures div.mcpic:hover {
+    background: url("/bundles/encounters/images/hitlist-ramka-4.png") no-repeat;
+}
+
+div.content div.pictures div.mcpic:hover div.info {
+    display:none;
+}
+
+div.content div.pictures div.mcpic:hover div.link {
+    display: block;
+}
+
+div.content div.pictures div.mcpic {
+    padding-left:16px;
+    padding-top:15px;
+}
+
+div.content div.pictures div.back {
+    font-size:24px;
+}
+
+div.content div.pictures div.mpic {
+    float:left;
+    width:131px;
+    height:191px;
+    font-size:11px;
+    position: relative;
+    margin-right:27px;
+}
+
+div.content div.pictures div.mpic img {
+    padding-top:11px;
+    padding-left:10px;
+
+}
+
+div.ramka {
+    position: absolute;
+    top:0; left:0;
+    width:131px;
+    height:191px;
+    background: url('/bundles/encounters/images/hitlist-ramka-2.png') no-repeat;
+}
+
+div.content div.pictures div.mcpic img {
+    padding-bottom: 9px;
+}
+
+div.info {
+    z-index: 9999999;
 }
