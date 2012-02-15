@@ -40,7 +40,6 @@ p{ margin: 0 0 12px 0; }
 a{ color:#0066cc; }
 a:active{}
 a:visited{}
-a:hover{ text-decoration: none; }
 
 img { vertical-align: bottom; }
 
@@ -965,6 +964,7 @@ div.content div.pictures div.mpic {
     font-size:11px;
     position: relative;
     margin-right:27px;
+    margin-bottom: 30px;
 }
 
 div.content div.pictures div.mpic img {
@@ -986,5 +986,6 @@ div.content div.pictures div.mcpic img {
 }
 
 div.info {
-    z-index: 9999999;
+    position: absolute;
+    bottom:0px;
 }
