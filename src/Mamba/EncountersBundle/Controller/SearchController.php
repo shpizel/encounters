@@ -17,8 +17,12 @@ class SearchController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        $Mamba = $this->get('Mamba');
+        $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
+            return $this->redirect($this->generateUrl('welcome'));
+        }
+
+        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 

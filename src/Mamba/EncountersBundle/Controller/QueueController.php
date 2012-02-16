@@ -41,21 +41,30 @@ class QueueController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } elseif ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId = $Mamba->get('oid'))) {
-            foreach ($Mamba->Anketa()->getInfo($currentQueue) as $dataArray) {
-                $this->json['data'][] = array(
-                    'info' => array(
-                        'id'               => $dataArray['info']['oid'],
+            $currentQueue = array_chunk($currentQueue, 100);
+            $Mamba->multi();
+            foreach ($currentQueue as $subQueue) {
+                $Mamba->Anketa()->getInfo($subQueue);
+            }
+            $anketaInfoArray = $Mamba->exec();
+
+            foreach ($anketaInfoArray as $chunk) {
+                foreach ($chunk as $dataArray) {
+                    $this->json['data'][] = array(
+                        'info' => array(
+                            'id'               => $dataArray['info']['oid'],
 //                        'login'            => $dataArray['info']['login'],
-                        'name'             => $dataArray['info']['name'],
-                        'gender'           => $dataArray['info']['gender'],
-                        'age'              => $dataArray['info']['age'],
-                        'small_photo_url'  => $dataArray['info']['small_photo_url'],
-                        'medium_photo_url' => $dataArray['info']['medium_photo_url'],
-                        'is_app_user'      => $dataArray['info']['is_app_user'],
+                            'name'             => $dataArray['info']['name'],
+                            'gender'           => $dataArray['info']['gender'],
+                            'age'              => $dataArray['info']['age'],
+                            'small_photo_url'  => $dataArray['info']['small_photo_url'],
+                            'medium_photo_url' => $dataArray['info']['medium_photo_url'],
+                            'is_app_user'      => $dataArray['info']['is_app_user'],
 //                        'country'          => $dataArray['location']['country'],
 //                        'city'             => $dataArray['location']['city'],
-                    ),
-                );
+                        ),
+                    );
+                }
             }
 
             /**

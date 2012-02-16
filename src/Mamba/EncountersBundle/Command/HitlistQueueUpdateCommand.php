@@ -31,7 +31,7 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var int
          */
-        LIMIT = 3
+        LIMIT = 16
     ;
 
     /**

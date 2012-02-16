@@ -96,6 +96,10 @@ $Search = {
 
         $.post($Routing.getVoteSetter(), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
             if ($data.status == 0 && $data.message == "") {
+                if ($data.data['mutual']) {
+                    $Layers.showMutualLayer();
+                }
+
                 $Search.showNextPhoto();
             } else {
                 $status = $data.status;
@@ -119,6 +123,9 @@ $Search = {
             this.rebuildThumbsPanel();
 
             $("div.app-info-user a").html($currentQueueElement['info']['name']).attr({target:'_blank','href':$Config.get('platform').partner_url + "anketa.phtml?oid=" + $currentQueueElement['info']['id']});
+            $("div.app-info-user a").html($currentQueueElement['info']['name']).click(function() {
+                return false;
+            });
             if ($currentQueueElement['info']['age']) {
                 $("div.app-info-user span").html($currentQueueElement['info']['age']);
             } else {

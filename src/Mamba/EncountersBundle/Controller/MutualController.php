@@ -33,7 +33,7 @@ class MutualController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        $Mamba = $this->get('Mamba');
+        $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
         }

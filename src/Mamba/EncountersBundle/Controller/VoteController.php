@@ -28,6 +28,11 @@ class VoteController extends ApplicationController {
             ),
         ),
 
+        /**
+         * Требуемые параметры
+         *
+         * @var array
+         */
         $requiredParams = array(
             'user_id',
             'decision',
@@ -41,7 +46,6 @@ class VoteController extends ApplicationController {
      */
     public function ajaxVoteSetAction() {
         $Mamba = $this->getMamba();
-        $Redis = $this->getRedis();
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
@@ -80,8 +84,18 @@ class VoteController extends ApplicationController {
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Не спишком ли часто мы спамим? */
+            if (false) {
+
+            }
 
             /** Может быть мы совпали? */
+            if ($this->decision && ($mutual = $this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId))) {
+                if ($mutual['decision']) {
+                    $this->json['data'] = array(
+                        'mutual' => true,
+                    );
+                }
+            }
 
             /** Удалим currentUser'a из текущей очереди webUser'a */
             $this->getCurrentQueueObject()->remove($this->webUserId, $this->currentUserId);

@@ -76,59 +76,65 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
      * @param $job
      */
     public function updateCurrentQueue($job) {
-        list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
-        $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
-        $usersAddedCount = 0;
-        foreach ($searchQueueChunk as $currentUserId) {
-            $this->getSearchQueueObject()->remove($webUserId, $currentUserId = (int) $currentUserId);
-            if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
-                    && $usersAddedCount++;
-            }
-        }
-        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from search queue;");
-
-        $priorityCount = self::$balance['priority'];
-        $usersAddedCount = 0;
-        while ($priorityCount--) {
-            if ($currentUserId = $this->getPriorityQueueObject()->pop($webUserId)) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+        do {
+            list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+            $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
+            $usersAddedCount = 0;
+            foreach ($searchQueueChunk as $currentUserId) {
+                $this->getSearchQueueObject()->remove($webUserId, $currentUserId = (int) $currentUserId);
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
                     $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
                         && $usersAddedCount++;
                 }
-            } else {
+            }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from search queue;");
+            if (!$usersAddedCount) {
                 break;
             }
-        }
-        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from priority queue;");
 
-        $hitlistCount = self::$balance['hitlist'];
-        $usersAddedCount = 0;
-        while ($hitlistCount--) {
-            if ($currentUserId = $this->getHitlistQueueObject()->pop($webUserId)) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
-                    $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
-                        && $usersAddedCount++;
+            $priorityCount = self::$balance['priority'];
+            $usersAddedCount = 0;
+            while ($priorityCount--) {
+                if ($currentUserId = $this->getPriorityQueueObject()->pop($webUserId)) {
+                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                            && $usersAddedCount++;
+                    }
+                } else {
+                    break;
                 }
-            } else {
-                break;
             }
-        }
-        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from hitlist queue;");
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from priority queue;");
 
-        $contactsCount = self::$balance['contacts'];
-        $usersAddedCount = 0;
-        while ($contactsCount--) {
-            if ($currentUserId = $this->getContactsQueueObject()->pop($webUserId)) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
-                    $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
-                        && $usersAddedCount++;
+            $hitlistCount = self::$balance['hitlist'];
+            $usersAddedCount = 0;
+            while ($hitlistCount--) {
+                if ($currentUserId = $this->getHitlistQueueObject()->pop($webUserId)) {
+                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                            && $usersAddedCount++;
+                    }
+                } else {
+                    break;
                 }
-            } else {
-                break;
             }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from hitlist queue;");
+
+            $contactsCount = self::$balance['contacts'];
+            $usersAddedCount = 0;
+            while ($contactsCount--) {
+                if ($currentUserId = $this->getContactsQueueObject()->pop($webUserId)) {
+                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                            && $usersAddedCount++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
         }
-        $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
+        while (true);
 
         $GearmanClient = $this->getGearman()->getClient();
 

@@ -535,6 +535,8 @@ final class Mamba {
      */
     private function getCache($method, $params) {
         if ($cachingKey = $this->getCacheKey($method, $params)) {
+            $cachingKey = md5($cachingKey);
+
             list($namespace, $method) = explode(".", $method);
             $cachingBackend = $this->cachingOptions[$namespace][$method]['backend'];
             $result = null;
@@ -559,6 +561,8 @@ final class Mamba {
      */
     private function setCache($method, $params, $data) {
         if ($cachingKey = $this->getCacheKey($method, $params)) {
+            $cachingKey = md5($cachingKey);
+
             list($namespace, $method) = explode(".", $method);
             $cachingOptions = $this->cachingOptions[$namespace][$method];
             $cachingBackend = $cachingOptions['backend'];

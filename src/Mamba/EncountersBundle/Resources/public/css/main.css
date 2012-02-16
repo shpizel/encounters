@@ -981,11 +981,11 @@ div.ramka {
     background: url('/bundles/encounters/images/hitlist-ramka-2.png') no-repeat;
 }
 
-div.content div.pictures div.mcpic img {
+div.content div.pictures div.mpic img {
     padding-bottom: 9px;
 }
 
-div.info {
+div.content div.pictures div.mpic div.info {
     position: absolute;
     bottom:0px;
 }

@@ -12,6 +12,7 @@ use Mamba\EncountersBundle\Helpers\PlatformSettings;
 use Mamba\EncountersBundle\Helpers\Popularity;
 
 use Mamba\PlatformBundle\API\Mamba;
+use Mamba\GearmanBundle\Gearman;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
 use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
