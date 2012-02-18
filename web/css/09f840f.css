@@ -501,18 +501,21 @@ h5{ font-size: 100%; }
 	background-color: #fdefcb;
 }
 
-.app-info-user .ico{
+/*.app-info-user*/
+.ico{
 	background: url('/bundles/encounters/images/app-sex.png') no-repeat left top;
 	display: inline-block;
 	height:10px; width: 11px;
 	vertical-align: middle;
 }
 
-.app-info-user .ico.male{
+/*.app-info-user */
+.ico.male{
 	background-position: 0 0;
 }
 
-.app-info-user .ico.female{
+/*.app-info-user */
+.ico.female{
 	background-position: -11px 0;
 }
 
@@ -520,6 +523,7 @@ h5{ font-size: 100%; }
 	background: url('/bundles/encounters/images/ajax-loader.gif') no-repeat center center;
 	margin: 20px auto;
 	min-height: 66px;
+    position: relative;
 }
 
 .app-image-member .app-image {
@@ -527,6 +531,7 @@ h5{ font-size: 100%; }
 	background-position: center center;
 	margin: 0 auto;
 	cursor: pointer;
+    display: none;
 }
 
 .app-image-member .app-image{
@@ -901,6 +906,10 @@ div.content div.none a.long {
     background: url('/bundles/encounters/images/btn-start_1.png') no-repeat center center;
 }
 
+div.content div.none a.billing {
+    background: url('/bundles/encounters/images/btn-start_3.png') no-repeat center center;
+}
+
 div.content div.none a.button:link, div.content div.none a.button:hover, div.content div.none a.button:active, div.content div.none a.button:visited {
     text-decoration: none;
 }
@@ -971,7 +980,6 @@ div.content div.pictures div.mpic {
 div.content div.pictures div.mpic img {
     padding-top:11px;
     padding-left:10px;
-
 }
 
 div.ramka {
@@ -982,11 +990,54 @@ div.ramka {
     background: url('/bundles/encounters/images/hitlist-ramka-2.png') no-repeat;
 }
 
-div.content div.pictures div.mcpic img {
+div.content div.pictures div.mpic img {
     padding-bottom: 9px;
 }
 
-div.info {
+div.content div.pictures div.mpic div.info {
     position: absolute;
-    bottom:0px;
+    font-size:11px;
+    left:10px;
+    bottom:9px;
 }
+
+div.notification {
+    margin-left:23px;
+    margin-right: 23px;
+    background: #fff2d1;
+    border: #ffd777 1px solid;
+    border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
+    padding: 9px;
+    padding-top:10px;
+    padding-bottom: 10px;
+    position: relative;
+    margin-bottom:20px;
+}
+
+div.notification div.text {
+    text-align: center;
+}
+
+div.notification a.close {
+    background: url('/bundles/encounters/images/close_icon.png') no-repeat left top;
+    display: block;
+    height: 22px; width: 23px;
+    position: absolute;
+    top: 8px;
+    right: 10px;
+
+}
+
+div.no div.ramka {
+    background: url('/bundles/encounters/images/hitlist-ramka-3.png');
+}
+
+div.maybe div.ramka {
+    background: url('/bundles/encounters/images/hitlist-ramka-1.png');
+}
+
+div.yes div.ramka {
+    background: url('/bundles/encounters/images/hitlist-ramka-2.png');
+}
+
+

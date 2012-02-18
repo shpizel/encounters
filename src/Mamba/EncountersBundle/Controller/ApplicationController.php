@@ -10,9 +10,13 @@ use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
 use Mamba\EncountersBundle\Helpers\Popularity;
+use Mamba\EncountersBundle\Helpers\Notifications;
+use Mamba\EncountersBundle\Helpers\Services;
+use Mamba\EncountersBundle\Helpers\Purchased;
 
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\GearmanBundle\Gearman;
+use Symfony\Component\HttpFoundation\Session;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
 use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
@@ -240,6 +244,45 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
+     * Notifications object getter
+     *
+     * @return Notifications
+     */
+    public function getNotificationsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Notifications($this->getRedis());
+    }
+
+    /**
+     * Services object getter
+     *
+     * @return Services
+     */
+    public function getServicesObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Services($this->getRedis());
+    }
+
+    /**
+     * Purchased object getter
+     *
+     * @return Purchased
+     */
+    public function getPurchasedObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Purchased($this->getRedis());
+    }
+
+    /**
      * Возвращает массив данных, общих по всему приложению
      *
      * @return array
@@ -247,9 +290,11 @@ abstract class ApplicationController extends Controller {
     public function getInitialData() {
         $dataArray = array();
         $dataArray['settings'] = array(
-            'platform' => json_encode($this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid'))),
+            'platform' => json_encode($platformSettings = $this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid'))),
             'search'   => json_encode($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))
         );
+
+        $dataArray['platform'] = $platformSettings;
 
         $dataArray['webuser'] = array(
             'anketa'      => $this->getMamba()->Anketa()->getInfo($webUserId),
@@ -265,6 +310,11 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['webuser']['anketa'] = array_shift($dataArray['webuser']['anketa']);
         $dataArray['webuser']['json'] = json_encode($dataArray['webuser']);
+        $dataArray['routes'] = json_encode($this->getRoutes());
+
+        $dataArray['notification'] = array(
+            'message' => $this->getNotificationsObject()->get($webUserId),
+        );
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         return $dataArray;
@@ -306,5 +356,21 @@ abstract class ApplicationController extends Controller {
         }
 
         return $dataArray;
+    }
+
+    /**
+     * Возвращает роутинг приложения в виде ассоциативного массива
+     *
+     * @return array
+     */
+    private function getRoutes() {
+        $routes = array();
+
+        $router = $this->get('router');
+        foreach ($router->getRouteCollection()->all() as $name => $route) {
+            $routes[$name] = $route->compile()->getPattern();
+        }
+
+        return $routes;
     }
 }

@@ -31,17 +31,23 @@ class QueueController extends ApplicationController {
     ;
 
     /**
-     * AJAX Queue get action
+     * Queue getter action
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function ajaxQueueGetAction() {
+    public function getQueueAction() {
         $Mamba = $this->getMamba();
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } elseif ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId = $Mamba->get('oid'))) {
-            $currentQueue = array_chunk($currentQueue, 100);
+            $currentQueue = array_reverse($currentQueue);
+            $currentQueue = array_chunk($currentQueue, 8);
+            foreach ($currentQueue as $key=>$subQueue) {
+                $currentQueue[$key] = array_reverse($subQueue);
+            }
+            $currentQueue = array_reverse($currentQueue);
+
             $Mamba->multi();
             foreach ($currentQueue as $subQueue) {
                 $Mamba->Anketa()->getInfo($subQueue);
@@ -84,8 +90,9 @@ class QueueController extends ApplicationController {
                 foreach ($currentUsers as $currentUserId) {
                     $Mamba->Photos()->get($currentUserId);
                 }
+                $dataArray = $Mamba->exec();
 
-                foreach ($Mamba->exec() as $key=>$dataArray) {
+                foreach ($dataArray as $key=>$dataArray) {
                     if (isset($dataArray['photos'])) {
                         $this->json['data'][$key]['photos'] = $dataArray['photos'];
                     }
@@ -112,6 +119,11 @@ class QueueController extends ApplicationController {
             )));
         }
 
-        return new Response(json_encode($this->json), 200, array("application/json"));
+        return
+            new Response(json_encode($this->json), 200, array(
+                    "content-type" => "application/json",
+                )
+            )
+        ;
     }
 }

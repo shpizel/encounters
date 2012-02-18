@@ -24,6 +24,40 @@ $Search = {
         $("img.app-image").click(function() {
             $Search.listNextPhoto();
         });
+
+        var $image = $("div.app-image-member img.app-image")[0];
+        $image.onload = function() {
+            window.clearTimeout(window.$loadingTimeout);
+            $(this).fadeTo('fast', 1);
+        }
+
+        $image.onerror = function() {
+            window.clearTimeout(window.$loadingTimeout);
+            $(this).fadeTo('fast', 1);
+        }
+
+        $("p.app-see-block a").click(function() {
+            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $data = $data.data;
+                    if ($data.hasOwnProperty('charge')) {
+                        $Battery.setCharge($data.charge);
+                    }
+
+                    if ($data.decision === false) {
+                        $Layers.showAnswerNotSeeYetLayer();
+                    } else if ($data.decision == -1) {
+                        $Layers.showAnswerNoLayer();
+                    } else if ($data.decision == 0) {
+                        $Layers.showAnswerMaybeLayer();
+                    } else if ($data.decision == 1) {
+                        $Layers.showAnswerYesLayer();
+                    }
+                } else if ($data.status == 3) {
+                    $Layers.showEnergyLayer();
+                }
+            }, 'json');
+        });
     },
 
     /**
@@ -36,7 +70,7 @@ $Search = {
         $("div.app-lenta-img").hide();
         $("div.app-info-user").hide();
         $("p.app-see-block").fadeTo('fast', 0.6);
-        $("div.app-image-member img").hide();
+        $("div.app-image-member img.app-image").hide();
         $("a.rarr").hide();
         $("a.larr").hide();
         $Search.$storage['locked'] = true;
@@ -73,13 +107,7 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-//            $Layers.showAnswerMaybeLayer();
-//            $Layers.showAnswerNoLayer();
-//            $Layers.showAnswerYesLayer();
-//            $Layers.showEnergyLayer();
-//            $Layers.showPopularityLayer();
-//            $Layers.showAnswerNotSeeYetLayer();
-            $Layers.showMutualLayer();
+            $Layers.showPopularityLayer();
             return false;
         });
     },
@@ -94,7 +122,7 @@ $Search = {
             return;
         }
 
-        $.post($Routing.getVoteSetter(), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
+        $.post($Routing.getPath('decision.set'), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
             if ($data.status == 0 && $data.message == "") {
                 if ($data.data['mutual']) {
                     $Layers.showMutualLayer();
@@ -144,8 +172,12 @@ $Search = {
             $("div.app-lenta-img").show();
             $("div.app-info-user").show();
             $("p.app-see-block").fadeTo('normal', 1);
-            $("div.app-image-member img").attr({'src': $currentQueueElement['photos'][0]['huge_photo_url']});
-            $("div.app-image-member img").show();
+
+            $("div.app-image-member img.app-image").attr({'src': $currentQueueElement['photos'][0]['huge_photo_url']}).show();
+            window.clearTimeout(window.$loadingTimeout);
+            window.$loadingTimeout = window.setTimeout(function(){
+                $("div.app-image-member img.app-image").fadeTo('slow', 0.75);
+            }, 750);
 
         } else {
             this.loadQueue(function(){
@@ -204,7 +236,12 @@ $Search = {
             $("div#thumbs").html($html);
 
             $("div#thumbs a").click(function() {
-                $("div.app-image-member img").attr('src', $currentQueueElement['photos'][$Search.$storage['currentPhotoNumber'] = $(this).attr('pid')]['huge_photo_url']);
+                $("div.app-image-member img.app-image").attr('src', $currentQueueElement['photos'][$Search.$storage['currentPhotoNumber'] = $(this).attr('pid')]['huge_photo_url']);
+                window.clearTimeout(window.$loadingTimeout);
+                window.$loadingTimeout = window.setTimeout(function(){
+                    $("div.app-image-member img.app-image").fadeTo('slow', 0.75);
+                }, 750);
+
                 $('div.app-lenta-img a').removeClass('select');
                 $(this).addClass('select');
                 return false;
@@ -227,13 +264,22 @@ $Search = {
             $size      = this.$storage['currentQueueElement'].photos.length
         ;
 
+        if ($size < 2) {
+            return;
+        }
+
         var $nextId;
 
         if (($nextId = $currentId + 1) >= $size) {
             $nextId = 0;
         }
 
-        $("div.app-image-member img").attr('src', this.$storage['currentQueueElement']['photos'][this.$storage['currentPhotoNumber'] = $nextId]['huge_photo_url']);
+        $("div.app-image-member img.app-image").attr('src', this.$storage['currentQueueElement']['photos'][this.$storage['currentPhotoNumber'] = $nextId]['huge_photo_url']);
+        window.clearTimeout(window.$loadingTimeout);
+        window.$loadingTimeout = window.setTimeout(function(){
+            $("div.app-image-member img.app-image").fadeTo('slow', 0.75);
+        }, 750);
+
         this.rebuildThumbsPanel();
     },
 
@@ -246,7 +292,11 @@ $Search = {
         var
             $currentId = parseInt(this.$storage['currentPhotoNumber']),
             $size      = this.$storage['currentQueueElement'].photos.length
-            ;
+        ;
+
+        if ($size < 2) {
+            return;
+        }
 
         var $nextId;
 
@@ -254,7 +304,12 @@ $Search = {
             $nextId = this.$storage['currentQueueElement']['photos'].length - 1;
         }
 
-        $("div.app-image-member img").attr('src', this.$storage['currentQueueElement']['photos'][this.$storage['currentPhotoNumber'] = $nextId]['huge_photo_url']);
+        $("div.app-image-member img.app-image").attr('src', this.$storage['currentQueueElement']['photos'][this.$storage['currentPhotoNumber'] = $nextId]['huge_photo_url']);
+        window.clearTimeout(window.$loadingTimeout);
+        window.$loadingTimeout = window.setTimeout(function(){
+            $("div.app-image-member img.app-image").fadeTo('slow', 0.75);
+        }, 750);
+
         this.rebuildThumbsPanel();
     },
 
@@ -278,7 +333,7 @@ $Search = {
      * @param $callback
      */
     loadQueue: function($callback) {
-        $.post($Routing.getCurrentQueueGetter(), function($data) {
+        $.post($Routing.getPath('queue.get'), function($data) {
             if ($data.status == 0 && $data.message == "") {
                 for (var $i=0;$i<$data.data.length;$i++) {
                     $Queue.put($data.data[$i]);
@@ -292,11 +347,11 @@ $Search = {
                 if ($status == 1) {
                     window.setTimeout(function() {
                         $Search.loadQueue($callback);
-                    }, 1750);
+                    }, 1500);
                 } else if ($status == 2) {
                     window.setTimeout(function() {
                         $Search.loadQueue($callback);
-                    }, 1750);
+                    }, 1500);
                 }
             }
         }, 'json');

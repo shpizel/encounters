@@ -87,7 +87,9 @@ class PreferencesController extends ApplicationController {
             $searchPreferences['age_to'] = $searchPreferences['age_to'] ?: 25;
         }
 
-        return $this->render('EncountersBundle:templates:preferences.html.twig', array_merge($searchPreferences, $this->getInitialData()));
+        $Response = $this->render('EncountersBundle:templates:preferences.html.twig', array_merge($searchPreferences, $this->getInitialData()));
+        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        return $Response;
     }
 
     /**

@@ -10,9 +10,33 @@
         <div class="info">Мы показываем ваши фотографии другим людям так часто, <br>насколько вы оцениваете других людей!<br><br><a href="/search" class="button long">Начните смотреть и оценивать прямо сейчас</a><div style="padding-top:15px;padding-bottom: 15px;">или</div><a class="ui-btn-big ui-btn">Купить 100 показов за 1<i class="coint"></i></a></div>
     </div>
     {% else %}
-    {% for item in data %}
-    {{ item.getId() }} : {{ item.getWebUserId }} &rarr; {{ item.getCurrentUserId}} at {{ item.getChanged() }} for {{ item.getDecision() }} <br>
-    {% endfor %}
+    <div class="pictures">
+        <div class="title">Они хотят с вами встретиться</div>
+        {% for item in data %}
+
+        {% if item.decision.1 == -2 %}
+        <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="mcpic">
+            <img src="{{ item.info.medium_photo_url }}"><br>
+            {{ item.info.name }} <i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i> {% if item.info.age %}{{ item.info.age }}{% endif %}<br>
+            {#<div class="info">Ваш ответ: &laquo;{% if item.decision.0 == -1 %}нет{% endif %}{% if item.decision.0 == 0 %}возможно{% endif %}{% if item.decision.0 == 1 %}да{% endif %}&raquo;</div>#}
+            <div class="link"><a class="ln" href="#">Показать оценку..</a></div>
+        </div>
+        {% else %}
+
+        <div class="mpic{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
+            <div class="ramka"></div>
+            <img src="{{ item.info.medium_photo_url }}"><br>
+            <div class="info"><a target="_blank" href="{{ platform.parner_url }}anketa.phtml?oid={{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
+        </div>
+
+        {% endif %}
+
+        {% endfor %}
+        <br clear="all">
+        <div class='back'>&larr; <a href="/search">Назад к поиску</a></div>
+    </div>
     {% endif %}
+
+    {% include 'EncountersBundle:layers:layers.html.twig' %}
 </div>
-{% endblock %}
+        {% endblock %}

@@ -96,9 +96,9 @@ class Energy extends Helper {
 
         $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
         if ($incrementResult < self::MINIMUM_ENERGY) {
-            return $this->set($userId, self::MINIMUM_ENERGY);
+            return $this->set($userId, $incrementResult = self::MINIMUM_ENERGY);
         } elseif ($incrementResult > self::MAXIMUM_ENERGY) {
-            return $this->set($userId, self::MAXIMUM_ENERGY);
+            return $this->set($userId, $incrementResult = self::MAXIMUM_ENERGY);
         }
 
         return $incrementResult;

@@ -829,6 +829,25 @@ final class Mamba {
     }
 
     /**
+     * Возвращает валидность данных пришедших от билинга
+     *
+     * @param array $params
+     * @return bool
+     */
+    public function checkBillingSignature($params) {
+        if (isset($params['sig'])) {
+            $sig = $params['sig'];
+            unset($params['sig']);
+
+            if ($this->getServerToServerSignature($params) == $sig) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Mamba instance getter for remote executions
      *
      * @static

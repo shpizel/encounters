@@ -11,7 +11,6 @@
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
 </head>
-<!-- A clean hand wants no washing -->
 <body>
 <div class="app-layout">
     <div class="app-menu-bar">
@@ -31,17 +30,17 @@
                 <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
                 <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
                 <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b>{% if webuser.stats.mutual %} <i class="heart">{{ webuser.stats.mutual }}</i>{% endif %}</a></li>
-
-                <!-- Бонус для читателей комментариев:
-                    <li class="item-fishki"><a href="http://fishki.net"><b>Фишки.нет</b></a></li>
-                    <li class="item-bidla"><a href="http://bidla.net"><b>Быдла.нет</b></a></li>
-                    <li class="item-lenta"><a href="http://fishki.net"><b>Лента.ру</b></a></li>
-                -->
-
             </ul>
         </div>
     </div>
 </div>
+
+{% if notification.message %}
+<div class="notification">
+    <a href="#" class="close"></a>
+    <div class="text">{{ notification.message }}</div>
+</div>
+{% endif %}
 {% block body %}{% endblock %}
 {% include 'EncountersBundle:tools:ym.html.twig' %}
 {% block javascripts %}{% endblock %}
@@ -65,6 +64,7 @@ $Config.set('platform', {{settings.platform}});
 $Config.set('search', {{settings.search}});
 {% endif %}
 $Config.set('webuser', {{ webuser.json }});
+$Routing.setRoutes({{ routes }});
 {% endautoescape %}
 $(document).ready(function(){
     $App.init(location.pathname).run();

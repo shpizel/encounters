@@ -6,33 +6,12 @@
 $Routing = {
 
     /**
-     * Правила роутинга
+     * Устанавливает правила маршрутизации
      *
-     * @var object
+     * @param $routes
      */
-    $routes: {
-
-        /**
-         * Основные правила маршрутизации
-         *
-         * @author shpizel
-         */
-        preferences : '/preferences',
-        search      : '/search',
-        mutual      : '/mutual',
-        visitors    : '/visitors',
-        mychoice    : '/mychoice',
-        profile     : '/profile',
-
-        /**
-         * AJAX-маршрутизация
-         *
-         * @author shpizel
-         */
-        ajax: {
-            'queue.get': "/ajax/queue.get",
-            'vote.set': "/ajax/vote.set"
-        }
+    setRoutes: function($routes) {
+        this.$routes = $routes;
     },
 
     /**
@@ -49,20 +28,11 @@ $Routing = {
     },
 
     /**
-     * Возвращает путь для взятия текущей очереди пользователя
+     * Возвращает путь по ключу
      *
-     * @return string
+     * @param $route
      */
-    getCurrentQueueGetter: function() {
-        return this.$routes['ajax']['queue.get'];
-    },
-
-    /**
-     * Возвращает путь для постинга результата выбора
-     *
-     * @return string
-     */
-    getVoteSetter: function() {
-        return this.$routes['ajax']['vote.set'];
+    getPath: function($route) {
+        return this.$routes[$route];
     }
 }

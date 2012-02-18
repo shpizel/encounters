@@ -27,6 +27,8 @@ class SearchController extends ApplicationController {
         }
 
         $initialData = $this->getInitialData();
-        return $this->render("EncountersBundle:templates:search.html.twig", $initialData);
+        $Response = $this->render("EncountersBundle:templates:search.html.twig", $initialData);
+        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        return $Response;
     }
 }

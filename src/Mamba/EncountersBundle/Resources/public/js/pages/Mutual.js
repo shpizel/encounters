@@ -21,7 +21,14 @@ $Mutual = {
      */
     initButtons: function() {
         $("div.content div.info a.ui-btn").click(function() {
-            mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+            $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
         });
     },
 
@@ -31,8 +38,6 @@ $Mutual = {
      * @run page
      */
     run: function() {
-        if (window.$debug) {
-            console.log("$Mutual has runned");
-        }
+
     }
 }

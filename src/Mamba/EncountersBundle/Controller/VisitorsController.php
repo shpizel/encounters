@@ -26,16 +26,69 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $visitors = $this->getDoctrine()
+//        $visitors = $this->getDoctrine()
+//            ->getEntityManager()
+//            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed ASC')
+//            ->setParameter('webUserId', $webUserId)
+//            ->getResult()
+//        ;
+//
+//        $dataArray = $this->getInitialData();
+//        $dataArray['data'] = $visitors ?: null;
+
+        $dataArray  = $this->getInitialData();
+        $result = $this->getDoctrine()
             ->getEntityManager()
-            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed ASC')
+            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId and d.decision >= 0 ORDER BY d.changed ASC')
             ->setParameter('webUserId', $webUserId)
             ->getResult()
         ;
 
-        $dataArray = $this->getInitialData();
-        $dataArray['data'] = $visitors ?: null;
+        if ($result) {
 
-        return $this->render("EncountersBundle:templates:visitors.html.twig", $dataArray);
+            $usersArray = array();
+            foreach ($result as $item) {
+                $usersArray[$item->getCurrentUserId()] = $item->getDecision();
+            }
+
+            $usersArray = array_reverse($usersArray, true);
+            $usersArray = array_chunk($usersArray, 100, true);
+            foreach ($usersArray as $key => $users) {
+                $usersArray[$key] = array_reverse($users, true);
+            }
+            $usersArray = array_reverse($usersArray, true);
+
+            $Mamba->multi();
+            foreach ($usersArray as $users) {
+                $Mamba->Anketa()->getInfo(array_keys($users), array());
+            }
+            $anketasArray = $Mamba->exec();
+
+            $data = array();
+            foreach ($anketasArray as $k => $anketasChunk) {
+                foreach ($anketasChunk as &$anketa) {
+                    $anketa['decision'] = array(
+                        $usersArray[$k][$anketa['info']['oid']]
+                    );
+
+                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueObject()->get($webUserId, $anketa['info']['oid'])) {
+                            $anketa['decision'][] = $tmp['decision'];
+                        } else {
+                            $anketa['decision'][] = -2;
+                        }
+                    } else {
+                        $anketa['decision'][] = -2;
+                    }
+                }
+                $data = array_merge($data, $anketasChunk);
+            }
+
+            $dataArray['data'] = $data ?: null;
+        }
+
+        $Response = $this->render("EncountersBundle:templates:visitors.html.twig", $dataArray);
+        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        return $Response;
     }
 }

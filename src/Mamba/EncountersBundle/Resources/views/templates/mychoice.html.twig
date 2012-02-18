@@ -13,17 +13,30 @@
     <div class="pictures">
         <div class="title">Вы хотите с ними стретиться</div>
     {% for item in data %}
-        {#{{ item.getId() }} : {{ item.getWebUserId }} &rarr; {{ item.getCurrentUserId}} at {{ item.getChanged() }} for {{ item.getDecision() }} <br>#}
-        <div class="mcpic">
-            <img src="http://sp5.lovesupport.ru/5/6/2/37844562/596534832_medium.jpg?updated=20110226082241"><br>
-            Имя, (i) <b>24</b><br>
-            <div class="info">Ваш ответ: &laquo;да&raquo;</div>
-            <div class="link"><a href="#">Она видела меня?</a></div>
+
+        {% if item.decision.1 == -2 %}
+        <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="mcpic">
+            <img src="{{ item.info.medium_photo_url }}"><br>
+            {{ item.info.name }} <i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i> {% if item.info.age %}{{ item.info.age }}{% endif %}<br>
+            <div class="info">Ваш ответ: &laquo;{% if item.decision.0 == -1 %}нет{% endif %}{% if item.decision.0 == 0 %}возможно{% endif %}{% if item.decision.0 == 1 %}да{% endif %}&raquo;</div>
+            <div class="link"><a class="ln" href="#">Он{% if item.info.gender == 'F' %}а{%endif%} видел{% if item.info.gender == 'F' %}а{%endif%} меня?</a></div>
         </div>
+        {% else %}
+
+        <div class="mpic{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
+            <div class="ramka"></div>
+            <img src="{{ item.info.medium_photo_url }}"><br>
+            <div class="info"><a target="_blank" href="{{ platform.partner_url }}anketa.phtml?oid={{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
+        </div>
+
+        {% endif %}
+
     {% endfor %}
     <br clear="all">
     <div class='back'>&larr; <a href="/search">Назад к поиску</a></div>
     </div>
     {% endif %}
+
+    {% include 'EncountersBundle:layers:layers.html.twig' %}
 </div>
 {% endblock %}

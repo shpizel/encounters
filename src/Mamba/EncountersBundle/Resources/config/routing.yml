@@ -16,40 +16,75 @@ preferences:
 search:
     pattern: /search
     defaults: { _controller: EncountersBundle:Search:index }
+    requirements:
+        _method: GET
 
 # Страница взаимных симпатий
 mutual:
     pattern: /mutual
     defaults: { _controller: EncountersBundle:Mutual:index }
+    requirements:
+        _method: GET
 
 # Страница моего хитлиста
 visitors:
     pattern: /visitors
     defaults: { _controller: EncountersBundle:Visitors:index }
+    requirements:
+        _method: GET
 
 # Страница мной просмотренных
 mychoice:
     pattern: /mychoice
     defaults: { _controller: EncountersBundle:MyChoice:index }
+    requirements:
+        _method: GET
 
-# AJAX методы
+# Страница постоплаты
+billing:
+    pattern: /billing
+    defaults: { _controller: EncountersBundle:Billing:index }
+    requirements:
+        _method: GET
 
-# Прием голосований
-vote.set:
-    pattern: /ajax/vote.set
-    defaults: { _controller: EncountersBundle:Vote:ajaxVoteSet }
+# Отправка ответа
+decision.set:
+    pattern: /ajax/decision.set
+    defaults: { _controller: EncountersBundle:Decision:setDecision }
     requirements:
         _method: POST
 
-# Прием голосований
+# Получение ответа
+decision.get:
+    pattern: /ajax/decision.get
+    defaults: { _controller: EncountersBundle:Decision:getDecision }
+    requirements:
+        _method: POST
+
+# Получение текущей очереди
 queue.get:
     pattern: /ajax/queue.get
-    defaults: { _controller: EncountersBundle:Queue:ajaxQueueGet }
+    defaults: { _controller: EncountersBundle:Queue:getQueue }
     requirements:
         _method: POST
 
-# Gateway
+# Удаление нотификации
+notification.remove:
+    pattern: /ajax/notification.remove
+    defaults: { _controller: EncountersBundle:Notification:remove }
+    requirements:
+        _method: POST
 
-billing:
+# Добавление заказа
+service.add:
+    pattern: /ajax/service.add
+    defaults: { _controller: EncountersBundle:Billing:addService }
+    requirements:
+        _method: POST
+
+# Billing
+billing.gateway:
     pattern: /gateway/billing
-    defaults: { _controller: EncountersBundle:Billing:index }
+    defaults: { _controller: EncountersBundle:Billing:gateway }
+    requirements:
+        _method: POST

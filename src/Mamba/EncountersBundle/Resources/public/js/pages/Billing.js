@@ -1,9 +1,9 @@
 /**
- * Profile
+ * Billing
  *
  * @author shpizel
  */
-$Profile = {
+$Billing = {
 
     /**
      * Инициализация интерфейса
@@ -11,7 +11,10 @@ $Profile = {
      * @init
      */
     initUI: function() {
-
+        $("a.billing").click(function() {
+            window.history.back();
+            return false;
+        });
     },
 
     /**

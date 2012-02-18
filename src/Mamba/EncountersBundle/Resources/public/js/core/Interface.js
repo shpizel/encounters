@@ -14,12 +14,26 @@ $Interface = {
     init: function($route) {
 
         if (window.top == window.self) {
-            top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
+            if (!$Config.get('debug')) {
+                top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
+            }
         } else {
-            mamba.init(function(){mamba.method("resizeWindow", '100%', 1000);});
+            var $documentHeight = $(document).height();
+            mamba.init(function() {
+                mamba.method("resizeWindow", '100%', ($documentHeight > 1000) ? $documentHeight : 1000)
+            });
         }
 
-        this['init' + Tools.ucfirst($route) + 'UI']();
+        $("div.notification a.close").click(function() {
+            $.post($Routing.getPath('notification.remove'), function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $("div.notification").hide();
+                }
+            });
+            return false;
+        });
+
+        this['init' + $Tools.ucfirst($route) + 'UI']();
         $Layers.initUI();
 
         return this;
@@ -77,5 +91,14 @@ $Interface = {
      */
     initProfileUI: function() {
         $Profile.initUI();
+    },
+
+    /**
+     * Billing UI
+     *
+     * @init UI
+     */
+    initBillingUI: function() {
+        $Billing.initUI();
     }
 }

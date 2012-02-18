@@ -21,6 +21,39 @@ $Layers = {
             $("div#overflow").hide();
             $("div.app-layer").hide();
         });
+
+        $("div.layer-energy form p a").click(function() {
+            $.post($Routing.getPath('service.add'), {service: {id: 1}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
+        });
+
+        $("div.layer-not-see-yet div.center a").click(function() {
+            $.post($Routing.getPath('service.add'), {service: {id: 2, user_id: $Search.$storage['currentQueueElement']['info']['id']}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
+        });
+
+        $("div.layer-pop-up form p a").click(function() {
+            $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
+        });
     },
 
     /**
@@ -39,12 +72,18 @@ $Layers = {
      *
      * @shows layer
      */
-    showAnswerMaybeLayer: function() {
+    showAnswerMaybeLayer: function($data) {
         this.hideInners();
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
-        $("div.layer-maybe div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
-        $("div.layer-maybe div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
-        $("div.layer-maybe div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
+        if (!$data) {
+            var currentQueueElement = $Search.$storage['currentQueueElement'];
+            $("div.layer-maybe div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            $("div.layer-maybe div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+            $("div.layer-maybe div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
+        } else {
+            $("div.layer-maybe div.photo img").attr('src', $data['medium_photo_url']);
+            $("div.layer-maybe div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']).text($data['name']);
+            $("div.layer-maybe div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']);
+        }
 
         $("div.layer-maybe").show();
         this.showLayer();
@@ -55,12 +94,18 @@ $Layers = {
      *
      * @shows layer
      */
-    showAnswerYesLayer: function() {
+    showAnswerYesLayer: function($data) {
         this.hideInners();
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
-        $("div.layer-yes div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
-        $("div.layer-yes div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
-        $("div.layer-yes div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
+        if (!$data) {
+            var currentQueueElement = $Search.$storage['currentQueueElement'];
+            $("div.layer-yes div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            $("div.layer-yes div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+            $("div.layer-yes div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
+        } else {
+            $("div.layer-yes div.photo img").attr('src', $data['medium_photo_url']);
+            $("div.layer-yes div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']).text($data['name']);
+            $("div.layer-yes div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']);
+        }
 
         $("div.layer-yes").show();
         this.showLayer();
@@ -71,11 +116,16 @@ $Layers = {
      *
      * @shows layer
      */
-    showAnswerNoLayer: function() {
+    showAnswerNoLayer: function($data) {
         this.hideInners();
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
-        $("div.layer-no div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
-        $("div.layer-no div.content-center span.name").text(currentQueueElement['info']['name']);
+        if (!$data) {
+            var currentQueueElement = $Search.$storage['currentQueueElement'];
+            $("div.layer-no div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            $("div.layer-no div.content-center span.name").text(currentQueueElement['info']['name']);
+        } else {
+            $("div.layer-no div.photo img").attr('src', $data['medium_photo_url']);
+            $("div.layer-no div.content-center span.name").text($data['name']);
+        }
 
         $("div.layer-no").show();
         this.showLayer();
@@ -86,14 +136,17 @@ $Layers = {
      *
      * @shows layer
      */
-    showEnergyLayer: function() {
+    showEnergyLayer: function($data) {
         this.hideInners();
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
-        $("div.layer-energy div.info-block img").attr('src', currentQueueElement['info']['small_photo_url']);
-        $("div.layer-energy span.name").text(currentQueueElement['info']['name']);
-        $("div.layer-energy form p a").click(function() {
-            mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
-        });
+        if (!$data) {
+            var currentQueueElement = $Search.$storage['currentQueueElement'];
+            $("div.layer-energy div.info-block img").attr('src', currentQueueElement['info']['small_photo_url']);
+            $("div.layer-energy span.name").text(currentQueueElement['info']['name']);
+        } else {
+            $("div.layer-energy div.info-block img").attr('src', $data['small_photo_url']);
+            $("div.layer-energy span.name").text($data['name']);
+        }
+
         $("div.layer-energy").show();
         this.showLayer();
     },
@@ -106,9 +159,6 @@ $Layers = {
     showPopularityLayer: function() {
         this.hideInners();
         $("div.layer-pop-up").show();
-        $("div.layer-pop-up form p a").click(function() {
-            mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
-        });
         this.showLayer();
     },
 
@@ -117,13 +167,14 @@ $Layers = {
      *
      * @shows layer
      */
-    showAnswerNotSeeYetLayer: function() {
+    showAnswerNotSeeYetLayer: function($data) {
         this.hideInners();
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
-        $("div.layer-not-see-yet div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
-        $("div.layer-not-see-yet div.center a").click(function() {
-            mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
-        });
+        if (!$data) {
+            var currentQueueElement = $Search.$storage['currentQueueElement'];
+            $("div.layer-not-see-yet div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        } else {
+            $("div.layer-not-see-yet div.photo img").attr('src', $data['medium_photo_url']);
+        }
         $("div.layer-not-see-yet").show();
         this.showLayer();
     },
@@ -133,15 +184,20 @@ $Layers = {
      *
      * @shows layer
      */
-    showMutualLayer: function() {
+    showMutualLayer: function($data) {
         this.hideInners();
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
+        if (!$data) {
+            var currentQueueElement = $Search.$storage['currentQueueElement'];
+            $("div.layer-mutual div.photo div.current").css('background', "url('" + currentQueueElement['info']['medium_photo_url'] + "')");
+            $("div.layer-mutual div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+            $("div.layer-mutual div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
+        } else {
+            $("div.layer-mutual div.photo div.current").css('background', "url('" + $data['medium_photo_url'] + "')");
+            $("div.layer-mutual div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']).text($data['name']);
+            $("div.layer-mutual div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']);
+        }
 
-        $("div.layer-mutual div.photo div.current").css('background', "url('" + currentQueueElement['info']['medium_photo_url'] + "')");
-        console.log($Config.get('webuser'));
         $("div.layer-mutual div.photo div.web").css('background', "url('" + (($Config.get('webuser')['anketa']['info'].hasOwnProperty('medium_photo_url') && $Config.get('webuser')['anketa']['info']['medium_photo_url']) ? $Config.get('webuser')['anketa']['info']['medium_photo_url'] : '/bundles/encounters/images/photo_big_na.gif') + "')");
-        $("div.layer-mutual div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
-        $("div.layer-mutual div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
         $("div.layer-mutual").show();
         this.showLayer();
     },

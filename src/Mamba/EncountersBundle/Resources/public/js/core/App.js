@@ -25,6 +25,6 @@ $App = {
      * @run $App
      */
     run: function() {
-        return window["$" + Tools.ucfirst(this.$route)].run();
+        return window["$" + $Tools.ucfirst(this.$route)].run();
     }
 }
