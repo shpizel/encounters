@@ -55,7 +55,7 @@
 {% endjavascripts %}
 <script src="http://js.aplatform.ru/app.js"></script>
 <script>
-$Config.set('debug', {{ app.debug }});
+$Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% autoescape false %}
 {% if settings.platform %}
 $Config.set('platform', {{settings.platform}});

@@ -133,5 +133,47 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
 
             $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
         } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
+
+        /** Если никого-таки не нашли */
+        if ($usersAddedCount < self::LIMIT) {
+
+            $offset = -10;
+            $usersAddedCount = 0;
+            do {
+                $result = $Mamba->Search()->get(
+                    $whoAmI         = null,
+                    $lookingFor     = $searchPreferences['gender'],
+                    $ageFrom        = $searchPreferences['age_from'],
+                    $ageTo          = $searchPreferences['age_to'],
+                    $target         = null,
+                    $onlyWithPhoto  = true,
+                    $onlyReal       = true,
+                    $onlyWithWebCam = false,
+                    $noIntim        = true,
+                    $countryId      = null, #$searchPreferences['geo']['country_id'],
+                    $regionId       = null, #$searchPreferences['geo']['region_id'],
+                    $cityId         = null, #$searchPreferences['geo']['city_id'],
+                    $metroId        = null,
+                    $offset         = $offset + 10,
+                    $blocks         = array(),
+                    $idsOnly        = true
+                );
+
+                if (isset($result['users'])) {
+                    foreach ($result['users'] as $currentUserId) {
+                        if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                && $usersAddedCount++;
+
+                            if ($usersAddedCount >= self::LIMIT) {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
+        }
     }
 }
