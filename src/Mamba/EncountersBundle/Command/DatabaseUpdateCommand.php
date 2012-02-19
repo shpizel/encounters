@@ -82,7 +82,6 @@ class DatabaseUpdateCommand extends QueueUpdateCronScript {
         $DecisionsItem->setCurrentUserId($currentUserId);
         $DecisionsItem->setDecision($decision);
         $DecisionsItem->setChanged(time());
-        $DecisionsItem->setOpened(0);
 
         $em = $this->getContainer()->get('doctrine')->getEntityManager();
         $em->persist($DecisionsItem);

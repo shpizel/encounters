@@ -71,13 +71,6 @@ class Billing
     private $time;
 
     /**
-     * @var string $sig
-     *
-     * @ORM\Column(name="sig", type="string", length=64, nullable=true)
-     */
-    private $sig;
-
-    /**
      * @var boolean $billed
      *
      * @ORM\Column(name="billed", type="boolean", nullable=true)
@@ -234,26 +227,6 @@ class Billing
     public function getTime()
     {
         return $this->time;
-    }
-
-    /**
-     * Set sig
-     *
-     * @param string $sig
-     */
-    public function setSig($sig)
-    {
-        $this->sig = $sig;
-    }
-
-    /**
-     * Get sig
-     *
-     * @return string 
-     */
-    public function getSig()
-    {
-        return $this->sig;
     }
 
     /**

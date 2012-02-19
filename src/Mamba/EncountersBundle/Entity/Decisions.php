@@ -49,13 +49,6 @@ class Decisions
      */
     private $changed;
 
-    /**
-     * @var integer $opened
-     *
-     * @ORM\Column(name="opened", type="integer", nullable=true)
-     */
-    private $opened;
-
 
 
     /**
@@ -146,25 +139,5 @@ class Decisions
     public function getChanged()
     {
         return $this->changed;
-    }
-
-    /**
-     * Set opened
-     *
-     * @param integer $opened
-     */
-    public function setOpened($opened)
-    {
-        $this->opened = $opened;
-    }
-
-    /**
-     * Get opened
-     *
-     * @return integer 
-     */
-    public function getOpened()
-    {
-        return $this->opened;
     }
 }

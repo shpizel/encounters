@@ -34,7 +34,7 @@ $Layers = {
         });
 
         $("div.layer-not-see-yet div.center a").click(function() {
-            $.post($Routing.getPath('service.add'), {service: {id: 2, user_id: $Search.$storage['currentQueueElement']['info']['id']}}, function($data) {
+            $.post($Routing.getPath('service.add'), {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
                     location.href = $Routing.getPath("billing");
@@ -173,6 +173,7 @@ $Layers = {
             var currentQueueElement = $Search.$storage['currentQueueElement'];
             $("div.layer-not-see-yet div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
         } else {
+            $Config.set('current_user_id', $data['user_id']);
             $("div.layer-not-see-yet div.photo img").attr('src', $data['medium_photo_url']);
         }
         $("div.layer-not-see-yet").show();

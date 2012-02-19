@@ -4,10 +4,10 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>{% block title %}Welcome!{% endblock %}</title>
 {% block stylesheets %}{% endblock %}
-{% stylesheets '@EncountersBundle/Resources/public/css/*' filter="?yui_css" %}
+{% stylesheets '@EncountersBundle/Resources/public/css/*' filter="yui_css" %}
 <link rel="stylesheet" href="{{ asset_url }}" />
 {% endstylesheets %}
-{% stylesheets '@EncountersBundle/Resources/public/css/ie/*' filter="?yui_css" %}
+{% stylesheets '@EncountersBundle/Resources/public/css/ie/*' filter="yui_css" %}
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
 </head>
@@ -49,7 +49,7 @@
     '@EncountersBundle/Resources/public/js/tools/*'
     '@EncountersBundle/Resources/public/js/pages/*'
     '@EncountersBundle/Resources/public/js/elements/*'
-    filter="?yui_js"
+    filter="yui_js"
 %}
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}

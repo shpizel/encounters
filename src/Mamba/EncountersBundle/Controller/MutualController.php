@@ -42,28 +42,20 @@ class MutualController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-//        $rsm = new ResultSetMapping;
-//        $rsm->addScalarResult('current_user_id', 'current_user_id');
-//        $query = $this->getDoctrine()->getEntityManager()->createNativeQuery(self::MUTUAL_SQL, $rsm);
-//        $query->setParameter(1, $webUserId);
-//        $mutualData = $query->getResult();
-//
-//        $dataArray = $this->getInitialData();
-//        $dataArray['data'] = $mutualData ?: null;
-
         $dataArray  = $this->getInitialData();
-        $result = $this->getDoctrine()
-            ->getEntityManager()
-            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId and d.decision >= 0 ORDER BY d.changed ASC')
-            ->setParameter('webUserId', $webUserId)
-            ->getResult()
-        ;
+        $data = array();
+
+        $rsm = new ResultSetMapping;
+        $rsm->addScalarResult('current_user_id', 'current_user_id');
+        $query = $this->getDoctrine()->getEntityManager()->createNativeQuery(self::MUTUAL_SQL, $rsm);
+        $query->setParameter(1, $webUserId);
+        $result = $query->getResult();
 
         if ($result) {
 
             $usersArray = array();
             foreach ($result as $item) {
-                $usersArray[$item->getCurrentUserId()] = $item->getDecision();
+                $usersArray[$item['current_user_id']] = 1;
             }
 
             $usersArray = array_reverse($usersArray, true);
@@ -98,9 +90,8 @@ class MutualController extends ApplicationController {
                 }
                 $data = array_merge($data, $anketasChunk);
             }
-
-            $dataArray['data'] = $data ?: null;
         }
+        $dataArray['data'] = $data ?: null;
 
         $Response = $this->render("EncountersBundle:templates:mutual.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');

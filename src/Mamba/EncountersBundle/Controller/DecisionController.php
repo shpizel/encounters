@@ -96,6 +96,9 @@ class DecisionController extends ApplicationController {
                     $this->json['data'] = array(
                         'mutual' => true,
                     );
+
+                    $this->getCountersObject()->incr($this->webUserId, 'mutual');
+                    $this->getCountersObject()->incr($this->currentUserId, 'mutual');
                 }
             }
 

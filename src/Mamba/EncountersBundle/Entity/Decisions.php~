@@ -49,12 +49,5 @@ class Decisions
      */
     private $changed;
 
-    /**
-     * @var integer $opened
-     *
-     * @ORM\Column(name="opened", type="integer", nullable=true)
-     */
-    private $opened;
-
 
 }

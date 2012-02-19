@@ -9,7 +9,6 @@
     <field name="currentUserId" type="integer" column="current_user_id"/>
     <field name="decision" type="integer" column="decision"/>
     <field name="changed" type="integer" column="changed"/>
-    <field name="opened" type="integer" column="opened"/>
     <lifecycle-callbacks/>
   </entity>
 </doctrine-mapping>

@@ -27,6 +27,8 @@ class MyChoiceController extends ApplicationController {
         }
 
         $dataArray  = $this->getInitialData();
+        $data = array();
+
         $result = $this->getDoctrine()
             ->getEntityManager()
                 ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId and d.decision >= 0 ORDER BY d.changed ASC')
@@ -54,11 +56,10 @@ class MyChoiceController extends ApplicationController {
             }
             $anketasArray = $Mamba->exec();
 
-            $data = array();
             foreach ($anketasArray as $k => $anketasChunk) {
                 foreach ($anketasChunk as &$anketa) {
                     $anketa['decision'] = array(
-                        $usersArray[$k][$anketa['info']['oid']]
+                        $usersArray[$k][$anketa['info']['oid']],
                     );
 
                     if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
@@ -73,9 +74,8 @@ class MyChoiceController extends ApplicationController {
                 }
                 $data = array_merge($data, $anketasChunk);
             }
-
-            $dataArray['data'] = $data ?: null;
         }
+        $dataArray['data'] = $data ?: null;
 
         $Response = $this->render("EncountersBundle:templates:mychoice.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');

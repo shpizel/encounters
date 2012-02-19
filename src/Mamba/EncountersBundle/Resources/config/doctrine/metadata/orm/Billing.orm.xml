@@ -12,7 +12,6 @@
     <field name="amountDeveloper" type="float" column="amount_developer"/>
     <field name="validationId" type="integer" column="validation_id"/>
     <field name="time" type="integer" column="time"/>
-    <field name="sig" type="string" column="sig" length="64"/>
     <field name="billed" type="boolean" column="billed"/>
     <lifecycle-callbacks/>
   </entity>

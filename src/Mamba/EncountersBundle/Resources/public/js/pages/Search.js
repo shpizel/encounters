@@ -150,7 +150,7 @@ $Search = {
             this.$storage['currentPhotoNumber'] = 0;
             this.rebuildThumbsPanel();
 
-            $("div.app-info-user a").html($currentQueueElement['info']['name']).attr({target:'_blank','href':$Config.get('platform').partner_url + "anketa.phtml?oid=" + $currentQueueElement['info']['id']});
+            //$("div.app-info-user a").html($currentQueueElement['info']['name']).attr({target:'_blank','href':$Config.get('platform').partner_url + "anketa.phtml?oid=" + $currentQueueElement['info']['id']});
             $("div.app-info-user a").html($currentQueueElement['info']['name']).click(function() {
                 return false;
             });
@@ -214,11 +214,11 @@ $Search = {
                 $("a.larr").show();
             }
 
-            console.log('current photo number: '+$currentPhotoNumber);
-            console.log('photos count: '+ $photosCount);
+//            console.log('current photo number: '+$currentPhotoNumber);
+//            console.log('photos count: '+ $photosCount);
 
             var $withOffset = ($currentPhotoNumber >= ($photosCount > $photosPerPage ? $photosPerPage: $photosCount));
-            console.log('with offset: ' + $withOffset);
+//            console.log('with offset: ' + $withOffset);
             var $from = ($withOffset ? ($currentPhotoNumber + 1 - ($photosCount > $photosPerPage ? $photosPerPage: $photosCount)) : 0);
             if ($from + $photosPerPage >= $photosCount) {
                 var $to = $photosCount;
@@ -226,8 +226,8 @@ $Search = {
                 var $to = $from + $photosPerPage;
             }
 
-            console.log('from:' + $from);
-            console.log('to: ' + $to);
+//            console.log('from:' + $from);
+//            console.log('to: ' + $to);
 
             for (var $i = $from;$i<$to;$i++) {
                 $html += "<a class='" + ($i == this.$storage['currentPhotoNumber'] ? 'select' : '') + "' href=\"#\" pid='" + $i + "' style=\"background-image: url('" +  $currentQueueElement['photos'][$i]['small_photo_url'] + "')\"></a>";
