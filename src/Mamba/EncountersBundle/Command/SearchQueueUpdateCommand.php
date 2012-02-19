@@ -150,9 +150,9 @@ class SearchQueueUpdateCommand extends QueueUpdateCronScript {
                     $onlyReal       = true,
                     $onlyWithWebCam = false,
                     $noIntim        = true,
-                    $countryId      = null, #$searchPreferences['geo']['country_id'],
-                    $regionId       = null, #$searchPreferences['geo']['region_id'],
-                    $cityId         = null, #$searchPreferences['geo']['city_id'],
+                    $countryId      = 3159, //Россия
+                    $regionId       = null,
+                    $cityId         = null,
                     $metroId        = null,
                     $offset         = $offset + 10,
                     $blocks         = array(),
