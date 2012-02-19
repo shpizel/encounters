@@ -24,11 +24,11 @@ class PreferencesController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $redisSearchPreferences = $this->getSearchPreferencesObject()->get($Mamba->get('oid'));
+        $redisSearchPreferences = $this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'));
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
-            $searchPreferences['geo'] = $this->getUserGeoParams($Mamba->get('oid'));
-            $this->getSearchPreferencesObject()->set($Mamba->get('oid'), $searchPreferences);
+            $searchPreferences['geo'] = $this->getUserGeoParams($webUserId);
+            $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
 
             /**
              * Изменились ли настройки?
@@ -38,6 +38,23 @@ class PreferencesController extends ApplicationController {
             if (!$redisSearchPreferences || $diff = array_diff($redisSearchPreferences, $searchPreferences)) {
                 if (!(isset($diff['changed']) && count($diff) == 1)) {
                     $this->cleanUserQueues();
+
+                    $GearmanClient = $this->getGearman()->getClient();
+
+                    $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                        'user_id'   => $webUserId,
+                        'timestamp' => time(),
+                    )));
+
+                    $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                        'user_id'   => $webUserId,
+                        'timestamp' => time(),
+                    )));
+
+                    $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                        'user_id'   => $webUserId,
+                        'timestamp' => time(),
+                    )));
                 }
             }
 

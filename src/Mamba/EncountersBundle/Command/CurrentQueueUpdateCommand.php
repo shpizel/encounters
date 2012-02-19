@@ -138,17 +138,17 @@ class CurrentQueueUpdateCommand extends QueueUpdateCronScript {
 
         $GearmanClient = $this->getGearman()->getClient();
 
+        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+            'user_id'   => $webUserId,
+            'timestamp' => time(),
+        )));
+
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
             'user_id'   => $webUserId,
             'timestamp' => time(),
         )));
 
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-            'user_id'   => $webUserId,
-            'timestamp' => time(),
-        )));
-
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
             'user_id'   => $webUserId,
             'timestamp' => time(),
         )));
