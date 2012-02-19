@@ -31,7 +31,7 @@ class MyChoiceController extends ApplicationController {
 
         $result = $this->getDoctrine()
             ->getEntityManager()
-                ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId and d.decision >= 0 ORDER BY d.changed ASC')
+                ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId and d.decision >= 0 ORDER BY d.changed DESC')
                     ->setParameter('webUserId', $webUserId)
                 ->getResult()
         ;
@@ -63,7 +63,7 @@ class MyChoiceController extends ApplicationController {
                     );
 
                     if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                         } else {
                             $anketa['decision'][] = -2;

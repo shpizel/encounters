@@ -47,7 +47,7 @@ class VisitorsController extends ApplicationController {
         $data = array();
         $result = $this->getDoctrine()
             ->getEntityManager()
-            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed ASC')
+            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed DESC')
             ->setParameter('webUserId', $webUserId)
             ->getResult()
         ;
@@ -78,7 +78,7 @@ class VisitorsController extends ApplicationController {
                     );
 
                     if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                         } else {
                             $anketa['decision'][] = -2;
