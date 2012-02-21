@@ -303,7 +303,7 @@ abstract class ApplicationController extends Controller {
             'preferences' => $searchPreferences,
             'stats'       => array(
                 'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
-                'visitors' => $this->getCountersObject()->get($webUserId, 'visitors'),
+                'visited'  => $this->getCountersObject()->get($webUserId, 'visited'),
                 'mutual'   => $this->getCountersObject()->get($webUserId, 'mutual'),
             ),
         );
