@@ -38,14 +38,14 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        PERSONAL_MESSAGE = "%s, я отметил%s тебя в приложении Выбиратор!",
+        PERSONAL_MESSAGE = "%s, я отметил%s тебя в приложении «Выбиратор»!",
 
         /**
          * Сообщение от менеджера приложений
          *
          * @var str
          */
-        NOTIFY_MESSAGE = "%s, у тебя есть новые оценки в приложении Выбиратор!"
+        NOTIFY_MESSAGE = "%s, у тебя есть новые оценки в приложении «Выбиратор»!"
     ;
 
     /**
