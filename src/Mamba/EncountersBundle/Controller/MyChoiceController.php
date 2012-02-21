@@ -37,7 +37,6 @@ class MyChoiceController extends ApplicationController {
         ;
 
         if ($result) {
-
             $usersArray = array();
             foreach ($result as $item) {
                 $usersArray[$item->getCurrentUserId()] = $item->getDecision();
@@ -48,7 +47,7 @@ class MyChoiceController extends ApplicationController {
             foreach ($usersArray as $key => $users) {
                 $usersArray[$key] = array_reverse($users, true);
             }
-            $usersArray = array_reverse($usersArray, true);
+            $usersArray = array_reverse($usersArray);
 
             $Mamba->multi();
             foreach ($usersArray as $users) {

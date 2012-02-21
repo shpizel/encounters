@@ -41,6 +41,26 @@ class ViewedQueue extends Helper {
     }
 
     /**
+     * Обновляет currentUser'a в очереди просмотренных webUser'ом
+     *
+     * @param int $webUserId
+     * @param int $currentUserId
+     * @param mixed $data
+     * @return mixed
+     */
+    public function set($webUserId, $currentUserId, $data) {
+        if (!is_int($webUserId)) {
+            throw new ViewedQueueException("Invalid web user id: \n" . var_export($webUserId, true));
+        }
+
+        if (!is_int($currentUserId)) {
+            throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
+        }
+
+        return $this->Redis->hSet($this->getRedisQueueKey($webUserId), $currentUserId, json_encode($data));
+    }
+
+    /**
      * Getter
      *
      * @param $webUserId

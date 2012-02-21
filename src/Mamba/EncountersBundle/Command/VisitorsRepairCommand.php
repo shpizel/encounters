@@ -47,7 +47,7 @@ class VisitorsRepairCommand extends QueueUpdateCronScript {
             $decision = $item->getDecision();
             $changed = $item->getChanged();
 
-//            $this->getViewedQueueObject()->put($webUserId, $currentUserId, array('ts'=>$changed, 'desicion'=>$decision));
+            $this->getViewedQueueObject()->put($webUserId, $currentUserId, array('ts'=>$changed, 'desicion'=>$decision));
         }
     }
 }

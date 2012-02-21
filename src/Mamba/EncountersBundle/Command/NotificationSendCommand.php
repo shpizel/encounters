@@ -38,14 +38,14 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        PERSONAL_MESSAGE = "Ура! Я отметил тебя в приложении Выбиратор! Перейдите по ссылке чтобы узнать больше ;-)",
+        PERSONAL_MESSAGE = "%s, я отметил%s тебя в приложении Выбиратор!",
 
         /**
          * Сообщение от менеджера приложений
          *
          * @var str
          */
-        NOTIFY_MESSAGE = "Вот это да! Кто-то отметил, что хочет встретиться с вами. Перейдите по ссылке чтобы узнать!"
+        NOTIFY_MESSAGE = "%s, у тебя есть новые оценки в приложении Выбиратор!"
     ;
 
     /**
@@ -102,14 +102,20 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @author shpizel
          */
-        $Mamba->Contacts()->sendMessage($currentUserId, $this->getPersonalMessage());
+        $this->log("Current user id: " . $currentUserId);
+        $this->log("Personal spam message: " . ($message = $this->getPersonalMessage($currentUserId)));
+
+        $this->log(var_export($Mamba->Contacts()->sendMessage($currentUserId, $message), 1));
 
         /**
          * Нужно проспамить в нотификацию, если возможно
          *
          * @author shpizel
          */
-        $Mamba->Notify()->sendMessage($currentUserId, $this->getNotifyMessage());
+        $this->log("Current user id: " . $currentUserId);
+        $this->log("Notify spam message: " . ($message = $this->getNotifyMessage($currentUserId)));
+
+        $this->log(var_export($Mamba->Notify()->sendMessage($currentUserId, $message), 1));
 
         /**
          * Нужно проспамить на стену достижений
@@ -128,26 +134,32 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      * @return str
      */
     private function getAchievement($userId) {
-        if ($visitors = $this->getCountersObject()->get($userId, 'visitors')) {
-            return sprintf(self::ACHIEVEMENT_MESSAGE, $this->getCountersObject()->get($userId, 'visitors'));
+        if ($visitors = $this->getCountersObject()->get($userId, 'visited')) {
+            return sprintf(self::ACHIEVEMENT_MESSAGE, $this->getCountersObject()->get($userId, 'visited'));
         }
     }
 
     /**
-     * Генерирует и возвращает сообщение от менеджера сообщений
+     * Генерирует и возвращает сообщение от менеджера сообщений для карент юзера
      *
+     * @param int $currentUserId
      * @return str
      */
-    private function getNotifyMessage() {
-        return self::NOTIFY_MESSAGE;
+    private function getNotifyMessage($currentUserId) {
+        if ($anketa = $this->getMamba()->Anketa()->getInfo($currentUserId)) {
+            return sprintf(self::NOTIFY_MESSAGE, $anketa[0]['info']['name']);
+        }
     }
 
     /**
      * Генерирует и возвращает персональное сообщение
      *
+     * @param int $currentUserId
      * @return str
      */
-    private function getPersonalMessage() {
-        return self::PERSONAL_MESSAGE;
+    private function getPersonalMessage($currentUserId) {
+        if ($anketa = $this->getMamba()->Anketa()->getInfo($currentUserId)) {
+            return sprintf(self::PERSONAL_MESSAGE, $anketa[0]['info']['name'], $anketa[0]['info']['gender'] == 'F' ? 'а': '');
+        }
     }
 }
