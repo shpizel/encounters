@@ -103,7 +103,7 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          * @author shpizel
          */
         $this->log("Current user id: " . $currentUserId);
-        $this->log("Personal spam message: " . ($message = $this->getPersonalMessage($currentUserId)));
+        $this->log("Personal spam message: " . ($message = $this->getPersonalMessage($webUserId, $currentUserId)));
 
         $this->log(var_export($Mamba->Contacts()->sendMessage($currentUserId, $message), 1));
 
@@ -154,12 +154,13 @@ class NotificationSendCommand extends QueueUpdateCronScript {
     /**
      * Генерирует и возвращает персональное сообщение
      *
+     * @param int $webUserId
      * @param int $currentUserId
      * @return str
      */
-    private function getPersonalMessage($currentUserId) {
-        if ($anketa = $this->getMamba()->Anketa()->getInfo($currentUserId)) {
-            return sprintf(self::PERSONAL_MESSAGE, $anketa[0]['info']['name'], $anketa[0]['info']['gender'] == 'F' ? 'а': '');
+    private function getPersonalMessage($webUserId, $currentUserId) {
+        if ($anketas = $this->getMamba()->Anketa()->getInfo(array($currentUserId, $webUserId))) {
+            return sprintf(self::PERSONAL_MESSAGE, $anketas[0]['info']['name'], $anketas[1]['info']['gender'] == 'F' ? 'а': '');
         }
     }
 }
