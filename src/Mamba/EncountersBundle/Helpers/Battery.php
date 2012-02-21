@@ -27,6 +27,13 @@ class Battery extends Helper {
         MAXIMUM_CHARGE = 5,
 
         /**
+         * Заряд по-умолчанию
+         *
+         * @var int
+         */
+        DEFAULT_CHARGE = 1,
+
+        /**
          * Ключ для хранения зарядки батарейки
          *
          * @var str
@@ -47,7 +54,7 @@ class Battery extends Helper {
 
         $charge = $this->Redis->hGet(self::REDIS_HASH_USERS_BATTERY_CHARGES_KEY, $userId);
         if (false === $charge) {
-            $this->set($userId, $charge = self::MAXIMUM_CHARGE);
+            $this->set($userId, $charge = self::DEFAULT_CHARGE);
         }
         return $charge;
     }

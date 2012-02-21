@@ -20,6 +20,8 @@ $Layers = {
         $("div.app-layer a.close").click(function() {
             $("div#overflow").hide();
             $("div.app-layer").hide();
+
+            return false;
         });
 
         $("div.layer-energy form p a").click(function() {

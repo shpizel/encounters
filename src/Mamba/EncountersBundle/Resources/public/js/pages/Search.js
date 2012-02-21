@@ -57,6 +57,8 @@ $Search = {
                     $Layers.showEnergyLayer();
                 }
             }, 'json');
+
+            return false;
         });
     },
 

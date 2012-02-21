@@ -30,7 +30,12 @@ $Interface = {
                     $("div.notification").hide();
                 }
             });
+
             return false;
+        });
+
+        $("li.item-popul").click(function() {
+            $Layers.showPopularityLayer();
         });
 
         this['init' + $Tools.ucfirst($route) + 'UI']();

@@ -43,7 +43,7 @@ $Visitors = {
                 }
             }, 'json');
 
-            return false;
+//            return false;
         });
     },
 

@@ -8,7 +8,7 @@
         <div class="app-block-no-popular" style="display: {% if webuser.popularity.class == 'low' %}block{%else%}none{%endif%};">
             <i class="arrow"></i>
             <div class="info-block">
-                <div class="photo">{% if webuser.anketa.info.small_photo_url %}<img src="{{ webuser.anketa.0.info.small_photo_url }}">{%else%}<img src="/bundles/encounters/images/photo_little_na.gif">{% endif %}</div>
+                <div class="photo">{% if webuser.anketa.info.small_photo_url %}<img src="{{ webuser.anketa.info.small_photo_url }}">{%else%}<img src="/bundles/encounters/images/photo_little_na.gif">{% endif %}</div>
                 <div class="message">
                     <div class="message-alert">У вас очень низкая популярность</div>
                     <div class="message-help">Станьте популярней &mdash; <a id="getmore" href="#">получите 100 дополнительных показов</a></div>

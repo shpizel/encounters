@@ -42,7 +42,7 @@ $Mychoice = {
                 }
             }, 'json');
 
-            return false;
+//            return false;
         });
     },
 

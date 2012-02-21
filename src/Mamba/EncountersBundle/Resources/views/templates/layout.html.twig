@@ -27,7 +27,7 @@
             </ul>
             <ul class="info-meet">
                 <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
-                <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
+                <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
                 <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
                 <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b>{% if webuser.stats.mutual %} <i class="heart">{{ webuser.stats.mutual }}</i>{% endif %}</a></li>
             </ul>
@@ -57,12 +57,8 @@
 <script>
 $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% autoescape false %}
-{% if settings.platform %}
-$Config.set('platform', {{settings.platform}});
-{% endif %}
-{% if settings.search %}
-$Config.set('search', {{settings.search}});
-{% endif %}
+{% if settings.platform %}$Config.set('platform', {{settings.platform}});{% endif %}
+{% if settings.search %}$Config.set('search', {{settings.search}});{% endif %}
 $Config.set('webuser', {{ webuser.json }});
 $Routing.setRoutes({{ routes }});
 {% endautoescape %}
