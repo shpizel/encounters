@@ -103,9 +103,19 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          * @author shpizel
          */
         $this->log("Current user id: " . $currentUserId);
-        $this->log("Personal spam message: " . ($message = $this->getPersonalMessage($webUserId, $currentUserId)));
+        if ($message = $this->getPersonalMessage($webUserId, $currentUserId)) {
+            $this->log("Personal spam message: " . ($message));
+            if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
+                if (isset($result['sended']) && $result['sended']) {
+                    $this->log('SUCCESS', 64);
+                } else {
+                    $this->log('FAILED', 16);
+                }
+            }
+        } else {
+            $this->log("Could not get personal message", 16);
+        }
 
-        $this->log(var_export($Mamba->Contacts()->sendMessage($currentUserId, $message), 1));
 
         /**
          * Нужно проспамить в нотификацию, если возможно
@@ -113,9 +123,18 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          * @author shpizel
          */
         $this->log("Current user id: " . $currentUserId);
-        $this->log("Notify spam message: " . ($message = $this->getNotifyMessage($currentUserId)));
-
-        $this->log(var_export($Mamba->Notify()->sendMessage($currentUserId, $message), 1));
+        if ($message = $this->getNotifyMessage($currentUserId)) {
+            $this->log("Notify spam message: " . ($message));
+            if ($result = $Mamba->Notify()->sendMessage($currentUserId, $message)) {
+                if (isset($result['count']) && $result['count']) {
+                    $this->log('SUCCESS', 64);
+                } else {
+                    $this->log('FAILED', 16);
+                }
+            }
+        } else {
+            $this->log("Could not get notify message", 16);
+        }
 
         /**
          * Нужно проспамить на стену достижений
@@ -123,7 +142,9 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          * @author
          */
         if ($achievement = $this->getAchievement($webUserId)) {
-            $Mamba->Achievement()->set($achievement);
+            $this->log(var_export($Mamba->Achievement()->set($achievement), 1));
+        } else {
+            $this->log("Could not get achievement message", 16);
         }
     }
 
@@ -147,7 +168,10 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      */
     private function getNotifyMessage($currentUserId) {
         if ($anketa = $this->getMamba()->Anketa()->getInfo($currentUserId)) {
-            return sprintf(self::NOTIFY_MESSAGE, $anketa[0]['info']['name']);
+            $name = $anketa[0]['info']['name'];
+            $name = explode(" ", $name);
+            $name = array_shift($name);
+            return sprintf(self::NOTIFY_MESSAGE, $name);
         }
     }
 
@@ -160,7 +184,11 @@ class NotificationSendCommand extends QueueUpdateCronScript {
      */
     private function getPersonalMessage($webUserId, $currentUserId) {
         if ($anketas = $this->getMamba()->Anketa()->getInfo(array($currentUserId, $webUserId))) {
-            return sprintf(self::PERSONAL_MESSAGE, $anketas[0]['info']['name'], $anketas[1]['info']['gender'] == 'F' ? 'а': '');
+            $name = $anketas[0]['info']['name'];
+            $name = explode(" ", $name);
+            $name = array_shift($name);
+
+            return sprintf(self::PERSONAL_MESSAGE, $name, $anketas[1]['info']['gender'] == 'F' ? 'а': '');
         }
     }
 }

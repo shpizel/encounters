@@ -57,7 +57,9 @@ class DecisionController extends ApplicationController {
             $this->getHitlistObject()->incr($this->currentUserId);
 
             /** Инкрементируем счетчик выбора у webUser'a */
-            $this->getCountersObject()->incr($this->webUserId, 'mychoice');
+            if ($this->decision + 1 > 0) {
+                $this->getCountersObject()->incr($this->webUserId, 'mychoice');
+            }
 
             /** Инкрементируем счетчик просмотров у currentUser'a */
             $this->getCountersObject()->incr($this->currentUserId, 'visited');

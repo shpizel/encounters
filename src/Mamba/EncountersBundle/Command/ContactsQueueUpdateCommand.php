@@ -31,7 +31,7 @@ class ContactsQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var int
          */
-        LIMIT = 16
+        LIMIT = 8
     ;
 
     /**
