@@ -321,11 +321,14 @@ $Search = {
      * @run page
      */
     run: function() {
+
         if (!$Queue.qsize()) {
             this.loadQueue(function(){
                 return $Search.unlockUI();
             });
             return this.lockUI();
+        } else {
+            this.showNextPhoto();
         }
     },
 

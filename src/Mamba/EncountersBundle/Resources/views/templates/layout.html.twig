@@ -62,6 +62,7 @@ $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 $Config.set('webuser', {{ webuser.json }});
 $Routing.setRoutes({{ routes }});
 {% endautoescape %}
+{% block pagejs %}{% endblock %}
 $(document).ready(function(){
     $App.init(location.pathname).run();
 });

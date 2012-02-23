@@ -44,3 +44,15 @@
 </div>
 </div>
 {% endblock %}
+
+{% block pagejs %}
+{% if queues.current %}
+{% autoescape false %}
+var $currentQueue = {{ queues.current }};
+for (var $key=0;$key<$currentQueue.length;$key++) {
+    $Queue.put($currentQueue[$key]);
+}
+{% endautoescape %}
+
+{% endif %}
+{% endblock %}
