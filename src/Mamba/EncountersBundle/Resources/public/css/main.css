@@ -65,7 +65,7 @@ h5{ font-size: 100%; }
 
 .app-layout .app-menu-bar{
 	background: url('/bundles/encounters/images/bar-bg.png') repeat-x 0 -46px;
-	margin:0 7px 12px 7px;
+	margin:0 12px 12px 7px;
 	position: relative;
 	height: 46px;
     /*width: 95%;	*/
@@ -320,8 +320,7 @@ h5{ font-size: 100%; }
 .app-block-no-popular{
 	background-color: #ff6600;
 	border-radius: 5px;
-	width: 96%;
-	margin: 20px auto 5px auto;
+	margin: 20px 5px 5px 3px;
 	position: relative;
 }
 
@@ -868,8 +867,6 @@ div#overflow {
 }
 
 div.content {
-    margin-left:30px;
-    margin-right: 30px;
     padding:10px;
     padding-top:2px;
 }
@@ -1002,8 +999,8 @@ div.content div.pictures div.mpic div.info {
 }
 
 div.notification {
-    margin-left:23px;
-    margin-right: 23px;
+    margin-left:3px;
+    margin-right: 6px;
     background: #fff2d1;
     border: #ffd777 1px solid;
     border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
