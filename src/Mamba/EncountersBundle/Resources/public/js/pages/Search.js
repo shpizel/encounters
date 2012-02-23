@@ -130,6 +130,21 @@ $Search = {
                     $Layers.showMutualLayer();
                 }
 
+                $data = $data.data;
+                if ($data.hasOwnProperty('counters')) {
+                    if ($data['counters']['mychoice'] > 0) {
+                        $('li.item-mychoice a i').text($data['counters']['mychoice']);
+                    }
+
+                    if ($data['counters']['visited'] > 0 ) {
+                        $('li.item-visitors a i').text($data['counters']['visited']);
+                    }
+
+                    if ($data['counters']['mutual'] > 0) {
+                        $('li.item-mutual a i').text($data['counters']['mutual']);
+                    }
+                }
+
                 $Search.showNextPhoto();
             } else {
                 $status = $data.status;

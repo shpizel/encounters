@@ -111,6 +111,12 @@ class DecisionController extends ApplicationController {
             $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'desicion'=>$this->decision));
         }
 
+        $this->json['data']['counters'] = array(
+            'visited'  => (int) $this->getCountersObject()->get($this->webUserId, 'visited'),
+            'mychoice' => (int) $this->getCountersObject()->get($this->webUserId, 'mychoice'),
+            'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
+        );
+
         return
             new Response(json_encode($this->json), 200, array(
                     "content-type" => "application/json",
