@@ -128,15 +128,21 @@ class DecisionController extends ApplicationController {
         if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
             if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
 
-                if ($this->getPurchasedObject()->exists($webUserId, $currentUserId) && ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId))) {
-                    $this->json['data'] = array(
-                        'decision' => $decision['decision'],
-                    );
-
-                } elseif ($charge = (int) $this->getBatteryObject()->get($webUserId)) {
-                    $decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId);
-                    if ($decision) {
+                if ($this->getPurchasedObject()->exists($webUserId, $currentUserId)) {
+                    if ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId)) {
                         $decision = $decision['decision'];
+                    } else {
+                        $decision = false;
+                    }
+
+                    $this->json['data'] = array(
+                        'decision' => $decision,
+                    );
+                } elseif ($charge = (int) $this->getBatteryObject()->get($webUserId)) {
+                    if ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId)) {
+                        $decision = $decision['decision'];
+                    } else {
+                        $decision = false;
                     }
 
                     $this->json['data'] = array(

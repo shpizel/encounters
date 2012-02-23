@@ -17,7 +17,7 @@ class Energy extends Helper {
          *
          * @var int
          */
-        DEFAULT_ENERGY = 512,
+        DEFAULT_ENERGY = 128,
 
         /**
          * Минимальная энергия
