@@ -108,6 +108,7 @@ class NotificationSendCommand extends QueueUpdateCronScript {
             if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
                 if (isset($result['sended']) && $result['sended']) {
                     $this->log('SUCCESS', 64);
+                    $this->getStatsObject()->incr('contacts');
                 } else {
                     $this->log('FAILED', 16);
                 }
@@ -125,12 +126,19 @@ class NotificationSendCommand extends QueueUpdateCronScript {
         $this->log("Current user id: " . $currentUserId);
         if ($message = $this->getNotifyMessage($currentUserId)) {
             $this->log("Notify spam message: " . ($message));
-            if ($result = $Mamba->Notify()->sendMessage($currentUserId, $message)) {
-                if (isset($result['count']) && $result['count']) {
-                    $this->log('SUCCESS', 64);
-                } else {
-                    $this->log('FAILED', 16);
+
+            if ($this->getMemcache()->add("notify_" . $currentUserId, time(), 6*3600)) {
+                if ($result = $Mamba->Notify()->sendMessage($currentUserId, $message)) {
+                    if (isset($result['count']) && $result['count']) {
+                        $this->log('SUCCESS', 64);
+                        $this->getStatsObject()->incr('notify');
+
+                    } else {
+                        $this->log('FAILED', 16);
+                    }
                 }
+            } else {
+                $this->log("Too much frequently", 16);
             }
         } else {
             $this->log("Could not get notify message", 16);
@@ -141,8 +149,16 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          *
          * @author
          */
-        if ($achievement = $this->getAchievement($webUserId)) {
-            $this->log(var_export($Mamba->Achievement()->set($achievement), 1));
+        if ($message = $this->getAchievement($webUserId)) {
+            $this->log("Achievement spam message: " . ($message));
+            if ($result = $Mamba->Achievement()->set($message)) {
+                if (isset($result['update']) && $result['update']) {
+                    $this->log('SUCCESS', 64);
+                    $this->getStatsObject()->incr('achievement');
+                } else {
+                    $this->log('FAILED', 16);
+                }
+            }
         } else {
             $this->log("Could not get achievement message", 16);
         }

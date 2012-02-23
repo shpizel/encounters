@@ -13,6 +13,7 @@ use Mamba\EncountersBundle\Helpers\Popularity;
 use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\Services;
 use Mamba\EncountersBundle\Helpers\Purchased;
+use Mamba\EncountersBundle\Helpers\Stats;
 
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\GearmanBundle\Gearman;
@@ -280,6 +281,19 @@ abstract class ApplicationController extends Controller {
         }
 
         return self::$Instances[__FUNCTION__] = new Purchased($this->getRedis());
+    }
+
+    /**
+     * Stats object getter
+     *
+     * @return Stats
+     */
+    public function getStatsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Stats($this->getRedis());
     }
 
     /**

@@ -12,6 +12,7 @@ use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\Hitlist;
+use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 
 use Mamba\RedisBundle\Redis;
@@ -220,4 +221,16 @@ abstract class QueueUpdateCronScript extends CronScript {
         return self::$Instances[__FUNCTION__] = new Counters($this->getRedis());
     }
 
+    /**
+     * Stats object getter
+     *
+     * @return Stats
+     */
+    public function getStatsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Stats($this->getRedis());
+    }
 }
