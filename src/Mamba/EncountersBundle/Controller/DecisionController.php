@@ -108,7 +108,7 @@ class DecisionController extends ApplicationController {
             $this->getCurrentQueueObject()->remove($this->webUserId, $this->currentUserId);
 
             /** Добавим currentUser'a в список уже просмотренных webUser'ом */
-            $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'desicion'=>$this->decision));
+            $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'decision'=>$this->decision));
         }
 
         $this->json['data']['counters'] = array(

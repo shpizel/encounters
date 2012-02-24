@@ -35,19 +35,31 @@ class VisitorsRepairCommand extends QueueUpdateCronScript {
      * @return null
      */
     protected function process() {
-        $result = $this->getContainer()->get('doctrine')
-            ->getEntityManager()
-            ->createQuery('SELECT d FROM EncountersBundle:Decisions d')
-            ->getResult()
-        ;
+        $i = 0;
+        do {
+            $result = $this->getContainer()->get('doctrine')
+                ->getEntityManager()
+                ->createQuery("SELECT d FROM EncountersBundle:Decisions d where id >= " . $i . " and id < " . ($i = $i+1000))
+                ->getResult()
+            ;
 
-        foreach ($result as $item) {
-            $webUserId = $item->getWebUserId();
-            $currentUserId = $item->getCurrentUserId();
-            $decision = $item->getDecision();
-            $changed = $item->getChanged();
+            foreach ($result as $item) {
+                $webUserId = $item->getWebUserId();
+                $currentUserId = $item->getCurrentUserId();
+                $decision = $item->getDecision();
+                $changed = $item->getChanged();
 
-            $this->getViewedQueueObject()->put($webUserId, $currentUserId, array('ts'=>$changed, 'desicion'=>$decision));
-        }
+                var_dump($webUserId, $currentUserId, $decision, $changed);
+
+                /*$this->getViewedQueueObject()->set(
+                    $webUserId,
+                    $currentUserId,
+                    array(
+                        'ts' => $changed,
+                        'decision' => $decision
+                    )
+                );*/
+            }
+        } while ($result);
     }
 }
