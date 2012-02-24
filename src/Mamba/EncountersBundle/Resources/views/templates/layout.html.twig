@@ -12,6 +12,7 @@
 {% endstylesheets %}
 </head>
 <body>
+<div id="wrapper">
 <div class="app-layout">
     <div class="app-menu-bar">
         {% if controller == 'search' %}
@@ -43,7 +44,8 @@
 {% endif %}
 {% block body %}{% endblock %}
 {% include 'EncountersBundle:tools:ym.html.twig' %}
-{% block javascripts %}{% endblock %}
+</div>
+    {% block javascripts %}{% endblock %}
 {% javascripts
     '@EncountersBundle/Resources/public/js/core/*'
     '@EncountersBundle/Resources/public/js/tools/*'

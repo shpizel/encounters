@@ -567,6 +567,7 @@ h5{ font-size: 100%; }
 	position:absolute;
 	height: 20px; width: 21px;
 	right: 10px; top: 10px;
+    z-index: 9999;
 }
 
 .layer-pop-up {
