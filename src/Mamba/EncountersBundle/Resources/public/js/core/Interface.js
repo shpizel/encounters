@@ -20,7 +20,7 @@ $Interface = {
         } else {
             var $documentHeight = $('#wrapper').height();
             mamba.init(function() {
-                mamba.method("resizeWindow", '100%', ($documentHeight > 1000) ? $documentHeight : 1000)
+                mamba.method("resizeWindow", '100%', ($documentHeight > 1000) ? $documentHeight : 1000);
             });
         }
 
@@ -39,7 +39,10 @@ $Interface = {
         });
 
         this['init' + $Tools.ucfirst($route) + 'UI']();
+
         $Layers.initUI();
+        $Battery.initUI();
+        $Speedo.initUI();
 
         return this;
     },

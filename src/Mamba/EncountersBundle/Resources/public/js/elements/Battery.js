@@ -11,7 +11,9 @@ $Battery = {
      * @init UI
      */
     initUI: function() {
-
+        $("li.item-energy > *").click(function() {
+            alert('Я батарейка!');
+        });
     },
 
     /**

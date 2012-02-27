@@ -63,6 +63,7 @@ jms_security_extra:
     secure_all_services: false
 
 mamba:
+    app_id: 355
     secret_key: 'jn6OUU2pS5nz7O37Srj9'
     private_key: 'Ot018UW4jOYQSWKpQ2l9'
 

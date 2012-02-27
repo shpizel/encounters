@@ -243,6 +243,7 @@ h5{ font-size: 100%; }
 .info-meet li.item-energy{
 	background: url('/bundles/encounters/images/separate-meet-menu.png') no-repeat left top;
 	margin: 0; padding: 0 0 0 15px;
+    cursor: pointer;
 }
 
 .info-meet li.item-energy i{
@@ -973,11 +974,15 @@ div.content div.pictures div.mpic {
     position: relative;
     margin-right:27px;
     margin-bottom: 30px;
+    margin-top: 3px;
+    margin-left: 4px;
 }
 
 div.content div.pictures div.mpic img {
     padding-top:11px;
     padding-left:10px;
+    height:150px;
+    width:110px;
 }
 
 div.ramka {
@@ -990,6 +995,8 @@ div.ramka {
 
 div.content div.pictures div.mpic img {
     padding-bottom: 9px;
+    height:150px;
+    width:110px;
 }
 
 div.content div.pictures div.mpic div.info {
@@ -1023,7 +1030,6 @@ div.notification a.close {
     position: absolute;
     top: 8px;
     right: 10px;
-
 }
 
 div.no div.ramka {

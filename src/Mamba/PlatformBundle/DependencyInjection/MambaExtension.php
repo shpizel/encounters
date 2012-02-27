@@ -23,6 +23,7 @@ class MambaExtension extends Extension {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $container->setParameter("mamba.app_id", $config['app_id']);
         $container->setParameter("mamba.secret_key", $config['secret_key']);
         $container->setParameter("mamba.private_key", $config['private_key']);
 

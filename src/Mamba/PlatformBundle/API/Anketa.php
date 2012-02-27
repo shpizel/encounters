@@ -13,11 +13,10 @@ class Anketa {
      *
      * @param array|int|str|string_array $ids (anketa ids) max 100
      * @param array blocks = ("about", "location", "flags", "familiarity", "type", "favour", "other")
-     * @param bool onlyIds
      * @throws AnketaException, MambaException
      * @return array
      */
-    public function getInfo($ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other"), $onlyIds = null) {
+    public function getInfo($ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other")) {
         if (!is_array($ids)) {
             if (is_string($ids)) {
                 $ids = str_replace(" ", "", $ids);
@@ -32,7 +31,7 @@ class Anketa {
                 return (bool) $id;
             });
 
-            return $this->getInfo($ids, $blocks, $onlyIds);
+            return $this->getInfo($ids, $blocks);
         }
 
         $max = 100;
@@ -80,10 +79,6 @@ class Anketa {
 
         if (!empty($blocks)) {
             $arguments['blocks'] = implode(",", $blocks);
-        }
-
-        if ($onlyIds) {
-            $arguments['ids_only'] = 1;
         }
 
         return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);

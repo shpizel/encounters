@@ -36,6 +36,25 @@ class Counters extends Helper {
     }
 
     /**
+     * Counter setter
+     *
+     * @param int $userId
+     * @param string $key
+     * @param int $value
+     */
+    public function set($userId, $key, $value) {
+        if (!is_int($userId)) {
+            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        if (!is_int($value)) {
+            throw new CountersException("Invalid value: \n" . var_export($value, true));
+        }
+
+        return $this->Redis->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $value);
+    }
+
+    /**
      * Counter increment
      *
      * @param int $userId

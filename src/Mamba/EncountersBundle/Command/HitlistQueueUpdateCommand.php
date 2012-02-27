@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -15,7 +15,7 @@ use Mamba\EncountersBundle\EncountersBundle;
  *
  * @package EncountersBundle
  */
-class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
+class HitlistQueueUpdateCommand extends CronScript {
 
     const
 
@@ -24,7 +24,14 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Hitlist queue updater",
+        SCRIPT_DESCRIPTION = "Hitlist queue update",
+
+        /**
+         * Имя скрипта
+         *
+         * @var str
+         */
+        SCRIPT_NAME = "cron:queue:hitlist:update",
 
         /**
          * Лимит
@@ -53,7 +60,7 @@ class HitlistQueueUpdateCommand extends QueueUpdateCronScript {
         });
 
         $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations) {
+        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
             $this->log("Iterations: {$this->iterations}", 64);
 
             if ($worker->returnCode() != GEARMAN_SUCCESS) {

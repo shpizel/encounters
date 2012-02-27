@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Mamba\EncountersBundle\Command\QueueUpdateCronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -15,7 +15,7 @@ use Mamba\EncountersBundle\EncountersBundle;
  *
  * @package EncountersBundle
  */
-class NotificationSendCommand extends QueueUpdateCronScript {
+class NotificationSendCommand extends CronScript {
 
     const
 
@@ -25,6 +25,13 @@ class NotificationSendCommand extends QueueUpdateCronScript {
          * @var str
          */
         SCRIPT_DESCRIPTION = "Notifications sender",
+
+        /**
+         * Имя скрипта
+         *
+         * @var str
+         */
+        SCRIPT_NAME = "cron:notification:send",
 
         /**
          * Ачивка
@@ -67,7 +74,7 @@ class NotificationSendCommand extends QueueUpdateCronScript {
         });
 
         $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations) {
+        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
             $this->log("Iterations: {$this->iterations}", 64);
 
             if ($worker->returnCode() != GEARMAN_SUCCESS) {

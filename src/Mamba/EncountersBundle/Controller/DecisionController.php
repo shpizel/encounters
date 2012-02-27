@@ -76,11 +76,13 @@ class DecisionController extends ApplicationController {
             }
 
             /** Ставим задачу на спам */
-            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray = array(
-                'webUserId' => $this->webUserId,
-                'currentUserId' => $this->currentUserId,
-                'decision' => $this->decision,
-            )));
+            if ($this->decision + 1 > 0) {
+                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray = array(
+                    'webUserId' => $this->webUserId,
+                    'currentUserId' => $this->currentUserId,
+                    'decision' => $this->decision,
+                )));
+            }
 
             /** Ставим задачу на обноления базы */
             //if ($this->decision + 1 > 0) {

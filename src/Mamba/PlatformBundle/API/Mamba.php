@@ -67,7 +67,7 @@ final class Mamba {
          *
          * @var int
          */
-         MULTI_FETCH_CHUNK_SIZE = 10,
+         MULTI_FETCH_CHUNK_SIZE = 25,
 
         /**
          * Ключ для хранения user_id в сессии
@@ -377,11 +377,34 @@ final class Mamba {
         $mode = self::SINGLE_MODE,
 
         /**
+         * Режим временного отключения кеширования
+         *
+         * @var bool
+         */
+        $noCacheMode = false,
+
+        /**
          * Multi queue
          *
          * @var array
          */
-        $multiQueue = array()
+        $multiQueue = array(),
+
+        /**
+         * Список методов, которым sid не нужен
+         *
+         * @var array
+         */
+        $sidRequiredMethods = array(
+            'contacts.sendMessage',
+            'contacts.getContactList',
+            'contacts.getFolderContactList',
+            'contacts.getFolderList',
+            'anketa.inFavourites',
+            'anketa.getHitlist',
+            'achievement.set',
+            'anketa.isAppOwner',
+        )
     ;
 
     protected static
@@ -421,16 +444,28 @@ final class Mamba {
      * @param $secretKey
      * @param $privateKey
      */
-    public function __construct($secretKey, $privateKey, $Session, $Memcache, $Redis) {
+    public function __construct($appId, $secretKey, $privateKey, $Session, $Memcache, $Redis) {
         $this->set(array(
+            'app_id'      => $appId,
             'secret_key'  => $secretKey,
             'private_key' => $privateKey,
         ));
 
-        self::$Instance = $this;
         self::$Session  = $Session;
         self::$Memcache = $Memcache;
         self::$Redis    = $Redis;
+
+        self::$Instance = $this;
+    }
+
+    /**
+     * Временное включение режиме НЕ-кеширования
+     *
+     * @return Mamba
+     */
+    public function nocache() {
+        $this->noCacheMode = true;
+        return $this;
     }
 
     /**
@@ -506,25 +541,62 @@ final class Mamba {
     }
 
     /**
-     * Генерирует ключ для хранения кеша
+     * Генерирует ключ для хранения кеша, как полного, так и частичного
      *
      * @return string
      */
-    private function getCacheKey($method, $params) {
-        list($namespace, $method) = explode(".", $method);
-        if (!isset($this->cachingOptions[$namespace][$method])) {
-            throw new MambaException("$namespace.$method has no caching options");
-        }
+    private function getCacheKeys($method, $params) {
+        $result = array(
+            'full'    => null,
+            'partial' => array(
+                'oids'   => array(),
+                'logins' => array(),
+            ),
+        );
 
-        $cachingOptions = $this->cachingOptions[$namespace][$method];
-
-        if (self::CACHE_ENABLED && $cachingOptions['backend']) {
-            $signed = $cachingOptions['signed'];
-            $cachingKey =  "api://" . ($signed ? ($this->getWebUserId() . "@") : '') . "$namespace.$method";
-            if ($getParams = http_build_query($params)) {
-                $cachingKey .= "/?" . $getParams;
+        if (!$this->noCacheMode) {
+            list($namespace, $method) = explode(".", $method);
+            if (!isset($this->cachingOptions[$namespace][$method])) {
+                throw new MambaException("$namespace.$method has no caching options");
             }
-            return $cachingKey;
+
+            $cachingOptions = $this->cachingOptions[$namespace][$method];
+
+            if (self::CACHE_ENABLED && $cachingOptions['backend']) {
+                $signed = $cachingOptions['signed'];
+                $cachingKey =  "api://" . ($signed ? ($this->getWebUserId() . "@") : '') . "$namespace.$method";
+                if ($getParams = http_build_query($params)) {
+                    $result['full'] = $cachingKey . "/?" . $getParams;
+                }
+
+                if (isset($params['oids'])) {
+                    $oids = $params['oids'];
+                    $oids = explode(",", $oids);
+
+                    foreach ($oids as $oid) {
+                        $_params = $params;
+                        $_params['oids'] = $oid;
+
+                        if ($getParams = http_build_query($_params)) {
+                            $result['partial']['oids'][$oid ] = $cachingKey . "/?" . $getParams;
+                        }
+                    }
+                } elseif (isset($params['logins'])) {
+                    $logins = $params['logins'];
+                    $logins = explode(",", $logins);
+
+                    foreach ($logins as $login) {
+                        $_params = $params;
+                        $_params['logins'] = $login;
+
+                        if ($getParams = http_build_query($_params)) {
+                            $result['partial']['logins'][$login] = $cachingKey . "/?" . $getParams;
+                        }
+                    }
+                }
+
+                return $result;
+            }
         }
     }
 
@@ -534,15 +606,15 @@ final class Mamba {
      * @return string
      */
     private function getCache($method, $params) {
-        if ($cachingKey = $this->getCacheKey($method, $params)) {
-            $cachingKey = md5($cachingKey);
+        if ($cachingKeys = $this->getCacheKeys($method, $params)) {
+            $cachingKey = md5($cachingKeys['full']);
 
             list($namespace, $method) = explode(".", $method);
             $cachingBackend = $this->cachingOptions[$namespace][$method]['backend'];
             $result = null;
             if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
                 if (false !== $result = self::getRedis()->get($cachingKey)) {
-                    return json_decode($result, true);
+                    $result = json_decode($result, true);
                 }
             } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
                 $result = self::getMemcache()->get($cachingKey);
@@ -550,7 +622,56 @@ final class Mamba {
                 throw new MambaException("Invalid caching backend");
             }
 
-            return $result;
+            if (!$result) {
+                $cachingKeys = $cachingKeys['partial'];
+                if ($cachingKeys['oids']) {
+                    $cachingKeys = $cachingKeys['oids'];
+                } elseif ($cachingKeys['logins']) {
+                    $cachingKeys = $cachingKeys['logins'];
+                } else {
+                    $cachingKeys = null;
+                }
+
+                if ($cachingKeys) {
+                    if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
+                        $Redis = $this->getRedis();
+                        $Redis->multi();
+                        foreach ($cachingKeys as $cachingKey) {
+                            $Redis->get(md5($cachingKey));
+                        }
+
+                        if ($result = $Redis->exec()) {
+                            $n = 0;
+                            foreach ($cachingKeys as $key => $cachingKey) {
+                                if ($result[$n] === false) {
+                                    return;
+                                } else {
+                                    $cachingKeys[$key] = json_decode($result[$n], true);
+                                }
+
+                                $n++;
+                            }
+
+                            return array_values($cachingKeys);
+                        }
+                    } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
+                        if ($result = $this->getMemcache()->getMulti(array_map(function($key){return md5($key);}, $cachingKeys))) {
+                            foreach ($cachingKeys as $key => $cachingKey) {
+                                $hash = md5($cachingKey);
+                                if (isset($result[$hash])) {
+                                    $cachingKeys[$key] = $result[$hash];
+                                } else {
+                                    return;
+                                }
+                            }
+
+                            return array_values($cachingKeys);
+                        }
+                    }
+                }
+            } else {
+                return $result;
+            }
         }
     }
 
@@ -560,8 +681,8 @@ final class Mamba {
      * @return string
      */
     private function setCache($method, $params, $data) {
-        if ($cachingKey = $this->getCacheKey($method, $params)) {
-            $cachingKey = md5($cachingKey);
+        if ($cachingKeys = $this->getCacheKeys($method, $params)) {
+            $cachingKey = md5($cachingKeys['full']);
 
             list($namespace, $method) = explode(".", $method);
             $cachingOptions = $this->cachingOptions[$namespace][$method];
@@ -573,14 +694,41 @@ final class Mamba {
 
             if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
                 if ($expire) {
-                    return self::getRedis()->setex($cachingKey, (int)$expire, json_encode($data));
+                    self::getRedis()->setex($cachingKey, (int)$expire, json_encode($data));
+                } else {
+                    self::getRedis()->set($cachingKey, json_encode($data));
                 }
-                return self::getRedis()->set($cachingKey, json_encode($data));
             } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
-                return self::getMemcache()->set($cachingKey, $data, (int) $expire);
+                self::getMemcache()->set($cachingKey, $data, (int) $expire);
+            } else {
+                throw new MambaException("Invalid caching backend");
             }
 
-            throw new MambaException("Invalid caching backend");
+            $cachingKeys = $cachingKeys['partial'];
+            if ($cachingKeys['oids']) {
+                $cachingKeys = $cachingKeys['oids'];
+            } elseif ($cachingKeys['logins']) {
+                $cachingKeys = $cachingKeys['logins'];
+            } else {
+                $cachingKeys = null;
+            }
+
+            if ($cachingKeys && count($cachingKeys) == count($data)) {
+                $cachingKeys = array_values($cachingKeys);
+                foreach ($data as $i=>$item) {
+                    $cachingKey = $cachingKeys[$i];
+
+                    if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
+                        if ($expire) {
+                            self::getRedis()->setex(md5($cachingKey), (int)$expire, json_encode($item));
+                        } else {
+                            self::getRedis()->set(md5($cachingKey), json_encode($item));
+                        }
+                    } elseif ($cachingBackend == self::MEMCACHE_CACHE_BACKEND) {
+                        self::getMemcache()->set(md5($cachingKey), $item, (int) $expire);
+                    }
+                }
+            }
         }
     }
 
@@ -613,33 +761,41 @@ final class Mamba {
      * @return array
      */
     public function execute($method, array $params = array()) {
-        if (!$this->getReady()) {
-            throw new MambaException("Mamba is not ready to work");
-        }
-
         if (strpos($method, "\\") !== false) {
             $method = explode("\\", $method);
             $method = array_pop($method);
         }
 
-        if ($cacheResult = $this->getCache($method, $params)) {
-            if ($this->mode == self::MULTI_MODE ) {
-                $this->multiQueue[] = array(
-                    'cached' => $cacheResult
-                );
+        if (!$this->noCacheMode) {
+            if ($cacheResult = $this->getCache($method, $params)) {
+                if ($this->mode == self::MULTI_MODE ) {
+                    $this->multiQueue[] = array(
+                        'cached' => $cacheResult
+                    );
 
-                return $this;
+                    return $this;
+                }
+
+                return $cacheResult;
+            }
+        }
+
+        $requirements = array('app_id', 'format', 'secure');
+        if (in_array($method, $this->sidRequiredMethods)) {
+
+            if (!$this->getReady()) {
+                throw new MambaException("Mamba is not ready to work");
             }
 
-            return $cacheResult;
+            $lastMambaQuery = $this->getPlatformSettingsObject()->getLastQueryTime($this->getWebUserId());
+            if ($lastMambaQuery && (time() - (int)$lastMambaQuery >= 4*60*60)) {
+                throw new MambaException("Sid expired");
+            }
+
+            $requirements[] = 'sid';
         }
 
-        $lastMambaQuery = $this->getPlatformSettingsObject()->getLastQueryTime($this->getWebUserId());
-        if ($lastMambaQuery && (time() - (int)$lastMambaQuery >= 4*60*60)) {
-            throw new MambaException("Sid expired");
-        }
-
-        if ($staticParams = $this->get(array('app_id', 'format', 'secure', 'sid'))) {
+        if ($staticParams = $this->get($requirements)) {
             $dynamicParams = array(
                 'method' => $method,
             );
@@ -662,8 +818,13 @@ final class Mamba {
                 return $this;
             }
 
+            $this->noCacheMode = false;
+
             if ($platformResponse = @file_get_contents($httpQuery)) {
-                $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
+                if (in_array($method, $this->sidRequiredMethods)) {
+                    $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
+                }
+
                 $JSON = @json_decode($platformResponse, true);
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
@@ -689,124 +850,6 @@ final class Mamba {
      */
     public static function remoteExecute($method, array $params = array()) {
         return self::$Instance->execute($method, $params);
-    }
-
-    /**
-     * Возвращает server2server подпись запроса
-     *
-     * @param array $params
-     * @return string
-     */
-    private function getServerToServerSignature(array $params) {
-        ksort($params);
-        $signature = '';
-        foreach ($params as $key => $value) {
-            $signature .= "$key=$value";
-        }
-        return md5($signature . $this->get('secret_key'));
-    }
-
-    /**
-     * Возвращает client2server подпись запроса
-     *
-     * @param array $params
-     * @return string
-     */
-    private function getClientToServerSignature(array $params) {
-        ksort($params);
-        $signature = '';
-        foreach ($params as $key => $value) {
-            $signature .= "$key=$value";
-        }
-        return md5($this->get('oid') . $signature . $this->get('private_key'));
-    }
-
-    /**
-     * Getter for Anketa object
-     *
-     * @return Anketa
-     */
-    public function Anketa() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Photos object
-     *
-     * @return Photos
-     */
-    public function Photos() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Diary object
-     *
-     * @return Diary
-     */
-    public function Diary() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Search object
-     *
-     * @return Search
-     */
-    public function Search() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Achievement object
-     *
-     * @return Achievement
-     */
-    public function Achievement() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Contacts object
-     *
-     * @return Contacts
-     */
-    public function Contacts() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Notify object
-     *
-     * @return Notify
-     */
-    public function Notify() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for Geo object
-     *
-     * @return Geo
-     */
-    public function Geo() {
-        return $this->getSingletonHelperObject(__FUNCTION__);
-    }
-
-    /**
-     * Getter for singleton objects
-     *
-     * @param string $className
-     * @return Object
-     */
-    private function getSingletonHelperObject($className) {
-        $className = __NAMESPACE__ . "\\" . $className;
-
-        return
-            isset($this->Instances[$className])
-                ? $this->Instances[$className]
-                : $this->Instances[$className] = new $className;
-        ;
     }
 
     /**
@@ -935,10 +978,15 @@ final class Mamba {
 
         if ($urls) {
             $platformResponses = $this->urlMultiFetch($urls, $chunkSize);
-            $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
+
+            if ($webUserId = $this->getWebUserId()) {
+                $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
+            }
         } else {
             $platformResponses = array();
         }
+
+        $this->noCacheMode = false;
 
         if ($platformResponses) {
             foreach ($this->multiQueue as $key=>&$item) {
@@ -953,7 +1001,6 @@ final class Mamba {
                     }
 
                     $item['content'] = $JSON['data'];
-
                     continue;
                 }
             }
@@ -1037,6 +1084,124 @@ final class Mamba {
             }
         }
         return $result;
+    }
+
+    /**
+     * Возвращает server2server подпись запроса
+     *
+     * @param array $params
+     * @return string
+     */
+    private function getServerToServerSignature(array $params) {
+        ksort($params);
+        $signature = '';
+        foreach ($params as $key => $value) {
+            $signature .= "$key=$value";
+        }
+        return md5($signature . $this->get('secret_key'));
+    }
+
+    /**
+     * Возвращает client2server подпись запроса
+     *
+     * @param array $params
+     * @return string
+     */
+    private function getClientToServerSignature(array $params) {
+        ksort($params);
+        $signature = '';
+        foreach ($params as $key => $value) {
+            $signature .= "$key=$value";
+        }
+        return md5($this->get('oid') . $signature . $this->get('private_key'));
+    }
+
+    /**
+     * Getter for singleton objects
+     *
+     * @param string $className
+     * @return Object
+     */
+    private function getSingletonHelperObject($className) {
+        $className = __NAMESPACE__ . "\\" . $className;
+
+        return
+            isset($this->Instances[$className])
+                ? $this->Instances[$className]
+                : $this->Instances[$className] = new $className;
+        ;
+    }
+
+    /**
+     * Getter for Anketa object
+     *
+     * @return Anketa
+     */
+    public function Anketa() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Photos object
+     *
+     * @return Photos
+     */
+    public function Photos() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Diary object
+     *
+     * @return Diary
+     */
+    public function Diary() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Search object
+     *
+     * @return Search
+     */
+    public function Search() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Achievement object
+     *
+     * @return Achievement
+     */
+    public function Achievement() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Contacts object
+     *
+     * @return Contacts
+     */
+    public function Contacts() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Notify object
+     *
+     * @return Notify
+     */
+    public function Notify() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
+    }
+
+    /**
+     * Getter for Geo object
+     *
+     * @return Geo
+     */
+    public function Geo() {
+        return $this->getSingletonHelperObject(__FUNCTION__);
     }
 }
 

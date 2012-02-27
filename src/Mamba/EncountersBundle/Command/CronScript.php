@@ -7,6 +7,30 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Mamba\PlatformBundle\API\Mamba;
+
+use Mamba\RedisBundle\Redis;
+use Mamba\MemcacheBundle\Memcache;
+
+use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
+use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
+use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
+use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
+use Mamba\EncountersBundle\Helpers\Queues\SearchQueue;
+use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
+
+use Mamba\EncountersBundle\Helpers\Battery;
+use Mamba\EncountersBundle\Helpers\Counters;
+use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\Hitlist;
+use Mamba\EncountersBundle\Helpers\Notifications;
+use Mamba\EncountersBundle\Helpers\PlatformSettings;
+use Mamba\EncountersBundle\Helpers\Popularity;
+use Mamba\EncountersBundle\Helpers\Purchased;
+use Mamba\EncountersBundle\Helpers\SearchPreferences;
+use Mamba\EncountersBundle\Helpers\Services;
+use Mamba\EncountersBundle\Helpers\Stats;
+
 /**
  * CronScriptCommand
  *
@@ -22,6 +46,13 @@ abstract class CronScript extends ContainerAwareCommand {
          * @var str
          */
         SCRIPT_DESCRIPTION = "Default script description",
+
+        /**
+         * Имя скрипта
+         *
+         * @var str
+         */
+        SCRIPT_NAME = null,
 
         /**
          * Дефолтное значение номера копии
@@ -48,30 +79,38 @@ abstract class CronScript extends ContainerAwareCommand {
         $scriptName
     ;
 
+    private static
+
+        /**
+         * Инстансы объектов
+         *
+         * @var array
+         */
+        $Instances = array()
+    ;
+
     /**
      * Конфигурирование крон-скрипта
      *
      *
      */
     protected function configure() {
-        $className = get_called_class();
+        /*$className = get_called_class();
         if (preg_match("!\\\(\w+)Command!i", $className, $scriptName)) {
             $scriptName = array_pop($scriptName);
         } else {
             $scriptName = explode("\\", $className);
             $scriptName = array_pop($scriptName);
-        }
+        }*/
 
         $this
-            ->setName($scriptName)
+            ->setName($this->scriptName = static::SCRIPT_NAME)
             ->setDescription(static::SCRIPT_DESCRIPTION)
             ->addOption('copy', null, InputOption::VALUE_OPTIONAL, 'Number of copy', static::DEFAULT_COPY_NUMBER)
             ->addOption('iterations', null, InputOption::VALUE_OPTIONAL, 'Iterations to restart', static::DEFAULT_ITERATIONS_COUNT)
             ->addOption('daemon', null, InputOption::VALUE_OPTIONAL, 'Daemonize', 'no')
             ->addOption('debug', null, InputOption::VALUE_OPTIONAL, 'Debug', 'yes')
         ;
-
-        $this->scriptName = $scriptName;
     }
 
     /**
@@ -111,11 +150,13 @@ abstract class CronScript extends ContainerAwareCommand {
 
                 if ($pid = pcntl_fork() == 0) {
 
-                    pcntl_signal(SIGINT, $exit = function() {exit(1);});
+                    pcntl_signal(SIGINT, $exit = function() {
+
+                    });
                     pcntl_signal(SIGTERM, $exit);
                     pcntl_signal(SIGHUP, $exit);
 
-                    if (!$this->hasAnotherInstances()) {
+                    if (!$this->hasAnotherInstances() && !$this->getMemcache()->get("cron:stop")) {
                         $this->process();
 
                         fclose($this->lockFilePointer);
@@ -128,7 +169,7 @@ abstract class CronScript extends ContainerAwareCommand {
                 exit;
             }
         } else {
-            if (!$this->hasAnotherInstances()) {
+            if (!$this->hasAnotherInstances() && !$this->getMemcache()->get("cron:stop")) {
                 $this->process();
 
                 fclose($this->lockFilePointer);
@@ -162,13 +203,13 @@ abstract class CronScript extends ContainerAwareCommand {
     public function log($message, $code = 0) {
         $colorize = function($message, $code) {
             if ($code == 64) {
-                return "<info>$message</info>";
+                return "<info>{$message}</info>";
             } elseif ($code == 48) {
-                return "<comment>$message</comment>";
+                return "<comment>{$message}</comment>";
             } elseif ($code == 32) {
-                return "<question>$message</question>";
+                return "<question>{$message}</question>";
             } elseif ($code == 16) {
-                return "<error>$message</error>";
+                return "<error>{$message}</error>";
             }
 
             return $message;
@@ -177,6 +218,198 @@ abstract class CronScript extends ContainerAwareCommand {
         if ($this->debug) {
             $this->output->writeln("[" . date("d.m.y H:i:s") . "] " . $colorize(trim($message), $code));
         }
+    }
+
+    /**
+     * Redis getter
+     *
+     * @return Redis
+     */
+    public function getRedis() {
+        return $this->getContainer()->get('redis');
+    }
+
+    /**
+     * Memcache getter
+     *
+     * @return Memcache
+     */
+    public function getMemcache() {
+        return $this->getContainer()->get('memcache');
+    }
+
+    /**
+     * Mamba getter
+     *
+     * @return Mamba
+     */
+    public function getMamba() {
+        return $this->getContainer()->get('mamba');
+    }
+
+    /**
+     * Gearman getter
+     *
+     * @return Gearman
+     */
+    public function getGearman() {
+        return $this->getContainer()->get('gearman');
+    }
+
+    /**
+     * Battery getter
+     *
+     * @return Battery
+     */
+    public function getBatteryObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
+    }
+
+    /**
+     * Energy getter
+     *
+     * @return Energy
+     */
+    public function getEnergyObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
+    }
+
+    /**
+     * Hitlist getter
+     *
+     * @return Hitlist
+     */
+    public function getHitlistObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
+    }
+
+    /**
+     * Search preferences getter
+     *
+     * @return SearchPreferences
+     */
+    public function getSearchPreferencesObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getRedis());
+    }
+
+    /**
+     * Contacts queue getter
+     *
+     * @return ContactsQueue
+     */
+    public function getContactsQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
+    }
+
+    /**
+     * Current queue getter
+     *
+     * @return CurrentQueue
+     */
+    public function getCurrentQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
+    }
+
+    /**
+     * Hitlist queue getter
+     *
+     * @return HitlistQueue
+     */
+    public function getHitlistQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
+    }
+
+    /**
+     * Priority queue getter
+     *
+     * @return PriorityQueue
+     */
+    public function getPriorityQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
+    }
+
+    /**
+     * Search queue getter
+     *
+     * @return SearchQueue
+     */
+    public function getSearchQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
+    }
+
+    /**
+     * Viewed queue getter
+     *
+     * @return ViewedQueue
+     */
+    public function getViewedQueueObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
+    }
+
+    /**
+     * Counters object getter
+     *
+     * @return Counters
+     */
+    public function getCountersObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Counters($this->getRedis());
+    }
+
+    /**
+     * Stats object getter
+     *
+     * @return Stats
+     */
+    public function getStatsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Stats($this->getRedis());
     }
 
     /**

@@ -5,6 +5,7 @@ use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Preferences;
+use Mamba\EncountersBundle\Entity\Users as User;
 
 /**
  * PreferencesController
@@ -64,8 +65,15 @@ class PreferencesController extends ApplicationController {
         }
 
         if (!$searchPreferences) {
-            if ($anketaInfo = $Mamba->Anketa()->getInfo($Mamba->get('oid'))) {
+            if ($anketaInfo = $Mamba->nocache()->Anketa()->getInfo($webUserId)) {
                 $anketaInfo = array_shift($anketaInfo);
+
+                var_dump($product = $this->getDoctrine()
+                    ->getRepository('EncountersBundle:Users')
+                    ->find($anketaInfo['info']['oid'])
+                );
+
+
                 if (isset($anketaInfo['info']['gender']) && isset($anketaInfo['familiarity']['lookfor'])) {
                     $lookfor = $anketaInfo['familiarity']['lookfor'];
                     $gender = $anketaInfo['info']['gender'];
@@ -104,6 +112,15 @@ class PreferencesController extends ApplicationController {
             $searchPreferences['age_to'] = $searchPreferences['age_to'] ?: 25;
         }
 
+        $searchPreferences = array(
+            'webuser' => array(
+                'preferences' => $searchPreferences
+            )
+        );
+
+        var_dump(array_merge($searchPreferences, $this->getInitialData()));
+        exit();
+
         $Response = $this->render('EncountersBundle:templates:preferences.html.twig', array_merge($searchPreferences, $this->getInitialData()));
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;
@@ -116,7 +133,7 @@ class PreferencesController extends ApplicationController {
      */
     private function getUserGeoParams($userId) {
         $Mamba = $this->get('mamba');
-        $userInfo = $Mamba->Anketa()->getInfo($userId);
+        $userInfo = $Mamba->nocache()->Anketa()->getInfo($userId);
         $userGeoParams = $userInfo[0]['location'];
 
         $geoParams = array(
@@ -221,7 +238,7 @@ class PreferencesController extends ApplicationController {
                     ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')))
                     ->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId))
                     ->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId))
-                    ->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
+                    //->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
                 ->exec()
         ;
     }

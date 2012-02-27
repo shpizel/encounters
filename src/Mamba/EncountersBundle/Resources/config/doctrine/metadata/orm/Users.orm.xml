@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="Users" table="Users">
+    <change-tracking-policy>DEFERRED_IMPLICIT</change-tracking-policy>
+    <id name="userId" type="integer" column="user_id">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="gender" type="string" column="gender" length="4"/>
+    <field name="age" type="integer" column="age"/>
+    <field name="countryId" type="integer" column="country_id"/>
+    <field name="regionId" type="integer" column="region_id"/>
+    <field name="cityId" type="integer" column="city_id"/>
+    <field name="updated" type="integer" column="updated"/>
+    <lifecycle-callbacks/>
+  </entity>
+</doctrine-mapping>
