@@ -28,7 +28,7 @@ class Stats extends Helper {
      * @return mixed
      */
     public function get($date, $key) {
-        return $this->Redis->hGet(sprintf(self::REDIS_HASH_STATS_KEY, $date), $key);
+        return $this->getRedis()->hGet(sprintf(self::REDIS_HASH_STATS_KEY, $date), $key);
     }
 
     /**
@@ -42,7 +42,7 @@ class Stats extends Helper {
             throw new StatsException("Invalid rate: \n" . var_export($rate, true));
         }
 
-        return $this->Redis->hIncrBy(sprintf(self::REDIS_HASH_STATS_KEY, date('dmy')), $key, $rate);
+        return $this->getRedis()->hIncrBy(sprintf(self::REDIS_HASH_STATS_KEY, date('dmy')), $key, $rate);
     }
 }
 

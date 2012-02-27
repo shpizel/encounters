@@ -2,13 +2,14 @@
 namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\RedisBundle\Redis;
+use Mamba\EncountersBundle\Entity\Energy;
 
 /**
  * Energy
  *
  * @package EncountersBundle
  */
-class Energy extends Helper {
+class EnergyHelper extends Helper {
 
     const
 
@@ -31,14 +32,7 @@ class Energy extends Helper {
          *
          * @var int
          */
-        MAXIMUM_ENERGY = 2048,
-
-        /**
-         * Ключ для хранения энергии
-         *
-         * @var str
-         */
-        REDIS_HASH_USERS_ENERGIES_KEY = "energies"
+        MAXIMUM_ENERGY = 2048
     ;
 
     /**
@@ -49,15 +43,26 @@ class Energy extends Helper {
      */
     public function get($userId) {
         if (!is_int($userId)) {
-            throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
+            throw new EnergyHelperException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $energy = $this->Redis->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
-        if (false === $energy) {
-            $this->set($userId, $energy = self::DEFAULT_ENERGY);
+        if ($energy = $this->getDoctrine()->getRepository('EncountersBundle:Energy')->find($userId)) {
+            return $energy->getEnergy();
+        } else {
+            try {
+                $energy = new Energy();
+                $energy->setUserId($userId);
+                $energy->setEnergy(self::DEFAULT_ENERGY);
+
+                $em = $this->getDoctrine()->getEntityManager();
+                $em->persist($energy);
+                $em->flush();
+            } catch (\PDOException $e) {
+                //pass
+            }
         }
 
-        return (int) $energy;
+        return self::DEFAULT_ENERGY;
     }
 
     /**
@@ -69,14 +74,19 @@ class Energy extends Helper {
      */
     public function set($userId, $energy) {
         if (!is_int($userId)) {
-            throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
+            throw new EnergyHelperException("Invalid user id: \n" . var_export($userId, true));
         }
 
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $energy);
+            if ($energyObject = $this->getDoctrine()->getRepository('EncountersBundle:Energy')->find($userId)) {
+                $energyObject->setEnergy($energy);
+
+            } else {
+
+            }
         }
 
-        throw new EnergyException("Invalid energy: \n" . var_export($energy, true));
+        throw new EnergyHelperException("Invalid energy: \n" . var_export($energy, true));
     }
 
     /**
@@ -87,14 +97,14 @@ class Energy extends Helper {
      */
     public function incr($userId, $rate = 1) {
         if (!is_int($userId)) {
-            throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
+            throw new EnergyHelperException("Invalid user id: \n" . var_export($userId, true));
         }
 
         if (!is_int($rate)) {
-            throw new EnergyException("Invalid increment rate: \n" . var_export($rate, true));
+            throw new EnergyHelperException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->Redis->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
+        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
         if ($incrementResult < self::MINIMUM_ENERGY) {
             return $this->set($userId, $incrementResult = self::MINIMUM_ENERGY);
         } elseif ($incrementResult > self::MAXIMUM_ENERGY) {
@@ -112,7 +122,7 @@ class Energy extends Helper {
      */
     public function decr($userId, $rate = 1) {
         if (!is_int($rate)) {
-            throw new EnergyException("Invalid decrement rate: \n" . var_export($rate, true));
+            throw new EnergyHelperException("Invalid decrement rate: \n" . var_export($rate, true));
         }
 
         return $this->incr($userId, $rate * -1);
@@ -120,10 +130,10 @@ class Energy extends Helper {
 }
 
 /**
- * EnergyException
+ * EnergyHelperException
  *
  * @package EncountersBundle
  */
-class EnergyException extends \Exception {
+class EnergyHelperException extends \Exception {
 
 }

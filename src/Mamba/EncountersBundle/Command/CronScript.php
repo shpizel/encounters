@@ -21,7 +21,7 @@ use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Counters;
-use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\EnergyHelper;
 use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
@@ -266,20 +266,20 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Battery($this->getContainer());
     }
 
     /**
      * Energy getter
      *
-     * @return Energy
+     * @return EnergyHelper
      */
     public function getEnergyObject() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new EnergyHelper($this->getContainer());
     }
 
     /**
@@ -292,7 +292,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->getContainer());
     }
 
     /**
@@ -305,7 +305,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getContainer());
     }
 
     /**
@@ -318,7 +318,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getContainer());
     }
 
     /**
@@ -331,7 +331,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getContainer());
     }
 
     /**
@@ -344,7 +344,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getContainer());
     }
 
     /**
@@ -357,7 +357,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getContainer());
     }
 
     /**
@@ -370,7 +370,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getContainer());
     }
 
     /**
@@ -383,7 +383,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getContainer());
     }
 
     /**
@@ -396,7 +396,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Counters($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Counters($this->getContainer());
     }
 
     /**
@@ -409,7 +409,7 @@ abstract class CronScript extends ContainerAwareCommand {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Stats($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Stats($this->getContainer());
     }
 
     /**

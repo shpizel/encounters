@@ -31,7 +31,7 @@ class Notifications extends Helper {
             throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->hGet(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId);
+        return $this->getRedis()->hGet(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId);
     }
 
     /**
@@ -45,7 +45,7 @@ class Notifications extends Helper {
             throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->hSet(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId, $message);
+        return $this->getRedis()->hSet(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId, $message);
     }
 
     /**
@@ -58,7 +58,7 @@ class Notifications extends Helper {
             throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->hDel(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId);
+        return $this->getRedis()->hDel(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId);
     }
 }
 

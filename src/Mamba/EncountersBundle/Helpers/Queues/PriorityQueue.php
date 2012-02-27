@@ -36,7 +36,7 @@ class PriorityQueue extends Helper {
             throw new PriorityQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -50,7 +50,7 @@ class PriorityQueue extends Helper {
             throw new PriorityQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sPop($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sPop($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -64,7 +64,7 @@ class PriorityQueue extends Helper {
             throw new PriorityQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sSize($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sSize($this->getRedisQueueKey($userId));
     }
 
     /**

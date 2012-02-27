@@ -68,12 +68,6 @@ class PreferencesController extends ApplicationController {
             if ($anketaInfo = $Mamba->nocache()->Anketa()->getInfo($webUserId)) {
                 $anketaInfo = array_shift($anketaInfo);
 
-                var_dump($product = $this->getDoctrine()
-                    ->getRepository('EncountersBundle:Users')
-                    ->find($anketaInfo['info']['oid'])
-                );
-
-
                 if (isset($anketaInfo['info']['gender']) && isset($anketaInfo['familiarity']['lookfor'])) {
                     $lookfor = $anketaInfo['familiarity']['lookfor'];
                     $gender = $anketaInfo['info']['gender'];
@@ -112,16 +106,10 @@ class PreferencesController extends ApplicationController {
             $searchPreferences['age_to'] = $searchPreferences['age_to'] ?: 25;
         }
 
-        $searchPreferences = array(
-            'webuser' => array(
-                'preferences' => $searchPreferences
-            )
-        );
+        $initialData = $this->getInitialData();
+        $initialData['webuser']['preferences'] = $searchPreferences;
 
-        var_dump(array_merge($searchPreferences, $this->getInitialData()));
-        exit();
-
-        $Response = $this->render('EncountersBundle:templates:preferences.html.twig', array_merge($searchPreferences, $this->getInitialData()));
+        $Response = $this->render('EncountersBundle:templates:preferences.html.twig', $initialData);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;
     }

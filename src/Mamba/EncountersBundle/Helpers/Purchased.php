@@ -35,7 +35,7 @@ class Purchased extends Helper {
             throw new PurchasedException("Invalid current user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sContains(sprintf(self::REDIS_SET_USER_PURCHASED_KEY, $webUserId), $currentUserId);
+        return $this->getRedis()->sContains(sprintf(self::REDIS_SET_USER_PURCHASED_KEY, $webUserId), $currentUserId);
     }
 
     /**
@@ -53,7 +53,7 @@ class Purchased extends Helper {
             throw new PurchasedException("Invalid current user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sAdd(sprintf(self::REDIS_SET_USER_PURCHASED_KEY, $webUserId), $currentUserId);
+        return $this->getRedis()->sAdd(sprintf(self::REDIS_SET_USER_PURCHASED_KEY, $webUserId), $currentUserId);
     }
 }
 

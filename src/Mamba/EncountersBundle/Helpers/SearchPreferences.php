@@ -27,7 +27,7 @@ class SearchPreferences extends Helper {
      * @return mixed
      */
     public function get($userId) {
-        if (false !== $data = $this->Redis->hGet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId)) {
+        if (false !== $data = $this->getRedis()->hGet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId)) {
             return json_decode($data, true);
         }
 
@@ -44,7 +44,7 @@ class SearchPreferences extends Helper {
     public function set($userId, array $data) {
         if ($data) {
             $data['changed'] = time();
-            return $this->Redis->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, json_encode($data));
+            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, json_encode($data));
         }
 
         throw new PreferencesException("Invalid data: \n" . var_export($data, true));

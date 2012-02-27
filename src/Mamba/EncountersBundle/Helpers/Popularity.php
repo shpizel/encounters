@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers;
 
-use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\EnergyHelper;
 
 /**
  * Popularity
@@ -27,7 +27,7 @@ class Popularity extends Helper {
      * @return float
      */
     public static function getPopularity($energy, $divider = self::DIVIDER) {
-        if (is_int($energy) && $energy >= Energy::MINIMUM_ENERGY && $energy <= Energy::MAXIMUM_ENERGY) {
+        if (is_int($energy) && $energy >= EnergyHelper::MINIMUM_ENERGY && $energy <= EnergyHelper::MAXIMUM_ENERGY) {
             return $energy / $divider;
         }
 

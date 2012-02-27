@@ -5,7 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
-use Mamba\EncountersBundle\Helpers\Energy;
+use Mamba\EncountersBundle\Helpers\EnergyHelper;
 use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
@@ -98,20 +98,20 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Battery($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Battery($this->container);
     }
 
     /**
      * Energy getter
      *
-     * @return Energy
+     * @return EnergyHelper
      */
     public function getEnergyObject() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Energy($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new EnergyHelper($this->container);
     }
 
     /**
@@ -124,7 +124,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Hitlist($this->container);
     }
 
     /**
@@ -137,7 +137,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new SearchPreferences($this->container);
     }
 
     /**
@@ -163,7 +163,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new ContactsQueue($this->container);
     }
 
     /**
@@ -176,7 +176,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new CurrentQueue($this->container);
     }
 
     /**
@@ -189,7 +189,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new HitlistQueue($this->container);
     }
 
     /**
@@ -202,7 +202,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new PriorityQueue($this->container);
     }
 
     /**
@@ -215,7 +215,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new SearchQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new SearchQueue($this->container);
     }
 
     /**
@@ -228,7 +228,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new ViewedQueue($this->container);
     }
 
     /**
@@ -241,7 +241,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Counters($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Counters($this->container);
     }
 
     /**
@@ -254,7 +254,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Notifications($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Notifications($this->container);
     }
 
     /**
@@ -267,7 +267,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Services($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Services($this->container);
     }
 
     /**
@@ -280,7 +280,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Purchased($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Purchased($this-getContainer());
     }
 
     /**
@@ -293,7 +293,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Stats($this->getRedis());
+        return self::$Instances[__FUNCTION__] = new Stats($this->container);
     }
 
     /**

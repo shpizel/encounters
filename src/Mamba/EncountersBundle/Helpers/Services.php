@@ -45,7 +45,7 @@ class Services extends Helper {
             throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if (false !== $result = $this->Redis->sPop(sprintf(self::REDIS_SET_USER_SERVICES_KEY, $userId))) {
+        if (false !== $result = $this->getRedis()->sPop(sprintf(self::REDIS_SET_USER_SERVICES_KEY, $userId))) {
             return json_decode($result, true);
         }
     }
@@ -61,7 +61,7 @@ class Services extends Helper {
             throw new ServicesException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sAdd(sprintf(self::REDIS_SET_USER_SERVICES_KEY, $userId), json_encode($service));
+        return $this->getRedis()->sAdd(sprintf(self::REDIS_SET_USER_SERVICES_KEY, $userId), json_encode($service));
     }
 }
 

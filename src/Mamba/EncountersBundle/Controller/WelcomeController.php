@@ -84,12 +84,14 @@ class WelcomeController extends ApplicationController {
                 $PlatformSettingsObject->set($getPlatformParams);
             } else {
                 $Response = $this->render('EncountersBundle:templates:sorry.html.twig');
+
                 $Response->headers->set('Content-Type', 'text/plain');
                 $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
                 return $Response;
             }
         } else {
             $Response = $this->render('EncountersBundle:templates:sorry.html.twig');
+
             $Response->headers->set('Content-Type', 'text/plain');
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
             return $Response;
@@ -101,10 +103,18 @@ class WelcomeController extends ApplicationController {
          * @author shpizel
          */
         if (!$this->getSearchPreferencesObject()->get($webUserId)) {
-            return $this->redirect($this->generateUrl('preferences'));
+            $Response = $this->redirect($this->generateUrl('preferences'));
+
+            $Response->headers->set('Content-Type', 'text/plain');
+            $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+            return $Response;
         }
 
         /** В общем случае кидаем на поиск */
-        return $this->redirect($this->generateUrl('search'));
+        $Response = $this->redirect($this->generateUrl('search'));
+
+        $Response->headers->set('Content-Type', 'text/plain');
+        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        return $Response;
     }
 }

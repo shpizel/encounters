@@ -36,7 +36,7 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sAdd($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -55,7 +55,7 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sContains($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sContains($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -69,7 +69,7 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sMembers($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sMembers($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -88,7 +88,7 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->Redis->sRemove($this->getRedisQueueKey($webUserId), $currentUserId);
+        return $this->getRedis()->sRemove($this->getRedisQueueKey($webUserId), $currentUserId);
     }
 
     /**
@@ -102,7 +102,7 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sPop($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sPop($this->getRedisQueueKey($userId));
     }
 
     /**
@@ -116,7 +116,7 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->Redis->sSize($this->getRedisQueueKey($userId));
+        return $this->getRedis()->sSize($this->getRedisQueueKey($userId));
     }
 
     /**
