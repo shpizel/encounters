@@ -110,6 +110,10 @@ class WelcomeController extends ApplicationController {
             return $Response;
         }
 
+        header('content-type: text/plain; charset=utf8');
+        print_r($this->getMamba()->Anketa()->getInfo('560015854, 12345, 106381512', array()));
+        exit();
+
         /** В общем случае кидаем на поиск */
         $Response = $this->redirect($this->generateUrl('search'));
 

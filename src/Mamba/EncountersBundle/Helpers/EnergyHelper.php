@@ -46,16 +46,16 @@ class EnergyHelper extends Helper {
             throw new EnergyHelperException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if ($energy = $this->getDoctrine()->getRepository('EncountersBundle:Energy')->find($userId)) {
-            return $energy->getEnergy();
+        if ($energyObject = $this->getDoctrine()->getRepository('EncountersBundle:Energy')->find($userId)) {
+            return $energyObject->getEnergy();
         } else {
             try {
-                $energy = new Energy();
-                $energy->setUserId($userId);
-                $energy->setEnergy(self::DEFAULT_ENERGY);
+                $energyObject = new Energy();
+                $energyObject->setUserId($userId);
+                $energyObject->setEnergy(self::DEFAULT_ENERGY);
 
                 $em = $this->getDoctrine()->getEntityManager();
-                $em->persist($energy);
+                $em->persist($energyObject);
                 $em->flush();
             } catch (\PDOException $e) {
                 //pass
@@ -78,10 +78,19 @@ class EnergyHelper extends Helper {
         }
 
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
-            if ($energyObject = $this->getDoctrine()->getRepository('EncountersBundle:Energy')->find($userId)) {
+            if ($energyObject = $this->getEnergyObjectByUserId($userId)) {
+                $energyObject->setEnergy($energy);
+            } else {
+                $energyObject = new Energy();
+                $energyObject->setUserId($userId);
                 $energyObject->setEnergy($energy);
 
-            } else {
+                $this->getEntityManager()->persist($energyObject);
+            }
+
+            try {
+                $this->getEntityManager()->flush();
+            } catch (\PDOException $e) {
 
             }
         }
@@ -104,11 +113,29 @@ class EnergyHelper extends Helper {
             throw new EnergyHelperException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
-        if ($incrementResult < self::MINIMUM_ENERGY) {
-            return $this->set($userId, $incrementResult = self::MINIMUM_ENERGY);
-        } elseif ($incrementResult > self::MAXIMUM_ENERGY) {
-            return $this->set($userId, $incrementResult = self::MAXIMUM_ENERGY);
+        $incrementResult = self::DEFAULT_ENERGY + $rate;
+        if ($energyObject = $this->getEnergyObjectByUserId($userId)) {
+            $incrementResult = $energyObject->getEnergy() + $rate;
+            if ($incrementResult < self::MINIMUM_ENERGY) {
+                $energyObject->setEnergy($incrementResult = self::MINIMUM_ENERGY);
+            } elseif ($incrementResult > self::MAXIMUM_ENERGY) {
+                $energyObject->setEnergy($incrementResult = self::MAXIMUM_ENERGY);
+            } else {
+                $energyObject->setEnergy($incrementResult);
+            }
+
+            $this->getEntityManager()->flush();
+        } else {
+            $energyObject = new Energy();
+            $energyObject->setUserId($userId);
+            $energyObject->setEnergy($incrementResult);
+
+            try {
+                $this->getEntityManager()->persist($energyObject);
+                $this->getEntityManager()->flush();
+            } catch (\Exception $e) {
+
+            }
         }
 
         return $incrementResult;
@@ -126,6 +153,20 @@ class EnergyHelper extends Helper {
         }
 
         return $this->incr($userId, $rate * -1);
+    }
+
+    /**
+     * Energy object getter
+     *
+     * @param int $userId
+     * @return Energy
+     */
+    private function getEnergyObjectByUserId($userId) {
+        if (!is_int($userId)) {
+            throw new EnergyHelperException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        return $this->getEntityManager()->getRepository('EncountersBundle:Energy')->find($userId);
     }
 }
 

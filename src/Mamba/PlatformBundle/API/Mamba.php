@@ -594,7 +594,7 @@ final class Mamba {
                         }
                     }
                 }
-
+                
                 return $result;
             }
         }

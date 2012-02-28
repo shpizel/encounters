@@ -322,7 +322,7 @@ abstract class ApplicationController extends Controller {
             ),
         );
 
-        $dataArray['webuser']['anketa'] = array_shift($dataArray['webuser']['anketa']);
+//        $dataArray['webuser']['anketa'] = array_shift($dataArray['webuser']['anketa']);
         $dataArray['webuser']['json'] = json_encode($dataArray['webuser']);
         $dataArray['routes'] = json_encode($this->getRoutes());
 
