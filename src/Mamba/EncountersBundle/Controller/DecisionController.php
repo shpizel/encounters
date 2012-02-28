@@ -85,9 +85,7 @@ class DecisionController extends ApplicationController {
             }
 
             /** Ставим задачу на обноления базы */
-            //if ($this->decision + 1 > 0) {
-                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_UPDATE_FUNCTION_NAME, serialize($dataArray));
-//            }
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME, serialize($dataArray));
 
             /** Не спишком ли часто мы спамим? */
             if (false) {

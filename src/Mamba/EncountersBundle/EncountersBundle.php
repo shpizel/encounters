@@ -17,41 +17,48 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME = 'updateHitlistQueue',
+        GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME = 'queue:hitlist:update',
 
         /**
-         * Имя функции обновления очереди  контактов
+         * Имя функции обновления очереди контактов
          *
          * @var str
          */
-        GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME = 'updateContactsQueue',
+        GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME = 'queue:contacts:update',
 
         /**
          * Имя функции обновления очереди поиска
          *
          * @var str
          */
-        GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME = 'updateSearchQueue',
+        GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME = 'queue:search:update',
 
         /**
-         * Имя функции обновления очереди
+         * Имя функции обновления текущей очереди
          *
          * @var str
          */
-        GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME = 'updateCurrentQueue',
+        GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME = 'queue:current:update',
 
         /**
          * Имя функции рассылки нотификаций
          *
          * @var str
          */
-        GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME = 'sendNotifications',
+        GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME = 'notifications:send',
 
         /**
-         * Имя функции для обновления базы
+         * Имя функции для обновления таблицы оценок
          *
          * @var str
          */
-        GEARMAN_DATABASE_UPDATE_FUNCTION_NAME = 'updateDatabase'
+        GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME = 'database:decisions:process',
+
+        /**
+         * Имя функции для обновления таблицы энергий
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_ENERGY_PROCESS_FUNCTION_NAME = 'database:energy:process'
     ;
 }

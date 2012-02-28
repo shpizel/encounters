@@ -12,11 +12,11 @@ use Mamba\EncountersBundle\EncountersBundle;
 use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
- * DatabaseClearCommand
+ * DatabaseCleanCommand
  *
  * @package EncountersBundle
  */
-class DatabaseClearCommand extends CronScript {
+class DatabaseCleanCommand extends CronScript {
 
     const
 
@@ -25,14 +25,14 @@ class DatabaseClearCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Clear invalid users",
+        SCRIPT_DESCRIPTION = "Database cleaner",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:clear",
+        SCRIPT_NAME = "cron:database:clean",
 
         WEB_USER_SQL = "
             SELECT DISTINCT

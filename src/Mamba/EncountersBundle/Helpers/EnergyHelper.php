@@ -49,17 +49,7 @@ class EnergyHelper extends Helper {
         if ($energyObject = $this->getDoctrine()->getRepository('EncountersBundle:Energy')->find($userId)) {
             return $energyObject->getEnergy();
         } else {
-            try {
-                $energyObject = new Energy();
-                $energyObject->setUserId($userId);
-                $energyObject->setEnergy(self::DEFAULT_ENERGY);
-
-                $em = $this->getDoctrine()->getEntityManager();
-                $em->persist($energyObject);
-                $em->flush();
-            } catch (\PDOException $e) {
-                //pass
-            }
+            $this->set($userId, self::DEFAULT_ENERGY);
         }
 
         return self::DEFAULT_ENERGY;
@@ -80,18 +70,19 @@ class EnergyHelper extends Helper {
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
             if ($energyObject = $this->getEnergyObjectByUserId($userId)) {
                 $energyObject->setEnergy($energy);
+                $this->getEntityManager()->flush();
             } else {
                 $energyObject = new Energy();
                 $energyObject->setUserId($userId);
                 $energyObject->setEnergy($energy);
 
                 $this->getEntityManager()->persist($energyObject);
-            }
 
-            try {
-                $this->getEntityManager()->flush();
-            } catch (\PDOException $e) {
-
+                try {
+                    return $this->getEntityManager()->flush();
+                } catch (\PDOException $e) {
+                    return;
+                }
             }
         }
 
@@ -126,16 +117,7 @@ class EnergyHelper extends Helper {
 
             $this->getEntityManager()->flush();
         } else {
-            $energyObject = new Energy();
-            $energyObject->setUserId($userId);
-            $energyObject->setEnergy($incrementResult);
-
-            try {
-                $this->getEntityManager()->persist($energyObject);
-                $this->getEntityManager()->flush();
-            } catch (\Exception $e) {
-
-            }
+            $this->set($userId, $incrementResult);
         }
 
         return $incrementResult;

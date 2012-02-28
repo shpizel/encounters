@@ -413,6 +413,24 @@ abstract class CronScript extends ContainerAwareCommand {
     }
 
     /**
+     * Doctrine getter
+     *
+     * @return Doctrine
+     */
+    public function getDoctrine() {
+        return $this->getContainer()->get('doctrine');
+    }
+
+    /**
+     * Entity Manager getter
+     *
+     * @return EntityManager
+     */
+    public function getEntityManager() {
+        return $this->getDoctrine()->getEntityManager();
+    }
+
+    /**
      * Процессор, имплементируемый в потомках
      *
      * @abstract

@@ -13,11 +13,11 @@ use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Entity\Decisions;
 
 /**
- * DatabaseUpdateCommand
+ * DecisionsProcessCommand
  *
  * @package EncountersBundle
  */
-class DatabaseUpdateCommand extends CronScript {
+class DecisionsProcessCommand extends CronScript {
 
     const
 
@@ -26,14 +26,14 @@ class DatabaseUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Database update",
+        SCRIPT_DESCRIPTION = "Updates users decisions",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:update"
+        SCRIPT_NAME = "cron:database:decisions:process"
     ;
 
     /**
@@ -45,7 +45,7 @@ class DatabaseUpdateCommand extends CronScript {
         $worker = $this->getGearman()->getWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_UPDATE_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME, function($job) use($class) {
             try {
                 return $class->updateDatabase($job);
             } catch (\Exception $e) {
@@ -70,28 +70,15 @@ class DatabaseUpdateCommand extends CronScript {
      * @param $job
      */
     public function updateDatabase($job) {
-        $Mamba = $this->getMamba();
-
         list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
-        if ($webUserId = (int) $webUserId) {
-            $Mamba->set('oid', $webUserId);
 
-            if (!$Mamba->getReady()) {
-                $this->log("Mamba is not ready!", 16);
-                return;
-            }
-        } else {
-            throw new CronScriptException("Invalid workload");
-        }
+        $Decision = new Decisions();
+        $Decision->setWebUserId($webUserId);
+        $Decision->setCurrentUserId($currentUserId);
+        $Decision->setDecision($decision);
+        $Decision->setChanged(time());
 
-        $DecisionsItem = new Decisions();
-        $DecisionsItem->setWebUserId($webUserId);
-        $DecisionsItem->setCurrentUserId($currentUserId);
-        $DecisionsItem->setDecision($decision);
-        $DecisionsItem->setChanged(time());
-
-        $em = $this->getContainer()->get('doctrine')->getEntityManager();
-        $em->persist($DecisionsItem);
-        $em->flush();
+        $this->getEntityManager()->persist($Decision);
+        $this->getEntityManager()->flush();
     }
 }
