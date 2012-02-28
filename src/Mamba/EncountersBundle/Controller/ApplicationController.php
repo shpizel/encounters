@@ -5,7 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
-use Mamba\EncountersBundle\Helpers\EnergyHelper;
+use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
@@ -104,14 +104,14 @@ abstract class ApplicationController extends Controller {
     /**
      * Energy getter
      *
-     * @return EnergyHelper
+     * @return Energy
      */
     public function getEnergyObject() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new EnergyHelper($this->container);
+        return self::$Instances[__FUNCTION__] = new Energy($this->container);
     }
 
     /**
@@ -280,7 +280,7 @@ abstract class ApplicationController extends Controller {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new Purchased($this-getContainer());
+        return self::$Instances[__FUNCTION__] = new Purchased($this->container);
     }
 
     /**

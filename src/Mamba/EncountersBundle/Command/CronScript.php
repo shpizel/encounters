@@ -21,7 +21,7 @@ use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Counters;
-use Mamba\EncountersBundle\Helpers\EnergyHelper;
+use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
@@ -272,14 +272,14 @@ abstract class CronScript extends ContainerAwareCommand {
     /**
      * Energy getter
      *
-     * @return EnergyHelper
+     * @return Energy
      */
     public function getEnergyObject() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
 
-        return self::$Instances[__FUNCTION__] = new EnergyHelper($this->getContainer());
+        return self::$Instances[__FUNCTION__] = new Energy($this->getContainer());
     }
 
     /**

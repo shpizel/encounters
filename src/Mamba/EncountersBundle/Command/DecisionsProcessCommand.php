@@ -69,7 +69,7 @@ class DecisionsProcessCommand extends CronScript {
      *
      * @param $job
      */
-    public function updateDatabase($job) {
+    public function processDecisions($job) {
         list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
 
         $Decision = new Decisions();

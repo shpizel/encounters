@@ -10,14 +10,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
-use Mamba\EncountersBundle\Entity\Energy;
+use Mamba\EncountersBundle\Entity\User;
 
 /**
- * EnergyUpdateCommand
+ * UserUpdateCommand
  *
  * @package EncountersBundle
  */
-class EnergyUpdateCommand extends CronScript {
+class UserUpdateCommand extends CronScript {
 
     const
 
@@ -26,14 +26,14 @@ class EnergyUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Updates users energies",
+        SCRIPT_DESCRIPTION = "Updates users",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:energy:update"
+        SCRIPT_NAME = "cron:database:user:update"
     ;
 
     /**
@@ -45,9 +45,9 @@ class EnergyUpdateCommand extends CronScript {
         $worker = $this->getGearman()->getWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME, function($job) use($class) {
             try {
-                return $class->updateEnergy($job);
+                return $class->updateUser($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
                 return;
@@ -69,18 +69,26 @@ class EnergyUpdateCommand extends CronScript {
      *
      * @param $job
      */
-    public function updateEnergy($job) {
-        list($userId, $energy) = array_values(unserialize($job->workload()));
-        if ($Energy = $this->getEntityManager()->getRepository('EncountersBundle:Energy')->find($userId)) {
-            $Energy->setEnergy($energy);
+    public function updateUser($job) {
+        list($userId, $gender, $age, $countryId, $regionId, $cityId) = array_values(unserialize($job->workload()));
+        if ($User = $this->getEntityManager()->getRepository('EncountersBundle:User')->find($userId)) {
+            $User->setGender($gender);
+            $User->setAge($age);
+            $User->setCountryId($countryId);
+            $User->setRegionId($regionId);
+            $User->setCityId($cityId);
 
             $this->getEntityManager()->flush();
         } else {
-            $Energy = new Energy();
-            $Energy->setUserId($userId);
-            $Energy->setEnergy($energy);
+            $User = new User();
+            $User->setUserId($userId);
+            $User->setGender($gender);
+            $User->setAge($age);
+            $User->setCountryId($countryId);
+            $User->setRegionId($regionId);
+            $User->setCityId($cityId);
 
-            $this->getEntityManager()->persist($Energy);
+            $this->getEntityManager()->persist($User);
             $this->getEntityManager()->flush();
         }
     }

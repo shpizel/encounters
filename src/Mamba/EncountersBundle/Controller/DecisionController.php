@@ -75,13 +75,15 @@ class DecisionController extends ApplicationController {
                 $this->getPriorityQueueObject()->put($this->currentUserId, $this->webUserId);
             }
 
+            $dataArray = array(
+                'webUserId' => $this->webUserId,
+                'currentUserId' => $this->currentUserId,
+                'decision' => $this->decision,
+            );
+
             /** Ставим задачу на спам */
             if ($this->decision + 1 > 0) {
-                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray = array(
-                    'webUserId' => $this->webUserId,
-                    'currentUserId' => $this->currentUserId,
-                    'decision' => $this->decision,
-                )));
+                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray));
             }
 
             /** Ставим задачу на обноления базы */

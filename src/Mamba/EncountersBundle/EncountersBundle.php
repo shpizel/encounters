@@ -59,6 +59,13 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_ENERGY_PROCESS_FUNCTION_NAME = 'database:energy:process'
+        GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME = 'database:energy:update',
+
+        /**
+         * Имя функции для обновления таблицы пользователей
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME = 'database:user:update'
     ;
 }

@@ -576,6 +576,7 @@ final class Mamba {
                     foreach ($oids as $oid) {
                         $_params = $params;
                         $_params['oids'] = $oid;
+                        $_params['partial'] = true;
 
                         if ($getParams = http_build_query($_params)) {
                             $result['partial']['oids'][$oid ] = $cachingKey . "/?" . $getParams;
@@ -588,13 +589,14 @@ final class Mamba {
                     foreach ($logins as $login) {
                         $_params = $params;
                         $_params['logins'] = $login;
+                        $_params['partial'] = true;
 
                         if ($getParams = http_build_query($_params)) {
                             $result['partial']['logins'][$login] = $cachingKey . "/?" . $getParams;
                         }
                     }
                 }
-                
+
                 return $result;
             }
         }
@@ -819,7 +821,6 @@ final class Mamba {
             }
 
             $this->noCacheMode = false;
-
             if ($platformResponse = @file_get_contents($httpQuery)) {
                 if (in_array($method, $this->sidRequiredMethods)) {
                     $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
@@ -829,6 +830,7 @@ final class Mamba {
 
                 if ($JSON['status'] === 0 && !$JSON['message']) {
                     $this->setCache($method, $params, $JSON['data']);
+
                     return $JSON['data'];
                 } else {
                     throw new MambaException($JSON['message'], $JSON["status"]);

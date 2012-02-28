@@ -40,6 +40,15 @@ abstract class Helper {
     }
 
     /**
+     * Gearman getter
+     *
+     * @return Gearman
+     */
+    public function getGearman() {
+        return $this->Container->get('gearman');
+    }
+
+    /**
      * Memcache getter
      *
      * @return Memcache
