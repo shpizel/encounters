@@ -52,7 +52,6 @@ class MutualController extends ApplicationController {
         $result = $query->getResult();
 
         if ($result) {
-
             $usersArray = array();
             foreach ($result as $item) {
                 $usersArray[$item['current_user_id']] = 1;

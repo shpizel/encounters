@@ -635,6 +635,7 @@ final class Mamba {
                 }
 
                 if ($cachingKeys) {
+
                     if ($cachingBackend == self::REDIS_CACHE_BACKEND) {
                         $Redis = $this->getRedis();
                         $Redis->multi();

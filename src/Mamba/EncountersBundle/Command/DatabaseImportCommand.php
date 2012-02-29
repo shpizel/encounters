@@ -41,28 +41,31 @@ class DatabaseImportCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $id = 0;
-        do {
-            $this->log("Processing offset $id..", 64);
-            $result = $this->getContainer()->get('doctrine')
-                ->getEntityManager()
-                ->createQuery("SELECT DISTINCT d FROM EncountersBundle:Decisions d WHERE d.id >= $id AND d.id < " . ($id = $id + 1000))
-                ->getResult()
-            ;
+        $result = $this->getContainer()->get('doctrine')
+            ->getEntityManager()
+            ->createQuery("SELECT d FROM EncountersBundle:Decisions d group by d.webUserId")
+            ->getResult()
+        ;
 
-            foreach ($result as $item) {
-                $webUserId = $item->getWebUserId();
-                $this->getEnergyObject()->get($webUserId);
+        $ids = array();
+        foreach ($result as $item) {
+            $ids[] = $item->getWebUserId();
+        }
+        $this->log(count($ids));
 
-                if ($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId)) {
-                    if ($webUserAnketa = $this->getMamba()->Anketa()->getInfo($webUserId)) {
+        unset($result);
+        $_ids = array_chunk($ids, 100);
+        foreach ($_ids as $k=>$chunk) {
+            if ($result = $this->getMamba()->Anketa()->getInfo($chunk)) {
+                foreach ($result as $user) {
+                    if ($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId = $user['info']['oid'])) {
                         $this->getGearman()->getClient()->doHighBackground(
                             EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
                             serialize(
                                 array(
                                     'user_id'    => $webUserId,
-                                    'gender'     => $webUserAnketa[0]['info']['gender'],
-                                    'age'        => $webUserAnketa[0]['info']['age'],
+                                    'gender'     => $user['info']['gender'],
+                                    'age'        => $user['info']['age'],
                                     'country_id' => $searchPreferences['geo']['country_id'],
                                     'region_id'  => $searchPreferences['geo']['region_id'],
                                     'city_id'    => $searchPreferences['geo']['city_id'],
@@ -72,6 +75,9 @@ class DatabaseImportCommand extends CronScript {
                     }
                 }
             }
-        } while ($result);
+
+            unset($result);
+            $this->log(($k+1)*100);
+        }
     }
 }
