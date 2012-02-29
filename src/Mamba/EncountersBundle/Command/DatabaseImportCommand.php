@@ -55,21 +55,21 @@ class DatabaseImportCommand extends CronScript {
                 $this->getEnergyObject()->get($webUserId);
 
                 if ($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId)) {
-                    $webUserAnketa = $this->getMamba()->Anketa()->getInfo($webUserId);
-
-                    $this->getGearman()->getClient()->doHighBackground(
-                        EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
-                        serialize(
-                            array(
-                                'user_id'    => $webUserId,
-                                'gender'     => $webUserAnketa[0]['info']['gender'],
-                                'age'        => $webUserAnketa[0]['info']['age'],
-                                'country_id' => $searchPreferences['geo']['country_id'],
-                                'region_id'  => $searchPreferences['geo']['region_id'],
-                                'city_id'    => $searchPreferences['geo']['city_id'],
+                    if ($webUserAnketa = $this->getMamba()->Anketa()->getInfo($webUserId)) {
+                        $this->getGearman()->getClient()->doHighBackground(
+                            EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
+                            serialize(
+                                array(
+                                    'user_id'    => $webUserId,
+                                    'gender'     => $webUserAnketa[0]['info']['gender'],
+                                    'age'        => $webUserAnketa[0]['info']['age'],
+                                    'country_id' => $searchPreferences['geo']['country_id'],
+                                    'region_id'  => $searchPreferences['geo']['region_id'],
+                                    'city_id'    => $searchPreferences['geo']['city_id'],
+                                )
                             )
-                        )
-                    );
+                        );
+                    }
                 }
             }
         } while ($result);

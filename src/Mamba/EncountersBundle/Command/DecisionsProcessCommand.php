@@ -47,7 +47,7 @@ class DecisionsProcessCommand extends CronScript {
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME, function($job) use($class) {
             try {
-                return $class->updateDatabase($job);
+                return $class->processDecisions($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
                 return;
