@@ -125,6 +125,7 @@ $Search = {
         }
 
         $.post($Routing.getPath('decision.set'), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
+//            console.log($data);
             if ($data.status == 0 && $data.message == "") {
                 if ($data.data['mutual']) {
                     $Layers.showMutualLayer();

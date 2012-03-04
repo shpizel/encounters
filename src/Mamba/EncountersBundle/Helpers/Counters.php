@@ -55,6 +55,19 @@ class Counters extends Helper {
     }
 
     /**
+     * Drop counters hashtable
+     *
+     * @param int $userId
+     */
+    public function drop($userId) {
+        if (!is_int($userId)) {
+            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        return $this->getRedis()->delete(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId));
+    }
+
+    /**
      * Counter increment
      *
      * @param int $userId

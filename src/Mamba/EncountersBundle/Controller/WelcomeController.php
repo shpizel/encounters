@@ -21,13 +21,6 @@ class WelcomeController extends ApplicationController {
         $Session  = $this->getSession();
         $Mamba    = $this->getMamba();
 
-        $PlatformSettingsObject = $this->getPlatformSettingsObject();
-
-        /**
-         * Проверим новые поступления параметров
-         *
-         * @author shpizel
-         */
         $getPlatformParams = array();
         $getParams = $Request->query->all();
 
@@ -40,80 +33,40 @@ class WelcomeController extends ApplicationController {
                 $getPlatformParams[$param] = $getParams[$param];
             }
 
-            if (!$Mamba->checkAuthKey($getParams)) {
+            if ($Mamba->checkAuthKey($getParams)) {
+                $this->getPlatformSettingsObject()->set($getPlatformParams);
+            } else {
                 $getPlatformParams = array();
             }
         }
 
-        /**
-         * Попробуем узнать айдишник web-юзера и попробуем взять его пользовательские настройки платформы из Redis
-         *
-         * @author shpizel
-         */
-        $webUserId = null;
-        if ($userSessionExists = $Session->has(Mamba::SESSION_USER_ID_KEY)) {
-            $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
-        } elseif ($getPlatformParams) {
+        if ($getPlatformParams) {
             $webUserId = (int) $getPlatformParams['oid'];
             $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
+        } elseif ($Session->has(Mamba::SESSION_USER_ID_KEY)) {
+            $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
+        } else {
+            return $this->render('EncountersBundle:templates:500.html.twig', array(
+                    'routes' => json_encode($this->getRoutes()))
+            );
         }
 
-        if ($webUserId) {
-            if ($redisPlatformParams = $PlatformSettingsObject->get($webUserId)) {
-                if ($getPlatformParams && ($redisPlatformParams['oid'] == $getPlatformParams['oid'])) {
-
-                    /**
-                     * Пришли какие-то платформенные ГЕТ-параметры, неизвестно фрейм обновился или внешний фрейм
-                     *
-                     * @author shpizel
-                     */
-                    if ($getPlatformParams['sid'] != $redisPlatformParams['sid']) {
-                        $PlatformSettingsObject->set($getPlatformParams);
-                    } elseif ($referer = $Request->server->get('HTTP_REFERER')) {
-                        if ($params = @parse_url($referer, PHP_URL_QUERY)) {
-                            @parse_str($params, $params);
-                            if (is_array($params) && isset($params['app_id'])) {
-                                if ($params['app_id'] == $Request->query->get('app_id')) {
-                                    $PlatformSettingsObject->set($getPlatformParams);
-                                }
-                            }
-                        }
-                    }
-                }
-            } elseif ($getPlatformParams) {
-                $PlatformSettingsObject->set($getPlatformParams);
-            } else {
-                $Response = $this->render('EncountersBundle:templates:sorry.html.twig');
-
-                $Response->headers->set('Content-Type', 'text/plain');
-                $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-                return $Response;
-            }
-        } else {
-            $Response = $this->render('EncountersBundle:templates:sorry.html.twig');
-
-            $Response->headers->set('Content-Type', 'text/plain');
+        if (!$this->getSearchPreferencesObject()->get($webUserId)) {
+            $Response = $this->redirect($this->generateUrl('preferences'));
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
             return $Response;
         }
 
         /**
-         * Если нет предустановленных параметров поиска — кидаем на настройки
+         * @todo: Нужно сделать правильную работу с extra-параметрами
+         * Когда у нас будет какая-то ошибка в голосовании, мы сделаем топ-редирект на страницу с extra
+         * И приложение сразу перейдет на нужную страницу
          *
          * @author shpizel
          */
-        if (!$this->getSearchPreferencesObject()->get($webUserId)) {
-            $Response = $this->redirect($this->generateUrl('preferences'));
-
-            $Response->headers->set('Content-Type', 'text/plain');
-            $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-            return $Response;
-        }
 
         /** В общем случае кидаем на поиск */
         $Response = $this->redirect($this->generateUrl('search'));
-
-        $Response->headers->set('Content-Type', 'text/plain');
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;
     }

@@ -105,7 +105,6 @@ class ViewedQueue extends Helper {
 
         return sprintf(self::REDIS_HASH_USER_VIEWED_QUEUE_KEY, $userId);
     }
-
 }
 
 /**

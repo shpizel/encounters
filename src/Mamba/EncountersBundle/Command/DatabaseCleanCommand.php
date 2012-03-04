@@ -8,8 +8,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Mamba\EncountersBundle\Command\CronScript;
-use Mamba\EncountersBundle\EncountersBundle;
 use Doctrine\ORM\Query\ResultSetMapping;
+use PDO;
 
 /**
  * DatabaseCleanCommand
@@ -32,21 +32,68 @@ class DatabaseCleanCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:clean",
+        SCRIPT_NAME = "cron:database:clear",
 
-        WEB_USER_SQL = "
+        /**
+         * SQL-запрос для получения уникальных айдишников пользователей из базы
+         *
+         * @var str
+         */
+        SQL_GET_UNIQUE_USERS_IDS = "
             SELECT DISTINCT
-                web_user_id
+                id, web_user_id as `user_id`
             FROM
-              Encounters.Decisions
+                Encounters.Decisions
+            UNION SELECT DISTINCT
+                id, current_user_id as `user_id`
+            FROM
+                Encounters.Decisions
+            ORDER BY
+                id DESC
         ",
 
-        CURRENT_USER_SQL = "
-            SELECT DISTINCT
-                current_user_id
+        /**
+         * SQL-запрос для получения данных у кого сколько совпадений
+         *
+         * @var str
+         */
+        SQL_GET_MUTUALS_COUNT = "
+            SELECT
+              d.web_user_id as `user_id`, count(*) as `counter`
             FROM
-              Encounters.Decisions
-        "
+              Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
+            WHERE
+              d.current_user_id = d2.web_user_id and
+              d.decision >=0 and
+              d2.decision >= 0
+            GROUP BY
+              d.web_user_id
+            ORDER BY
+              `counter`
+        ",
+
+        /**
+         * SQL-запрос для получения данных у кого сколько просмотренных
+         *
+         * @var str
+         */
+        SQL_GET_MYCHOICE_COUNT = "
+            SELECT
+              d.web_user_id as `user_id`, count(*) as `counter`
+            FROM
+              Encounters.Decisions d
+            GROUP BY
+              d.web_user_id
+            ORDER BY
+              `counter`
+        ",
+
+        /**
+         * SQL-запрос для получения данных у кого сколько просмотров
+         *
+         * @var str
+         */
+        SQL_GET_VISITORS_COUNT = "select distinct current_user_id as `user_id`, count(*) as `counter` from Encounters.Decisions where current_user_id in (select distinct web_user_id from Encounters.Decisions) group by current_user_id order by `counter`;"
     ;
 
     /**
@@ -57,48 +104,91 @@ class DatabaseCleanCommand extends CronScript {
     protected function process() {
         $Mamba = $this->getMamba();
 
-        $id = 0;
-        do {
-            $this->log("Processing offset $id..", 64);
-            $result = $this->getContainer()->get('doctrine')
-                ->getEntityManager()
-                ->createQuery("SELECT d FROM EncountersBundle:Decisions d WHERE d.id >= $id AND d.id < " . ($id = $id + 10000))
-                ->getResult()
-            ;
+        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_UNIQUE_USERS_IDS);
+        $stmt->execute();
 
-            $ids = array();
-            foreach ($result as $item) {
-                $webUserId = $item->getWebUserId();
-                $currentUserId = $item->getCurrentUserId();
+        $chunkId = 0;
+        $chunk = array();
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $chunk[] = $userId = (int) $item['user_id'];
 
-                $ids[] = $webUserId;
-                $ids[] = $currentUserId;
-            }
+            /** Очищаем счетчик mutual */
+            $this->getCountersObject()->set($userId, 'mutual', 0);
 
-            $ids = array_unique($ids);
-            $chunks = array_chunk($ids, 100);
-
-            $Mamba->multi();
-            foreach ($chunks as $chunk) {
-                $Mamba->Anketa()->getInfo($chunk, array());
-            }
-            $result = $Mamba->exec();
-
-            $existingIds = array();
-            foreach ($result as $dataArray) {
-                foreach ($dataArray as $item) {
+            if (count($chunk) == 100) {
+                $chunkId++;
+                $result = $Mamba->Anketa()->getInfo($chunk, array());
+                $existingIds = array();
+                foreach ($result as $item) {
                     $existingIds[] = $item['info']['oid'];
                 }
-            }
-            $existingIds = array_unique($existingIds);
 
-            if ($notExists = array_values(array_diff($ids, $existingIds))) {
-                $this->log(count($notExists) . "/" . count($ids) . " does not exists right now!", 16);
-                $sql = "DELETE FROM Encounters.Decisions WHERE web_user_id IN (" . implode(", ", $notExists) . ") OR current_user_id IN (" . implode(", ", $notExists) . ")";
-                $this->getContainer()->get('doctrine')->getConnection()->prepare($sql)->execute();
-            } else {
-                $this->log("OK", 64);
+                if ($notExists = array_values(array_diff($chunk, $existingIds))) {
+                    $this->log($chunkId . ":<error>" . count($notExists) . "</error>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
+
+                    $sql = "DELETE FROM Encounters.Decisions WHERE web_user_id IN (" . implode(", ", $notExists) . ") OR current_user_id IN (" . implode(", ", $notExists) . ")";
+                    $this->log($sql, 32);
+                    $this->getContainer()->get('doctrine')->getConnection()->prepare($sql)->execute();
+
+                } else {
+                    $this->log($chunkId . ":<info>0</info>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
+                }
+
+                $chunk = array();
             }
-        } while ($result);
+        }
+
+        if ($chunk) {
+            $chunkId++;
+            $result = $Mamba->Anketa()->getInfo($chunk, array());
+            $existingIds = array();
+            foreach ($result as $item) {
+                $existingIds[] = $item['info']['oid'];
+            }
+
+            if ($notExists = array_values(array_diff($chunk, $existingIds))) {
+                $this->log($chunkId . ":<error>" . count($notExists) . "</error>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
+
+                $sql = "DELETE FROM Encounters.Decisions WHERE web_user_id IN (" . implode(", ", $notExists) . ") OR current_user_id IN (" . implode(", ", $notExists) . ")";
+                $this->log($sql, 32);
+                $this->getContainer()->get('doctrine')->getConnection()->prepare($sql)->execute();
+
+            } else {
+                $this->log($chunkId . ":<info>0</info>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
+            }
+
+            $chunk = array();
+        }
+
+        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MUTUALS_COUNT);
+        $stmt->execute();
+
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $userId  = (int) $item['user_id'];
+            $counter = (int) $item['counter'];
+
+            $this->getCountersObject()->set($userId, 'mutual', $counter);
+        }
+
+        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MYCHOICE_COUNT);
+        $stmt->execute();
+
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $userId  = (int) $item['user_id'];
+            $counter = (int) $item['counter'];
+
+            $this->getCountersObject()->set($userId, 'mychoice', $counter);
+        }
+
+        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_VISITORS_COUNT);
+        $stmt->execute();
+
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $userId  = (int) $item['user_id'];
+            $counter = (int) $item['counter'];
+
+            $this->getCountersObject()->set($userId, 'visitors', $counter);
+            $this->getCountersObject()->set($userId, 'visited', $counter);
+        }
     }
 }

@@ -13,11 +13,11 @@ use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Entity\User;
 
 /**
- * UserUpdateCommand
+ * DatabaseUserUpdateCommand
  *
  * @package EncountersBundle
  */
-class UserUpdateCommand extends CronScript {
+class DatabaseUserUpdateCommand extends CronScript {
 
     const
 
@@ -33,7 +33,30 @@ class UserUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:user:update"
+        SCRIPT_NAME = "cron:database:user:update",
+
+        /**
+         * SQL-запрос обновления таблицы юзеров
+         *
+         * @var str
+         */
+        SQL_USER_UPDATE = "
+            INSERT INTO
+                Encounters.User
+            SET
+                `user_id`    = :user_id,
+                `gender`     = :gender,
+                `age`        = :age,
+                `country_id` = :country_id,
+                `region_id`  = :region_id,
+                `city_id`    = :city_id
+            ON DUPLICATE KEY UPDATE
+                `gender`     = :gender,
+                `age`        = :age,
+                `country_id` = :country_id,
+                `region_id`  = :region_id,
+                `city_id`    = :city_id
+        "
     ;
 
     /**
@@ -71,25 +94,15 @@ class UserUpdateCommand extends CronScript {
      */
     public function updateUser($job) {
         list($userId, $gender, $age, $countryId, $regionId, $cityId) = array_values(unserialize($job->workload()));
-        if ($User = $this->getEntityManager()->getRepository('EncountersBundle:User')->find($userId)) {
-            $User->setGender($gender);
-            $User->setAge($age);
-            $User->setCountryId($countryId);
-            $User->setRegionId($regionId);
-            $User->setCityId($cityId);
 
-            $this->getEntityManager()->flush();
-        } else {
-            $User = new User();
-            $User->setUserId($userId);
-            $User->setGender($gender);
-            $User->setAge($age);
-            $User->setCountryId($countryId);
-            $User->setRegionId($regionId);
-            $User->setCityId($cityId);
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_UPDATE);
+        $stmt->bindValue('user_id', $userId);
+        $stmt->bindValue('gender', $gender);
+        $stmt->bindValue('age', $age);
+        $stmt->bindValue('country_id', $countryId);
+        $stmt->bindValue('region_id', $regionId);
+        $stmt->bindValue('city_id', $cityId);
 
-            $this->getEntityManager()->persist($User);
-            $this->getEntityManager()->flush();
-        }
+        $stmt->execute();
     }
 }

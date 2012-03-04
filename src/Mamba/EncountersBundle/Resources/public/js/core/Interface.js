@@ -34,17 +34,23 @@ $Interface = {
             return false;
         });
 
-        $("li.item-popul").click(function() {
-            $Layers.showPopularityLayer();
-        });
+        if ($route != 'welcome') {
+            $Battery.initUI();
+            $Speedo.initUI();
+        }
 
         this['init' + $Tools.ucfirst($route) + 'UI']();
-
         $Layers.initUI();
-        $Battery.initUI();
-        $Speedo.initUI();
-
         return this;
+    },
+
+    /**
+     * Welcome UI init
+     *
+     * @init UI
+     */
+    initWelcomeUI: function() {
+        $Welcome.initUI();
     },
 
     /**

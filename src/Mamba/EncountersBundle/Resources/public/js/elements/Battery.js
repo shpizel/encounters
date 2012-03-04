@@ -10,7 +10,7 @@ $Battery = {
      *
      * @init UI
      */
-    initUI: function() {
+    initUI: function($route) {
         $("li.item-energy > *").click(function() {
             alert('Я батарейка!');
         });

@@ -112,13 +112,18 @@ class NotificationSendCommand extends CronScript {
         $this->log("Current user id: " . $currentUserId);
         if ($message = $this->getPersonalMessage($webUserId, $currentUserId)) {
             $this->log("Personal spam message: " . ($message));
-            if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
-                if (isset($result['sended']) && $result['sended']) {
-                    $this->log('SUCCESS', 64);
-                    $this->getStatsObject()->incr('contacts');
-                } else {
-                    $this->log('FAILED', 16);
+
+            if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
+                if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
+                    if (isset($result['sended']) && $result['sended']) {
+                        $this->log('SUCCESS', 64);
+                        $this->getStatsObject()->incr('contacts');
+                    } else {
+                        $this->log('FAILED', 16);
+                    }
                 }
+            } else {
+                $this->log("Already app user", 16);
             }
         } else {
             $this->log("Could not get personal message", 16);
@@ -134,7 +139,7 @@ class NotificationSendCommand extends CronScript {
         if ($message = $this->getNotifyMessage($currentUserId)) {
             $this->log("Notify spam message: " . ($message));
 
-            if ($this->getMemcache()->add("notify_" . $currentUserId, time(), 6*3600)) {
+            if ($this->getMemcache()->add("notify_" . $currentUserId, time(), 3*3600)) {
                 if ($result = $Mamba->Notify()->sendMessage($currentUserId, $message)) {
                     if (isset($result['count']) && $result['count']) {
                         $this->log('SUCCESS', 64);

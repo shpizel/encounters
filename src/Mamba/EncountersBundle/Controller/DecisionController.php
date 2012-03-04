@@ -68,11 +68,23 @@ class DecisionController extends ApplicationController {
             $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
             /** Уменьшить энергию CurrentUser'a */
-            $this->getEnergyObject()->decr($this->currentUserId, $this->decision + 2);
+            $this->getEnergyObject()->decr($this->currentUserId, 15);
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision + 1 > 0) {
-                $this->getPriorityQueueObject()->put($this->currentUserId, $this->webUserId);
+
+                /**
+                 * @todo: Сделать это через крон-скрипт, учитывая пол, возраст, страну итд
+                 *
+                 * @author shpizel
+                 */
+                if (($currentUserSearchPreferences = $this->getSearchPreferencesObject()->get($this->currentUserId)) && ($info = $Mamba->Anketa()->getInfo($this->webUserId, array()))) {
+                    if ($info[0]['info']['gender'] == $currentUserSearchPreferences['gender']) {
+                        if (!$this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId)) {
+                            $this->getPriorityQueueObject()->put($this->currentUserId, $this->webUserId);
+                        }
+                    }
+                }
             }
 
             $dataArray = array(
@@ -82,12 +94,12 @@ class DecisionController extends ApplicationController {
             );
 
             /** Ставим задачу на спам */
-            if ($this->decision + 1 > 0) {
+//            if ($this->decision + 1 > 0) {
                 $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray));
-            }
+//            }
 
             /** Ставим задачу на обноления базы */
-            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME, serialize($dataArray));
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Не спишком ли часто мы спамим? */
             if (false) {

@@ -26,23 +26,7 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-//        $visitors = $this->getDoctrine()
-//            ->getEntityManager()
-//            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed ASC')
-//            ->setParameter('webUserId', $webUserId)
-//            ->getResult()
-//        ;
-//
-//        $dataArray = $this->getInitialData();
-//        $dataArray['data'] = $visitors ?: null;
-
         $dataArray  = $this->getInitialData();
-//        $result = $this->getDoctrine()
-//            ->getEntityManager()
-//            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.webUserId = :webUserId and d.decision >= 0 ORDER BY d.changed ASC')
-//            ->setParameter('webUserId', $webUserId)
-//            ->getResult()
-//        ;
 
         $data = array();
         $result = $this->getDoctrine()

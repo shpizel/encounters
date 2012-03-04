@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    {% stylesheets '@EncountersBundle/Resources/public/css/*' filter="yui_css" %}
+    <link rel="stylesheet" href="{{ asset_url }}" />
+    {% endstylesheets %}
+    {% stylesheets '@EncountersBundle/Resources/public/css/ie/*' filter="yui_css" %}
+    <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
+    {% endstylesheets %}
+</head>
+<body>
+<div id="wrapper">
+    <div class="app-layout">
+        <div class="app-menu-bar">
+            <i class="l-rounder"></i>
+            <i class="r-rounder"></i>
+            <div class="app-menu-bar-inner">
+                <ul class="info-meet" style="float:right;">
+                    <li class="item-popul"><div class="low"><b>Низкая</b> популярность</div></li>
+                    <li class="item-setting"><a href="/preferences"></a></li>
+                    <li class="item-energy"><b class="battery"><b style="width:{{ 1*15 }}%"></b></b> <i>{{ 1*20 }}%</i></li>
+                </ul>
+                <ul class="info-meet">
+                    <li class="item-game"><a href="/search"><b>Поиск</b></a></li>
+                    <li class="item-mychoice"><a href="/mychoice"><b>Мой выбор</b>  <i></i></a></li>
+                    <li class="item-visitors"><a href="/visitors"><b>Меня смотрели</b> <i></i></a></li>
+                    <li class="item-mutual"><a href="/mutual"><b>Взаимные</b> <i class="heart"></i></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="none">
+            <div class="title">Ошибка запуска приложения</div>
+            <div class="info">
+                <div align="left">
+                    <b>Что случилось?</b><br>
+                    — Ваш браузер не принимает cookie<br>
+                    — Приложение открыто вне сайта знакомств<br>
+                    — Случилось что-то непонятное<br>
+                </div><br>
+
+                <div align="left">
+                    <b>Что же делать?</b><br>
+                    — Воспользуйтесь другим браузером (Chrome, Яндекс.Интернет, Firefox, Opera) или исправьте настройки текущего браузера (очистите кеш, настройте прием cookie)
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'EncountersBundle:tools:ym.html.twig' %}
+</div>
+{% block javascripts %}{% endblock %}
+{% javascripts
+    '@EncountersBundle/Resources/public/js/core/*'
+    '@EncountersBundle/Resources/public/js/tools/*'
+    '@EncountersBundle/Resources/public/js/pages/*'
+    '@EncountersBundle/Resources/public/js/elements/*'
+    filter="yui_js"
+%}
+<script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+<script src="http://js.aplatform.ru/app.js"></script>
+<script>
+    $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
+    {% autoescape false %}
+    $Routing.setRoutes({{ routes }});
+    {% endautoescape %}
+    {% block pagejs %}{% endblock %}
+    $(document).ready(function(){
+        $App.init(location.pathname).run();
+    });
+</script>
+</body>
+</html>

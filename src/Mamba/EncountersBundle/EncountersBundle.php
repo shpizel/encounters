@@ -52,7 +52,7 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME = 'database:decisions:process',
+        GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME = 'database:decisions:process',
 
         /**
          * Имя функции для обновления таблицы энергий

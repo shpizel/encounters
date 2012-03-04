@@ -126,7 +126,7 @@ class BillingController extends ApplicationController {
                         $this->getBatteryObject()->set($webUserId, 5);
                         $item->setBilled(true);
 
-                        $this->getNotificationsObject()->set($webUserId, "Ура! Ваша энергия прокачана на 100%!");
+                        $this->getNotificationsObject()->set($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
                     } elseif ($serviceId == 2) {
                         if (isset($service['user_id']) && ($currentUserId = (int) $service['user_id'])) {
                             $this->getPriorityQueueObject()->put($currentUserId, $webUserId);

@@ -310,8 +310,9 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['platform'] = $platformSettings;
 
+        $webUser = $this->getMamba()->Anketa()->getInfo($webUserId);
         $dataArray['webuser'] = array(
-            'anketa'      => $this->getMamba()->Anketa()->getInfo($webUserId),
+            'anketa'      => $webUser[0],
             'popularity'  => $this->getPopularity(),
             'battery'     => $this->getBatteryObject()->get($webUserId),
             'preferences' => $searchPreferences,
@@ -322,7 +323,6 @@ abstract class ApplicationController extends Controller {
             ),
         );
 
-//        $dataArray['webuser']['anketa'] = array_shift($dataArray['webuser']['anketa']);
         $dataArray['webuser']['json'] = json_encode($dataArray['webuser']);
         $dataArray['routes'] = json_encode($this->getRoutes());
 
@@ -377,7 +377,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return array
      */
-    private function getRoutes() {
+    public function getRoutes() {
         $routes = array();
 
         $router = $this->get('router');

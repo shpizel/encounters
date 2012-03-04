@@ -17,7 +17,7 @@ use Mamba\EncountersBundle\Entity\Energy;
  *
  * @package EncountersBundle
  */
-class EnergyUpdateCommand extends CronScript {
+class DatabaseEnergyUpdateCommand extends CronScript {
 
     const
 
@@ -33,7 +33,22 @@ class EnergyUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:energy:update"
+        SCRIPT_NAME = "cron:database:energy:update",
+
+        /**
+         * SQL-запрос обновления таблицы энергий
+         *
+         * @var str
+         */
+        SQL_ENERGY_UPDATE = "
+            INSERT INTO
+                Encounters.Energy
+            SET
+                `user_id` = :user_id,
+                `energy`  = :energy
+            ON DUPLICATE KEY UPDATE
+                `energy` = :energy
+        "
     ;
 
     /**
@@ -71,17 +86,12 @@ class EnergyUpdateCommand extends CronScript {
      */
     public function updateEnergy($job) {
         list($userId, $energy) = array_values(unserialize($job->workload()));
-        if ($Energy = $this->getEntityManager()->getRepository('EncountersBundle:Energy')->find($userId)) {
-            $Energy->setEnergy($energy);
 
-            $this->getEntityManager()->flush();
-        } else {
-            $Energy = new Energy();
-            $Energy->setUserId($userId);
-            $Energy->setEnergy($energy);
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_ENERGY_UPDATE);
+        $stmt->bindValue('user_id', $userId);
+        $stmt->bindValue('energy', $energy = $this->getEnergyObject()->get($userId));
+        $stmt->execute();
 
-            $this->getEntityManager()->persist($Energy);
-            $this->getEntityManager()->flush();
-        }
+        $this->getMemcache()->delete("energy_update_lock_by_user_" . $userId);
     }
 }

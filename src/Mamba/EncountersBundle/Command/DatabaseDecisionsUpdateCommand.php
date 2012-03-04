@@ -13,11 +13,11 @@ use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Entity\Decisions;
 
 /**
- * DecisionsProcessCommand
+ * DatabaseDecisionsUpdateCommand
  *
  * @package EncountersBundle
  */
-class DecisionsProcessCommand extends CronScript {
+class DatabaseDecisionsUpdateCommand extends CronScript {
 
     const
 
@@ -26,14 +26,32 @@ class DecisionsProcessCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Updates users decisions",
+        SCRIPT_DESCRIPTION = "Sync decisions with database",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:decisions:process"
+        SCRIPT_NAME = "cron:database:decisions:update",
+
+        /**
+         * SQL-запрос для добавления ответа в базу
+         *
+         * @var str
+         */
+        SQL_UPDATE_DECISION = "
+            INSERT INTO
+                Encounters.Decisions
+            SET
+                `web_user_id` = :web_user_id,
+                `current_user_id` = :current_user_id,
+                `decision` = :decision,
+                `changed` = :changed
+            ON DUPLICATE KEY UPDATE
+                `decision` = :decision,
+                `changed` = :changed
+        "
     ;
 
     /**
@@ -45,7 +63,7 @@ class DecisionsProcessCommand extends CronScript {
         $worker = $this->getGearman()->getWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_DECISIONS_PROCESS_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, function($job) use($class) {
             try {
                 return $class->processDecisions($job);
             } catch (\Exception $e) {
@@ -72,13 +90,14 @@ class DecisionsProcessCommand extends CronScript {
     public function processDecisions($job) {
         list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
 
-        $Decision = new Decisions();
-        $Decision->setWebUserId($webUserId);
-        $Decision->setCurrentUserId($currentUserId);
-        $Decision->setDecision($decision);
-        $Decision->setChanged(time());
+        $time = time();
 
-        $this->getEntityManager()->persist($Decision);
-        $this->getEntityManager()->flush();
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_UPDATE_DECISION);
+        $stmt->bindParam('web_user_id', $webUserId);
+        $stmt->bindParam('current_user_id', $currentUserId);
+        $stmt->bindParam('decision', $decision);
+        $stmt->bindParam('changed', $time);
+
+        $this->log(var_export($stmt->execute(), true));
     }
 }
