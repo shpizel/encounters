@@ -39,6 +39,8 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        print_r($this->getMamba()->nocache()->Anketa()->isAppUser("560015854, 113538574"));
+        $Mamba = $this->getMamba();
+
+        print_r($Mamba->Anketa()->getInfo("560015854, 113538574"));
     }
 }

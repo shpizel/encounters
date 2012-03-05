@@ -47,7 +47,7 @@ class VisitorsController extends ApplicationController {
             foreach ($usersArray as $key => $users) {
                 $usersArray[$key] = array_reverse($users, true);
             }
-            $usersArray = array_reverse($usersArray, true);
+            $usersArray = array_reverse($usersArray);
 
             $Mamba->multi();
             foreach ($usersArray as $users) {

@@ -67,7 +67,7 @@ final class Mamba {
          *
          * @var int
          */
-         MULTI_FETCH_CHUNK_SIZE = 25,
+         MULTI_FETCH_CHUNK_SIZE = 16,
 
         /**
          * Ключ для хранения user_id в сессии
@@ -829,9 +829,8 @@ final class Mamba {
 
                 $JSON = @json_decode($platformResponse, true);
 
-                if ($JSON['status'] === 0 && !$JSON['message']) {
+                if ($JSON && $JSON['status'] === 0 && !$JSON['message']) {
                     $this->setCache($method, $params, $JSON['data']);
-
                     return $JSON['data'];
                 } else {
                     throw new MambaException($JSON['message'], $JSON["status"]);
@@ -997,13 +996,13 @@ final class Mamba {
                     $platformResponse = $platformResponses[$item['url']];
                     $JSON = @json_decode($platformResponse, true);
 
-                    if ($JSON['status'] === 0 && !$JSON['message']) {
+                    if ($JSON && $JSON['status'] === 0 && !$JSON['message']) {
                         $this->setCache($item['method'], $item['params'], $JSON['data']);
                     } elseif ($strict) {
                         throw new MambaException($JSON['message'], $JSON['code']);
                     }
 
-                    $item['content'] = $JSON['data'];
+                    $item['content'] = $JSON ? $JSON['data'] : null;
                     continue;
                 }
             }
@@ -1012,17 +1011,22 @@ final class Mamba {
         $this->mode = self::SINGLE_MODE;
 
         foreach ($this->multiQueue as &$item) {
+
             if (isset($item['cached'])) {
                 $item = $item['cached'];
             } elseif (isset($item['content'])) {
                 $item = $item['content'];
+            } else {
+                $item = null;
             }
         }
 
         $result = $this->multiQueue;
         $this->multiQueue = array();
 
-        return $result;
+        return array_filter($result, function($item) {
+            return (bool) $item;
+        });
     }
 
     /**
@@ -1069,9 +1073,14 @@ final class Mamba {
                     curl_multi_getcontent($ch),
                 );
 
-                if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
-                    throw new MambaException("$url has returned $code code");
-                }
+                /**
+                 * Комментируем бросание исключения, потому что по замыслу multi-методы не должны бросать исключения
+                 *
+                 * @author shpizel
+                 */
+//                if (($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) != 200) {
+//                    throw new MambaException("$url has returned $code code");
+//                }
 
                 $result[$url] = $content;
                 curl_multi_remove_handle($mh, $ch);

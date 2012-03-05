@@ -93,10 +93,7 @@ class DecisionController extends ApplicationController {
                 'decision' => $this->decision,
             );
 
-            /** Ставим задачу на спам */
-//            if ($this->decision + 1 > 0) {
-                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray));
-//            }
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray));
 
             /** Ставим задачу на обноления базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
@@ -123,13 +120,13 @@ class DecisionController extends ApplicationController {
 
             /** Добавим currentUser'a в список уже просмотренных webUser'ом */
             $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'decision'=>$this->decision));
-        }
 
-        $this->json['data']['counters'] = array(
-            'visited'  => (int) $this->getCountersObject()->get($this->webUserId, 'visited'),
-            'mychoice' => (int) $this->getCountersObject()->get($this->webUserId, 'mychoice'),
-            'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
-        );
+            $this->json['data']['counters'] = array(
+                'visited'  => (int) $this->getCountersObject()->get($this->webUserId, 'visited'),
+                'mychoice' => (int) $this->getCountersObject()->get($this->webUserId, 'mychoice'),
+                'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
+            );
+        }
 
         return
             new Response(json_encode($this->json), 200, array(
