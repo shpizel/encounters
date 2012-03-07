@@ -192,7 +192,7 @@ abstract class Script extends ContainerAwareCommand {
     /**
      * Gearman getter
      *
-     * @return Gearman
+     * @return \Mamba\GearmanBundle\Gearman
      */
     public function getGearman() {
         return $this->getContainer()->get('gearman');
@@ -366,7 +366,7 @@ abstract class Script extends ContainerAwareCommand {
     /**
      * Entity Manager getter
      *
-     * @return EntityManager
+     * @return \Doctrine\ORM\EntityManager
      */
     public function getEntityManager() {
         return $this->getDoctrine()->getEntityManager();

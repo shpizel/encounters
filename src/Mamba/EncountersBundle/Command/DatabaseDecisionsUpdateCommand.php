@@ -68,7 +68,7 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
                 return $class->processDecisions($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
-                return;
+                throw $e;
             }
         });
 
@@ -88,9 +88,11 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
      * @param $job
      */
     public function processDecisions($job) {
-        list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
+        list($webUserId, $currentUserId, $decision, $time) = array_values(unserialize($job->workload()));
 
-        $time = time();
+        if (!$time) {
+            $time = time();
+        }
 
         $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_UPDATE_DECISION);
         $stmt->bindParam('web_user_id', $webUserId);
@@ -98,6 +100,10 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
         $stmt->bindParam('decision', $decision);
         $stmt->bindParam('changed', $time);
 
-        $this->log(var_export($stmt->execute(), true));
+        $result = $stmt->execute();
+        $this->log('result: ' . var_export($result, true));
+        if (!$result) {
+            throw new CronScriptException('Unable to store data to DB.');
+        }
     }
 }

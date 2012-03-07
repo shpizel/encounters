@@ -91,6 +91,7 @@ class DecisionController extends ApplicationController {
                 'webUserId' => $this->webUserId,
                 'currentUserId' => $this->currentUserId,
                 'decision' => $this->decision,
+                'time'     => time(),
             );
 
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray));
