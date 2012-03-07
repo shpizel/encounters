@@ -106,7 +106,7 @@ class DecisionController extends ApplicationController {
 
             /** Может быть мы совпали? */
             if (($this->decision + 1) && ($mutual = $this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId))) {
-                if ($mutual['decision']) {
+                if ($mutual['decision'] + 1) {
                     $this->json['data'] = array(
                         'mutual' => true,
                     );
