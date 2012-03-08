@@ -18,7 +18,7 @@ class RedisSyncCommand extends Script
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "AA script",
+        SCRIPT_DESCRIPTION = "Restore decisions from ViewedQueue",
 
         /**
          * Имя скрипта
@@ -33,28 +33,29 @@ class RedisSyncCommand extends Script
      *
      * @return null
      */
-    protected function process()
-    {
+    protected function process() {
         for ($i=0; $i < 10; ++$i) {
             $keys = $this->getRedis()->keys("user_{$i}*_viewed_queue");
             foreach ($keys as $key) {
-                $webUserId = substr($key, 5, strpos($key, '_viewed_queue'));
+                if (preg_match("!(?P<web_user_id>\d+)!", $key, $result)) {
+                    $webUserId = (int) $result['web_user_id'];
+                    foreach ($this->getRedis()->hKeys($key) as $currentUserId) {
+                        if ($data = $this->getRedis()->hGet($key, $currentUserId)) {
+                            $data = json_decode($data, true);
 
-                $uids = $this->getRedis()->hKeys($key);
-                foreach ($uids as $currentUserId) {
-                    $data = $this->getRedis()->hGet($key, $uid);
-                    if ($data) {
-                        $data = json_decode($data, true);
-                        $dataArray = array(
-                            'webUserId'     => (int) $webUserId,
-                            'currentUserId' => (int) $currentUserId,
-                            'decision'      => $data['decision'],
-                            'time'          => $data['ts'],
-                        );
-                        $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
+                            $dataArray = array(
+                                'webUserId'     => (int) $webUserId,
+                                'currentUserId' => (int) $currentUserId,
+                                'decision'      => $data['decision'],
+                                'time'          => $data['ts'],
+                            );
+
+                            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
+                        }
                     }
                 }
             }
+            $this->log( ($i+1)*10 . "% completed", 64);
         }
     }
 }

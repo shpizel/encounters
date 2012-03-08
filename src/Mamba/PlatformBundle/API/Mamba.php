@@ -565,8 +565,11 @@ final class Mamba {
             if (self::CACHE_ENABLED && $cachingOptions['backend']) {
                 $signed = $cachingOptions['signed'];
                 $cachingKey =  "api://" . ($signed ? ($this->getWebUserId() . "@") : '') . "$namespace.$method";
+
                 if ($getParams = http_build_query($params)) {
                     $result['full'] = $cachingKey . "/?" . $getParams;
+                } else {
+                    $result['full'] = $cachingKey;
                 }
 
                 if (isset($params['oids'])) {

@@ -74,13 +74,13 @@ abstract class CronScript extends Script {
                 umask(0);
 
                 if (posix_setsid() == -1) {
-                    exit(-1);
+                    exit(1);
                 }
 
                 if ($pid = pcntl_fork() == 0) {
 
                     pcntl_signal(SIGINT, $exit = function() {
-
+                        exit(1);
                     });
                     pcntl_signal(SIGTERM, $exit);
                     pcntl_signal(SIGHUP, $exit);

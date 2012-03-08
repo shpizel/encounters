@@ -4,7 +4,6 @@ namespace Mamba\EncountersBundle\Controller;
 use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
-use Mamba\EncountersBundle\Preferences;
 
 /**
  * PreferencesController
@@ -27,13 +26,17 @@ class PreferencesController extends ApplicationController {
         $redisSearchPreferences = $this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'));
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
-            $searchPreferences['geo'] = $this->getUserGeoParams($webUserId);
-            $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
-
-            $GearmanClient = $this->getGearman()->getClient();
             $webUserAnketa = $this->getMamba()->Anketa()->getInfo($webUserId);
 
-            $GearmanClient->doHighBackground(
+            $searchPreferences['geo'] = array(
+                'country_id' => (isset($webUserAnketa[0]['location']['country_id'])) ? $webUserAnketa[0]['location']['country_id'] : null,
+                'region_id'  => (isset($webUserAnketa[0]['location']['region_id'])) ? $webUserAnketa[0]['location']['region_id'] : null,
+                'city_id'    => (isset($webUserAnketa[0]['location']['city_id'])) ? $webUserAnketa[0]['location']['city_id'] : null,
+            );
+
+            $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
+
+            $this->getGearman()->getClient()->doHighBackground(
                 EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
@@ -118,8 +121,8 @@ class PreferencesController extends ApplicationController {
                 throw new \LogicException("Could not get search preferences");
             }
 
-            $searchPreferences['age_from'] = $searchPreferences['age_from'] ?: 18;
-            $searchPreferences['age_to'] = $searchPreferences['age_to'] ?: 25;
+            $searchPreferences['age_from'] = isset($searchPreferences['age_from']) ? $searchPreferences['age_from'] : 18;
+            $searchPreferences['age_to']   = isset($searchPreferences['age_to']) ? $searchPreferences['age_to'] : 25;
         }
 
         $initialData = $this->getInitialData();
@@ -128,76 +131,6 @@ class PreferencesController extends ApplicationController {
         $Response = $this->render('EncountersBundle:templates:preferences.html.twig', $initialData);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;
-    }
-
-    /**
-     * Возвращает гео-параметры юзера (ids)
-     *
-     * @return array
-     */
-    private function getUserGeoParams($userId) {
-        $Mamba = $this->get('mamba');
-        $userInfo = $Mamba->nocache()->Anketa()->getInfo($userId);
-        $userGeoParams = $userInfo[0]['location'];
-
-        $geoParams = array(
-            'country_id' => null,
-            'region_id'  => null,
-            'city_id'    => null,
-        );
-
-        list($countryName, $regionName, $cityName) = array_values($userGeoParams);
-        if ($geoParams['country_id'] = $this->parseCountryId($countryName)) {
-            if ($geoParams['region_id'] = $this->parseRegionId($geoParams['country_id'], $regionName)) {
-                $geoParams['city_id'] = $this->parseCityId($geoParams['region_id'], $cityName);
-            }
-        }
-
-        return $geoParams;
-    }
-
-    /**
-     * Возвращает id страны по имени
-     *
-     * @return str|null
-     */
-    private function parseCountryId($countryName) {
-        foreach ($this->get('mamba')->Geo()->getCountries() as $country) {
-            list($id, $name) = array_values($country);
-            if ($name == $countryName) {
-                return $id;
-            }
-        }
-    }
-
-    /**
-     * Возвращает id региона по имени и id страны
-     *
-     * @param $countryId
-     * @param $regionName
-     */
-    private function parseRegionId($countryId, $regionName) {
-        foreach ($this->get('mamba')->Geo()->getRegions($countryId) as $region) {
-            list($id, $name) = array_values($region);
-            if ($name == $regionName) {
-                return $id;
-            }
-        }
-    }
-
-    /**
-     * Возвращает id города по имени и id региона
-     *
-     * @param $regionId
-     * @param $cityName
-     */
-    private function parseCityId($regionId, $cityName) {
-        foreach ($this->get('mamba')->Geo()->getCities($regionId) as $city) {
-            list($id, $name) = array_values($city);
-            if ($name == $cityName) {
-                return $id;
-            }
-        }
     }
 
     /**
@@ -242,7 +175,7 @@ class PreferencesController extends ApplicationController {
                     ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')))
                     ->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId))
                     ->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId))
-                    ->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
+                    //->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
                 ->exec()
         ;
     }

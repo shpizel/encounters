@@ -40,7 +40,7 @@ class QueueController extends ApplicationController {
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
-        } elseif ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId = $Mamba->get('oid'))) {
+        } elseif (($webUserId = $Mamba->get('oid')) && ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId))) {
             $currentQueue = array_reverse($currentQueue);
             $currentQueue = array_chunk($currentQueue, 10);
             foreach ($currentQueue as $key=>$subQueue) {
@@ -109,11 +109,13 @@ class QueueController extends ApplicationController {
         if (!$this->json['data']) {
             list($this->json['status'], $this->json['message']) = array(2, "Current queue is not ready");
 
-            $this->get('gearman')->getClient()
-                ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-                'user_id'   => $webUserId,
-                'timestamp' => time(),
-            )));
+            if (isset($webUserId)) {
+                $this->get('gearman')->getClient()
+                    ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                    'user_id'   => $webUserId,
+                    'timestamp' => time(),
+                )));
+            }
         }
 
         return

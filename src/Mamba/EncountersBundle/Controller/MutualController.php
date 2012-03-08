@@ -16,14 +16,16 @@ class MutualController extends ApplicationController {
 
         MUTUAL_SQL = "
             SELECT
-              d.current_user_id
+                d.current_user_id
             FROM
-              Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
+                Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
             WHERE
-              d.web_user_id = ? and
-              d.current_user_id = d2.web_user_id and
-              d.decision >=0 and
-              d2.decision >= 0
+                d.web_user_id = ? and
+                d.current_user_id = d2.web_user_id and
+                d.decision >=0 and
+                d2.decision >= 0
+            ORDER BY
+              d2.changed DESC
         "
     ;
 
@@ -62,7 +64,7 @@ class MutualController extends ApplicationController {
             foreach ($usersArray as $key => $users) {
                 $usersArray[$key] = array_reverse($users, true);
             }
-            $usersArray = array_reverse($usersArray, true);
+            $usersArray = array_reverse($usersArray);
 
             $Mamba->multi();
             foreach ($usersArray as $users) {
