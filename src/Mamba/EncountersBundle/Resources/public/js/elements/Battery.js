@@ -12,7 +12,7 @@ $Battery = {
      */
     initUI: function($route) {
         $("li.item-energy > *").click(function() {
-            alert('Я батарейка!');
+            $Layers.showBatteryLayer();
         });
     },
 
@@ -24,5 +24,24 @@ $Battery = {
     setCharge: function($charge) {
         $("b.battery b").css({'width': $charge*15 + "%"});
         $("li.item-energy i").html($charge*20 + "%");
+
+        var $webUser = $Config.get('webuser');
+        if ($webUser && $webUser.hasOwnProperty('battery')) {
+            $webUser['battery'] = $charge;
+        }
+    },
+
+    /**
+     * Возвращает текущий заряд
+     *
+     * @return int
+     */
+    getCharge: function() {
+        var $webUser = $Config.get('webuser');
+        if ($webUser && $webUser.hasOwnProperty('battery')) {
+            return $webUser['battery'];
+        }
+
+        return 0;
     }
 }

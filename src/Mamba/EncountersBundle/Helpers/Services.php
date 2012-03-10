@@ -13,11 +13,11 @@ class Services extends Helper {
     const
 
         /**
-         * Ключ для хранения услуг
+         * Ключ для хранения заказываемых услуг
          *
          * @var str
          */
-        REDIS_SET_USER_SERVICES_KEY = "services_by_%d"
+        REDIS_LIST_USER_SERVICES_KEY = "lservices_by_%d"
     ;
 
     protected
@@ -42,10 +42,10 @@ class Services extends Helper {
      */
     public function get($userId) {
         if (!is_int($userId)) {
-            throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
+            throw new ServicesException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if (false !== $result = $this->getRedis()->sPop(sprintf(self::REDIS_SET_USER_SERVICES_KEY, $userId))) {
+        if (false !== $result = $this->getRedis()->lPop(sprintf(self::REDIS_LIST_USER_SERVICES_KEY, $userId))) {
             return json_decode($result, true);
         }
     }
@@ -61,7 +61,7 @@ class Services extends Helper {
             throw new ServicesException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->sAdd(sprintf(self::REDIS_SET_USER_SERVICES_KEY, $userId), json_encode($service));
+        return $this->getRedis()->lPush(sprintf(self::REDIS_LIST_USER_SERVICES_KEY, $userId), json_encode($service));
     }
 }
 

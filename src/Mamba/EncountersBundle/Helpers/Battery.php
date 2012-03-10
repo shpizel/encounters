@@ -56,7 +56,7 @@ class Battery extends Helper {
         if (false === $charge) {
             $this->set($userId, $charge = self::DEFAULT_CHARGE);
         }
-        return $charge;
+        return (int) $charge;
     }
 
     /**

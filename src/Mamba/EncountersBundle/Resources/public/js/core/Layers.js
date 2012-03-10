@@ -35,6 +35,17 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-battery form p a.ui-btn").click(function() {
+            $.post($Routing.getPath('service.add'), {service: {id: 1}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
+        });
+
         $("div.layer-not-see-yet div.center a").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
@@ -202,6 +213,36 @@ $Layers = {
 
         $("div.layer-mutual div.photo div.web").css('background', "url('" + (($Config.get('webuser')['anketa']['info'].hasOwnProperty('medium_photo_url') && $Config.get('webuser')['anketa']['info']['medium_photo_url']) ? $Config.get('webuser')['anketa']['info']['medium_photo_url'] : '/bundles/encounters/images/photo_big_na.gif') + "')");
         $("div.layer-mutual").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер батарейки при клике на батарейку
+     *
+     * @shows layer
+     */
+    showBatteryLayer: function($data) {
+        var $charge = $Battery.getCharge();
+        if ($charge == 0) {
+            $("div.layer-battery div.battery-big").attr('class', 'battery-big empty');
+            $("div.layer-battery .title").attr('class', 'title');
+            $("div.layer-battery p.center a.ui-btn").html("Купить 100% энергии за 1<i class=\"coint\"></i>");
+            $("div.layer-battery p.center a.close").hide();
+            $("div.layer-battery p.center a.ui-btn").show();
+        } else if ($charge >= 0 && $charge < 5 ) {
+            $("div.layer-battery div.battery-big").attr('class', 'battery-big middle');
+            $("div.layer-battery .title").attr('class', 'title');
+            $("div.layer-battery p.center a.ui-btn").html("Пополнить до 100% за 1<i class=\"coint\"></i>");
+            $("div.layer-battery p.center a.close").hide();
+            $("div.layer-battery p.center a.ui-btn").show();
+        } else {
+            $("div.layer-battery div.battery-big").attr('class', 'battery-big full');
+            $("div.layer-battery .title").attr('class', 'title charged');
+            $("div.layer-battery p.center a.ui-btn").hide();
+            $("div.layer-battery p.center a.close").show();
+        }
+
+        $("div.layer-battery").show();
         this.showLayer();
     },
 
