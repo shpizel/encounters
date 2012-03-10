@@ -222,6 +222,7 @@ $Layers = {
      * @shows layer
      */
     showBatteryLayer: function($data) {
+        this.hideInners();
         var $charge = $Battery.getCharge();
         if ($charge == 0) {
             $("div.layer-battery div.battery-big").attr('class', 'battery-big empty');
