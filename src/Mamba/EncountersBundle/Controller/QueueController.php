@@ -42,7 +42,7 @@ class QueueController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } elseif (($webUserId = $Mamba->get('oid')) && ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId))) {
             $currentQueue = array_reverse($currentQueue);
-            $currentQueue = array_chunk($currentQueue, 10);
+            $currentQueue = array_chunk($currentQueue, 100);
             foreach ($currentQueue as $key=>$subQueue) {
                 $currentQueue[$key] = array_reverse($subQueue);
             }
