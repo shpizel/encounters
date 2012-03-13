@@ -138,7 +138,7 @@ class PreferencesController extends ApplicationController {
      *
      * @return array|null
      */
-    private function    getSearchPreferencesFromRequest() {
+    private function getSearchPreferencesFromRequest() {
         $Request = $this->getRequest();
         if ($Request->getMethod() == 'POST') {
             $postParams = $Request->request->all();
@@ -175,7 +175,13 @@ class PreferencesController extends ApplicationController {
                     ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')))
                     ->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId))
                     ->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId))
-                    //->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
+
+                    /**
+                     * По идее тут втупую удалять не нужно, потому что тут могут быть пользователи из PriorityQueue
+                     *
+                     * @author shpizel
+                     */
+                    ->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
                 ->exec()
         ;
     }
