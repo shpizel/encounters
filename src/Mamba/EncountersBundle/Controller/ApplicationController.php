@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
-use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
 use Mamba\EncountersBundle\Helpers\Popularity;
@@ -112,19 +111,6 @@ abstract class ApplicationController extends Controller {
         }
 
         return self::$Instances[__FUNCTION__] = new Energy($this->container);
-    }
-
-    /**
-     * Hitlist getter
-     *
-     * @return Hitlist
-     */
-    public function getHitlistObject() {
-        if (isset(self::$Instances[__FUNCTION__])) {
-            return self::$Instances[__FUNCTION__];
-        }
-
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->container);
     }
 
     /**
@@ -317,9 +303,11 @@ abstract class ApplicationController extends Controller {
             'battery'     => $this->getBatteryObject()->get($webUserId),
             'preferences' => $searchPreferences,
             'stats'       => array(
-                'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
-                'visited'  => $this->getCountersObject()->get($webUserId, 'visited'),
-                'mutual'   => $this->getCountersObject()->get($webUserId, 'mutual'),
+                'mychoice'        => $this->getCountersObject()->get($webUserId, 'mychoice'),
+                'visitors'        => $this->getCountersObject()->get($webUserId, 'visitors'),
+                'visitors_unread' => $this->getCountersObject()->get($webUserId, 'visitors_unread'),
+                'mutual'          => $this->getCountersObject()->get($webUserId, 'mutual'),
+                'mutual_unread'   => $this->getCountersObject()->get($webUserId, 'mutual_unread'),
             ),
         );
 

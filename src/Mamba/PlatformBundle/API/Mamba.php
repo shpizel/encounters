@@ -475,9 +475,9 @@ final class Mamba {
      */
     public function getWebUserId() {
         if (isset($this->options['oid'])) {
-            return (int)$this->options['oid'];
+            return (int) $this->options['oid'];
         } elseif ($webUserId = self::getSession()->get(self::SESSION_USER_ID_KEY)) {
-            return (int)$webUserId;
+            return (int) $webUserId;
         }
     }
 
@@ -971,7 +971,11 @@ final class Mamba {
         }
 
         if (!count($this->multiQueue)) {
-            throw new MambaException("Request queue is empty");
+            if ($strict) {
+                throw new MambaException("Request queue is empty");
+            } else {
+                return array();
+            }
         }
 
         $urls = array();

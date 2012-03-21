@@ -26,3 +26,24 @@ services:
     debug.twig.extension:
         class: Twig_Extensions_Extension_Debug
         tags: [{ name: 'twig.extension' }]
+
+redis:
+    host: localhost
+    database: 0
+
+gearman:
+    servers:
+        server1:
+            host: localhost
+            #port: 123
+
+memcache:
+    servers:
+        server1:
+            host: localhost
+            port: 11211
+            weight: 25
+#        server2:
+#            host: localhost
+#            port: 11211
+#            weight: 75

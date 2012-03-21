@@ -1,16 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
-
-use Mamba\EncountersBundle\Entity\Decisions;
 
 /**
  * DatabaseDecisionsUpdateCommand
@@ -61,6 +53,7 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -72,11 +65,20 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }
@@ -101,7 +103,6 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
         $stmt->bindParam('changed', $time);
 
         $result = $stmt->execute();
-        $this->log('result: ' . var_export($result, true));
         if (!$result) {
             throw new CronScriptException('Unable to store data to DB.');
         }

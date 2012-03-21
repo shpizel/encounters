@@ -1,16 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
-
-use Mamba\EncountersBundle\Entity\User;
 
 /**
  * DatabaseUserUpdateCommand
@@ -66,6 +58,7 @@ class DatabaseUserUpdateCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -73,15 +66,24 @@ class DatabaseUserUpdateCommand extends CronScript {
                 return $class->updateUser($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
-                return;
+                throw $e;
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }
@@ -103,6 +105,9 @@ class DatabaseUserUpdateCommand extends CronScript {
         $stmt->bindValue('region_id', $regionId);
         $stmt->bindValue('city_id', $cityId);
 
-        $stmt->execute();
+        $result = $stmt->execute();
+        if (!$result) {
+            throw new CronScriptException('Unable to store data to DB.');
+        }
     }
 }

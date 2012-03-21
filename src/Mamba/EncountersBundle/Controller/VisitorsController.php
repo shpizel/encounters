@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
+use PDO;
 
 /**
  * VisitorsController
@@ -11,12 +12,31 @@ use Mamba\PlatformBundle\API\Mamba;
  */
 class VisitorsController extends ApplicationController {
 
+    const
+
+        /**
+         * Запрос в базу на получение данных
+         *
+         * @var str
+         */
+        VISITORS_SQL = "
+            SELECT
+                *
+            FROM
+                Decisions
+            WHERE
+                current_user_id = :web_user_id
+            ORDER BY
+                changed DESC
+        "
+    ;
+
     /**
      * Index action
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction() {
+    public function indexAction($page) {
         $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -26,20 +46,36 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
+        $this->getCountersObject()->set($webUserId, 'visitors_unread', 0);
         $dataArray  = $this->getInitialData();
 
-        $data = array();
-        $result = $this->getDoctrine()
-            ->getEntityManager()
-            ->createQuery('SELECT d FROM EncountersBundle:Decisions d WHERE d.currentUserId = :webUserId ORDER BY d.changed DESC')
-            ->setParameter('webUserId', $webUserId)
-            ->getResult()
-        ;
+        /**
+         * Пагинатор
+         *
+         * @author shpizel
+         */
+        $perPage = 25;
+        $currentPage = (int) $this->getRequest()->query->get('page') ?: $page;
+        $lastPage = ceil(intval($this->getCountersObject()->get($webUserId, 'visitors')) / $perPage);
+        if ($currentPage > $lastPage) {
+            $currentPage = $lastPage;
+        }
 
-        if ($result) {
+        $dataArray['paginator'] = array(
+            'current' => $currentPage,
+            'last'    => $lastPage,
+            'max'     => 12,
+        );
+
+        $data = array();
+        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::VISITORS_SQL . " LIMIT $perPage OFFSET " . (abs($dataArray['paginator']['current'] -1) * $perPage));
+        $_webUserId = $webUserId;
+        $stmt->bindParam('web_user_id',  $_webUserId);
+
+        if ($result = $stmt->execute()) {
             $usersArray = array();
-            foreach ($result as $item) {
-                $usersArray[$item->getWebUserId()] = $item->getDecision();
+            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $usersArray[(int) $item['web_user_id']] = (int) $item['decision'];
             }
 
             $usersArray = array_reverse($usersArray, true);

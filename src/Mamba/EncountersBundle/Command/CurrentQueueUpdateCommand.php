@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -42,10 +42,10 @@ class CurrentQueueUpdateCommand extends CronScript {
          * @var array
          */
         $balance = array(
-            'search'   => 7,
-            'priority' => 1,
+            'search'   => 5,
+            'priority' => 3,
             'hitlist'  => 1,
-            'contacts' => 1,
+            'contacts' => 5,
         )
     ;
 
@@ -56,6 +56,7 @@ class CurrentQueueUpdateCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -67,11 +68,20 @@ class CurrentQueueUpdateCommand extends CronScript {
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+             ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }

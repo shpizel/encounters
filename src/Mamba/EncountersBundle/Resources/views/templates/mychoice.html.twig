@@ -2,12 +2,7 @@
 {% block title %}Я выбрал{% endblock %}
 
 {% block body %}
-<style>
-    div.content div.pictures div.mpic {
-        margin-bottom: 43px;
-    }
-</style>
-<div class="content">
+<div class="content mychoice">
 
     {% if data == null %}
     <div class="none">
@@ -38,7 +33,7 @@
 
     {% endfor %}
     <br clear="all">
-    <div class='back'>&larr; <a href="/search">Назад к поиску</a></div>
+    {% include 'EncountersBundle:tools:paginator.html.twig' %}
     </div>
     {% endif %}
 

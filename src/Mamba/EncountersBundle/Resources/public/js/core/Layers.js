@@ -60,7 +60,7 @@ $Layers = {
         $("div.layer-pop-up form p a").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 3);
                     location.href = $Routing.getPath("billing");
                 }
             });

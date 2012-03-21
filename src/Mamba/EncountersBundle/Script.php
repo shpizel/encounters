@@ -1,5 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle\Command;
+namespace Mamba\EncountersBundle;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,7 +22,6 @@ use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\Energy;
-use Mamba\EncountersBundle\Helpers\Hitlist;
 use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
 use Mamba\EncountersBundle\Helpers\Popularity;
@@ -222,19 +221,6 @@ abstract class Script extends ContainerAwareCommand {
         }
 
         return self::$Instances[__FUNCTION__] = new Energy($this->getContainer());
-    }
-
-    /**
-     * Hitlist getter
-     *
-     * @return Hitlist
-     */
-    public function getHitlistObject() {
-        if (isset(self::$Instances[__FUNCTION__])) {
-            return self::$Instances[__FUNCTION__];
-        }
-
-        return self::$Instances[__FUNCTION__] = new Hitlist($this->getContainer());
     }
 
     /**

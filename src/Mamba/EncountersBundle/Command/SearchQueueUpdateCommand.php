@@ -1,16 +1,9 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
-use Mamba\EncountersBundle\Popularity;
-use Doctrine\ORM\Query\ResultSetMapping;
+use PDO;
 
 /**
  * SearchQueueUpdateCommand
@@ -45,17 +38,15 @@ class SearchQueueUpdateCommand extends CronScript {
             ON
                 e.user_id = u.user_id
             WHERE
-                u.gender = ? AND
+                u.gender = :gender AND
                 e.energy > 128 AND
-                (u.age = 0 OR (u.age >= ? AND u.age <= ?)) AND
+                (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
-                u.country_id = ? AND
-                u.region_id = ? AND
-                u.city_id = ?
+                u.country_id = :country_id AND
+                u.region_id = :region_id AND
+                u.city_id = :city_id
             ORDER BY
                 e.energy DESC
-            LIMIT
-                1024
         ",
 
         COUNTRY_AND_REGION_SEARCH_SQL = "
@@ -68,16 +59,14 @@ class SearchQueueUpdateCommand extends CronScript {
             ON
                 e.user_id = u.user_id
             WHERE
-                u.gender = ? AND
+                u.gender = :gender AND
                 e.energy > 128 AND
-                (u.age = 0 OR (u.age >= ? AND u.age <= ?)) AND
+                (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
-                u.country_id = ? AND
-                u.region_id = ?
+                u.country_id = :country_id AND
+                u.region_id = :region_id
             ORDER BY
                 e.energy DESC
-            LIMIT
-                1024
         ",
 
         COUNTRY_SEARCH_SQL = "
@@ -90,15 +79,13 @@ class SearchQueueUpdateCommand extends CronScript {
             ON
                 e.user_id = u.user_id
             WHERE
-                u.gender = ? AND
+                u.gender = :gender AND
                 e.energy > 128 AND
-                (u.age = 0 OR (u.age >= ? AND u.age <= ?)) AND
+                (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
-                u.country_id = ?
+                u.country_id = :country_id
             ORDER BY
                 e.energy DESC
-            LIMIT
-                1024
         ",
 
         /**
@@ -116,6 +103,7 @@ class SearchQueueUpdateCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -127,11 +115,20 @@ class SearchQueueUpdateCommand extends CronScript {
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }
@@ -173,18 +170,17 @@ class SearchQueueUpdateCommand extends CronScript {
         $usersAddedCount = 0;
 
         /** Ищем по базе, полностью */
-        $rsm = new ResultSetMapping;
-        $rsm->addScalarResult('user_id', 'user_id');
-        $rsm->addScalarResult('energy', 'energy');
-        $query = $this->getEntityManager()->createNativeQuery(self::FULL_SEARCH_SQL, $rsm);
-        $query->setParameter(1, $searchPreferences['gender']);
-        $query->setParameter(2, $searchPreferences['age_from']);
-        $query->setParameter(3, $searchPreferences['age_to']);
-        $query->setParameter(4, $searchPreferences['geo']['country_id']);
-        $query->setParameter(5, $searchPreferences['geo']['region_id']);
-        $query->setParameter(6, $searchPreferences['geo']['city_id']);
-        if ($result = $query->getResult()) {
-            foreach ($result as $item) {
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::FULL_SEARCH_SQL);
+
+        $stmt->bindParam('gender', $searchPreferences['gender']);
+        $stmt->bindParam('age_from', $searchPreferences['age_from']);
+        $stmt->bindParam('age_to', $searchPreferences['age_to']);
+        $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
+        $stmt->bindParam('region_id', $searchPreferences['geo']['region_id']);
+        $stmt->bindParam('city_id', $searchPreferences['geo']['city_id']);
+
+        if ($result = $stmt->execute()) {
+            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $item['user_id'])) {
 
                     try {
@@ -211,16 +207,16 @@ class SearchQueueUpdateCommand extends CronScript {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,
                     $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = $searchPreferences['age_from'],
-                    $ageTo          = $searchPreferences['age_to'],
+                    $ageFrom        = (int) $searchPreferences['age_from'],
+                    $ageTo          = (int) $searchPreferences['age_to'],
                     $target         = null,
                     $onlyWithPhoto  = true,
                     $onlyReal       = true,
                     $onlyWithWebCam = false,
                     $noIntim        = true,
-                    $countryId      = $searchPreferences['geo']['country_id'],
-                    $regionId       = $searchPreferences['geo']['region_id'],
-                    $cityId         = $searchPreferences['geo']['city_id'],
+                    $countryId      = (int) $searchPreferences['geo']['country_id'],
+                    $regionId       = (int) $searchPreferences['geo']['region_id'],
+                    $cityId         = (int) $searchPreferences['geo']['city_id'],
                     $metroId        = null,
                     $offset         = $offset + 10,
                     $blocks         = array(),
@@ -247,18 +243,16 @@ class SearchQueueUpdateCommand extends CronScript {
         if ($usersAddedCount < self::LIMIT) {
 
             /** Ищем по базе, страна и регион */
-            $rsm = new ResultSetMapping;
-            $rsm->addScalarResult('user_id', 'user_id');
-            $rsm->addScalarResult('energy', 'energy');
-            $query = $this->getEntityManager()->createNativeQuery(self::COUNTRY_AND_REGION_SEARCH_SQL, $rsm);
-            $query->setParameter(1, $searchPreferences['gender']);
-            $query->setParameter(2, $searchPreferences['age_from']);
-            $query->setParameter(3, $searchPreferences['age_to']);
-            $query->setParameter(4, $searchPreferences['geo']['country_id']);
-            $query->setParameter(5, $searchPreferences['geo']['region_id']);
+            $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_AND_REGION_SEARCH_SQL);
 
-            if ($result = $query->getResult()) {
-                foreach ($result as $item) {
+            $stmt->bindParam('gender', $searchPreferences['gender']);
+            $stmt->bindParam('age_from', $searchPreferences['age_from']);
+            $stmt->bindParam('age_to', $searchPreferences['age_to']);
+            $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
+            $stmt->bindParam('region_id', $searchPreferences['geo']['region_id']);
+
+            if ($result = $stmt->execute()) {
+                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $item['user_id'])) {
 
                         try {
@@ -275,9 +269,9 @@ class SearchQueueUpdateCommand extends CronScript {
                         }
                     }
                 }
-            }
 
-            $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            }
         }
 
         /** Никого не нашли — ищем по стране и региону */
@@ -289,15 +283,15 @@ class SearchQueueUpdateCommand extends CronScript {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,
                     $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = $searchPreferences['age_from'],
-                    $ageTo          = $searchPreferences['age_to'],
+                    $ageFrom        = (int) $searchPreferences['age_from'],
+                    $ageTo          = (int) $searchPreferences['age_to'],
                     $target         = null,
                     $onlyWithPhoto  = true,
                     $onlyReal       = true,
                     $onlyWithWebCam = false,
                     $noIntim        = true,
-                    $countryId      = $searchPreferences['geo']['country_id'],
-                    $regionId       = $searchPreferences['geo']['region_id'],
+                    $countryId      = (int) $searchPreferences['geo']['country_id'],
+                    $regionId       = (int) $searchPreferences['geo']['region_id'],
                     $cityId         = null,
                     $metroId        = null,
                     $offset         = $offset + 10,
@@ -325,18 +319,17 @@ class SearchQueueUpdateCommand extends CronScript {
         if ($usersAddedCount < self::LIMIT) {
 
             /** Ищем по базе, страна */
-            $rsm = new ResultSetMapping;
-            $rsm->addScalarResult('user_id', 'user_id');
-            $rsm->addScalarResult('energy', 'energy');
-            $query = $this->getEntityManager()->createNativeQuery(self::COUNTRY_SEARCH_SQL, $rsm);
-            $query->setParameter(1, $searchPreferences['gender']);
-            $query->setParameter(2, $searchPreferences['age_from']);
-            $query->setParameter(3, $searchPreferences['age_to']);
-            $query->setParameter(4, $searchPreferences['geo']['country_id']);
+            $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_SEARCH_SQL);
 
-            if ($result = $query->getResult()) {
-                foreach ($result as $item) {
+            $stmt->bindParam('gender', $searchPreferences['gender']);
+            $stmt->bindParam('age_from', $searchPreferences['age_from']);
+            $stmt->bindParam('age_to', $searchPreferences['age_to']);
+            $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
+
+            if ($result = $stmt->execute()) {
+                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $item['user_id'])) {
+
                         try {
                             $this->getMamba()->Photos()->get($currentUserId);
 
@@ -351,9 +344,9 @@ class SearchQueueUpdateCommand extends CronScript {
                         }
                     }
                 }
-            }
 
-            $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            }
         }
 
         /** Никого не нашли — ищем по стране */
@@ -365,14 +358,14 @@ class SearchQueueUpdateCommand extends CronScript {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,
                     $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = $searchPreferences['age_from'],
-                    $ageTo          = $searchPreferences['age_to'],
+                    $ageFrom        = (int) $searchPreferences['age_from'],
+                    $ageTo          = (int) $searchPreferences['age_to'],
                     $target         = null,
                     $onlyWithPhoto  = true,
                     $onlyReal       = true,
                     $onlyWithWebCam = false,
                     $noIntim        = true,
-                    $countryId      = $searchPreferences['geo']['country_id'],
+                    $countryId      = (int) $searchPreferences['geo']['country_id'],
                     $regionId       = null,
                     $cityId         = null,
                     $metroId        = null,
@@ -407,8 +400,8 @@ class SearchQueueUpdateCommand extends CronScript {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,
                     $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = $searchPreferences['age_from'],
-                    $ageTo          = $searchPreferences['age_to'],
+                    $ageFrom        = (int) $searchPreferences['age_from'],
+                    $ageTo          = (int) $searchPreferences['age_to'],
                     $target         = null,
                     $onlyWithPhoto  = true,
                     $onlyReal       = true,

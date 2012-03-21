@@ -3,7 +3,7 @@ namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\PlatformBundle\API\Mamba;
-use Doctrine\ORM\Query\ResultSetMapping;
+use PDO;
 
 /**
  * MutualController
@@ -14,13 +14,18 @@ class MutualController extends ApplicationController {
 
     const
 
+        /**
+         * Запрос в базу на получение данных
+         *
+         * @var str
+         */
         MUTUAL_SQL = "
             SELECT
                 d.current_user_id
             FROM
                 Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
             WHERE
-                d.web_user_id = ? and
+                d.web_user_id = :web_user_id and
                 d.current_user_id = d2.web_user_id and
                 d.decision >=0 and
                 d2.decision >= 0
@@ -34,7 +39,7 @@ class MutualController extends ApplicationController {
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction() {
+    public function indexAction($page) {
         $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -44,19 +49,37 @@ class MutualController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
+        $this->getCountersObject()->set($webUserId, 'mutual_unread', 0);
+
         $dataArray  = $this->getInitialData();
+
+        /**
+         * Пагинатор
+         *
+         * @author shpizel
+         */
+        $perPage = 25;
+        $currentPage = (int) $this->getRequest()->query->get('page') ?: $page;
+        $lastPage = ceil(intval($this->getCountersObject()->get($webUserId, 'mutual')) / $perPage);
+        if ($currentPage > $lastPage) {
+            $currentPage = $lastPage;
+        }
+
+        $dataArray['paginator'] = array(
+            'current' => $currentPage,
+            'last'    => $lastPage,
+            'max'     => 12,
+        );
+
         $data = array();
+        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::MUTUAL_SQL . " LIMIT $perPage OFFSET " . (abs($dataArray['paginator']['current'] -1) * $perPage));
+        $_webUserId = $webUserId;
+        $stmt->bindParam('web_user_id',  $_webUserId);
 
-        $rsm = new ResultSetMapping;
-        $rsm->addScalarResult('current_user_id', 'current_user_id');
-        $query = $this->getDoctrine()->getEntityManager()->createNativeQuery(self::MUTUAL_SQL, $rsm);
-        $query->setParameter(1, $webUserId);
-        $result = $query->getResult();
-
-        if ($result) {
+        if ($result = $stmt->execute()) {
             $usersArray = array();
-            foreach ($result as $item) {
-                $usersArray[$item['current_user_id']] = 1;
+            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $usersArray[(int) $item['current_user_id']] = 1;
             }
 
             $usersArray = array_reverse($usersArray, true);

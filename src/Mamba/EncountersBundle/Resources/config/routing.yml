@@ -22,21 +22,21 @@ search:
 # Страница взаимных симпатий
 mutual:
     pattern: /mutual
-    defaults: { _controller: EncountersBundle:Mutual:index }
+    defaults: { _controller: EncountersBundle:Mutual:index, page: 1 }
     requirements:
         _method: GET
 
 # Страница моего хитлиста
 visitors:
     pattern: /visitors
-    defaults: { _controller: EncountersBundle:Visitors:index }
+    defaults: { _controller: EncountersBundle:Visitors:index, page: 1 }
     requirements:
         _method: GET
 
 # Страница мной просмотренных
 mychoice:
     pattern: /mychoice
-    defaults: { _controller: EncountersBundle:MyChoice:index }
+    defaults: { _controller: EncountersBundle:MyChoice:index, page: 1 }
     requirements:
         _method: GET
 

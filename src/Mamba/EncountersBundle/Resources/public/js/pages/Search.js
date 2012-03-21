@@ -109,7 +109,13 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-            $Layers.showPopularityLayer();
+            $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 3);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
             return false;
         });
     },
@@ -134,25 +140,28 @@ $Search = {
                 $data = $data.data;
                 if ($data.hasOwnProperty('counters')) {
                     if ($data['counters']['mychoice'] > 0) {
-                        $('li.item-mychoice a i').text($data['counters']['mychoice']);
+                        $('li.item-mychoice a i').eq(0).text($data['counters']['mychoice']);
                     }
 
-                    if ($data['counters']['visited'] > 0 ) {
-                        $('li.item-visitors a i').text($data['counters']['visited']);
+                    if ($data['counters']['visitors'] > 0 ) {
+                        $('li.item-visitors a i').eq(0).text($data['counters']['visitors']);
                     }
 
                     if ($data['counters']['mutual'] > 0) {
-                        $('li.item-mutual a i').text($data['counters']['mutual']);
+                        $('li.item-mutual a i').eq(0).text($data['counters']['mutual']);
                     }
                 }
 
-                $Search.showNextPhoto();
+
             } else {
                 $status = $data.status;
                 $message = $data.message;
 
-                alert($status + ": " + $message);
+                //alert($status + ": " + $message);
             }
+
+            /** Следующую фотку показываем в любом случае — насрать н ошибки */
+            $Search.showNextPhoto();
         }, 'json');
     },
 

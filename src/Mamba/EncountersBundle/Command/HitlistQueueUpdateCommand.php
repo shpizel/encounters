@@ -1,13 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -48,6 +42,7 @@ class HitlistQueueUpdateCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -59,11 +54,20 @@ class HitlistQueueUpdateCommand extends CronScript {
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }

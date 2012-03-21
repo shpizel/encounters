@@ -1,13 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Doctrine\ORM\Query\ResultSetMapping;
 use PDO;
 
@@ -190,7 +184,6 @@ class DatabaseCleanCommand extends CronScript {
             $counter = (int) $item['counter'];
 
             $this->getCountersObject()->set($userId, 'visitors', $counter);
-            $this->getCountersObject()->set($userId, 'visited', $counter);
         }
     }
 }

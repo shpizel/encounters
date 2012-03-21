@@ -1,13 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -48,6 +42,7 @@ class ContactsQueueUpdateCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -59,11 +54,20 @@ class ContactsQueueUpdateCommand extends CronScript {
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }
@@ -102,21 +106,26 @@ class ContactsQueueUpdateCommand extends CronScript {
             return;
         }
 
-        if ($contactList = $Mamba->Contacts()->getContactList()) {
+        if ($contactsFolders = $Mamba->Contacts()->getFolderList()) {
             $usersAddedCount = 0;
 
-            foreach ($contactList['contacts'] as $contact) {
-                $contactInfo = $contact['info'];
-                list($currentUserId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
-                if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
-                    if ($gender == $searchPreferences['gender']) {
-                        if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
-                            if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                                $this->getContactsQueueObject()->put($webUserId, $currentUserId)
-                                    && $usersAddedCount++;
+            foreach ($contactsFolders['folders'] as $folder) {
 
-                                if ($usersAddedCount >= self::LIMIT) {
-                                    break;
+                $this->log("Parsing " . $folder['title'] . "..", 64);
+
+                if ($contactList = $Mamba->Contacts()->getFolderContactList($folder['folder_id'])) {
+                    foreach ($contactList['contacts'] as $contact) {
+                        $contactInfo = $contact['info'];
+                        list($currentUserId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
+                        if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
+                            if ($gender == $searchPreferences['gender']) {
+                                if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                                    $this->getContactsQueueObject()->put($webUserId, $currentUserId)
+                                        && $usersAddedCount++;
+
+                                    if ($usersAddedCount >= self::LIMIT) {
+                                        break 2;
+                                    }
                                 }
                             }
                         }

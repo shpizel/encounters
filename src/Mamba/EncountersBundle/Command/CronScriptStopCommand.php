@@ -1,57 +1,53 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\Script;
 
 /**
  * CronScriptStopCommand
  *
  * @package EncountersBundle
  */
-class CronScriptStopCommand extends ContainerAwareCommand {
+class CronScriptStopCommand extends Script {
+
+    const
+
+        /**
+         * Описание скрипта
+         *
+         * @var str
+         */
+        SCRIPT_DESCRIPTION = "Stops cron scripts",
+
+        /**
+         * Имя скрипта
+         *
+         * @var str
+         */
+        SCRIPT_NAME = "cron:stop"
+    ;
 
     /**
-     * Конфигурирование крон-скрипта
+     * Processor
      *
-     *
+     * @return null
      */
-    protected function configure() {
-        $this->setName('cron:stop')->setDescription("Stops cron scripts");
-    }
-
-    /**
-     * Экзекутор
-     *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return mixed
-     */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function process() {
         $Memcache = $this->getContainer()->get('memcache');
         if ($crons = $this->getCronScriptsList()) {
             $Memcache->add("cron:stop", time(), 3600);
 
             $timeout = 0;
             while ($crons = $this->getCronScriptsList()) {
-                $output->writeln("Waiting for " . implode(", ", $crons));
+                $this->log("Waiting for " . implode(", ", $crons));
                 sleep(1);
                 $timeout++;
-
-                if ($timeout > 5*60) {
-                    exec("kill -9 " . implode(" ", $crons));
-                }
             }
 
             $Memcache->delete("cron:stop");
-            $output->writeln("<info>OK</info>");
+            $this->log("OK", 64);
         } else {
-            $output->writeln("<error>No cron scripts was found!</error>");
+            $this->log("No cron scripts were found!", 16);
         }
     }
 

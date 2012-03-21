@@ -52,17 +52,14 @@ class DecisionController extends ApplicationController {
         } elseif (!$this->validateParams()) {
             list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
         } else {
-
-            /** Пишем в хитлист */
-            $this->getHitlistObject()->incr($this->currentUserId);
-
             /** Инкрементируем счетчик выбора у webUser'a */
             if ($this->decision + 1 > 0) {
                 $this->getCountersObject()->incr($this->webUserId, 'mychoice');
             }
 
             /** Инкрементируем счетчик просмотров у currentUser'a */
-            $this->getCountersObject()->incr($this->currentUserId, 'visited');
+            $this->getCountersObject()->incr($this->currentUserId, 'visitors');
+            $this->getCountersObject()->incr($this->currentUserId, 'visitors_unread');
 
             /** Увеличить энергию WebUser'a */
             $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
@@ -113,6 +110,9 @@ class DecisionController extends ApplicationController {
 
                     $this->getCountersObject()->incr($this->webUserId, 'mutual');
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual');
+
+                    $this->getCountersObject()->incr($this->webUserId, 'mutual_unread');
+                    $this->getCountersObject()->incr($this->currentUserId, 'mutual_unread');
                 }
             }
 
@@ -123,7 +123,7 @@ class DecisionController extends ApplicationController {
             $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'decision'=>$this->decision));
 
             $this->json['data']['counters'] = array(
-                'visited'  => (int) $this->getCountersObject()->get($this->webUserId, 'visited'),
+                'visitors' => (int) $this->getCountersObject()->get($this->webUserId, 'visitors'),
                 'mychoice' => (int) $this->getCountersObject()->get($this->webUserId, 'mychoice'),
                 'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
             );

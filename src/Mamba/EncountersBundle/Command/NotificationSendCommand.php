@@ -1,13 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use Mamba\EncountersBundle\Command\CronScript;
+use Mamba\EncountersBundle\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -45,7 +39,7 @@ class NotificationSendCommand extends CronScript {
          *
          * @var str
          */
-        PERSONAL_MESSAGE = "%s, я отметил%s тебя в приложении «Выбиратор»!",
+        PERSONAL_MESSAGE = "%s отметил%s вас в приложении «Выбиратор», перейдите по ссылке и узнайте как! В «Выбираторе» очень удобно смотреть и оценивать пользователей, плюс — ваши фотографии тоже очень быстро получат множество просмотров и оценок ;)",
 
         /**
          * Сообщение от менеджера приложений
@@ -62,6 +56,7 @@ class NotificationSendCommand extends CronScript {
      */
     protected function process() {
         $worker = $this->getGearman()->getWorker();
+        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, function($job) use($class) {
@@ -73,11 +68,20 @@ class NotificationSendCommand extends CronScript {
             }
         });
 
-        $this->log("Iterations: {$this->iterations}", 64);
-        while ($worker->work() && --$this->iterations && !$this->getMemcache()->get("cron:stop")) {
+        while
+        (
+            !$this->getMemcache()->get("cron:stop") &&
+            ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            --$this->iterations &&
+            (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
+        ) {
             $this->log("Iterations: {$this->iterations}", 64);
-
-            if ($worker->returnCode() != GEARMAN_SUCCESS) {
+            if ($worker->returnCode() == GEARMAN_TIMEOUT) {
+                $this->log("Timed out", 48);
+                continue;
+            } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
+                $this->log("Success", 16);
                 break;
             }
         }
@@ -114,6 +118,8 @@ class NotificationSendCommand extends CronScript {
             $this->log("Personal spam message: " . ($message));
 
             if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
+                if ($this->getMemcache()->add("personal_" . $currentUserId . "_spam", time(), 7*24*3600)) {
+
                 if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
                     if (isset($result['sended']) && $result['sended']) {
                         $this->log('SUCCESS', 64);
@@ -121,6 +127,9 @@ class NotificationSendCommand extends CronScript {
                     } else {
                         $this->log('FAILED', 16);
                     }
+                }
+                } else {
+                    $this->log("Too much frequently", 16);
                 }
             } else {
                 $this->log("Already app user", 16);
@@ -139,7 +148,7 @@ class NotificationSendCommand extends CronScript {
         if ($message = $this->getNotifyMessage($currentUserId)) {
             $this->log("Notify spam message: " . ($message));
 
-            if ($this->getMemcache()->add("notify_" . $currentUserId, time(), 3*3600)) {
+            if ($this->getMemcache()->add("notify_" . $currentUserId, time(), 5*3600)) {
                 if ($result = $Mamba->Notify()->sendMessage($currentUserId, $message)) {
                     if (isset($result['count']) && $result['count']) {
                         $this->log('SUCCESS', 64);
@@ -183,8 +192,8 @@ class NotificationSendCommand extends CronScript {
      * @return str
      */
     private function getAchievement($userId) {
-        if ($visitors = $this->getCountersObject()->get($userId, 'visited')) {
-            return sprintf(self::ACHIEVEMENT_MESSAGE, $this->getCountersObject()->get($userId, 'visited'));
+        if ($visitors = $this->getCountersObject()->get($userId, 'visitors')) {
+            return sprintf(self::ACHIEVEMENT_MESSAGE, $this->getCountersObject()->get($userId, 'visitors'));
         }
     }
 
@@ -216,7 +225,7 @@ class NotificationSendCommand extends CronScript {
             $name = explode(" ", $name);
             $name = array_shift($name);
 
-            return sprintf(self::PERSONAL_MESSAGE, $name, $anketas[1]['info']['gender'] == 'F' ? 'а': '');
+            return sprintf(self::PERSONAL_MESSAGE, $name, $anketas[0]['info']['gender'] == 'F' ? 'а': '');
         }
     }
 }

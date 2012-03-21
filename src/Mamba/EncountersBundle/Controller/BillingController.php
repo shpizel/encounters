@@ -137,7 +137,7 @@ class BillingController extends ApplicationController {
                             $item->setBilled(false);
                         }
                     } elseif ($serviceId == 3) {
-                        $this->getEnergyObject()->incr($webUserId, 350);
+                        $this->getEnergyObject()->incr($webUserId, 15*100);
                         $item->setBilled(true);
 
                         $this->getNotificationsObject()->set($webUserId, "Ура! Теперь вы получите 100 внеочередных показов!");

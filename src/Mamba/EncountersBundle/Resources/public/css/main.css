@@ -19,7 +19,7 @@ menu, nav, section, summary, time, mark, audio, video {
 
 html, body {
 	height: 100%;
-    min-width: 768px;
+    min-width: 830px;
 }
 
 table { border-collapse:collapse; border-spacing:0; }
@@ -164,6 +164,17 @@ h5{ font-size: 100%; }
 	color: #ff6600;
 	padding: 0 0 0 13px;
 	text-decoration: none;
+}
+
+.info-meet li i.plus{
+    color: #ff6600;
+    text-decoration: none;
+}
+
+.info-meet li i.plus b {
+    color: #ff6600;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 .info-meet li.item-popul {
@@ -328,7 +339,7 @@ h5{ font-size: 100%; }
 .app-block-no-popular .arrow{
 	background:none;
 	position: absolute;
-	right: 250px; top: -18px;
+	right: 252px; top: -18px;
 	margin-left: -9px;
 	border: 9px solid transparent;
 	border-bottom: 9px solid #fc6500;
@@ -1073,4 +1084,25 @@ div.yes div.ramka {
     background: url('/bundles/encounters/images/hitlist-ramka-2.png');
 }
 
+div.paginator {
+    overflow: hidden;
+}
 
+div.paginator a {
+    float:left; -moz-border-radius:4px; -webkit-border-radius:4px; border-radius:4px; background:#F2F2F2; font-size:20px; margin:0 10px 30px 0; padding:7px 14px;
+}
+
+div.paginator a:hover { background:#E1E1E1; }
+div.paginator a.selected { background:50% 50% repeat-x #F98300 !important; color:#FFFFFF; cursor:default; text-decoration:none; }
+
+div.mychoice div.pictures div.mpic {
+    margin-bottom: 43px;
+}
+
+div.visitors div.pictures div.mpic {
+    margin-bottom: 43px;
+}
+
+div.mutual div.pictures div.mpic {
+    margin-right: 25px;
+}

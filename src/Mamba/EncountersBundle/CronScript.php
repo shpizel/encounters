@@ -1,5 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle\Command;
+namespace Mamba\EncountersBundle;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Mamba\EncountersBundle\Command\Script;
+use Mamba\EncountersBundle\Script;
 
 /**
  * CronScriptCommand
@@ -23,7 +23,28 @@ abstract class CronScript extends Script {
          *
          * @var int
          */
-        DEFAULT_ITERATIONS_COUNT = 100
+        DEFAULT_ITERATIONS_COUNT = 100,
+
+        /**
+         * Дефолтное значение максимальной используемой памяти
+         *
+         * @var int
+         */
+        DEFAULT_MEMORY_LIMIT = 0 /** NOLIMIT */,
+
+        /**
+         * Дефолтное значение максимальной времени исполнения
+         *
+         * @var int
+         */
+        DEFAULT_LIFETIME = 0 /* undead */,
+
+        /**
+         * Время на получение нового задания
+         *
+         * @var int
+         */
+        GEARMAN_WORKER_TIMEOUT = 5000
     ;
 
     /**
@@ -37,6 +58,8 @@ abstract class CronScript extends Script {
             ->setDescription(static::SCRIPT_DESCRIPTION)
             ->addOption('copy', null, InputOption::VALUE_OPTIONAL, 'Number of copy', static::DEFAULT_COPY_NUMBER)
             ->addOption('iterations', null, InputOption::VALUE_OPTIONAL, 'Iterations to restart', static::DEFAULT_ITERATIONS_COUNT)
+            ->addOption('memory', null, InputOption::VALUE_OPTIONAL, 'Memory limit', static::DEFAULT_MEMORY_LIMIT)
+            ->addOption('lifetime', null, InputOption::VALUE_OPTIONAL, 'Lifetime', static::DEFAULT_LIFETIME)
             ->addOption('daemon', null, InputOption::VALUE_OPTIONAL, 'Daemonize', 'no')
             ->addOption('debug', null, InputOption::VALUE_OPTIONAL, 'Debug', 'yes')
         ;
@@ -52,6 +75,8 @@ abstract class CronScript extends Script {
     protected function execute(InputInterface $input, OutputInterface $output) {
         $copy = (int) $input->getOption('copy');
         $iterations = (int) $input->getOption('iterations');
+        $memory = (int) $input->getOption('memory');
+        $lifetime = (int) $input->getOption('lifetime');
         $daemon = $input->getOption('daemon') == 'yes';
         $debug = $input->getOption('debug') == 'yes';
 
@@ -59,12 +84,22 @@ abstract class CronScript extends Script {
             throw new CronScriptException("Invalid --copy param");
         }
 
+        if ($memory < 0) {
+            throw new CronScriptException("Invalid --memory param");
+        }
+
+        if ($lifetime < 0) {
+            throw new CronScriptException("Invalid --lifetime param");
+        }
+
         if ($daemon && $debug) {
             throw new CronScriptException("Could not start daemon with debug");
         }
 
-        list($this->input, $this->output, $this->copy, $this->iterations, $this->daemon, $this->debug)
-            = array($input, $output, $copy, $iterations, $daemon, $debug);
+        list($this->input, $this->output, $this->copy, $this->memory, $this->lifetime, $this->iterations, $this->daemon, $this->debug)
+            = array($input, $output, $copy, $memory, $lifetime, $iterations, $daemon, $debug);
+
+        $this->started = time();
 
         if ($this->daemon) {
 
