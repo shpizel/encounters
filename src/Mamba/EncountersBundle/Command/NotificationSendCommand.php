@@ -192,8 +192,30 @@ class NotificationSendCommand extends CronScript {
      * @return str
      */
     private function getAchievement($userId) {
-        if ($visitors = $this->getCountersObject()->get($userId, 'visitors')) {
-            return sprintf(self::ACHIEVEMENT_MESSAGE, $this->getCountersObject()->get($userId, 'visitors'));
+        //Меня оценили %d человек, я сам%s — %d и у меня %d взаимных симпатий!
+
+        $visitors = $this->getCountersObject()->get($userId, 'visitors');
+        $mychoice = $this->getCountersObject()->get($userId, 'mychoice');
+        $mutual   = $this->getCountersObject()->get($userId, 'mutual');
+
+        if ($visitors) {
+            $message = "Меня оценили $visitors человек";
+            if ($mychoice && ($response = $this->getMamba()->Anketa()->getInfo($userId))) {
+
+                if ($response[0]['info']['gender'] == 'F') {
+                    $message.= ", я сама — $mychoice";
+                } else {
+                    $message.= ", я сам — $mychoice";
+                }
+
+                if ($mutual) {
+                    $message.= " и у меня $mutual взаимных симпатий";
+                }
+            }
+
+            $message.= "!";
+
+            return $message;
         }
     }
 
@@ -208,7 +230,25 @@ class NotificationSendCommand extends CronScript {
             $name = $anketa[0]['info']['name'];
             $name = explode(" ", $name);
             $name = array_shift($name);
-            return sprintf(self::NOTIFY_MESSAGE, $name);
+
+            $visitorsUnread = (int) $this->getCountersObject()->get($currentUserId, 'visitors_unread');
+            $mutualUnread   = (int) $this->getCountersObject()->get($currentUserId, 'mutual_unread');
+
+            if ($visitorsUnread && !$mutualUnread) {
+                if ($visitorsUnread == 1) {
+                    $message = "$name, у вас появилась новая оценка в приложении «Выбиратор»!";
+                } else {
+                    $message = "$name, у вас $visitorsUnread новых оценок в приложении «Выбиратор»!";
+                }
+            } elseif ($mutualUnread && !$visitorsUnread) {
+                $message = "$name, вам ответили взаимностью в приложении «Выбиратор»!";
+            } elseif ($mutualUnread && $visitorsUnread) {
+                $message = "$name, у вас $visitorsUnread новых оценок и $mutualUnread взаимных симпатии в приложении «Выбиратор»!";
+            }
+
+            if (isset($message)) {
+                return $message;
+            }
         }
     }
 
@@ -221,11 +261,11 @@ class NotificationSendCommand extends CronScript {
      */
     private function getPersonalMessage($webUserId, $currentUserId) {
         if ($anketas = $this->getMamba()->Anketa()->getInfo(array($currentUserId, $webUserId))) {
-            $name = $anketas[0]['info']['name'];
+            $name = $anketas[1]['info']['name'];
             $name = explode(" ", $name);
             $name = array_shift($name);
 
-            return sprintf(self::PERSONAL_MESSAGE, $name, $anketas[0]['info']['gender'] == 'F' ? 'а': '');
+            return sprintf(self::PERSONAL_MESSAGE, $name, $anketas[1]['info']['gender'] == 'F' ? 'а': '');
         }
     }
 }

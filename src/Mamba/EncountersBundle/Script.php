@@ -359,6 +359,19 @@ abstract class Script extends ContainerAwareCommand {
     }
 
     /**
+     * Purchased object getter
+     *
+     * @return Purchased
+     */
+    public function getPurchasedObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Purchased($this->getContainer());
+    }
+
+    /**
      * Процессор, имплементируемый в потомках
      *
      * @abstract

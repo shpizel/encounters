@@ -13,13 +13,15 @@ $Interface = {
      */
     init: function($route) {
 
-        if ((window.top == window.self) && (!$Config.get('debug')) && (window.location.href.indexOf('ym_playback') < 0)) {
-            top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
-        } else {
-            var $documentHeight = $('#wrapper').height();
-            mamba.init(function() {
-                mamba.method("resizeWindow", '100%', ($documentHeight > 1000) ? $documentHeight : 1000);
-            });
+        if (window.location.href.indexOf('ym_playback') < 0) {
+            if ((window.top == window.self) && (!$Config.get('debug'))) {
+                top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
+            } else {
+                var $documentHeight = $('#wrapper').height();
+                mamba.init(function() {
+                    mamba.method("resizeWindow", '100%', ($documentHeight > 1000) ? $documentHeight : 1000);
+                });
+            }
         }
 
         $("div.notification a.close").click(function() {

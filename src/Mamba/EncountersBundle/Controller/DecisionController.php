@@ -108,6 +108,9 @@ class DecisionController extends ApplicationController {
                         'mutual' => true,
                     );
 
+                    $this->getPurchasedObject()->add($this->webUserId, $this->currentUserId);
+                    $this->getPurchasedObject()->add($this->currentUserId, $this->webUserId);
+
                     $this->getCountersObject()->incr($this->webUserId, 'mutual');
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual');
 
