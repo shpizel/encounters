@@ -159,7 +159,7 @@ $Search = {
 
                 top.location.reload();
             }
-        }).onerror(function() {
+        }).error(function() {
             top.location.reload();
         });
     },
@@ -383,7 +383,7 @@ $Search = {
                     }, 1500);
                 }
             }
-        }).onerror(function() {
+        }).error(function() {
             top.location.reload();
         });
     }
