@@ -157,10 +157,10 @@ $Search = {
                 $status = $data.status;
                 $message = $data.message;
 
-                top.location.reload();
+                top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
             }
         }).error(function() {
-            top.location.reload();
+            top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
         });
     },
 
@@ -384,7 +384,7 @@ $Search = {
                 }
             }
         }).error(function() {
-            top.location.reload();
+            top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
         });
     }
 }
