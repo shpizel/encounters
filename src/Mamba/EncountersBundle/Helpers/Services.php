@@ -17,7 +17,7 @@ class Services extends Helper {
          *
          * @var str
          */
-        REDIS_LIST_USER_SERVICES_KEY = "lservices_by_%d"
+        REDIS_LIST_USER_SERVICES_KEY = "services_by_%d"
     ;
 
     protected

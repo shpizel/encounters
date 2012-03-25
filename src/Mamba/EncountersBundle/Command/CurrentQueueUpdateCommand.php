@@ -72,7 +72,7 @@ class CurrentQueueUpdateCommand extends CronScript {
         (
             !$this->getMemcache()->get("cron:stop") &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
-             ((memory_get_usage() < $this->memory) || !$this->memory) &&
+            ((memory_get_usage() < $this->memory) || !$this->memory) &&
             --$this->iterations &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
@@ -81,10 +81,14 @@ class CurrentQueueUpdateCommand extends CronScript {
                 $this->log("Timed out", 48);
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
-                $this->log("Success", 16);
+                $this->log("Failed", 16);
                 break;
+            } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
+                $this->log("Success", 64);
             }
         }
+
+        $this->log("Bye", 48);
     }
 
     /**

@@ -156,34 +156,5 @@ class DatabaseCleanCommand extends CronScript {
 //            $chunk = array();
 //        }
 
-        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MUTUALS_COUNT);
-        $stmt->execute();
-
-        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['counter'];
-
-            $this->getCountersObject()->set($userId, 'mutual', $counter);
-        }
-
-        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MYCHOICE_COUNT);
-        $stmt->execute();
-
-        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['counter'];
-
-            $this->getCountersObject()->set($userId, 'mychoice', $counter);
-        }
-
-        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_VISITORS_COUNT);
-        $stmt->execute();
-
-        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['counter'];
-
-            $this->getCountersObject()->set($userId, 'visitors', $counter);
-        }
     }
 }

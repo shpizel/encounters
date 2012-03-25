@@ -83,10 +83,14 @@ class DatabaseUserUpdateCommand extends CronScript {
                 $this->log("Timed out", 48);
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
-                $this->log("Success", 16);
+                $this->log("Failed", 16);
                 break;
+            } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
+                $this->log("Success", 64);
             }
         }
+
+        $this->log("Bye", 48);
     }
 
     /**

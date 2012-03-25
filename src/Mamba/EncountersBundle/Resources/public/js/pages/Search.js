@@ -152,17 +152,16 @@ $Search = {
                     }
                 }
 
-
+                $Search.showNextPhoto();
             } else {
                 $status = $data.status;
                 $message = $data.message;
 
-                //alert($status + ": " + $message);
+                top.location.reload();
             }
-
-            /** Следующую фотку показываем в любом случае — насрать н ошибки */
-            $Search.showNextPhoto();
-        }, 'json');
+        }).onerror(function() {
+            top.location.reload();
+        });
     },
 
     /**
@@ -384,6 +383,8 @@ $Search = {
                     }, 1500);
                 }
             }
-        }, 'json');
+        }).onerror(function() {
+            top.location.reload();
+        });
     }
 }
