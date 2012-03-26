@@ -72,6 +72,10 @@ class SearchController extends ApplicationController {
                             'small_photo_url'  => $dataArray['info']['small_photo_url'],
                             'medium_photo_url' => $dataArray['info']['medium_photo_url'],
                             'is_app_user'      => $dataArray['info']['is_app_user'],
+                            'location'         => $dataArray['location'],
+                            'flags'            => $dataArray['flags'],
+                            'familiarity'      => $dataArray['familiarity'],
+                            'other'            => $dataArray['other'],
                         ),
                     );
                 }

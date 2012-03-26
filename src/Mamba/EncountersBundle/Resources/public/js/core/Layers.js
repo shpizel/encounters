@@ -67,6 +67,15 @@ $Layers = {
 
             return false;
         });
+
+        $("div.layer-user-info a.ui-btn").click(function() {
+            var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
+            try {
+                $Config.get('messenger.popup') && $Config.get('messenger.popup').close();
+                $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $Search.$storage['currentQueueElement']['info']['id'] ,"Messenger","width=750,height="+e+",resizable=1,scrollbars=1"));
+                $Config.get('messenger.popup').focus();
+            } catch (e) {}
+        });
     },
 
     /**
@@ -244,6 +253,34 @@ $Layers = {
         }
 
         $("div.layer-battery").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер пользовательского инфо при клике на юзера
+     *
+     * @shows layer
+     */
+    showUserInfoLayer: function($data) {
+        this.hideInners();
+
+        var currentQueueElement = $Search.$storage['currentQueueElement'];
+        $("div.layer-user-info div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        $("div.layer-user-info div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+
+        if (currentQueueElement['info']['gender'] == 'F') {
+            $("div.layer-user-info div.info div.name i").removeClass('male');
+            $("div.layer-user-info div.info div.name i").addClass('female');
+        } else {
+            $("div.layer-user-info div.info div.name i").removeClass('female');
+            $("div.layer-user-info div.info div.name i").addClass('male');
+        }
+
+        $("div.layer-user-info div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-user-info div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-user-info div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
+
+        $("div.layer-user-info").show();
         this.showLayer();
     },
 

@@ -56,7 +56,24 @@ $Search = {
                 } else if ($data.status == 3) {
                     $Layers.showEnergyLayer();
                 }
-            }, 'json');
+            });
+
+            return false;
+        });
+
+        $("div.app-image-member div.name-container div.content a").click(function() {
+            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $data = $data.data;
+                    if ($data.hasOwnProperty('charge')) {
+                        $Battery.setCharge($data.charge);
+                    }
+
+                    $Layers.showUserInfoLayer();
+                } else if ($data.status == 3) {
+                    $Layers.showEnergyLayer();
+                }
+            });
 
             return false;
         });
@@ -70,7 +87,7 @@ $Search = {
     lockUI: function() {
         $("div.app-meet-button").fadeTo('fast', 0.6);
         $("div.app-lenta-img").hide();
-        $("div.app-info-user").hide();
+        $("div.name-container").hide();
         $("p.app-see-block").fadeTo('fast', 0.6);
         $("div.app-image-member img.app-image").hide();
         $("a.rarr").hide();
@@ -176,27 +193,25 @@ $Search = {
             this.$storage['currentPhotoNumber'] = 0;
             this.rebuildThumbsPanel();
 
-            //$("div.app-info-user a").html($currentQueueElement['info']['name']).attr({target:'_blank','href':$Config.get('platform').partner_url + "anketa.phtml?oid=" + $currentQueueElement['info']['id']});
-            $("div.app-info-user a").html($currentQueueElement['info']['name']).click(function() {
-                return false;
-            });
+            $("div.app-image-member div.name-container div.content a").html($currentQueueElement['info']['name']);
+
             if ($currentQueueElement['info']['age']) {
-                $("div.app-info-user span").html($currentQueueElement['info']['age']);
+                $("div.app-image-member div.name-container div.content span").html($currentQueueElement['info']['age']);
             } else {
-                $("div.app-info-user span").html("");
+                $("div.app-image-member div.name-container div.content span").html("");
             }
 
             if ($currentQueueElement['info']['gender'] == 'F') {
-                $("div.app-info-user i").removeClass('male');
-                $("div.app-info-user i").addClass('female');
+                $("div.app-image-member div.name-container div.content i").removeClass('male');
+                $("div.app-image-member div.name-container div.content i").addClass('female');
             } else {
-                $("div.app-info-user i").removeClass('female');
-                $("div.app-info-user i").addClass('male');
+                $("div.app-image-member div.name-container div.content i").removeClass('female');
+                $("div.app-image-member div.name-container div.content i").addClass('male');
             }
 
             $("div.app-meet-button").fadeTo('normal', 1);
             $("div.app-lenta-img").show();
-            $("div.app-info-user").show();
+            $("div.app-image-member div.name-container").show();
             $("p.app-see-block").fadeTo('normal', 1);
 
             $("div.app-image-member img.app-image").attr({'src': $currentQueueElement['photos'][0]['huge_photo_url']}).show();
@@ -240,20 +255,14 @@ $Search = {
                 $("a.larr").show();
             }
 
-//            console.log('current photo number: '+$currentPhotoNumber);
-//            console.log('photos count: '+ $photosCount);
-
             var $withOffset = ($currentPhotoNumber >= ($photosCount > $photosPerPage ? $photosPerPage: $photosCount));
-//            console.log('with offset: ' + $withOffset);
+
             var $from = ($withOffset ? ($currentPhotoNumber + 1 - ($photosCount > $photosPerPage ? $photosPerPage: $photosCount)) : 0);
             if ($from + $photosPerPage >= $photosCount) {
                 var $to = $photosCount;
             } else {
                 var $to = $from + $photosPerPage;
             }
-
-//            console.log('from:' + $from);
-//            console.log('to: ' + $to);
 
             for (var $i = $from;$i<$to;$i++) {
                 $html += "<a class='" + ($i == this.$storage['currentPhotoNumber'] ? 'select' : '') + "' href=\"#\" pid='" + $i + "' style=\"background-image: url('" +  $currentQueueElement['photos'][$i]['small_photo_url'] + "')\"></a>";

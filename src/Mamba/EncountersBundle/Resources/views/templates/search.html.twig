@@ -26,7 +26,18 @@
         <p class="app-see-block">{% if webuser.preferences.gender == 'F' %}Она уже видела{% else %}Он уже видел{% endif %} ваше фото? <a href="#">Узнайте</a></p>
 
         <div class="app-image-member">
-            <center><img class="app-image"/></center>
+            <div class="image-container">
+                <div class="name-container">
+                    <div class="container">
+                        <div class="left"></div>
+                        <div class="right"></div>
+                        <div class="content">
+                            <a href="#"></a>  <i class="ico"></i> <span></span>
+                        </div>
+                    </div>
+                </div>
+                <img class="app-image"/>
+            </div>
         </div>
 
         <div class="app-lenta">
@@ -37,7 +48,7 @@
             <a href="#" class="rarr"><img height="31" width="31" src="/bundles/encounters/images/strelki-tuda_1.png"></a>
         </div>
 
-        <div class="app-info-user"><a href="#"></a>  <i class="ico"></i> <span></span></div>
+        {#<div class="app-info-user"><a href="#"></a>  <i class="ico"></i> <span></span></div>#}
     </div>
 
     {% include 'EncountersBundle:layers:layers.html.twig' %}

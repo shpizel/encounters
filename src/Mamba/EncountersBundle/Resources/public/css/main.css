@@ -691,6 +691,45 @@ h5{ font-size: 100%; }
 	font-size: 18px;
 }
 
+.layer-user-info {
+    /*background: #ccc;*/
+}
+
+.layer-user-info div.info {
+    font-size: 13px;
+    padding:20px;
+    padding-bottom:30px;
+}
+
+.layer-user-info div.info div.face {
+    float: left;
+    margin-right:15px;
+}
+
+
+.layer-user-info div.info div.face img {
+    box-shadow: 0 0 2px #666;
+    padding: 4px;
+    width:110px;
+    height:150px;
+}
+
+.layer-user-info div.info div.name {
+    font-size:24px;
+    margin-bottom: 3px;
+}
+
+.layer-user-info div.info div.location {
+    color: #666;
+}
+
+.layer-user-info div.info div.age {
+    margin-top: 4px;
+}
+
+.layer-user-info div.info div.lookingfor {
+    margin-top:10px;
+}
 
 .layer-no .title{
 	text-indent: -330em; margin:10px 0 30px 0;
@@ -1105,4 +1144,56 @@ div.visitors div.pictures div.mpic {
 
 div.mutual div.pictures div.mpic {
     margin-right: 25px;
+}
+
+div.app-image-member div.image-container {
+    text-align: center;
+
+}
+
+div.app-image-member div.name-container {
+    position: absolute;
+    left:0px;
+    right:0px;
+    top:4px;
+}
+
+div.app-image-member div.name-container div.container {
+    margin: 0 auto;
+    overflow:hidden;
+    height:20px;
+    display: inline-block;
+}
+
+div.app-image-member div.container div.left {
+    float:left;
+    width: 16px;
+    height: 20px;
+
+    background: url('/bundles/encounters/images/name-bg.png');
+}
+
+div.app-image-member div.container div.right {
+    float:right;
+    width: 16px;
+    height: 20px;
+
+    background: url('/bundles/encounters/images/name-bg.png') 16px 0;
+}
+
+div.app-image-member div.container div.content {
+    padding:0 7px;
+    margin-left:16px;
+    margin-right:16px;
+    height:20px;
+    background: #fff;
+
+    font-size: 11px;
+    text-align: center;
+
+    padding-top:1px;
+}
+
+div.app-image-member div.container div.content span {
+    font-weight: bold;
 }
