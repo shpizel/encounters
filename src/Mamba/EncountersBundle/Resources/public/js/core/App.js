@@ -15,6 +15,11 @@ $App = {
 
             /** Инициализируем интерфейс */
             $Interface.init(this.$route);
+
+            /** Очередь для приглашений */
+            /*$inviteQueue = jQuery.extend(true, {}, $Queue);
+            $inviteQueue.$storage = [];*/
+
             return this;
         }
     },

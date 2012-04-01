@@ -25,9 +25,10 @@ $Interface = {
         }
 
         $("div.notification a.close").click(function() {
-            $.post($Routing.getPath('notification.remove'), function($data) {
+            $.post($Routing.getPath('variable.set'), {'key': 'notification_hidden', 'data': 1}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $("div.notification").hide();
+
                 }
             });
 

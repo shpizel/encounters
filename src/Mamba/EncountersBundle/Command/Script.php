@@ -1,5 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle;
+namespace Mamba\EncountersBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,16 +19,17 @@ use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
 use Mamba\EncountersBundle\Helpers\Queues\SearchQueue;
 use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
 
+use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
-use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\Energy;
-use Mamba\EncountersBundle\Helpers\Notifications;
+use Mamba\EncountersBundle\Helpers\Counters;
 use Mamba\EncountersBundle\Helpers\PlatformSettings;
 use Mamba\EncountersBundle\Helpers\Popularity;
-use Mamba\EncountersBundle\Helpers\Purchased;
-use Mamba\EncountersBundle\Helpers\SearchPreferences;
+use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\Services;
+use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
+use Mamba\EncountersBundle\Helpers\Variables;
 
 /**
  * CronScriptCommand
@@ -369,6 +370,32 @@ abstract class Script extends ContainerAwareCommand {
         }
 
         return self::$Instances[__FUNCTION__] = new Purchased($this->getContainer());
+    }
+
+    /**
+     * Variables object getter
+     *
+     * @return Variables
+     */
+    public function getVariablesObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Variables($this->getContainer());
+    }
+
+    /**
+     * Notifications object getter
+     *
+     * @return Notifications
+     */
+    public function getNotificationsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Notifications($this->getContainer());
     }
 
     /**

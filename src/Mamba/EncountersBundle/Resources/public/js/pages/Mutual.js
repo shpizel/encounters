@@ -27,8 +27,19 @@ $Mutual = {
                     location.href = $Routing.getPath("billing");
                 }
             });
+        });
 
-//            return false;
+        $("div.content div.pictures div.mpic a.close").click(function() {
+            var $parent = $(this).parent();
+            var $userId = $parent.attr('user_id');
+
+            if (confirm("Вы уверены, что хотите удалить этого пользователя из «Взаимных»?")) {
+                $.post($Routing.getPath('decision.remove'), {'user_id': $userId}, function($data) {
+                    if ($data.status == 0 && $data.message == "") {
+                        $parent.hide();
+                    }
+                });
+            }
         });
     },
 

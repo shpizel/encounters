@@ -14,8 +14,9 @@
         <div class="title">Они ответили вам взаимностью</div>
         {% for item in data %}
 
-        <div class="mpic">
+        <div class="mpic" user_id="{{ item.info.oid }}">
             <div class="ramka"></div>
+            <a class="close"></a>
             <img src="{{ item.info.medium_photo_url }}"><br>
             <div class="info"><a target="_blank" href="{{ platform.partner_url }}anketa.phtml?oid={{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
         </div>

@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
+
 use Mamba\PlatformBundle\API\Mamba;
 
 /**
@@ -43,31 +44,31 @@ class WelcomeController extends ApplicationController {
         if ($getPlatformParams) {
             $webUserId = (int) $getPlatformParams['oid'];
             $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
+            $this->getVariablesObject()->set($webUserId, 'lastaccess', time());
         } elseif ($Session->has(Mamba::SESSION_USER_ID_KEY)) {
             $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
+            $this->getVariablesObject()->set($webUserId, 'lastaccess', time());
         } else {
-            return $this->render('EncountersBundle:templates:500.html.twig', array(
-                    'routes' => json_encode($this->getRoutes()))
-            );
+            return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId)) {
-            $Response = $this->redirect($this->generateUrl('preferences'));
+        if ($this->getRequest()->getMethod() == 'GET') {
+            return $this->render('EncountersBundle:templates:login.html.twig');
+        } elseif ($this->getRequest()->getMethod() == 'POST') {
+            if (!$this->getSearchPreferencesObject()->get($webUserId)) {
+                $Response = $this->redirect($this->generateUrl('preferences'));
+                $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+                return $Response;
+            }
+
+            /*if (isset($getParams['extra']) && ($extra = $getParams['extra'])) {
+
+            }*/
+
+            /** В общем случае кидаем на поиск */
+            $Response = $this->redirect($this->generateUrl('search'));
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
             return $Response;
         }
-
-        /**
-         * @todo: Нужно сделать правильную работу с extra-параметрами
-         * Когда у нас будет какая-то ошибка в голосовании, мы сделаем топ-редирект на страницу с extra
-         * И приложение сразу перейдет на нужную страницу
-         *
-         * @author shpizel
-         */
-
-        /** В общем случае кидаем на поиск */
-        $Response = $this->redirect($this->generateUrl('search'));
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        return $Response;
     }
 }

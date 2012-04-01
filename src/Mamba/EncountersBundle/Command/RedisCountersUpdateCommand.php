@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\CronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use PDO;
 
 /**

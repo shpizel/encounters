@@ -77,6 +77,14 @@ $Search = {
 
             return false;
         });
+
+        $("div.app-block-no-popular a.close").click(function() {
+            $.post($Routing.getPath('variable.set'), { key: 'search_no_popular_block_hidden', data: 1}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $("div.app-block-no-popular").hide();
+                }
+            });
+        });
     },
 
     /**
@@ -147,8 +155,16 @@ $Search = {
             return;
         }
 
+        $Search.$storage['locked'] = true;
+
         $.post($Routing.getPath('decision.set'), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
-//            console.log($data);
+            /*if ($decision >= 0 && !$Search.$storage['currentQueueElement']['info']['is_app_user']) {
+                $inviteQueue.put($Search.$storage['currentQueueElement']);
+                if ($inviteQueue.qsize() >= 10) {
+                    $Layers.showInviteLayer();
+                }
+            }*/
+
             if ($data.status == 0 && $data.message == "") {
                 if ($data.data['mutual']) {
                     $Layers.showMutualLayer();
@@ -161,7 +177,7 @@ $Search = {
                     }
 
                     if ($data['counters']['visitors'] > 0 ) {
-                        $('li.item-visitors a i').eq(0).text($data['counters']['visitors']);
+                        $('li.item-visitors a i').eq(1).text($data['counters']['visitors']);
                     }
 
                     if ($data['counters']['mutual'] > 0) {
@@ -170,6 +186,9 @@ $Search = {
                 }
 
                 $Search.showNextPhoto();
+                $Search.$storage['locked'] = false;
+
+
             } else {
                 $status = $data.status;
                 $message = $data.message;

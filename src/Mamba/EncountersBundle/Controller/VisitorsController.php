@@ -87,7 +87,7 @@ class VisitorsController extends ApplicationController {
 
             $Mamba->multi();
             foreach ($usersArray as $users) {
-                $Mamba->Anketa()->getInfo(array_keys($users), array());
+                $Mamba->Anketa()->getInfo(array_keys($users));
             }
             $anketasArray = $Mamba->exec();
 

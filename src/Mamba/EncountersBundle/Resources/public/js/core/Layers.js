@@ -68,6 +68,13 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-invite form p a").click(function() {
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
+            mamba.method('openDirectContactRequestLayer', 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)', '', $(this).attr('ids'));
+            return false;
+        });
+
         $("div.layer-user-info a.ui-btn").click(function() {
             var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
             try {
@@ -281,6 +288,30 @@ $Layers = {
         $("div.layer-user-info div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-user-info").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер приглашения людей извне приложения
+     *
+     * @shows layer
+     */
+    showInviteLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-invite div.pics").html('');
+        var $item, $ids = [];
+        while (true) {
+            if ($item = $inviteQueue.get()) {
+                $("div.layer-invite div.pics").append("<img src='" + $item['info']['small_photo_url'] + "'>");
+                $ids.push($item['info']['id']);
+            } else {
+                break;
+            }
+        }
+
+        $("div.layer-invite form p a").attr('ids', $ids.join(','));
+        $("div.layer-invite").show();
         this.showLayer();
     },
 

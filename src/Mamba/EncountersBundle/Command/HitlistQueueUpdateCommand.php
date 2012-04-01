@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\CronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -59,18 +59,17 @@ class HitlistQueueUpdateCommand extends CronScript {
             !$this->getMemcache()->get("cron:stop") &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
-            --$this->iterations &&
+            $this->iterations-- &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
-            $this->log("Iterations: {$this->iterations}", 64);
             if ($worker->returnCode() == GEARMAN_TIMEOUT) {
-                $this->log("Timed out", 48);
+                $this->log(($this->iterations + 1) . ") Timed out (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 48);
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
-                $this->log("Failed", 16);
+                $this->log(($this->iterations + 1) . ") Failed (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 16);
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
-                $this->log("Success", 64);
+                $this->log(($this->iterations + 1) . ") Success (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 64);
             }
         }
 
@@ -84,8 +83,8 @@ class HitlistQueueUpdateCommand extends CronScript {
      */
     public function updateHitlistQueue($job) {
         $Mamba = $this->getMamba();
-
         list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+
         if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
 
@@ -106,7 +105,7 @@ class HitlistQueueUpdateCommand extends CronScript {
         }
 
         if ($this->getHitlistQueueObject()->getSize($webUserId) >= self::LIMIT) {
-            return;
+            throw new CronScriptException("Hitlist queue for user_id=$webUserId has limit exceed");
         }
 
         if ($hitList = $Mamba->Anketa()->getHitlist(-30)) {

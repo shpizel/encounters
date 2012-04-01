@@ -13,7 +13,7 @@ class Counters extends Helper {
     const
 
         /**
-         * Ключ для хранения хитлиста
+         * Ключ для хранения счетчиков
          *
          * @var str
          */
@@ -52,19 +52,6 @@ class Counters extends Helper {
         }
 
         return $this->getRedis()->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $value);
-    }
-
-    /**
-     * Drop counters hashtable
-     *
-     * @param int $userId
-     */
-    public function drop($userId) {
-        if (!is_int($userId)) {
-            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
-        }
-
-        return $this->getRedis()->delete(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId));
     }
 
     /**

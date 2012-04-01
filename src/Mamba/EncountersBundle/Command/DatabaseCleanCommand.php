@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\CronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Doctrine\ORM\Query\ResultSetMapping;
 use PDO;
 
@@ -29,67 +29,11 @@ class DatabaseCleanCommand extends CronScript {
         SCRIPT_NAME = "cron:database:clean",
 
         /**
-         * SQL-запрос для получения уникальных айдишников пользователей из базы
+         * Имя файла куда класть айдишники удалившихся узеров
          *
          * @var str
          */
-        SQL_GET_UNIQUE_USERS_IDS = "
-            SELECT DISTINCT
-                id, web_user_id as `user_id`
-            FROM
-                Encounters.Decisions
-            UNION SELECT DISTINCT
-                id, current_user_id as `user_id`
-            FROM
-                Encounters.Decisions
-            ORDER BY
-                id DESC
-        ",
-
-        /**
-         * SQL-запрос для получения данных у кого сколько совпадений
-         *
-         * @var str
-         */
-        SQL_GET_MUTUALS_COUNT = "
-            SELECT
-                d.web_user_id as `user_id`, count(*) as `counter`
-            FROM
-                Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
-            WHERE
-                d.current_user_id = d2.web_user_id and
-                d.decision >=0 and
-                d2.decision >= 0
-            GROUP BY
-                d.web_user_id
-            ORDER BY
-                `counter`
-        ",
-
-        /**
-         * SQL-запрос для получения данных у кого сколько просмотренных
-         *
-         * @var str
-         */
-        SQL_GET_MYCHOICE_COUNT = "
-            SELECT
-              d.web_user_id as `user_id`, count(*) as `counter`
-            FROM
-                Encounters.Decisions d
-            WHERE
-                d.decision >= 0
-            GROUP BY
-                d.web_user_id
-            ORDER BY
-                `counter`
-        ",
-
-        /**
-         * SQL-запрос для получения данных у кого сколько просмотров
-         *
-         * @var str
-         */
-        SQL_GET_VISITORS_COUNT = "select distinct current_user_id as `user_id`, count(*) as `counter` from Encounters.Decisions where current_user_id in (select distinct web_user_id from Encounters.Decisions) group by current_user_id order by `counter`;"
+        DELETED_USERS_FILENAME = "/home/shpizel/deleted.list"
     ;
 
     /**
@@ -99,62 +43,96 @@ class DatabaseCleanCommand extends CronScript {
      */
     protected function process() {
         $Mamba = $this->getMamba();
+        if ($lastId = $this->getLastId()) {
+            for ($id=0;$id<$lastId;$id+=5000) {
+                $ids = array();
+                $sql = "SELECT DISTINCT `id`, `web_user_id` as `user_id` FROM Encounters.Decisions where `id` > $id AND `id` <= " . ($id+5000);
+                $stmt = $this->getConnection()->prepare($sql);
+                if ($stmt->execute()) {
+                    while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $ids[] = $item['user_id'];
+                    }
+                }
 
-//        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_UNIQUE_USERS_IDS);
-//        $stmt->execute();
-//
-//        $chunkId = 0;
-//        $chunk = array();
-//        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-//            $chunk[] = $userId = (int) $item['user_id'];
-//
-//            /** Очищаем счетчик mutual */
-//            $this->getCountersObject()->set($userId, 'mutual', 0);
-//
-//            if (count($chunk) == 100) {
-//                $chunkId++;
-//                $result = $Mamba->Anketa()->getInfo($chunk, array());
-//                $existingIds = array();
-//                foreach ($result as $item) {
-//                    $existingIds[] = $item['info']['oid'];
-//                }
-//
-//                if ($notExists = array_values(array_diff($chunk, $existingIds))) {
-//                    $this->log($chunkId . ":<error>" . count($notExists) . "</error>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
-//
-//                    $sql = "DELETE FROM Encounters.Decisions WHERE web_user_id IN (" . implode(", ", $notExists) . ") OR current_user_id IN (" . implode(", ", $notExists) . ")";
-//                    $this->log($sql, 32);
-//                    $this->getContainer()->get('doctrine')->getConnection()->prepare($sql)->execute();
-//
-//                } else {
-//                    $this->log($chunkId . ":<info>0</info>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
-//                }
-//
-//                $chunk = array();
-//            }
-//        }
-//
-//        if ($chunk) {
-//            $chunkId++;
-//            $result = $Mamba->Anketa()->getInfo($chunk, array());
-//            $existingIds = array();
-//            foreach ($result as $item) {
-//                $existingIds[] = $item['info']['oid'];
-//            }
-//
-//            if ($notExists = array_values(array_diff($chunk, $existingIds))) {
-//                $this->log($chunkId . ":<error>" . count($notExists) . "</error>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
-//
-//                $sql = "DELETE FROM Encounters.Decisions WHERE web_user_id IN (" . implode(", ", $notExists) . ") OR current_user_id IN (" . implode(", ", $notExists) . ")";
-//                $this->log($sql, 32);
-//                $this->getContainer()->get('doctrine')->getConnection()->prepare($sql)->execute();
-//
-//            } else {
-//                $this->log($chunkId . ":<info>0</info>:<comment>" . round(memory_get_usage()/1024/1024, 0) . "</comment>");
-//            }
-//
-//            $chunk = array();
-//        }
+                $sql = "SELECT DISTINCT `id`, `current_user_id` as `user_id` FROM Encounters.Decisions where `id` > $id AND `id` <= " . ($id+5000);
+                $stmt = $this->getConnection()->prepare($sql);
+                if ($stmt->execute()) {
+                    while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $ids[] = $item['user_id'];
+                    }
+                }
 
+                $ids = array_unique($ids);
+                $chunks = array_chunk($ids, 100);
+                $Mamba->multi();
+                foreach ($chunks as $chunk) {
+                    $Mamba->Anketa()->getInfo($chunk);
+                }
+
+                if ($result = $Mamba->exec(100)) {
+                    $existingIds = array();
+                    foreach ($result as $subResult) {
+                        foreach ($subResult as $anketa) {
+                            $existingIds[] = (int) $anketa['info']['oid'];
+                        }
+                    }
+
+                    $notExistingIds = array_values(array_diff($ids, $existingIds));
+                    foreach ($notExistingIds as $userId) {
+                        file_put_contents(self::DELETED_USERS_FILENAME, $userId . "\n", FILE_APPEND);
+                    }
+                }
+
+                $this->log(round($id*100/$lastId, 2) . "%\n");
+            }
+
+            $this->log("Bye");
+
+            /**
+             * Нужно удалить:
+             * 1) из базы: by current_user_id or web_user_id
+             * 2) очередь контактов
+             * 3) текущая очередь
+             * 4) очередь хитлиста
+             * 5) приоритетная очередь
+             * 6) очередь поиска
+             * 7) просмотренная очередь
+             *
+             * 8) удалить батарейку
+             * 9) удалить счетчики
+             * 10) удалить энергию
+             * 11) удалить нотификацию
+             * 12) удалить настройки платформы
+             * 13) удалить покупки
+             * 14) удалить поисковые предпочтения
+             * 15) удалить сервисы
+             *
+             * @author shpizel
+             */
+        }
+    }
+
+    /**
+     * Connection getter
+     *
+     * @return object
+     */
+    private function getConnection() {
+        return $this->getContainer()->get('doctrine')->getEntityManager()->getConnection();
+    }
+
+    /**
+     * Возвращает последний id в таблице
+     *
+     * @return int
+     */
+    private function getLastId() {
+        $stmt = $this->getConnection()->prepare("SELECT `id` FROM Encounters.Decisions ORDER BY `id` DESC LIMIT 1");
+        if ($stmt->execute()) {
+            $item = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $item['id'];
+        }
+
+        return 0;
     }
 }

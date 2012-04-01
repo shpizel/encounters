@@ -13,6 +13,7 @@ use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\Services;
 use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
+use Mamba\EncountersBundle\Helpers\Variables;
 
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\GearmanBundle\Gearman;
@@ -283,6 +284,19 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
+     * Variables object getter
+     *
+     * @return Variables
+     */
+    public function getVariablesObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Variables($this->container);
+    }
+
+    /**
      * Возвращает массив данных, общих по всему приложению
      *
      * @return array
@@ -316,6 +330,11 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['notification'] = array(
             'message' => $this->getNotificationsObject()->get($webUserId),
+        );
+
+        $dataArray['variables'] = array(
+            'search_no_popular_block_hidden' => $this->getVariablesObject()->get($webUserId, 'search_no_popular_block_hidden'),
+            'notification_hidden' => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
         );
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));

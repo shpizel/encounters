@@ -126,13 +126,13 @@ class BillingController extends ApplicationController {
                         $this->getBatteryObject()->set($webUserId, 5);
                         $item->setBilled(true);
 
-                        $this->getNotificationsObject()->set($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
+                        $this->getNotificationsObject()->add($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
                     } elseif ($serviceId == 2) {
                         if (isset($service['user_id']) && ($currentUserId = (int) $service['user_id'])) {
                             $this->getPriorityQueueObject()->put($currentUserId, $webUserId);
                             $item->setBilled(true);
 
-                            $this->getNotificationsObject()->set($webUserId, "Ура! Услуга успешно оплачена!");
+                            $this->getNotificationsObject()->add($webUserId, "Ура! Услуга успешно оплачена!");
                         } else {
                             $item->setBilled(false);
                         }
@@ -140,7 +140,8 @@ class BillingController extends ApplicationController {
                         $this->getEnergyObject()->incr($webUserId, 15*100);
                         $item->setBilled(true);
 
-                        $this->getNotificationsObject()->set($webUserId, "Ура! Теперь вы получите 100 внеочередных показов!");
+                        $this->getNotificationsObject()->add($webUserId, "Ура! Теперь вы получите 100 внеочередных показов!");
+
                     }
                 } else {
                     $item->setBilled(false);

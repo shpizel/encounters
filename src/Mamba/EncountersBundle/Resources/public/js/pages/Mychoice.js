@@ -41,8 +41,6 @@ $Mychoice = {
                     $Layers.showEnergyLayer($dataArray);
                 }
             }, 'json');
-
-//            return false;
         });
     },
 

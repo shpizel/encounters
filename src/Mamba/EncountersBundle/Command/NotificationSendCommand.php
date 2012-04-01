@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\CronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -122,12 +122,13 @@ class NotificationSendCommand extends CronScript {
             $this->log("Personal spam message: " . ($message));
 
             if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
-                if ($this->getMemcache()->add("personal_" . $currentUserId . "_spam", time(), 7*24*3600)) {
+                if (!$this->getMemcache()->get("personal_" . $currentUserId . "_spam")) {
 
                 if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
                     if (isset($result['sended']) && $result['sended']) {
                         $this->log('SUCCESS', 64);
                         $this->getStatsObject()->incr('contacts');
+                        $this->getMemcache()->add("personal_" . $currentUserId . "_spam", time(), 7*24*3600);
                     } else {
                         $this->log('FAILED', 16);
                     }

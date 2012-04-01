@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\RedisBundle\Redis;
+use Mamba\EncountersBundle\Helpers\Variables;
 
 /**
  * Notifications
@@ -17,7 +18,7 @@ class Notifications extends Helper {
          *
          * @var str
          */
-        REDIS_HASH_USER_NOTIFICATIONS_KEY = "notifications"
+        REDIS_HASH_USER_NOTIFICATIONS_KEY = "notifications_by_%d"
     ;
 
     /**
@@ -31,34 +32,36 @@ class Notifications extends Helper {
             throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hGet(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId);
+        if ($result = $this->getRedis()->lGet(sprintf(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId), -1)) {
+            $result = json_decode($result, true);
+            return $result['data'];
+        }
     }
 
     /**
-     * Notification setter
+     * Notification adder
      *
      * @param int $userId
      * @param string $message
      */
-    public function set($userId, $message) {
+    public function add($userId, $message) {
         if (!is_int($userId)) {
             throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hSet(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId, $message);
-    }
+        $Variables = new Variables($this->Container);
+        $Variables->set($userId, 'notification_hidden', 0);
 
-    /**
-     * Notification remover
-     *
-     * @param int $userId
-     */
-    public function remove($userId) {
-        if (!is_int($userId)) {
-            throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
-        }
-
-        return $this->getRedis()->hDel(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId);
+        return
+            $this->getRedis()->rPush(sprintf(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId),
+                json_encode(
+                    array(
+                        'data' => $message,
+                        'ts'   => time(),
+                    )
+                )
+            )
+        ;
     }
 }
 

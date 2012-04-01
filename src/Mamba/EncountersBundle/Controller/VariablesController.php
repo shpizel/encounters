@@ -7,11 +7,11 @@ use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * NotificationController
+ * VariablesController
  *
  * @package EncountersBundle
  */
-class NotificationController extends ApplicationController {
+class VariablesController extends ApplicationController {
 
     protected
 
@@ -30,13 +30,18 @@ class NotificationController extends ApplicationController {
     ;
 
     /**
-     * Remove notification action
+     * Sets variables
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function removeAction() {
+    public function setVariableAction() {
         if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $this->getNotificationsObject()->remove($webUserId);
+            $key  = $this->getRequest()->request->get('key');
+            $data = $this->getRequest()->request->get('data');
+
+            if (!$this->getVariablesObject()->set($webUserId, $key, $data)) {
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+            }
         } else {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }

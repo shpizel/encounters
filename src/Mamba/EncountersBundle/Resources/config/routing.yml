@@ -4,8 +4,8 @@
 welcome:
     pattern: /
     defaults: { _controller: EncountersBundle:Welcome:index }
-    requirements:
-        _method:  GET
+#    requirements:
+#        _method:  GET
 
 # Страница настроек приложения
 preferences:
@@ -61,6 +61,13 @@ decision.get:
     requirements:
         _method: POST
 
+# Удаление ответа
+decision.remove:
+    pattern: /ajax/decision.remove
+    defaults: { _controller: EncountersBundle:Decision:removeDecision }
+    requirements:
+        _method: POST
+
 # Получение текущей очереди
 queue.get:
     pattern: /ajax/queue.get
@@ -68,10 +75,10 @@ queue.get:
     requirements:
         _method: POST
 
-# Удаление нотификации
-notification.remove:
-    pattern: /ajax/notification.remove
-    defaults: { _controller: EncountersBundle:Notification:remove }
+# Отправка ответа
+variable.set:
+    pattern: /ajax/variable.set
+    defaults: { _controller: EncountersBundle:Variables:setVariable }
     requirements:
         _method: POST
 

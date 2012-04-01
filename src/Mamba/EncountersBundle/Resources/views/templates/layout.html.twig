@@ -29,18 +29,35 @@
             <ul class="info-meet">
                 <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
                 <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
-                <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i>{% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i>{% endif %}</a></li>
-                <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
+                <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> {% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i> {% endif %}<i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
+
+                {% if webuser.stats.mutual_unread %}
+                    <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b class="mutual_unread">
+                        {% if webuser.stats.mutual_unread % 10 == 0 %}
+                            {{ webuser.stats.mutual_unread }} новых симпатий
+                        {% elseif webuser.stats.mutual_unread % 10 == 1 %}
+                            {{ webuser.stats.mutual_unread }} новая симпатия
+                        {% elseif webuser.stats.mutual_unread % 10 < 5 %}
+                            {{ webuser.stats.mutual_unread }} новые симпатии
+                        {% else %}
+                            {{ webuser.stats.mutual_unread }} новых симпатий
+                        {% endif %}
+                    </b></a></li>
+                {% else %}
+                    <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
+                {% endif %}
             </ul>
         </div>
     </div>
 </div>
 
 {% if notification.message %}
+{% if variables.notification_hidden != 1 %}
 <div class="notification">
     <a href="#" class="close"></a>
     <div class="text">{{ notification.message }}</div>
 </div>
+{% endif %}
 {% endif %}
 {% block body %}{% endblock %}
 {% include 'EncountersBundle:tools:ym.html.twig' %}

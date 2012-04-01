@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Helpers\Queues;
 
 use Mamba\EncountersBundle\Helpers\Helper;
+use PDO;
 
 /**
  * ViewedQueue
@@ -13,11 +14,11 @@ class ViewedQueue extends Helper {
     const
 
         /**
-         * Ключ для хранения хеша проголосованных юзеров
+         * Ключ для хранения итема голосования
          *
          * @var str
          */
-        REDIS_HASH_USER_VIEWED_QUEUE_KEY = 'user_%d_viewed_queue'
+        MEMCACHE_VIEWED_QUEUE_ITEM_KEY = 'decision_from_%d_to_%d'
     ;
 
     /**
@@ -37,27 +38,7 @@ class ViewedQueue extends Helper {
             throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->getRedis()->hSetNx($this->getRedisQueueKey($webUserId), $currentUserId, json_encode($data));
-    }
-
-    /**
-     * Обновляет currentUser'a в очереди просмотренных webUser'ом
-     *
-     * @param int $webUserId
-     * @param int $currentUserId
-     * @param mixed $data
-     * @return mixed
-     */
-    public function set($webUserId, $currentUserId, $data) {
-        if (!is_int($webUserId)) {
-            throw new ViewedQueueException("Invalid web user id: \n" . var_export($webUserId, true));
-        }
-
-        if (!is_int($currentUserId)) {
-            throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
-        }
-
-        return $this->getRedis()->hSet($this->getRedisQueueKey($webUserId), $currentUserId, json_encode($data));
+        return $this->getMemcache()->set(sprintf(self::MEMCACHE_VIEWED_QUEUE_ITEM_KEY, $webUserId, $currentUserId), json_encode($data));
     }
 
     /**
@@ -77,8 +58,22 @@ class ViewedQueue extends Helper {
             throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        if ($result = $this->getRedis()->hGet($this->getRedisQueueKey($webUserId), $currentUserId)) {
-            return json_decode($result, true);
+        if ($result = $this->getMemcache()->get(sprintf(self::MEMCACHE_VIEWED_QUEUE_ITEM_KEY, $webUserId, $currentUserId))) {
+            if ($data = json_decode($result, true)) {
+                return $data;
+            } else {
+                return;
+            }
+        }
+
+        $stmt = $this->getEntityManager()->getConnection()->prepare("SELECT * FROM Decisions where web_user_id = $webUserId and current_user_id = $currentUserId LIMIT 1");
+        if ($stmt->execute()) {
+            if ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $this->put($webUserId, $currentUserId, $data = array('ts' => (int) $item['changed'], 'decision' => (int) $item['decision']));
+                return $data;
+            } else {
+                $this->put($webUserId, $currentUserId, array());
+            }
         }
     }
 
@@ -89,21 +84,7 @@ class ViewedQueue extends Helper {
      * @param int $currentUserId
      */
     public function exists($webUserId, $currentUserId) {
-        return $this->getRedis()->hExists($this->getRedisQueueKey($webUserId), $currentUserId);
-    }
-
-    /**
-     * Возвращает ключ для хранения очереди просмотренных данным юзером
-     *
-     * @param int $userId
-     * @return str
-     */
-    public function getRedisQueueKey($userId) {
-        if (!is_int($userId)) {
-            throw new ViewedQueueException("Invalid user id: \n" . var_export($userId));
-        }
-
-        return sprintf(self::REDIS_HASH_USER_VIEWED_QUEUE_KEY, $userId);
+        return (bool) $this->get($webUserId, $currentUserId);
     }
 }
 

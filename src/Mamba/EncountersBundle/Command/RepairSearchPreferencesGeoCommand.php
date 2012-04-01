@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Mamba\EncountersBundle\CronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 use Doctrine\ORM\Query\ResultSetMapping;
 

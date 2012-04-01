@@ -191,6 +191,34 @@ class DecisionController extends ApplicationController {
     }
 
     /**
+     * AJAX Queue get action
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function removeDecisionAction() {
+        if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
+            if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
+                $this->getViewedQueueObject()->put($webUserId, $currentUserId, array());
+                if (!$this->getDoctrine()->getEntityManager()->getConnection()->prepare("DELETE FROM Decisions WHERE web_user_id = $webUserId AND current_user_id = $currentUserId LIMIT 1")->execute()) {
+                    list($this->json['status'], $this->json['message']) = array(3, "SQL query returned error");
+                }
+
+            } else {
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid session");
+            }
+        } else {
+            list($this->json['status'], $this->json['message']) = array(1, "Invalid params");
+        }
+
+        return
+            new Response(json_encode($this->json), 200, array(
+                    "content-type" => "application/json",
+                )
+            )
+        ;
+    }
+
+    /**
      * Проверяет пришедшие пар-ры
      *
      * @return bool

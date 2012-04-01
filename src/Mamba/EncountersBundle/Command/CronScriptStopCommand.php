@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Script;
+use Mamba\EncountersBundle\Command\Script;
 
 /**
  * CronScriptStopCommand

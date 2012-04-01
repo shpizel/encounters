@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Mamba\EncountersBundle\CronScript;
+use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -73,19 +73,20 @@ class CurrentQueueUpdateCommand extends CronScript {
             !$this->getMemcache()->get("cron:stop") &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
-            --$this->iterations &&
+            $this->iterations-- &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
-            $this->log("Iterations: {$this->iterations}", 64);
             if ($worker->returnCode() == GEARMAN_TIMEOUT) {
-                $this->log("Timed out", 48);
+                $this->log(($this->iterations + 1) . ") Timed out (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 48);
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
-                $this->log("Failed", 16);
+                $this->log(($this->iterations + 1) . ") Failed (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 16);
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
-                $this->log("Success", 64);
+                $this->log(($this->iterations + 1) . ") Success (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 64);
             }
+
+
         }
 
         $this->log("Bye", 48);
@@ -97,8 +98,9 @@ class CurrentQueueUpdateCommand extends CronScript {
      * @param $job
      */
     public function updateCurrentQueue($job) {
+        list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+
         do {
-            list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
             $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
             $usersAddedCount = 0;
             foreach ($searchQueueChunk as $currentUserId) {
