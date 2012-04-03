@@ -1,14 +1,12 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
 use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
+
+use Mamba\EncountersBundle\Command\SearchQueueUpdateCommand;
+use Mamba\EncountersBundle\Command\HitlistQueueUpdateCommand;
+use Mamba\EncountersBundle\Command\ContactsQueueUpdateCommand;
 
 /**
  * CurrentQueueUpdateCommand
@@ -49,6 +47,43 @@ class CurrentQueueUpdateCommand extends CronScript {
         )
     ;
 
+    protected
+
+        /**
+         * Current user id
+         *
+         * @var int
+         */
+        $currentUserId
+    ;
+
+    /**
+     * Лочит обработку очереди для этого юзера
+     *
+     * @return bool
+     */
+    public function lock() {
+        return $this->getMemcache()->add($this->getLockName(), 1, 5*60);
+    }
+
+    /**
+     * Разлочивает обработку очереди для этого юзера
+     *
+     * @return bool
+     */
+    public function unlock() {
+        return $this->getMemcache()->delete($this->getLockName());
+    }
+
+    /**
+     * Возвращает имя лока
+     *
+     * @var str
+     */
+    public function getLockName() {
+        return md5(self::SCRIPT_NAME . "_lock_by_" . $this->currentUserId);
+    }
+
     /**
      * Processor
      *
@@ -64,6 +99,8 @@ class CurrentQueueUpdateCommand extends CronScript {
                 return $class->updateCurrentQueue($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
+                $class->unlock();
+
                 return;
             }
         });
@@ -81,12 +118,14 @@ class CurrentQueueUpdateCommand extends CronScript {
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
                 $this->log(($this->iterations + 1) . ") Failed (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 16);
+                $this->unlock();
+
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
                 $this->log(($this->iterations + 1) . ") Success (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 64);
             }
 
-
+            $this->unlock();
         }
 
         $this->log("Bye", 48);
@@ -157,7 +196,7 @@ class CurrentQueueUpdateCommand extends CronScript {
             }
             $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
         }
-        while (true);
+        while ($this->getCurrentQueueObject()->getSize($webUserId) <= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT));
 
         $GearmanClient = $this->getGearman()->getClient();
 

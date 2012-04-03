@@ -114,7 +114,7 @@ class DecisionController extends ApplicationController {
                     $this->getCountersObject()->incr($this->webUserId, 'mutual');
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual');
 
-                    $this->getCountersObject()->incr($this->webUserId, 'mutual_unread');
+                    //$this->getCountersObject()->incr($this->webUserId, 'mutual_unread');
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual_unread');
                 }
             }

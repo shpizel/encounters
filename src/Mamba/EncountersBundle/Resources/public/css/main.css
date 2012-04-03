@@ -1098,7 +1098,7 @@ div.content div.pictures div.mpic img {
     width:110px;
 }
 
-div.content div.pictures div.mpic:hover div.ramka {
+div.mutual div.pictures div.mpic:hover div.ramka {
     background: url('/bundles/encounters/images/hitlist-ramka-del.png') no-repeat;
 }
 

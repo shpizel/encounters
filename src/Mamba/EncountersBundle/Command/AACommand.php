@@ -35,7 +35,8 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        var_dump($this->getViewedQueueObject()->get(560015854, 677451124));
+        var_dump($this->getMamba()->Photos()->get(560015853));
+        exit();
         //print_r($this->getMamba()->nocache()->Anketa()->getInfo(363561329));
 
 

@@ -3,6 +3,11 @@ namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
+
+use Mamba\EncountersBundle\Command\HitlistQueueUpdateCommand;
+use Mamba\EncountersBundle\Command\ContactsQueueUpdateCommand;
+use Mamba\EncountersBundle\Command\CurrentQueueUpdateCommand;
+
 use PDO;
 
 /**
@@ -96,6 +101,43 @@ class SearchQueueUpdateCommand extends CronScript {
         LIMIT = 32
     ;
 
+    protected
+
+        /**
+         * Current user id
+         *
+         * @var int
+         */
+        $currentUserId
+    ;
+
+    /**
+     * Лочит обработку очереди для этого юзера
+     *
+     * @return bool
+     */
+    public function lock() {
+        return $this->getMemcache()->add($this->getLockName(), 1, 5*60);
+    }
+
+    /**
+     * Разлочивает обработку очереди для этого юзера
+     *
+     * @return bool
+     */
+    public function unlock() {
+        return $this->getMemcache()->delete($this->getLockName());
+    }
+
+    /**
+     * Возвращает имя лока
+     *
+     * @var str
+     */
+    public function getLockName() {
+        return md5(self::SCRIPT_NAME . "_lock_by_" . $this->currentUserId);
+    }
+
     /**
      * Processor
      *
@@ -111,6 +153,8 @@ class SearchQueueUpdateCommand extends CronScript {
                 return $class->updateSearchQueue($job);
             } catch (\Exception $e) {
                 $class->log($e->getCode() . ": " . $e->getMessage(), 16);
+                $class->unlock();
+
                 return;
             }
         });
@@ -128,10 +172,14 @@ class SearchQueueUpdateCommand extends CronScript {
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
                 $this->log(($this->iterations + 1) . ") Failed (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 16);
+                $this->unlock();
+
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
                 $this->log(($this->iterations + 1) . ") Success (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 64);
             }
+
+            $this->unlock();
         }
 
         $this->log("Bye", 48);
@@ -145,6 +193,11 @@ class SearchQueueUpdateCommand extends CronScript {
     public function updateSearchQueue($job) {
         $Mamba = $this->getMamba();
         list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+
+        $this->currentUserId = $webUserId;
+        if (!$this->lock()) {
+            throw new CronScriptException("Could not obtain lock");
+        }
 
         if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
@@ -169,6 +222,10 @@ class SearchQueueUpdateCommand extends CronScript {
             throw new CronScriptException("Search queue for user_id=$webUserId has limit exceed");
         }
 
+        if ($this->getCurrentQueueObject()->getSize($webUserId) >= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
+            throw new CronScriptException("Current queue for user_id=$webUserId has limit exceed");
+        }
+
         $usersAddedCount = 0;
 
         /** Ищем по базе, полностью */
@@ -185,17 +242,19 @@ class SearchQueueUpdateCommand extends CronScript {
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $item['user_id'])) {
 
-                    try {
-                        $this->getMamba()->Photos()->get($currentUserId);
+                    if (!$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")) {
+                        try {
+                            $this->getMamba()->Photos()->get($currentUserId);
 
-                        $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                            && $usersAddedCount++;
+                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                && $usersAddedCount++;
 
-                        if ($usersAddedCount >= self::LIMIT) {
-                            break;
+                            if ($usersAddedCount >= self::LIMIT) {
+                                break;
+                            }
+                        } catch (\Exception $e) {
+                            $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
                         }
-                    } catch (\Exception $e) {
-
                     }
                 }
             }
@@ -257,17 +316,19 @@ class SearchQueueUpdateCommand extends CronScript {
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $item['user_id'])) {
 
-                        try {
-                            $this->getMamba()->Photos()->get($currentUserId);
+                        if (!$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")) {
+                            try {
+                                $this->getMamba()->Photos()->get($currentUserId);
 
-                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                                && $usersAddedCount++;
+                                $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                    && $usersAddedCount++;
 
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
+                                if ($usersAddedCount >= self::LIMIT) {
+                                    break;
+                                }
+                            } catch (\Exception $e) {
+                                $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
                             }
-                        } catch (\Exception $e) {
-
                         }
                     }
                 }
@@ -332,17 +393,19 @@ class SearchQueueUpdateCommand extends CronScript {
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $item['user_id'])) {
 
-                        try {
-                            $this->getMamba()->Photos()->get($currentUserId);
+                        if (!$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")) {
+                            try {
+                                $this->getMamba()->Photos()->get($currentUserId);
 
-                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                                && $usersAddedCount++;
+                                $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                    && $usersAddedCount++;
 
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
+                                if ($usersAddedCount >= self::LIMIT) {
+                                    break;
+                                }
+                            } catch (\Exception $e) {
+                                $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
                             }
-                        } catch (\Exception $e) {
-
                         }
                     }
                 }

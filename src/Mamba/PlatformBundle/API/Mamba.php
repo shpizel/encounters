@@ -155,28 +155,28 @@ final class Mamba {
                 'getInfo' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 21600,
+                    'expire'  => 86400,
                 ),
 
                 /** Получение интересов */
                 'getInterests' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 3600,
+                    'expire'  => 86400,
                 ),
 
                 /** Получение объявлений из попутчиков */
                 'getTravel' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 3600,
+                    'expire'  => 86400,
                 ),
 
                 /** Получение списка флагов любой анкеты: VIP, реал, лидер, maketop, интим за деньги */
                 'getFlags' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 3600,
+                    'expire'  => 86400,
                 ),
 
                 /** Статус online или когда был крайний раз на сайте, если не надета шапка-невидимка */
@@ -190,7 +190,7 @@ final class Mamba {
                 'isAppUser' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 3600,
+                    'expire'  => /*3600*/ 86400,
                 ),
 
                 /** Получение хитлиста */
@@ -237,21 +237,21 @@ final class Mamba {
                 'getFolderList' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => true,
-                    'expire'  => 600,
+                    'expire'  => 86400,
                 ),
 
                 /** Получение списка контактов из заданной папки */
                 'getFolderContactList' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => true,
-                    'expire'  => 600,
+                    'expire'  => 10800,
                 ),
 
                 /** Получение списка контактов по заданому лимиту */
                 'getContactList' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => true,
-                    'expire'  => 600,
+                    'expire'  => 10800,
                 ),
 
                 /** Написать сообщение в мессенджер от имени пользователя */
@@ -335,14 +335,14 @@ final class Mamba {
                 'getAlbums' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 3600,
+                    'expire'  => 86400,
                 ),
 
                 /** Получение списка фотографий для заданного включенного альбома */
                 'get' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 3600,
+                    'expire'  => 86400,
                 ),
             ),
 
@@ -357,7 +357,7 @@ final class Mamba {
                 'get' => array(
                     'backend' => self::MEMCACHE_CACHE_BACKEND,
                     'signed'  => false,
-                    'expire'  => 300,
+                    'expire'  => 86400,
                 ),
             ),
         ),
@@ -812,7 +812,7 @@ final class Mamba {
                 ? $this->getServerToServerSignature($resultParams)
                 : $this->getClientToServerSignature($resultParams);
 
-            $httpQuery = self::PLATFORM_GATEWAY_ADDRESS . "?" . http_build_query($resultParams);
+            $httpQuery = self::PLATFORM_GATEWAY_ADDRESS . "/?" . http_build_query($resultParams);
 
             if ($this->mode == self::MULTI_MODE) {
                 $this->multiQueue[] = array(
