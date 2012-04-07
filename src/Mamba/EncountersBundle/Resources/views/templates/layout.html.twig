@@ -22,7 +22,14 @@
         <i class="r-rounder"></i>
         <div class="app-menu-bar-inner">
             <ul class="info-meet" style="float:right;">
-                <li class="item-popul"><div class="{{ webuser.popularity.class }}"><b>{{ webuser.popularity.title }}</b> популярность</div></li>
+                <li class="item-popularity">
+                    <div class="bar">
+                        <div class="level-background lbc{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev) // 25 + 1  }}"></div>
+                        <div class="level l{{ webuser.popularity.level }}"></div>
+                        <div class="speedo-background"></div>
+                        <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
+                    </div>
+                </li>
                 <li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>
                 <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery*15 }}%"></b></b> <i>{{ webuser.battery*20 }}%</i></li>
             </ul>
@@ -52,15 +59,18 @@
 </div>
 
 {% if notification.message %}
-{% if variables.notification_hidden != 1 %}
-<div class="notification">
-    <a href="#" class="close"></a>
-    <div class="text">{{ notification.message }}</div>
-</div>
+    {% if variables.notification_hidden != 1 %}
+        <div class="notification">
+            <a href="#" class="close"></a>
+            <div class="text">{{ notification.message }}</div>
+        </div>
+    {% endif %}
 {% endif %}
-{% endif %}
+
 {% block body %}{% endblock %}
+{% if not app.debug %}
 {% include 'EncountersBundle:tools:ym.html.twig' %}
+{% endif %}
 </div>
     {% block javascripts %}{% endblock %}
 {% javascripts
@@ -73,7 +83,7 @@
 %}
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}
-<script src="http://js.aplatform.ru/app.js"></script>
+<script src="http://js.aplatform.ru/v2.js"></script>
 <script>
 $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% autoescape false %}
@@ -85,6 +95,7 @@ $Routing.setRoutes({{ routes }});
 {% block pagejs %}{% endblock %}
 $(document).ready(function(){
     $App.init(location.pathname).run();
+
 });
 </script>
 </body>

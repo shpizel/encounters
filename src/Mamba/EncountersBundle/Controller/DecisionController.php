@@ -52,6 +52,8 @@ class DecisionController extends ApplicationController {
         } elseif (!$this->validateParams()) {
             list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
         } else {
+            $levelUp = false;
+
             /** Инкрементируем счетчик выбора у webUser'a */
             if ($this->decision + 1 > 0) {
                 $this->getCountersObject()->incr($this->webUserId, 'mychoice');
@@ -62,10 +64,26 @@ class DecisionController extends ApplicationController {
             $this->getCountersObject()->incr($this->currentUserId, 'visitors_unread');
 
             /** Увеличить энергию WebUser'a */
+            $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
+            $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
+
             $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
+            $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
+            if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {
+                $cacheKey = "user_{$this->webUserId}_level_$newWebUserLevel";
+
+                if (!$this->getRedis()->get($cacheKey)) {
+                    $this->getRedis()->setex($cacheKey, 24*3600, 1);
+                    $levelUp = true;
+                }
+            }
+
+
             /** Уменьшить энергию CurrentUser'a */
-            $this->getEnergyObject()->decr($this->currentUserId, 15);
+            $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
+            $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
+            $this->getEnergyObject()->decr($this->currentUserId, (($currentUserLevel < 3) ? 3 : $currentUserLevel));
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision + 1 > 0) {
@@ -114,7 +132,6 @@ class DecisionController extends ApplicationController {
                     $this->getCountersObject()->incr($this->webUserId, 'mutual');
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual');
 
-                    //$this->getCountersObject()->incr($this->webUserId, 'mutual_unread');
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual_unread');
                 }
             }
@@ -130,6 +147,8 @@ class DecisionController extends ApplicationController {
                 'mychoice' => (int) $this->getCountersObject()->get($this->webUserId, 'mychoice'),
                 'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
             );
+
+            $this->json['data']['popularity'] = array_merge($this->getPopularityObject()->getInfo($this->getEnergyObject()->get($this->webUserId)), array('level_up' => $levelUp));
         }
 
         return

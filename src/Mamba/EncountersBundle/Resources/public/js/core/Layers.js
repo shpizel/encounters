@@ -83,6 +83,43 @@ $Layers = {
                 $Config.get('messenger.popup').focus();
             } catch (e) {}
         });
+
+        $("div.layer-level-achievement div._tell a.see").click(function() {
+            if ($Config.get('webuser')['contacts'].length) {
+                mamba.method('openDirectContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']);
+            } else {
+                mamba.method('openContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '');
+            }
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
+
+            return false;
+        });
+
+        $("div.layer-level div._tell a.see").click(function() {
+            if ($Config.get('webuser')['contacts'].length) {
+                mamba.method('openDirectContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']);
+            } else {
+                mamba.method('openContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '');
+            }
+
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
+
+            return false;
+        });
+
+        $("div.layer-level p a.ui-btn").click(function() {
+            var $cost = $(this).attr('cost'), $level = $(this).attr('level');
+            $.post($Routing.getPath('service.add'), {service: {id: 4, level: $level}}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, $cost);
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
+        });
     },
 
     /**
@@ -312,6 +349,64 @@ $Layers = {
 
         $("div.layer-invite form p a").attr('ids', $ids.join(','));
         $("div.layer-invite").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер достижения уровня
+     *
+     * @shows layer
+     */
+    showLevelAchievementLayer: function($data) {
+        this.hideInners();
+
+        var $level = $Config.get('webuser')['popularity']['level'];
+        $("div.layer-level-achievement div.level").attr("class", 'level l' + $level);
+
+        /*if ($level % 4 == 0) {
+            $("div.layer-level-achievement b.battery").html("+2 деления в подарок");
+
+            $("div.layer-level-achievement p._close").hide();
+            $("div.layer-level-achievement div._tell").show();
+        } else {
+            $("div.layer-level-achievement b.battery").html("+1 деление в подарок");
+
+            $("div.layer-level-achievement p._close").show();
+            $("div.layer-level-achievement div._tell").hide();
+        }*/
+
+        $("div.layer-level-achievement").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер уровня
+     *
+     * @shows layer
+     */
+    showLevelLayer: function($data) {
+        this.hideInners();
+
+        var $popularity = $Config.get('webuser')['popularity'];
+        $("div.layer-level div.level").attr("class", 'level l' + $popularity['level']);
+        $("div.layer-level div.current").attr("class", 'current l' + $popularity['level']);
+        $("div.layer-level div.next").attr("class", 'next l' + ($popularity['level'] < 16 ? ($popularity['level'] + 1) : $popularity['level']));
+        $("div.layer-level div.speedo").css('width', parseInt(($popularity['energy'] - $popularity['prev'])*100/($popularity['next'] - $popularity['prev'])*1.99)+'px');
+
+        if ($popularity['level'] < 16 && $popularity['level'] >= 4) {
+            $("div.layer-level p a.ui-btn").html("Перейти на " + ($popularity['level']+1) + "-й уровень за " + ($popularity['level'] + 1 - 4) +"<i class=\"coint\"></i>");
+            $("div.layer-level p a.ui-btn").attr('cost',  $popularity['level'] + 1 - 4);
+            $("div.layer-level p a.ui-btn").attr('level',  $popularity['level'] + 1);
+            $("div.layer-level p._buy").show();
+            $("div.layer-level div._tell").hide();
+        } else {
+            $("div.layer-level div._tell").show();
+            $("div.layer-level p._buy").hide();
+        }
+
+
+
+        $("div.layer-level").show();
         this.showLayer();
     },
 

@@ -35,8 +35,7 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        var_dump($this->getMamba()->Photos()->get(560015853));
-        exit();
+        echo $this->getPopularityObject()->getLevel(4555) . "\n";
         //print_r($this->getMamba()->nocache()->Anketa()->getInfo(363561329));
 
 

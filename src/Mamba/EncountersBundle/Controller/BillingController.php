@@ -5,6 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\Entity\Billing;
+use Mamba\EncountersBundle\Helpers\Popularity;
 
 /**
  * BillingController
@@ -103,6 +104,7 @@ class BillingController extends ApplicationController {
     public function gatewayAction() {
         $Request  = $this->getRequest();
         $postParams = $Request->request->all();
+
         if (count(array_intersect(array_keys($postParams), $this->requiredParams)) == count($this->requiredParams)) {
             $billingParams = array();
             foreach ($this->requiredParams as $requiredParam) {
@@ -137,11 +139,23 @@ class BillingController extends ApplicationController {
                             $item->setBilled(false);
                         }
                     } elseif ($serviceId == 3) {
-                        $this->getEnergyObject()->incr($webUserId, 15*100);
+                        $this->getEnergyObject()->set($webUserId, 600);
                         $item->setBilled(true);
 
                         $this->getNotificationsObject()->add($webUserId, "Ура! Теперь вы получите 100 внеочередных показов!");
 
+                    } elseif ($serviceId == 4) {
+                        $energy = $this->getEnergyObject()->get($webUserId);
+                        $level = $this->getPopularityObject()->getLevel($energy);
+                        if ($level < 16) {
+                            $level = $level + 1;
+                            $this->getEnergyObject()->set($webUserId, Popularity::$levels[$level]);
+                            $item->setBilled(true);
+
+                            $this->getNotificationsObject()->add($webUserId, "Ура! Вы перешли на новый уровень популярности!");
+                        } else {
+                            $item->setBilled(false);
+                        }
                     }
                 } else {
                     $item->setBilled(false);

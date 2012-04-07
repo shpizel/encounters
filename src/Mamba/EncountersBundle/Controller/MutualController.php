@@ -21,7 +21,7 @@ class MutualController extends ApplicationController {
          */
         MUTUAL_SQL = "
             SELECT
-                d.current_user_id
+                d2.web_user_id as `current_user_id`
             FROM
                 Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
             WHERE
@@ -30,7 +30,7 @@ class MutualController extends ApplicationController {
                 d.decision >=0 and
                 d2.decision >= 0
             ORDER BY
-              d.changed DESC
+              d2.changed DESC
         "
     ;
 

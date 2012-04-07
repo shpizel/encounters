@@ -44,7 +44,7 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.user_id = u.user_id
             WHERE
                 u.gender = :gender AND
-                e.energy > 128 AND
+                e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
                 u.country_id = :country_id AND
@@ -65,7 +65,7 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.user_id = u.user_id
             WHERE
                 u.gender = :gender AND
-                e.energy > 128 AND
+                e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
                 u.country_id = :country_id AND
@@ -85,7 +85,7 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.user_id = u.user_id
             WHERE
                 u.gender = :gender AND
-                e.energy > 128 AND
+                e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
                 u.country_id = :country_id

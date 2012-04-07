@@ -48,6 +48,7 @@ class SearchController extends ApplicationController {
         $json = array();
 
         if ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId)) {
+
             $currentQueue = array_reverse($currentQueue);
             $currentQueue = array_chunk($currentQueue, 100);
             foreach ($currentQueue as $key=>$subQueue) {
@@ -112,6 +113,13 @@ class SearchController extends ApplicationController {
                         unset($json[$key]);
 
                         $this->getCurrentQueueObject()->remove($webUserId, $currentUserId);
+                    }
+                }
+            } else {
+                foreach ($currentQueue as $chunk) {
+                    foreach ($chunk as $currentUserId) {
+                        $this->getCurrentQueueObject()->remove($webUserId, (int)$currentUserId);
+                        $this->getViewedQueueObject()->put($webUserId, (int)$currentUserId, array('error' => 1));
                     }
                 }
             }

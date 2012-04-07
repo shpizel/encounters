@@ -17,21 +17,21 @@ class Energy extends Helper {
          *
          * @var int
          */
-        DEFAULT_ENERGY = 128,
+        DEFAULT_ENERGY = 0,
 
         /**
          * Минимальная энергия
          *
          * @var int
          */
-        MINIMUM_ENERGY = 128,
+        MINIMUM_ENERGY = 0,
 
         /**
          * Максимальная энергия
          *
          * @var int
          */
-        MAXIMUM_ENERGY = 2048,
+        MAXIMUM_ENERGY = 4250,
 
         /**
          * Ключ для хранения энергии

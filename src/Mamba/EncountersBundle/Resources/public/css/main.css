@@ -35,7 +35,7 @@ ul li,ol li{}
 
 table,table td{}
 
-p{ margin: 0 0 12px 0; }
+/*p{ margin: 0 0 12px 0; }*/
 
 a{ color:#0066cc; }
 a:active{}
@@ -184,39 +184,144 @@ h5{ font-size: 100%; }
     font-weight: bold;
 }
 
-.info-meet li.item-popul {
-	/*background: url('/bundles/encounters/images/separate-meet-menu.png') no-repeat left top;*/
-	width: 160px;
+.info-meet li.item-popularity {
+	width: 140px;
 	margin: 0;
 }
 
-.info-meet li.item-popul div{
-	background: url('/bundles/encounters/images/speed.png') no-repeat left -2px;
-	font-size: 11px;
-	color: #635e4a;
-	margin: 0 auto;
-	height: 27px; width: 80px;
-	padding: 7px 0 0 65px;
-	line-height: 12px;
-	cursor: pointer;
+.info-meet li.item-popularity div.bar {
+    position: relative;
+	height: 35px;
 }
 
-.info-meet li.item-popul div.low {
-    background: url('/bundles/encounters/images/lowpop.png') no-repeat left -2px;
+.info-meet li.item-popularity div.bar div.level-background {
+    position: absolute;
+    height:22px;
+    width:22px;
+    top: 7px;
+
+    background: url('/bundles/encounters/images/levels/levels-background.png');
+
+    cursor: pointer;
 }
 
-.info-meet li.item-popul div.normal {
-    background: url('/bundles/encounters/images/normpop.png') no-repeat left -2px;
+.info-meet li.item-popularity div.bar div.level {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    top: 7px;
+
+    background: url('/bundles/encounters/images/levels/levels.png');
+    z-index: 100;
+
+    cursor: pointer;
 }
 
-.info-meet li.item-popul div.high {
-    background: url('/bundles/encounters/images/highpop.png') no-repeat left -2px;
+.info-meet li.item-popularity div.bar div.l1 {
+    background-position: 0 0;
 }
 
-.info-meet li.item-popul div.super {
-    background: url('/bundles/encounters/images/superpop.png') no-repeat left -2px;
+.info-meet li.item-popularity div.bar div.l2 {
+    background-position: 0 -22px;
 }
 
+.info-meet li.item-popularity div.bar div.l3 {
+    background-position: 0 -44px;
+}
+
+.info-meet li.item-popularity div.bar div.l4 {
+    background-position: 0 -66px;
+}
+
+.info-meet li.item-popularity div.bar div.l5 {
+    background-position: 0 -88px;
+}
+
+.info-meet li.item-popularity div.bar div.l6 {
+    background-position: 0 -110px;
+}
+
+.info-meet li.item-popularity div.bar div.l7 {
+    background-position: 0 -132px;
+}
+
+.info-meet li.item-popularity div.bar div.l8 {
+    background-position: 0 -154px;
+}
+
+.info-meet li.item-popularity div.bar div.l9 {
+    background-position: 0 -176px;
+}
+
+.info-meet li.item-popularity div.bar div.l10 {
+    background-position: 0 -198px;
+}
+
+.info-meet li.item-popularity div.bar div.l11 {
+    background-position: 0 -220px;
+}
+
+.info-meet li.item-popularity div.bar div.l12 {
+    background-position: 0 -242px;
+}
+
+.info-meet li.item-popularity div.bar div.l13 {
+    background-position: 0 -264px;
+}
+
+.info-meet li.item-popularity div.bar div.l14 {
+    background-position: 0 -286px;
+}
+
+.info-meet li.item-popularity div.bar div.l15 {
+    background-position: 0 -308px;
+}
+
+.info-meet li.item-popularity div.bar div.l16 {
+    background-position: 0 -330px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc1 {
+    background-position: 0px 0px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc2 {
+    background-position: 0px -22px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc3 {
+    background-position: 0px -44px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc4 {
+    background-position: 0px -66px;
+}
+
+.info-meet li.item-popularity div.bar div.speedo-background {
+    position: absolute;
+    height:22px;
+    width:99px;
+    top: 7px;
+    left: 27px;
+
+    background: url('/bundles/encounters/images/levels/speedo-background.png');
+
+    cursor: pointer;
+}
+
+.info-meet li.item-popularity div.bar div.speedo {
+    position: absolute;
+    height:22px;
+    width:99px;
+    top: 7px;
+    left: 27px;
+
+    background: url('/bundles/encounters/images/levels/speedo.png');
+    width: 25px;
+    z-index: 100;
+
+    cursor: pointer;
+}
 
 .into-meet li {
     cursor:pointer;
@@ -258,9 +363,12 @@ h5{ font-size: 100%; }
     background-position: left bottom;
 }
 
-.info-meet li.item-energy{
+.info-meet li.item-energy {
 	background: url('/bundles/encounters/images/separate-meet-menu.png') no-repeat left top;
 	margin: 0; padding: 0 0 0 15px;
+}
+
+.info-meet li.item-energy * {
     cursor: pointer;
 }
 
@@ -346,7 +454,7 @@ h5{ font-size: 100%; }
 .app-block-no-popular .arrow{
 	background:none;
 	position: absolute;
-	right: 252px; top: -18px;
+	right: 261px; top: -18px;
 	margin-left: -9px;
 	border: 9px solid transparent;
 	border-bottom: 9px solid #fc6500;
@@ -565,13 +673,13 @@ h5{ font-size: 100%; }
 	left: 50%; top: 70px;
 	padding: 20px 0;
 	margin: 0 0 0 -275px;
-	width:510px;
+	width:550px;
 	display: none;
     z-index: 1001;
 }
 
 .app-layer .app-layer-wrap {
-	padding: 0 20px;
+	padding: 0 30px;
 	position:relative;
 	z-index: 20;
 }
@@ -613,8 +721,278 @@ h5{ font-size: 100%; }
 	margin: 0;
 }
 
-.layer-energy, .layer-battery{
+.layer-energy, .layer-battery {
 	padding: 0 0 20px 0;
+}
+
+.layer-level-achievement .level {
+    height: 171px;
+
+    width: 499px;
+    margin: 0 auto;
+}
+
+.layer-level-achievement .l2 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_02.png');
+}
+
+.layer-level-achievement .l3 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_03.png');
+}
+
+.layer-level-achievement .l4 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_04.png');
+}
+
+.layer-level-achievement .l5 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_05.png');
+}
+
+.layer-level-achievement .l6 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_06.png');
+}
+
+.layer-level-achievement .l7 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_07.png');
+}
+
+.layer-level-achievement .l8 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_08.png');
+}
+
+.layer-level-achievement .l9 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_09.png');
+}
+
+.layer-level-achievement .l10 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_10.png');
+}
+
+.layer-level-achievement .l11 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_11.png');
+}
+
+.layer-level-achievement .l12 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_12.png');
+}
+
+.layer-level-achievement .l13 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_13.png');
+}
+
+.layer-level-achievement .l14 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_14.png');
+}
+
+.layer-level-achievement .l15 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_15.png');
+}
+
+.layer-level-achievement .l16 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_16.png');
+}
+
+.layer-level .level {
+    height: 98px;
+
+    width: 280px;
+    margin: 0 auto;
+}
+
+.layer-level .l1 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_01.png');
+}
+
+.layer-level .l2 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_02.png');
+}
+
+.layer-level .l3 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_03.png');
+}
+
+.layer-level .l4 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_04.png');
+}
+
+.layer-level .l5 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_05.png');
+}
+
+.layer-level .l6 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_06.png');
+}
+
+.layer-level .l7 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_07.png');
+}
+
+.layer-level .l8 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_08.png');
+}
+
+.layer-level .l9 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_09.png');
+}
+
+.layer-level .l10 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_10.png');
+}
+
+.layer-level .l11 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_11.png');
+}
+
+.layer-level .l12 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_12.png');
+}
+
+.layer-level .l13 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_13.png');
+}
+
+.layer-level .l14 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_14.png');
+}
+
+.layer-level .l15 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_15.png');
+}
+
+.layer-level .l16 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_16.png');
+}
+
+.layer-level-achievement .message {
+    background: url('/bundles/encounters/images/levels/layers/text-vi-pereshli.png') no-repeat;
+    height: 36px;
+
+    width: 456px;
+    margin: 0 auto;
+    margin-top: 10px;
+}
+
+.layer-level .bar {
+    width: 303px;
+    height: 40px;
+    margin:0 auto;
+    margin-top:30px;
+    position: relative;
+}
+
+.layer-level .bar .current-background, .layer-level .bar .current, .layer-level .bar .next-background, .layer-level .bar .next {
+    position: absolute;
+    top:0px;
+    width: 42px;
+    height: 40px;
+}
+
+.layer-level .bar .current-background, .layer-level .bar .current {
+    left:0px;
+}
+
+.layer-level .bar .next-background, .layer-level .bar .next {
+    right:0px;
+}
+
+.layer-level .bar .current-background {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big_bg1.png') no-repeat;
+}
+
+.layer-level .bar .next-background {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big_bg2.png') no-repeat;
+}
+
+.layer-level .bar .next {
+     background: url('/bundles/encounters/images/levels/layers/numbers-big.png') no-repeat;
+     z-index: 555;
+}
+
+.layer-level .bar .current {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big.png') no-repeat;
+    z-index: 555;
+}
+
+.layer-level .bar .l1 {
+    background-position: 0 0;
+}
+
+.layer-level .bar .l2 {
+    background-position: 0 -40px;
+}
+
+.layer-level .bar .l3 {
+    background-position: 0 -80px;
+}
+
+.layer-level .bar .l4 {
+    background-position: 0 -120px;
+}
+
+.layer-level .bar .l5 {
+    background-position: 0 -160px;
+}
+
+.layer-level .bar .l6 {
+    background-position: 0 -200px;
+}
+
+.layer-level .bar .l7 {
+    background-position: 0 -240px;
+}
+
+.layer-level .bar .l8 {
+    background-position: 0 -280px;
+}
+
+.layer-level .bar .l9 {
+    background-position: 0 -320px;
+}
+
+.layer-level .bar .l10 {
+    background-position: 0 -360px;
+}
+
+.layer-level .bar .l11 {
+    background-position: 0 -400px;
+}
+
+.layer-level .bar .l12 {
+    background-position: 0 -440px;
+}
+
+.layer-level .bar .l13 {
+    background-position: 0 -480px;
+}
+
+.layer-level .bar .l14 {
+    background-position: 0 -520px;
+}
+
+.layer-level .bar .l15 {
+    background-position: 0 -560px;
+}
+
+.layer-level .bar .l16 {
+    background-position: 0 -600px;
+}
+
+.layer-level .bar .speedo-background, .layer-level .bar .speedo {
+    top: 0px;
+    position: absolute;
+
+    left: 52px;
+    height: 40px;
+}
+
+.layer-level .bar .speedo-background {
+    background: url('/bundles/encounters/images/levels/layers/bar-big2.png') no-repeat;
+    width: 199px;
+}
+
+.layer-level .bar .speedo {
+    background: url('/bundles/encounters/images/levels/layers/bar-big1.png') no-repeat;
+    width: 20px;
 }
 
 .layer-energy .title{
@@ -633,7 +1011,7 @@ h5{ font-size: 100%; }
     background: url('/bundles/encounters/images/battery-charged.png') no-repeat center top;
 }
 
-.layer-energy .battery-big{
+.layer-energy .battery-big {
 	background: url('/bundles/encounters/images/battery.gif') no-repeat left top;
 	height: 74px; width: 167px; 
 	margin: 0 auto;
@@ -657,6 +1035,15 @@ h5{ font-size: 100%; }
     background: url('/bundles/encounters/images/battery-full.png') no-repeat left top;
 }
 
+.layer-level-achievement .battery {
+    background: url('/bundles/encounters/images/levels/layers/bat.png') no-repeat;
+    padding-left: 43px;
+    color:#ff6600;
+    font-size:15px;
+    font-weight: bold;
+    margin:0 auto;
+}
+
 .layer-energy .battery-big b {
 	background: url('/bundles/encounters/images/battery-load.gif') repeat-x left top;
 	position: relative;
@@ -665,16 +1052,27 @@ h5{ font-size: 100%; }
 	height: 48px; 
 }
 
-.layer-energy .info-battery, .layer-battery .info-battery {
-	background-color: #fff1d2;
+.layer-energy .info-battery, .layer-battery .info-battery, .layer-level-achievement .info-battery, .layer-level .info-battery {
+    background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
     display: block;
-    margin: 20px auto 5px; padding: 10px;
+    margin: 20px auto 5px;
+    padding: 10px;
     position: relative;
+    text-align: center;
+    font-size:15px;
+    line-height: 20px;
     width: 96%;
+
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 
-.layer-energy .info-battery .arrow, .layer-battery .info-battery .arrow{
+.layer-level .info-battery {
+    margin-top:30px;
+}
+
+.layer-energy .info-battery .arrow, .layer-battery .info-battery .arrow, .layer-level-achievement .info-battery .arrow, .layer-level .info-battery .arrow{
 	background:none;
 	position: absolute;
 	left: 49%; top: -18px;

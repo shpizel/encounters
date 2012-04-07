@@ -399,6 +399,19 @@ abstract class Script extends ContainerAwareCommand {
     }
 
     /**
+     * Popularity object getter
+     *
+     * @return Popularity
+     */
+    public function getPopularityObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Popularity($this->getContainer());
+    }
+
+    /**
      * Процессор, имплементируемый в потомках
      *
      * @abstract

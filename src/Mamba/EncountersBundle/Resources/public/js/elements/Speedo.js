@@ -11,8 +11,20 @@ $Speedo = {
      * @init UI
      */
     initUI: function($route) {
-        $("li.item-popul").click(function() {
-            $Layers.showPopularityLayer();
+        $(".info-meet li.item-popularity div.bar div.speedo").click(function() {
+            $Layers.showLevelLayer();
+        });
+
+        $(".info-meet li.item-popularity div.bar div.speedo-background").click(function() {
+            $Layers.showLevelLayer();
+        });
+
+        $(".info-meet li.item-popularity div.bar div.level").click(function() {
+            $Layers.showLevelLayer();
+        });
+
+        $(".info-meet li.item-popularity div.bar div.level-background").click(function() {
+            $Layers.showLevelLayer();
         });
     }
 }

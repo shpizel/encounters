@@ -297,6 +297,19 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
+     * Popularity object getter
+     *
+     * @return Popularity
+     */
+    public function getPopularityObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Popularity($this->container);
+    }
+
+    /**
      * Возвращает массив данных, общих по всему приложению
      *
      * @return array
@@ -310,10 +323,18 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['platform'] = $platformSettings;
 
-        $webUser = $this->getMamba()->Anketa()->getInfo($webUserId);
+        $Mamba = $this->getMamba();
+        $Mamba->set('oid', $webUserId);
+
+        $webUser = $Mamba->Anketa()->getInfo($webUserId);
+
+        $contacts = $Mamba->Contacts()->getContactList();
+
+
         $dataArray['webuser'] = array(
             'anketa'      => $webUser[0],
-            'popularity'  => $this->getPopularity(),
+            'contacts'    => (isset($contacts['contacts'])) ? array_map(function($item){return (int) $item['info']['oid'];}, $contacts['contacts']) : array(),
+            'popularity'  => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
             'battery'     => $this->getBatteryObject()->get($webUserId),
             'preferences' => $searchPreferences,
             'stats'       => array(
@@ -324,6 +345,7 @@ abstract class ApplicationController extends Controller {
                 'mutual_unread'   => $this->getCountersObject()->get($webUserId, 'mutual_unread'),
             ),
         );
+
 
         $dataArray['webuser']['json'] = json_encode($dataArray['webuser']);
         $dataArray['routes'] = json_encode($this->getRoutes());
@@ -350,33 +372,6 @@ abstract class ApplicationController extends Controller {
         $className = explode("\\", $className);
         $className = array_pop($className);
         return str_replace("Controller", "", $className);
-    }
-
-    /**
-     * Определитель популярности
-     *
-     * @return array
-     */
-    private function getPopularity() {
-        $webUserId = (int) $this->getMamba()->get('oid');
-        $popularity = Popularity::getPopularity($this->getEnergyObject()->get($webUserId));
-
-        $dataArray = array('title' => 'Низкая', 'class' => 'low');
-        if ($popularity < 4) {
-            $dataArray['title'] = 'Низкая';
-            $dataArray['class'] = 'low';
-        } elseif ($popularity >= 4 && $popularity < 8) {
-            $dataArray['title'] = 'Средняя';
-            $dataArray['class'] = 'normal';
-        } elseif ($popularity >= 8 && $popularity < 12) {
-            $dataArray['title'] = 'Высокая';
-            $dataArray['class'] = 'high';
-        } elseif ($popularity >= 12) {
-            $dataArray['title'] = 'Супер';
-            $dataArray['class'] = 'super';
-        }
-
-        return $dataArray;
     }
 
     /**

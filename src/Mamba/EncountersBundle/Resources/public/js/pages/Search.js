@@ -151,7 +151,7 @@ $Search = {
      * @request vote.set
      */
     makeDecision: function($decision) {
-        if ($Search.$storage['locked']) {
+        if ($Search.$storage['locked'] || !$Search.$storage['currentQueueElement']) {
             return;
         }
 
@@ -168,6 +168,19 @@ $Search = {
             if ($data.status == 0 && $data.message == "") {
                 if ($data.data['mutual']) {
                     $Layers.showMutualLayer();
+                }
+
+                if ($data.data['popularity']) {
+                    $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
+                    var $energy = $data.data['popularity']['energy'], $next = $data.data['popularity']['next'], $prev = $data.data['popularity']['prev'], $level = $data.data['popularity']['level'], $levelUp = $data.data['popularity']['level_up'];
+
+                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+
+                    if ($levelUp) {
+                        $Layers.showLevelAchievementLayer();
+                    }
                 }
 
                 $data = $data.data;
