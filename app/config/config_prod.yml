@@ -19,22 +19,39 @@ monolog:
             level: debug
 
 redis:
-    host: 10.10.10.1
+    host: 10.10.10.21
     database: 0
 
 gearman:
     servers:
         server1:
-            host: 10.10.10.2
+            host: 10.10.10.21
+            #port: 123
+        server2:
+            host: 10.10.10.31
+            #port: 123
+        server2:
+            host: 10.10.10.41
+            #port: 123
+        server2:
+            host: 10.10.10.42
             #port: 123
 
 memcache:
     servers:
         server1:
-            host: 10.10.10.2
+            host: 10.10.10.21
             port: 11211
             weight: 25
-#        server2:
-#            host: localhost
-#            port: 11211
-#            weight: 75
+        server2:
+            host: 10.10.10.31
+            port: 11211
+            weight: 25
+        server3:
+            host: 10.10.10.41
+            port: 11211
+            weight: 25
+        server3:
+            host: 10.10.10.42
+            port: 11211
+            weight: 25
