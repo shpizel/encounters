@@ -27,8 +27,7 @@ $Layers = {
         $("div.layer-energy form p a").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 1}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
-                    location.href = $Routing.getPath("billing");
+                    mamba.method('pay', 1);
                 }
             });
 
@@ -38,8 +37,7 @@ $Layers = {
         $("div.layer-battery form p a.ui-btn").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 1}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
-                    location.href = $Routing.getPath("billing");
+                    mamba.method('pay', 1);
                 }
             });
 
@@ -49,8 +47,7 @@ $Layers = {
         $("div.layer-not-see-yet div.center a").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 1);
-                    location.href = $Routing.getPath("billing");
+                    mamba.method('pay', 1);
                 }
             });
 
@@ -60,8 +57,7 @@ $Layers = {
         $("div.layer-pop-up form p a").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 3);
-                    location.href = $Routing.getPath("billing");
+                    mamba.method('pay', 3);
                 }
             });
 
@@ -71,7 +67,7 @@ $Layers = {
         $("div.layer-invite form p a").click(function() {
             $("div#overflow").hide();
             $("div.app-layer").hide();
-            mamba.method('openDirectContactRequestLayer', 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)', '', $(this).attr('ids'));
+            mamba.method('message', 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)', '', $(this).attr('ids'));
             return false;
         });
 
@@ -85,10 +81,10 @@ $Layers = {
         });
 
         $("div.layer-level-achievement div._tell a.see").click(function() {
-            if ($Config.get('webuser')['contacts'].length) {
-                mamba.method('openDirectContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']);
+            if ($Config.get('webuser')['contacts']['not_app_users'].length) {
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['not_app_users']);
             } else {
-                mamba.method('openContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '');
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['all']);
             }
             $("div#overflow").hide();
             $("div.app-layer").hide();
@@ -97,10 +93,10 @@ $Layers = {
         });
 
         $("div.layer-level div._tell a.see").click(function() {
-            if ($Config.get('webuser')['contacts'].length) {
-                mamba.method('openDirectContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']);
+            if ($Config.get('webuser')['contacts']['not_app_users'].length) {
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['not_app_users']);
             } else {
-                mamba.method('openContactRequestLayer', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '');
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['all']);
             }
 
             $("div#overflow").hide();
@@ -113,8 +109,7 @@ $Layers = {
             var $cost = $(this).attr('cost'), $level = $(this).attr('level');
             $.post($Routing.getPath('service.add'), {service: {id: 4, level: $level}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, $cost);
-                    location.href = $Routing.getPath("billing");
+                    mamba.method('pay', $cost);
                 }
             });
 

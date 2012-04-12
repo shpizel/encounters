@@ -328,12 +328,22 @@ abstract class ApplicationController extends Controller {
 
         $webUser = $Mamba->Anketa()->getInfo($webUserId);
 
-        $contacts = $Mamba->Contacts()->getContactList();
+        $contactList = $Mamba->Contacts()->getContactList();
+        $contactListIds = array();
+        if (isset($contactList['contacts'])) {
+            $contactListIds = array_map(function($item){return (int) $item['info']['oid'];}, $contactList['contacts']);
+        }
 
+        $searchPreferencesObject = $this->getSearchPreferencesObject();
 
         $dataArray['webuser'] = array(
             'anketa'      => $webUser[0],
-            'contacts'    => (isset($contacts['contacts'])) ? array_map(function($item){return (int) $item['info']['oid'];}, $contacts['contacts']) : array(),
+            'contacts'    => array(
+                'all'           => $contactListIds,
+                'not_app_users' => array_filter($contactListIds, function($item) use ($searchPreferencesObject) {
+                    return !$searchPreferencesObject->exists($item);
+                }),
+            ),
             'popularity'  => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
             'battery'     => $this->getBatteryObject()->get($webUserId),
             'preferences' => $searchPreferences,

@@ -19,7 +19,7 @@ menu, nav, section, summary, time, mark, audio, video {
 
 html, body {
 	height: 100%;
-    min-width: 830px;
+    min-width: 900px;
 }
 
 table { border-collapse:collapse; border-spacing:0; }

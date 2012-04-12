@@ -35,7 +35,7 @@ class SearchPreferences extends Helper {
     }
 
     /**
-     * Hitlist setter
+     * Preferences setter
      *
      * @param int $userId
      * @param array $data
@@ -47,15 +47,25 @@ class SearchPreferences extends Helper {
             return $this->getRedis()->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, json_encode($data));
         }
 
-        throw new PreferencesException("Invalid data: \n" . var_export($data, true));
+        throw new SearchPreferencesException("Invalid data: \n" . var_export($data, true));
+    }
+
+    /**
+     * Preferences exists getter
+     *
+     * @param int $userId
+     * @return boolean
+     */
+    public function exists($userId) {
+        return $this->getRedis()->hExists(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId);
     }
 }
 
 /**
- * PreferencesException
+ * SearchPreferencesException
  *
  * @package EncountersBundle
  */
-class PreferencesException extends \Exception {
+class SearchPreferencesException extends \Exception {
 
 }

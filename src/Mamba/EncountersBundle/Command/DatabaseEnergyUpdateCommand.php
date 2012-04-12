@@ -93,15 +93,16 @@ class DatabaseEnergyUpdateCommand extends CronScript {
      */
     public function updateEnergy($job) {
         list($userId, $energy) = array_values(unserialize($job->workload()));
+        if ($this->getSearchPreferencesObject()->exists($userId)) {
+            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_ENERGY_UPDATE);
+            $stmt->bindValue('user_id', $userId);
+            $stmt->bindValue('energy', $energy = $this->getEnergyObject()->get($userId));
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_ENERGY_UPDATE);
-        $stmt->bindValue('user_id', $userId);
-        $stmt->bindValue('energy', $energy = $this->getEnergyObject()->get($userId));
-
-        $result = $stmt->execute();
-        $this->getMemcache()->delete("energy_update_lock_by_user_" . $userId);
-        if (!$result) {
-            throw new CronScriptException('Unable to store data to DB.');
+            $result = $stmt->execute();
+            $this->getMemcache()->delete("energy_update_lock_by_user_" . $userId);
+            if (!$result) {
+                throw new CronScriptException('Unable to store data to DB.');
+            }
         }
     }
 }

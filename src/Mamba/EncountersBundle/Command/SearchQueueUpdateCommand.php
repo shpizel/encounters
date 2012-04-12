@@ -302,7 +302,6 @@ class SearchQueueUpdateCommand extends CronScript {
         }
 
         if ($usersAddedCount < self::LIMIT) {
-
             /** Ищем по базе, страна и регион */
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_AND_REGION_SEARCH_SQL);
 
@@ -339,9 +338,7 @@ class SearchQueueUpdateCommand extends CronScript {
 
         /** Никого не нашли — ищем по стране и региону */
         if ($usersAddedCount < self::LIMIT) {
-
             $offset = -10;
-            $usersAddedCount = 0;
             do {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,
@@ -380,7 +377,6 @@ class SearchQueueUpdateCommand extends CronScript {
         }
 
         if ($usersAddedCount < self::LIMIT) {
-
             /** Ищем по базе, страна */
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_SEARCH_SQL);
 
@@ -416,9 +412,7 @@ class SearchQueueUpdateCommand extends CronScript {
 
         /** Никого не нашли — ищем по стране */
         if ($usersAddedCount < self::LIMIT) {
-
             $offset = -10;
-            $usersAddedCount = 0;
             do {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,
@@ -458,9 +452,7 @@ class SearchQueueUpdateCommand extends CronScript {
 
         /** Никого не нашли — ищем по Рашке */
         if ($usersAddedCount < self::LIMIT) {
-
             $offset = -10;
-            $usersAddedCount = 0;
             do {
                 $result = $Mamba->Search()->get(
                     $whoAmI         = null,

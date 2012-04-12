@@ -136,8 +136,7 @@ $Search = {
         $("div.message-help a#getmore").click(function() {
             $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('openPaymentLayer', $Config.get('platform').app_id, 3);
-                    location.href = $Routing.getPath("billing");
+                    mamba.method('pay', 3);
                 }
             });
 

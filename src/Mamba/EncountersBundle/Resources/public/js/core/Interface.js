@@ -19,7 +19,27 @@ $Interface = {
             } else {
                 var $documentHeight = $('#wrapper').height();
                 mamba.init(function() {
-                    mamba.method("resizeWindow", '100%', ($documentHeight > 1000) ? $documentHeight : 1000);
+                    mamba.method("resize", '100%', ($documentHeight > 1000) ? $documentHeight : 1000);
+                    mamba.method("setup", {hideOverlay: true});
+                    mamba.on('resize', function($data) {});
+                    mamba.on('scroll', function($data) {});
+                    mamba.on('dimensions', function($data) {});
+                    mamba.on('paymentFail', function($data) {});
+                    mamba.on('paymentCancel', function($data) {});
+                    mamba.on('paymentSuccess', function($data) {
+                        location.href = $Routing.getPath("billing");
+                    });
+
+                    mamba.on('messageComplete', function($data) {
+                        alert('message complete');
+                    });
+
+                    mamba.on('messageCancel', function($data) {
+                        alert('message cancel');
+                    });
+
+                }, function() {
+                    top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
                 });
             }
         }

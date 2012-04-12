@@ -67,7 +67,15 @@ class DecisionController extends ApplicationController {
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
 
-            $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
+            if ($this->getSearchPreferencesObject()->exists($this->webUserId)) {
+
+                /**
+                 * Если юзер не пользователь приложения то зачем его писать в базу энергий
+                 *
+                 * @author shpizel
+                 */
+                $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
+            }
 
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {
@@ -83,7 +91,9 @@ class DecisionController extends ApplicationController {
             /** Уменьшить энергию CurrentUser'a */
             $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
             $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
-            $this->getEnergyObject()->decr($this->currentUserId, (($currentUserLevel < 3) ? 3 : $currentUserLevel));
+
+
+            $this->getEnergyObject()->decr($this->currentUserId, 5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision + 1 > 0) {
@@ -121,7 +131,7 @@ class DecisionController extends ApplicationController {
 
             /** Может быть мы совпали? */
             if (($this->decision + 1) && ($mutual = $this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId))) {
-                if ($mutual['decision'] + 1) {
+                if (isset($mutual['decision']) && ($mutual['decision'] + 1)) {
                     $this->json['data'] = array(
                         'mutual' => true,
                     );
