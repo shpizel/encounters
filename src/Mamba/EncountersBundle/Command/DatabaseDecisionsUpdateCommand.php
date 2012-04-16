@@ -39,10 +39,10 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
                 `web_user_id` = :web_user_id,
                 `current_user_id` = :current_user_id,
                 `decision` = :decision,
-                `changed` = :changed
+                `changed` = FROM_UNIXTIME(:changed)
             ON DUPLICATE KEY UPDATE
                 `decision` = :decision,
-                `changed` = :changed
+                `changed` = FROM_UNIXTIME(:changed)
         "
     ;
 

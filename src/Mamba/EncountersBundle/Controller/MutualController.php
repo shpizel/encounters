@@ -71,7 +71,7 @@ class MutualController extends ApplicationController {
             'max'     => 12,
         );
 
-        $data = array();
+        $data = $json = array();
         $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::MUTUAL_SQL . " LIMIT $perPage OFFSET " . (abs($dataArray['paginator']['current'] -1) * $perPage));
         $_webUserId = $webUserId;
         $stmt->bindParam('web_user_id',  $_webUserId);
@@ -98,6 +98,22 @@ class MutualController extends ApplicationController {
             $data = array();
             foreach ($anketasArray as $k => $anketasChunk) {
                 foreach ($anketasChunk as &$anketa) {
+                    $json[$anketa['info']['oid']] = array(
+                        'info' => array(
+                            'id'               => $anketa['info']['oid'],
+                            'name'             => $anketa['info']['name'],
+                            'gender'           => $anketa['info']['gender'],
+                            'age'              => $anketa['info']['age'],
+                            'small_photo_url'  => $anketa['info']['small_photo_url'],
+                            'medium_photo_url' => $anketa['info']['medium_photo_url'],
+                            'is_app_user'      => $anketa['info']['is_app_user'],
+                            'location'         => $anketa['location'],
+                            'flags'            => $anketa['flags'],
+                            'familiarity'      => $anketa['familiarity'],
+                            'other'            => $anketa['other'],
+                        ),
+                    );
+
                     $anketa['decision'] = array(
                         $usersArray[$k][$anketa['info']['oid']]
                     );
@@ -116,6 +132,7 @@ class MutualController extends ApplicationController {
             }
         }
         $dataArray['data'] = $data ?: null;
+        $dataArray['json'] = json_encode($json) ?: null;
 
         $Response = $this->render("EncountersBundle:templates:mutual.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');

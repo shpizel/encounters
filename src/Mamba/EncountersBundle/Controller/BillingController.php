@@ -4,7 +4,6 @@ namespace Mamba\EncountersBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
-use Mamba\EncountersBundle\Entity\Billing;
 use Mamba\EncountersBundle\Helpers\Popularity;
 
 /**
@@ -13,6 +12,26 @@ use Mamba\EncountersBundle\Helpers\Popularity;
  * @package EncountersBundle
  */
 class BillingController extends ApplicationController {
+
+    const
+
+        BILLING_ADD_ITEM_SQL = "
+            INSERT INTO
+                Encounters.Billing
+            SET
+                `app_id`           = :app_id,
+                `user_id`          = :user_id,
+                `operation_id`     = :operation_id,
+                `amount`           = :amount,
+                `amount_developer` = :amount_developer,
+                `validation_id`    = :validation_id,
+                `changed`          = FROM_UNIXTIME(:time),
+                `billed`           = :billed
+            ON DUPLICATE KEY UPDATE
+                `changed` = FROM_UNIXTIME(:time),
+                `billed`  = :billed
+        "
+    ;
 
     protected
 
@@ -27,8 +46,11 @@ class BillingController extends ApplicationController {
             'operation_id', // 101914189 - номер операции (транзакции). уникален для каждой оплаты пользователя приложения. 
             'amount', // 2.00000 - количество внесенных денег. 
             'amount_developer', // 1.14000 - комиссия разработчика с платежа. 
-            'validation_id', // 132660758 - индитификатор для сверки. 
-            'time', // unixts- время оплаты. 
+            'validation_id', // 132660758 - индитификатор для сверки.
+
+//            'extra', // extra-params (необязательный параметр)
+
+            'time', // unixts- время оплаты.
             'sig', // 6c5cb969eb69115daa029545ee23d4c5 - подпись данных. 
         ),
 
@@ -105,6 +127,9 @@ class BillingController extends ApplicationController {
         $Request  = $this->getRequest();
         $postParams = $Request->request->all();
 
+        /** logger :) */
+        file_put_contents("/tmp/extra.log", var_export($postParams, 1), FILE_APPEND);
+
         if (count(array_intersect(array_keys($postParams), $this->requiredParams)) == count($this->requiredParams)) {
             $billingParams = array();
             foreach ($this->requiredParams as $requiredParam) {
@@ -112,35 +137,34 @@ class BillingController extends ApplicationController {
             }
 
             if ($this->getMamba()->checkBillingSignature($postParams)) {
-                $item = new Billing();
-
-                $item->setAppId((int) $billingParams['app_id']);
-                $item->setUserId($webUserId = (int) $billingParams['oid']);
-                $item->setOperationId((int) $billingParams['operation_id']);
-                $item->setAmount((float) $billingParams['amount']);
-                $item->setAmountDeveloper((float) $billingParams['amount_developer']);
-                $item->setValidationId((int) $billingParams['validation_id']);
-                $item->setTime((int) $billingParams['time']);
+                list($appId, $webUserId, $operationId, $amount, $amountDeveloper, $validationId, $time, $billed) = array(
+                    (int) $billingParams['app_id'],
+                    (int) $billingParams['oid'],
+                    (int) $billingParams['operation_id'],
+                    (float) $billingParams['amount'],
+                    (float) $billingParams['amount_developer'],
+                    (int) $billingParams['validation_id'],
+                    (int) $billingParams['time'],
+                    false
+                );
 
                 if ($service = $this->getServicesObject()->get($webUserId)) {
                     $serviceId = (int) $service['id'];
                     if ($serviceId == 1) {
                         $this->getBatteryObject()->set($webUserId, 5);
-                        $item->setBilled(true);
+
 
                         $this->getNotificationsObject()->add($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
                     } elseif ($serviceId == 2) {
                         if (isset($service['user_id']) && ($currentUserId = (int) $service['user_id'])) {
                             $this->getPriorityQueueObject()->put($currentUserId, $webUserId);
-                            $item->setBilled(true);
+                            $billed = true;
 
                             $this->getNotificationsObject()->add($webUserId, "Ура! Услуга успешно оплачена!");
-                        } else {
-                            $item->setBilled(false);
                         }
                     } elseif ($serviceId == 3) {
                         $this->getEnergyObject()->set($webUserId, 600);
-                        $item->setBilled(true);
+                        $billed = true;
 
                         $this->getNotificationsObject()->add($webUserId, "Ура! Теперь вы получите 100 внеочередных показов!");
 
@@ -150,20 +174,25 @@ class BillingController extends ApplicationController {
                         if ($level < 16) {
                             $level = $level + 1;
                             $this->getEnergyObject()->set($webUserId, Popularity::$levels[$level]);
-                            $item->setBilled(true);
+                            $billed = true;
 
                             $this->getNotificationsObject()->add($webUserId, "Ура! Вы перешли на новый уровень популярности!");
-                        } else {
-                            $item->setBilled(false);
                         }
                     }
-                } else {
-                    $item->setBilled(false);
                 }
 
-                $em = $this->getDoctrine()->getEntityManager();
-                $em->persist($item);
-                $em->flush();
+                $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::BILLING_ADD_ITEM_SQL);
+
+                $stmt->bindParam('app_id', $appId);
+                $stmt->bindParam('user_id', $webUserId);
+                $stmt->bindParam('operation_id', $operationId);
+                $stmt->bindParam('amount', $amount);
+                $stmt->bindParam('amount_developer', $amountDeveloper);
+                $stmt->bindParam('validation_id', $validationId);
+                $stmt->bindParam('time', $time);
+                $stmt->bindParam('billed', (int) $billed);
+
+                $result = $stmt->execute();
             }
 
             return new Response(/** null */);

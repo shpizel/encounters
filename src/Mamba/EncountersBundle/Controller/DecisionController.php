@@ -119,10 +119,14 @@ class DecisionController extends ApplicationController {
                 'time'     => time(),
             );
 
-            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME, serialize($dataArray));
-
             /** Ставим задачу на обноления базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
+
+            /** Ставим задачу на спам по контакт-листу */
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
+
+            /** Ставим задачу на установку ачивки */
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize($dataArray));
 
             /** Не спишком ли часто мы спамим? */
             if (false) {
@@ -227,11 +231,23 @@ class DecisionController extends ApplicationController {
     public function removeDecisionAction() {
         if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
             if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-                $this->getViewedQueueObject()->put($webUserId, $currentUserId, array());
-                if (!$this->getDoctrine()->getEntityManager()->getConnection()->prepare("DELETE FROM Decisions WHERE web_user_id = $webUserId AND current_user_id = $currentUserId LIMIT 1")->execute()) {
-                    list($this->json['status'], $this->json['message']) = array(3, "SQL query returned error");
-                }
+                $this->getViewedQueueObject()->put(
+                    $webUserId,
+                    $currentUserId,
+                    array('ts'=>time(), 'decision'=>-1)
+                );
 
+                $this->getGearman()->getClient()->doLowBackground(
+                    EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME,
+                    serialize(
+                        array(
+                            'webUserId' => $webUserId,
+                            'currentUserId' => $currentUserId,
+                            'decision' => -1,
+                            'time'     => time(),
+                        )
+                    )
+                );
             } else {
                 list($this->json['status'], $this->json['message']) = array(2, "Invalid session");
             }

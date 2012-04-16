@@ -42,6 +42,15 @@ $Mychoice = {
                 }
             }, 'json');
         });
+
+        $(".content div.info a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
     },
 
     /**

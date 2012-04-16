@@ -25,9 +25,10 @@ $Layers = {
         });
 
         $("div.layer-energy form p a").click(function() {
-            $.post($Routing.getPath('service.add'), {service: {id: 1}}, function($data) {
+            var $extra = {service: {id: 1}};
+            $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 1);
+                    mamba.method('pay', 1, $.toJSON($extra));
                 }
             });
 
@@ -35,9 +36,10 @@ $Layers = {
         });
 
         $("div.layer-battery form p a.ui-btn").click(function() {
-            $.post($Routing.getPath('service.add'), {service: {id: 1}}, function($data) {
+            var $extra = {service: {id: 1}};
+            $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 1);
+                    mamba.method('pay', 1, $.toJSON($extra));
                 }
             });
 
@@ -45,9 +47,10 @@ $Layers = {
         });
 
         $("div.layer-not-see-yet div.center a").click(function() {
-            $.post($Routing.getPath('service.add'), {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}}, function($data) {
+            var $extra = {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}};
+            $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 1);
+                    mamba.method('pay', 1, $.toJSON($extra));
                 }
             });
 
@@ -55,9 +58,10 @@ $Layers = {
         });
 
         $("div.layer-pop-up form p a").click(function() {
-            $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
+            var $extra = {service: {id: 3}};
+            $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 3);
+                    mamba.method('pay', 3, $.toJSON($extra));
                 }
             });
 
@@ -75,9 +79,11 @@ $Layers = {
             var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
             try {
                 $Config.get('messenger.popup') && $Config.get('messenger.popup').close();
-                $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $Search.$storage['currentQueueElement']['info']['id'] ,"Messenger","width=750,height="+e+",resizable=1,scrollbars=1"));
+                $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $(this).attr('user_id') ,"Messenger","width=750,height="+e+",resizable=1,scrollbars=1"));
                 $Config.get('messenger.popup').focus();
             } catch (e) {}
+
+            return false;
         });
 
         $("div.layer-level-achievement div._tell a.see").click(function() {
@@ -107,9 +113,10 @@ $Layers = {
 
         $("div.layer-level p a.ui-btn").click(function() {
             var $cost = $(this).attr('cost'), $level = $(this).attr('level');
-            $.post($Routing.getPath('service.add'), {service: {id: 4, level: $level}}, function($data) {
+            var $extra = {service: {id: 4, level: $level}};
+            $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', $cost);
+                    mamba.method('pay', $cost, $.toJSON($extra));
                 }
             });
 
@@ -303,8 +310,9 @@ $Layers = {
     showUserInfoLayer: function($data) {
         this.hideInners();
 
-        var currentQueueElement = $Search.$storage['currentQueueElement'];
+        var currentQueueElement = ($data) ? $data : $Search.$storage['currentQueueElement'];
         $("div.layer-user-info div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        $("div.layer-user-info a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
         $("div.layer-user-info div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
 
         if (currentQueueElement['info']['gender'] == 'F') {
@@ -398,8 +406,6 @@ $Layers = {
             $("div.layer-level div._tell").show();
             $("div.layer-level p._buy").hide();
         }
-
-
 
         $("div.layer-level").show();
         this.showLayer();

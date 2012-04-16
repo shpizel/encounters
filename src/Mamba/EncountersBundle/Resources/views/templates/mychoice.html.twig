@@ -23,7 +23,7 @@
         </div>
         {% else %}
 
-        <div class="mpic{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
+        <div user_id="{{ item.info.oid }}" class="mpic{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
             <div class="ramka"></div>
             <img src="{{ item.info.medium_photo_url }}"><br>
             <div class="info"><a target="_blank" href="{{ platform.partner_url }}anketa.phtml?oid={{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
@@ -36,7 +36,14 @@
     {% include 'EncountersBundle:tools:paginator.html.twig' %}
     </div>
     {% endif %}
-
-    {% include 'EncountersBundle:layers:layers.html.twig' %}
 </div>
+{% include 'EncountersBundle:layers:layers.html.twig' %}
+{% endblock %}
+
+{% block pagejs %}
+{% if json %}
+{% autoescape false %}
+$Config.set('users', {{ json }});
+{% endautoescape %}
+{% endif %}
 {% endblock %}

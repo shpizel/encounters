@@ -134,9 +134,10 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-            $.post($Routing.getPath('service.add'), {service: {id: 3}}, function($data) {
+            var $extra = {service: {id: 3}};
+            $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 3);
+                    mamba.method('pay', 3, $.toJSON($extra));
                 }
             });
 

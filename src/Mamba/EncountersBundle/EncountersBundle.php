@@ -41,11 +41,18 @@ class EncountersBundle extends Bundle {
         GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME = 'queue:current:update',
 
         /**
-         * Имя функции рассылки нотификаций
+         * Имя функции рассылки спама по контактам
          *
          * @var str
          */
-        GEARMAN_NOTIFICATIONS_SEND_FUNCTION_NAME = 'notifications:send',
+        GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME = 'contacts:sendmessage',
+
+        /**
+         * Имя функции установки ачивок
+         *
+         * @var str
+         */
+        GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME = 'achievement:set',
 
         /**
          * Имя функции для обновления таблицы оценок

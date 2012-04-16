@@ -1,5 +1,6 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
+use Symfony\Component\HttpFoundation\Response;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
 

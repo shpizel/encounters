@@ -14,7 +14,7 @@
         <div class="title">Они ответили вам взаимностью</div>
         {% for item in data %}
 
-        <div class="mpic" user_id="{{ item.info.oid }}">
+        <div user_id="{{ item.info.oid }}" class="mpic" user_id="{{ item.info.oid }}">
             <div class="ramka"></div>
             <a class="close"></a>
             <img src="{{ item.info.medium_photo_url }}"><br>
@@ -27,6 +27,15 @@
     </div>
     {% endif %}
 
-    {% include 'EncountersBundle:layers:layers.html.twig' %}
+
 </div>
-        {% endblock %}
+{% include 'EncountersBundle:layers:layers.html.twig' %}
+{% endblock %}
+
+{% block pagejs %}
+{% if json %}
+{% autoescape false %}
+$Config.set('users', {{ json }});
+{% endautoescape %}
+{% endif %}
+{% endblock %}

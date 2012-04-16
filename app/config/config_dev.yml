@@ -43,7 +43,3 @@ memcache:
             host: localhost
             port: 11211
             weight: 25
-#        server2:
-#            host: localhost
-#            port: 11211
-#            weight: 75
