@@ -41,6 +41,8 @@ $Mychoice = {
                     $Layers.showEnergyLayer($dataArray);
                 }
             }, 'json');
+
+            return false;
         });
 
         $(".content div.info a").click(function() {

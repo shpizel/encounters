@@ -417,6 +417,22 @@ $Layers = {
      * @shows overflow
      */
     showLayer: function() {
+        var $dimensions = $Config.get('dimensions');
+        if ($dimensions) {
+            var
+                $applicationClientHeight = $dimensions.height,
+                $wrapperHeight = $("#overflow").height() || $("#wrapper").height(),
+                $layerHeight = $(".app-layer").height() + 40
+            ;
+
+            var $layerY = $applicationClientHeight / 2 - $layerHeight / 2 - $dimensions.offsetTop + $dimensions.scrollTop;
+            if ($layerY < 100) {
+                $layerY = 100;
+            }
+
+            $(".app-layer").css('top', $layerY + 'px');
+        }
+
         $("div.app-layer").show();
         $("div#overflow").show();
     }

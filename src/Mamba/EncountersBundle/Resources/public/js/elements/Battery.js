@@ -13,6 +13,7 @@ $Battery = {
     initUI: function($route) {
         $("li.item-energy > *").click(function() {
             $Layers.showBatteryLayer();
+            return false;
         });
     },
 

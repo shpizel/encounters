@@ -28,13 +28,27 @@ $Interface = {
                         location.href = $Routing.getPath("billing");
                     });
 
-                    mamba.on('messageComplete', function($data) {
+                    var $dimensionsSetterFunction = function ($data) {
+                        $Config.set('dimensions', {
+                            'width'     : $data.data.width,
+                            'height'    : $data.data.height,
+                            'offsetLeft': $data.data.offsetLeft,
+                            'offsetTop' : $data.data.offsetTop,
+                            'scrollTop' : $data.data.scrollTop
+                        });
+                    };
+
+                    mamba.on('resize', $dimensionsSetterFunction);
+                    mamba.on('scroll', $dimensionsSetterFunction);
+                    mamba.on('dimensions', $dimensionsSetterFunction);
+
+                    /*mamba.on('messageComplete', function($data) {
                         alert('message complete');
                     });
 
                     mamba.on('messageCancel', function($data) {
                         alert('message cancel');
-                    });
+                    });*/
 
                 }, function() {
                     top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];

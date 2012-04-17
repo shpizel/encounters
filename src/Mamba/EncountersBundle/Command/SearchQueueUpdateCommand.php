@@ -226,6 +226,12 @@ class SearchQueueUpdateCommand extends CronScript {
             throw new CronScriptException("Current queue for user_id=$webUserId has limit exceed");
         }
 
+        /**
+         * 
+         *
+         * @author shpizel
+         */
+
         $usersAddedCount = 0;
 
         /** Ищем по базе, полностью */

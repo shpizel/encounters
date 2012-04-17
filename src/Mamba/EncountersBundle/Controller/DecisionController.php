@@ -63,6 +63,8 @@ class DecisionController extends ApplicationController {
             $this->getCountersObject()->incr($this->currentUserId, 'visitors');
             $this->getCountersObject()->incr($this->currentUserId, 'visitors_unread');
 
+            $this->getCountersObject()->set($this->currentUserId, 'updated', time());
+
             /** Увеличить энергию WebUser'a */
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
