@@ -36,7 +36,7 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $num = 26;
-        echo $num . " " . Declensions::get($num, "новая оценка", "новые оценки", "новых оценок") . "\n";
+        $this->getNotificationsObject()->add(560015854, "suka");
+        $this->getNotificationsObject()->add(560015854, "bla");
     }
 }

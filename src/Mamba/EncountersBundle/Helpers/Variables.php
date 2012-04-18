@@ -57,6 +57,20 @@ class Variables extends Helper {
     }
 
     /**
+     * All variables getter
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getAll($userId) {
+        if (!is_int($userId)) {
+            throw new VariablesException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        return $this->getRedis()->hGetAll(sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId));
+    }
+
+    /**
      * Variable setter
      *
      * @param int $userId

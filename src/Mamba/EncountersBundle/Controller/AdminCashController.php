@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
+use PDO;
 
 /**
  * AdminCashController
@@ -30,7 +31,7 @@ class AdminCashController extends ApplicationController {
             ORDER BY
                 `changed` DESC
             LIMIT
-                10
+                %LIMIT%
         "
     ;
 
@@ -39,7 +40,26 @@ class AdminCashController extends ApplicationController {
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction() {
-        return new Response("cash");
+    public function indexAction($limit = 7) {
+        $dataArray = array(
+            'items' => array(),
+            'info'  => array(
+                'limit' => $limit,
+                'sum'   => 0,
+            ),
+        );
+
+        $stmt = $this->getDoctrine()->getConnection()->prepare(
+            str_replace("%LIMIT%", $limit, self::GET_CASH_SQL)
+        );
+
+        if ($stmt->execute()) {
+            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $dataArray['items'][] = $item;
+                $dataArray['info']['sum'] += $item['daily'];
+            }
+        }
+
+        return $this->render('EncountersBundle:templates:admin.cash.html.twig', $dataArray);
     }
 }

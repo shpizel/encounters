@@ -36,6 +36,20 @@ class Counters extends Helper {
     }
 
     /**
+     * All counter getter
+     *
+     * @param int $userId
+     * @return mixed
+     */
+    public function getAll($userId) {
+        if (!is_int($userId)) {
+            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        return $this->getRedis()->hGetAll(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId));
+    }
+
+    /**
      * Counter setter
      *
      * @param int $userId
@@ -71,6 +85,25 @@ class Counters extends Helper {
         }
 
         return $this->getRedis()->hIncrBy(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $rate);
+    }
+
+    /**
+     * Counter decrement
+     *
+     * @param int $userId
+     * @param string $key
+     * @param int $rate
+     */
+    public function decr($userId, $key, $rate = 1) {
+        if (!is_int($userId)) {
+            throw new CountersException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        if (!is_int($rate)) {
+            throw new CountersException("Invalid rate: \n" . var_export($rate, true));
+        }
+
+        return $this->incr($userId, $key, -$rate);
     }
 }
 

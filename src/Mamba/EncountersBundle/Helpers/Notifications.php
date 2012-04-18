@@ -39,6 +39,20 @@ class Notifications extends Helper {
     }
 
     /**
+     * All notifications getter
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getAll($userId) {
+        if (!is_int($userId)) {
+            throw new NotificationsException("Invalid user id: \n" . var_export($userId, true));
+        }
+
+        return $this->getRedis()->lRange(sprintf(self::REDIS_HASH_USER_NOTIFICATIONS_KEY, $userId), 0, -1);
+    }
+
+    /**
      * Notification adder
      *
      * @param int $userId

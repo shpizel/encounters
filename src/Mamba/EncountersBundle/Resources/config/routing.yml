@@ -104,15 +104,23 @@ admin.user:
         user_id: \d+
         _method: GET
 
-admin.billing:
-    pattern: /admin/billing/{user_id}
-    defaults: { _controller: EncountersBundle:AdminBilling:index }
+admin.battery:
+    pattern: /admin/battery/{user_id}
+    defaults: { _controller: EncountersBundle:AdminBattery:index }
     requirements:
         user_id: \d+
-        _method: GET
+        _method: GET|POST
+
+admin.energy:
+    pattern: /admin/energy/{user_id}
+    defaults: { _controller: EncountersBundle:AdminEnergy:index }
+    requirements:
+        user_id: \d+
+        _method: GET|POST
 
 admin.cash:
-    pattern: /admin/cash
-    defaults: { _controller: EncountersBundle:AdminCash:index }
+    pattern: /admin/$/{limit}
+    defaults: { _controller: EncountersBundle:AdminCash:index, limit: 7 }
     requirements:
+        limit: \d+
         _method: GET

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Доходы</title>
+</head>
+<body>
+<h2>Доходы</h2>
+
+{% if items %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>Дата</td>
+    <td>На {{ "now"|date("H:i") }}</td>
+    <td>За день</td>
+</tr>
+{% for item in items %}
+    <tr>
+        <td>{{ item.date }}</td>
+        <td>{{ item.current }}</td>
+        <td>{{ item.daily }}</td>
+    </tr>
+{% endfor %}
+    <tr>
+        <td align="center" colspan="2" rowspan="2">Итого ({{ info.limit }}):</td>
+        <td>{{ info.sum }} &copy;</td>
+    </tr>
+    <tr>
+        <td>{{ info.sum*34 }} <s>P</s></td>
+    </tr>
+</table>
+{% else %}
+    Информация по доходам недоступна.
+{% endif %}
+</body>
+</html>

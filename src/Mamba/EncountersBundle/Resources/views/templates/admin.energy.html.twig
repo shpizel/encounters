@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Энергия пользователя {{ user.id }}</title>
+</head>
+<body>
+<h2>Энергия пользователя <a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.id }}</a></h2>
+
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+    <tr bgcolor="#f1f1f1">
+        <td>Текущий заряд энергии</td>
+    </tr>
+    <tr>
+        <td>{{ user.energy }}</td>
+    </tr>
+    <tr bgcolor="#f1f1f1">
+        <td>Новый заряд энергии</td>
+    </tr>
+    <tr>
+        <td><form method="POST" onsubmit="return confirm('Вы уверены?');">
+            <input type="text" name="energy" value="{{ user.energy }}">
+            <input type="submit" value="OK">
+        </form></td>
+    </tr>
+</table>
+<br>
+&larr; <a href="/admin/user/{{ user.id }}">вернуться к информации о пользователе</a>
+</body>
+</html>

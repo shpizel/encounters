@@ -233,23 +233,37 @@ class DecisionController extends ApplicationController {
     public function removeDecisionAction() {
         if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
             if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-                $this->getViewedQueueObject()->put(
-                    $webUserId,
-                    $currentUserId,
-                    array('ts'=>time(), 'decision'=>-1)
-                );
+                $currentUserDecision = $this->getViewedQueueObject()->get($currentUserId, $webUserId);
+                $webUserDecision     = $this->getViewedQueueObject()->get($webUserId, $currentUserId);
 
-                $this->getGearman()->getClient()->doLowBackground(
-                    EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME,
-                    serialize(
-                        array(
-                            'webUserId' => $webUserId,
-                            'currentUserId' => $currentUserId,
-                            'decision' => -1,
-                            'time'     => time(),
+                if ($currentUserDecision && $webUserDecision && $currentUserDecision['decision'] >=0 && $webUserDecision['decision'] >= 0) {
+                    $this->getViewedQueueObject()->put($webUserId, $currentUserId, array(
+                        'ts'       => time(),
+                        'decision' => -1,
+                    ));
+
+                    $this->getGearman()->getClient()->doLowBackground(
+                        EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME,
+                        serialize(
+                            array(
+                                'webUserId' => $webUserId,
+                                'currentUserId' => $currentUserId,
+                                'decision' => -1,
+                                'time'     => time(),
+                            )
                         )
-                    )
-                );
+                    );
+
+                    /** Обновим счетчики */
+                    $this->getCountersObject()->decr($currentUserId, 'mutual');
+                    $this->json['data']['counters'] = array(
+                        'visitors' => $this->getCountersObject()->get($webUserId, 'visitors'),
+                        'mutual'   => $this->getCountersObject()->decr($webUserId, 'mutual'),
+                        'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
+                    );
+                } else {
+                    list($this->json['status'], $this->json['message']) = array(2, "Invalid input data");
+                }
             } else {
                 list($this->json['status'], $this->json['message']) = array(2, "Invalid session");
             }

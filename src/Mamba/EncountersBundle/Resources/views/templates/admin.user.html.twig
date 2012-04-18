@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Mamba user {{ user.id }} info</title>
+</head>
+<body>
+<h1>
+    Информация по пользователю <a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.id }}</a>
+    (<font color="green">{{ user.energy }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;"><a href="/admin/energy/{{ user.id }}">энергия</a></sup> / <font color="blue">{{ user.level }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;">уровень</sup> / <font color="#F60">{{ user.battery }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;"><a href="/admin/battery/{{ user.id }}">батарейка</a></sup>):</h1>
+
+<ul style="list-style: square;">
+    <li><a href="#platform_settings">Настройки платформы</a></li>
+    <li><a href="#search_preferences">Поисковые предпочтения</a></li>
+    <li><a href="#queue">Очередь показа</a> (search: {{ queues.search }}, contacts: {{ queues.contacts }}, hitlist: {{ queues.hitlist }}, priority: {{ queues.priority }})</li>
+    <li><a href="#counters">Счетчики</a></li>
+    <li><a href="#variables">Переменные</a></li>
+    <li><a href="#billing">Биллинг</a></li>
+    <li><a href="#notifications">Нотификации</a></li>
+
+</ul>
+
+<a name="platform_settings"></a>
+<h2>Настройки платформы</h2>
+
+{% if platform_settings %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>Поле</td>
+    <td>Значение</td>
+</tr>
+{% for key, item in platform_settings %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>{{ item }}</td>
+    </tr>
+{% endfor %}
+</table>
+{% else %}
+    Настройки платформы недоступны.
+{% endif %}
+
+<a name="search_preferences"></a>
+<h2>Поисковые предпочтения</h2>
+
+{% if search_preferences %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>Поле</td>
+    <td>Значение</td>
+</tr>
+{% for key, item in search_preferences %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>
+            {% if item|keys|length > 0 %}
+                {{ item|json_encode }}
+            {% else %}
+                {% if key == 'changed' %}
+                    {{ item|date("Y-m-d H:i:s") }}
+                {% else %}
+                    {{ item }}
+                {% endif %}
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% else %}
+    Настройки платформы недоступны.
+{% endif %}
+
+<a name="queue"></a>
+<h2>Очередь показа ({{ queues.current|length }})</h2>
+
+{% if queues.current %}
+
+    <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+    <tr bgcolor="#f1f1f1">
+        <td>ID</td>
+        <td>Анкета</td>
+        <td>Админка</td>
+    </tr>
+    {% for key, id in queues.current %}
+        <tr>
+            <td>{{ id }}</td>
+            <td><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ id }}">{{ id }}</a></td>
+            <td><a target="_blank" href="/admin/user/{{ id }}">{{ id }}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    Очередь показа недоступна.
+{% endif %}
+    
+<a name="counters"></a>
+<h2>Счетчики</h2>
+
+{% if counters %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>Счетчик</td>
+    <td>Значение</td>
+</tr>
+{% for key, item in counters %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>{{ item }}</td>
+    </tr>
+{% endfor %}
+</table>
+{% else %}
+    Счетчики недоступны.
+{% endif %}
+
+<a name="variables"></a>
+<h2>Переменные</h2>
+
+{% if variables %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>Название</td>
+    <td>Значение</td>
+    <td>Срок жизни</td>
+</tr>
+{% for key, item in variables %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>{{ item.data }}</td>
+        <td>
+            {% if item.expires %}
+                {% if "now"|date("U") > item.expires %}
+                    <font color="red">—</font>
+                {% else %}
+                    <font color="green">{{ item.expires|date("Y-m-d H:i:s") }}</font>
+                {% endif %}
+            {% else %}
+                <font color="green">&infin;</font>
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% else %}
+    Переменные недоступны.
+{% endif %}
+
+<a name="billing"></a>
+<h2>Биллинг</h2>
+
+{% if billing %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>app_id</td>
+    <td>user_id</td>
+    <td>operation_id</td>
+    <td>amount</td>
+    <td>amount_developer</td>
+    <td>validation_id</td>
+    <td>extra</td>
+    <td>changed</td>
+    <td>billed</td>
+</tr>
+{% for item in billing %}
+    <tr>
+        {% for value in item %}
+            <td>{{ value }}</td>
+        {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+{% else %}
+    Биллинг недоступен.
+{% endif %}
+
+<a name="notifications"></a>
+<h2>Нотификации</h2>
+
+{% if notifications %}
+    <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+    <tr bgcolor="#f1f1f1">
+        <td>Текст</td>
+        <td>Дата</td>
+    </tr>
+    {% for item in notifications %}
+        <tr>
+            <td>{{item.data}}</td>
+            <td>{{item.ts|date("Y-m-d H:i:s")}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    Нотификации недоступны.
+{% endif %}
+    
+</body>
+</html>

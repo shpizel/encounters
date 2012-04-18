@@ -46,6 +46,21 @@ $Mutual = {
                 $.post($Routing.getPath('decision.remove'), {'user_id': $userId}, function($data) {
                     if ($data.status == 0 && $data.message == "") {
                         $parent.hide();
+
+                        $data = $data.data;
+                        if ($data.hasOwnProperty('counters')) {
+                            if ($data['counters']['mychoice'] > 0) {
+                                $('li.item-mychoice a i').eq(0).text($data['counters']['mychoice']);
+                            }
+
+                            if ($data['counters']['visitors'] > 0 ) {
+                                $('li.item-visitors a i').eq(1).text($data['counters']['visitors']);
+                            }
+
+                            if ($data['counters']['mutual'] > 0) {
+                                $('li.item-mutual a i').eq(0).text($data['counters']['mutual']);
+                            }
+                        }
                     }
                 });
             }
