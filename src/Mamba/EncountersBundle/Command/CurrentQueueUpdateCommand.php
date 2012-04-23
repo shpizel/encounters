@@ -215,6 +215,20 @@ class CurrentQueueUpdateCommand extends CronScript {
                         $searchPreferences['changed'] = time();
 
                         $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
+
+                        $this->getGearman()->getClient()->doHighBackground(
+                            EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
+                            serialize(
+                                array(
+                                    'user_id'    => $webUserId,
+                                    'gender'     => $anketa['info']['gender'],
+                                    'age'        => $anketa['info']['age'],
+                                    'country_id' => $searchPreferences['geo']['country_id'],
+                                    'region_id'  => $searchPreferences['geo']['region_id'],
+                                    'city_id'    => $searchPreferences['geo']['city_id'],
+                                )
+                            )
+                        );
                     }
                 }
 
