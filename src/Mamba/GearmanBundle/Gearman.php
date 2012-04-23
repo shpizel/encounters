@@ -57,6 +57,7 @@ class Gearman {
         $Client = new \GearmanClient();
         foreach (self::$servers as $server) {
             $Client->addServer($server['host'], $server['port']);
+            $Client->setTimeout(1000);
         }
 
         return self::$Client = $Client;

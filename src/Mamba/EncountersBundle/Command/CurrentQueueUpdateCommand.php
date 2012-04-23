@@ -198,6 +198,30 @@ class CurrentQueueUpdateCommand extends CronScript {
         }
         while ($this->getCurrentQueueObject()->getSize($webUserId) <= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT));
 
+        /**
+         * SearchPreferences GEO
+         *
+         * @author shpizel
+         */
+        $searchPreferencesLastChecked = $this->getVariablesObject()->get($webUserId, 'search_preferences_last_checked');
+        if (!$searchPreferencesLastChecked || (time() - $searchPreferencesLastChecked > 3600)) {
+            if ($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId)) {
+                if ($apiResponse = $this->getMamba()->nocache()->Anketa()->getInfo($webUserId)) {
+                    if ($anketa = array_shift($apiResponse)) {
+
+                        $searchPreferences['geo']['country_id'] = isset($anketa['location']['country_id']) ? $anketa['location']['country_id'] : $searchPreferences['geo']['country_id'];
+                        $searchPreferences['geo']['region_id'] = isset($anketa['location']['region_id']) ? $anketa['location']['region_id'] : $searchPreferences['geo']['region_id'];
+                        $searchPreferences['geo']['city_id'] = isset($anketa['location']['city_id']) ? $anketa['location']['city_id'] : $searchPreferences['geo']['city_id'];
+                        $searchPreferences['changed'] = time();
+
+                        $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
+                    }
+                }
+
+                $this->getVariablesObject()->set($webUserId, 'search_preferences_last_checked', time());
+            }
+        }
+
         $GearmanClient = $this->getGearman()->getClient();
 
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(

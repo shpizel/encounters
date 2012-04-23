@@ -152,7 +152,8 @@ class PreferencesController extends ApplicationController {
                 $searchPreferences['age_from'] = intval($searchPreferences['age_from']);
                 $searchPreferences['age_to'] = intval($searchPreferences['age_to']);
 
-                if (in_array($searchPreferences['gender'], array('M', 'F')) &&
+                if ($searchPreferences['age_from'] <= $searchPreferences['age_to'] &&
+                    in_array($searchPreferences['gender'], array('M', 'F')) &&
                     $searchPreferences['age_from'] >= 18 &&
                     $searchPreferences['age_to'] <= 80 &&
                     $searchPreferences['age_to'] >= 18

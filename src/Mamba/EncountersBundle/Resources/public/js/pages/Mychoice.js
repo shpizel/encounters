@@ -11,7 +11,7 @@ $Mychoice = {
      * @init
      */
     initUI: function() {
-        $(".mcpic a.ln").click(function() {
+        $(".photoListItem a.ln").click(function() {
             var $source = $(this).parent().parent();
 
             var $dataArray = {

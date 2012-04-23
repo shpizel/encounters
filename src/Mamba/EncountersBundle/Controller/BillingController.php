@@ -19,12 +19,12 @@ class BillingController extends ApplicationController {
             INSERT INTO
                 Encounters.Billing
             SET
-                `app_id`           = :app_id,
                 `user_id`          = :user_id,
                 `operation_id`     = :operation_id,
                 `amount`           = :amount,
                 `amount_developer` = :amount_developer,
                 `validation_id`    = :validation_id,
+                `extra`            = :extra,
                 `changed`          = FROM_UNIXTIME(:time),
                 `billed`           = :billed
             ON DUPLICATE KEY UPDATE
@@ -148,11 +148,13 @@ class BillingController extends ApplicationController {
                     false
                 );
 
+                /** Костыль */
+                $extra = isset($postParams['extra']) ? $postParams['extra'] : null;
+
                 if ($service = $this->getServicesObject()->get($webUserId)) {
                     $serviceId = (int) $service['id'];
                     if ($serviceId == 1) {
                         $this->getBatteryObject()->set($webUserId, 5);
-
 
                         $this->getNotificationsObject()->add($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
                     } elseif ($serviceId == 2) {
@@ -183,14 +185,15 @@ class BillingController extends ApplicationController {
 
                 $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::BILLING_ADD_ITEM_SQL);
 
-                $stmt->bindParam('app_id', $appId);
+                $billed = intval($billed);
                 $stmt->bindParam('user_id', $webUserId);
                 $stmt->bindParam('operation_id', $operationId);
                 $stmt->bindParam('amount', $amount);
                 $stmt->bindParam('amount_developer', $amountDeveloper);
                 $stmt->bindParam('validation_id', $validationId);
+                $stmt->bindParam('extra', $extra);
                 $stmt->bindParam('time', $time);
-                $stmt->bindParam('billed', (int) $billed);
+                $stmt->bindParam('billed', $billed);
 
                 $result = $stmt->execute();
             }

@@ -82,6 +82,10 @@ class SearchController extends ApplicationController {
                 }
             }
 
+            if ($webUserId == 751072037) {
+            file_put_contents("/tmp/ilya", var_export($currentQueue, true) ,FILE_APPEND);
+            }
+
             /**
              * Пересчет currentUser'ов
              *

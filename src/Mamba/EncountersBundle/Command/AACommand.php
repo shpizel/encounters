@@ -2,9 +2,6 @@
 namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Command\Script;
-use Mamba\EncountersBundle\Helpers\SearchPreferences;
-use Mamba\EncountersBundle\Helpers\Declensions;
-use PDO;
 
 /**
  * AACommand
@@ -36,7 +33,9 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $this->getNotificationsObject()->add(560015854, "suka");
-        $this->getNotificationsObject()->add(560015854, "bla");
+        print_r($this->getMamba()->Anketa()->getInfo('shpizel'));
+        $this->log("I'm test script for debug", 64);
+        $this->log("Don't commit me please", 48);
+        $this->log("Bye", 32);
     }
 }

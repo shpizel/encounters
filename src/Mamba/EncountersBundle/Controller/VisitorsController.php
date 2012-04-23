@@ -46,6 +46,7 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
+        $visitorsUnread = $this->getCountersObject()->get($webUserId, 'visitors_unread');
         $this->getCountersObject()->set($webUserId, 'visitors_unread', 0);
         $dataArray  = $this->getInitialData();
 
@@ -116,11 +117,14 @@ class VisitorsController extends ApplicationController {
                     if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
                         if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
+                            $anketa['decision'][] = 0;
                         } else {
                             $anketa['decision'][] = -2;
+                            $anketa['decision'][] = (int) --$visitorsUnread > 0;
                         }
                     } else {
                         $anketa['decision'][] = -2;
+                        $anketa['decision'][] = (int) --$visitorsUnread > 0;
                     }
                 }
                 $data = array_merge($data, $anketasChunk);

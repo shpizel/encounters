@@ -59,6 +59,10 @@ class DecisionController extends ApplicationController {
                 $this->getCountersObject()->incr($this->webUserId, 'mychoice');
             }
 
+            /** Обновляем переменные */
+            $this->getVariablesObject()->set($this->webUserId, 'last_outgoing_decision', time());
+            $this->getVariablesObject()->set($this->currentUserId, 'last_incoming_decision', time());
+
             /** Инкрементируем счетчик просмотров у currentUser'a */
             $this->getCountersObject()->incr($this->currentUserId, 'visitors');
             $this->getCountersObject()->incr($this->currentUserId, 'visitors_unread');
@@ -66,18 +70,10 @@ class DecisionController extends ApplicationController {
             $this->getCountersObject()->set($this->currentUserId, 'updated', time());
 
             /** Увеличить энергию WebUser'a */
+            $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
+
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
-
-            if ($this->getSearchPreferencesObject()->exists($this->webUserId)) {
-
-                /**
-                 * Если юзер не пользователь приложения то зачем его писать в базу энергий
-                 *
-                 * @author shpizel
-                 */
-                $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
-            }
 
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {
@@ -89,13 +85,13 @@ class DecisionController extends ApplicationController {
                 }
             }
 
-
             /** Уменьшить энергию CurrentUser'a */
             $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
             $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
 
-
-            $this->getEnergyObject()->decr($this->currentUserId, 5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+            if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
+                $this->getEnergyObject()->decr($this->currentUserId, 5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+            }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision + 1 > 0) {
@@ -115,13 +111,13 @@ class DecisionController extends ApplicationController {
             }
 
             $dataArray = array(
-                'webUserId' => $this->webUserId,
+                'webUserId'     => $this->webUserId,
                 'currentUserId' => $this->currentUserId,
-                'decision' => $this->decision,
-                'time'     => time(),
+                'decision'      => $this->decision,
+                'time'          => time(),
             );
 
-            /** Ставим задачу на обноления базы */
+            /** Ставим задачу на обноление базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Ставим задачу на спам по контакт-листу */
@@ -131,16 +127,21 @@ class DecisionController extends ApplicationController {
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize($dataArray));
 
             /** Не спишком ли часто мы спамим? */
-            if (false) {
-
+            foreach (range(-1, 1) as $decision) {
+                if ($decision == $this->decision) {
+                    if ($this->getCountersObject()->incr($this->webUserId, "noretry-($decision)") >= 10) {
+                        $this->json['data']['repeat_warning'] = $decision;
+                        $this->getCountersObject()->set($this->webUserId, "noretry-($decision)", 0);
+                    }
+                } else {
+                    $this->getCountersObject()->set($this->webUserId, "noretry-($decision)", 0);
+                }
             }
 
             /** Может быть мы совпали? */
             if (($this->decision + 1) && ($mutual = $this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId))) {
                 if (isset($mutual['decision']) && ($mutual['decision'] + 1)) {
-                    $this->json['data'] = array(
-                        'mutual' => true,
-                    );
+                    $this->json['data']['mutual'] = true;
 
                     $this->getPurchasedObject()->add($this->webUserId, $this->currentUserId);
                     $this->getPurchasedObject()->add($this->currentUserId, $this->webUserId);
@@ -156,7 +157,14 @@ class DecisionController extends ApplicationController {
             $this->getCurrentQueueObject()->remove($this->webUserId, $this->currentUserId);
 
             /** Добавим currentUser'a в список уже просмотренных webUser'ом */
-            $this->getViewedQueueObject()->put($this->webUserId, $this->currentUserId, array('ts'=>time(), 'decision'=>$this->decision));
+            $this->getViewedQueueObject()->put(
+                $this->webUserId,
+                $this->currentUserId,
+                array(
+                    'ts'       => time(),
+                    'decision' => $this->decision
+                )
+            );
 
             $this->json['data']['counters'] = array(
                 'visitors' => (int) $this->getCountersObject()->get($this->webUserId, 'visitors'),
@@ -164,7 +172,10 @@ class DecisionController extends ApplicationController {
                 'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
             );
 
-            $this->json['data']['popularity'] = array_merge($this->getPopularityObject()->getInfo($this->getEnergyObject()->get($this->webUserId)), array('level_up' => $levelUp));
+            $this->json['data']['popularity'] = array_merge(
+                $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($this->webUserId)),
+                array('level_up' => $levelUp)
+            );
         }
 
         return

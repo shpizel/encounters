@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
+use Mamba\EncountersBundle\Helpers\Declensions;
 
 /**
  * AchievementSetCommand
@@ -122,7 +123,7 @@ class AchievementSetCommand extends CronScript {
         $mutual   = $this->getCountersObject()->get($userId, 'mutual');
 
         if ($visitors) {
-            $message = "Меня оценили $visitors человек";
+            $message = "Меня оценили $visitors " . Declensions::get($visitors, "человек", "человека", "человек");
             if ($mychoice && ($response = $this->getMamba()->Anketa()->getInfo($userId))) {
 
                 if ($response[0]['info']['gender'] == 'F') {
@@ -132,7 +133,7 @@ class AchievementSetCommand extends CronScript {
                 }
 
                 if ($mutual) {
-                    $message.= " и у меня $mutual взаимных симпатий";
+                    $message.= " и у меня $mutual " . Declensions::get($mutual, "взаимная симпатия", "взаимные симпатии", "взаимных симпатий");
                 }
             }
 

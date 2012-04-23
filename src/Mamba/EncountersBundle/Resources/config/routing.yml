@@ -124,3 +124,10 @@ admin.cash:
     requirements:
         limit: \d+
         _method: GET
+
+admin.decisions:
+    pattern: /admin/decisions/{limit}
+    defaults: { _controller: EncountersBundle:AdminDecisions:index, limit: 7 }
+    requirements:
+        limit: \d+
+        _method: GET

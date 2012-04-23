@@ -118,7 +118,7 @@ class MyChoiceController extends ApplicationController {
                         if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                         } else {
-                            $anketa['decision'][] = -2;
+                            $anketa['decision'][] = -3;
                         }
                     } else {
                         $anketa['decision'][] = -2;

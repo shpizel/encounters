@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Голосования</title>
+</head>
+<body>
+<h2>Голосования на  {{ "now"|date("H:i") }}</h2>
+
+{% if items %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<tr bgcolor="#f1f1f1">
+    <td>Дата</td>
+    <td>&quot;НЕТ&quot;</td>
+    <td>&quot;ВОЗМОЖНО&quot;</td>
+    <td>&quot;ДА&quot;</td>
+    <td>Всего</td>
+</tr>
+{% for item in items %}
+    <tr>
+        <td>{{ item.date }}</td>
+        <td>{{ item.NO }}</td>
+        <td>{{ item.MAYBE }}</td>
+        <td>{{ item.YES }}</td>
+        <td>{{ item.TOTAL }}</td>
+    </tr>
+{% endfor %}
+    <tr bgcolor="#f1f1f1">
+        <td>Итого:</td>
+        <td>{{ info.no }}</td>
+        <td>{{ info.maybe }}</td>
+        <td>{{ info.yes }}</td>
+        <td>{{ info.total }}</td>
+    </tr>
+</table>
+{% else %}
+    Информация по голосованиям недоступна.
+{% endif %}
+</body>
+</html>

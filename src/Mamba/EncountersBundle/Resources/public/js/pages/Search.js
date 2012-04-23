@@ -183,6 +183,14 @@ $Search = {
                     }
                 }
 
+                if ($data.data['repeat_warning'] == -1) {
+                    $Layers.showRepeatableNoLayer();
+                } else if ($data.data['repeat_warning'] == 0) {
+                    $Layers.showRepeatableMaybeLayer();
+                } else if ($data.data['repeat_warning'] == 1) {
+                    $Layers.showRepeatableYesLayer();
+                }
+
                 $data = $data.data;
                 if ($data.hasOwnProperty('counters')) {
                     if ($data['counters']['mychoice'] > 0) {

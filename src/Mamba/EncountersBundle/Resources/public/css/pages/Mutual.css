@@ -1,0 +1,18 @@
+/**
+ * Mutual CSS
+ *
+ * @author shpizel
+ */
+
+div.mutual div.pictures div.photoListItem div.background {
+    background: url('/bundles/encounters/images/background-yes-decision.png') no-repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 131px;
+    height: 191px;
+}
+
+div.mutual div.pictures div.photoListItem:hover div.background {
+    background: url('/bundles/encounters/images/background-delete-decision.png') no-repeat;
+}

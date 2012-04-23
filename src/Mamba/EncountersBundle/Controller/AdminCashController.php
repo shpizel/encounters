@@ -19,7 +19,7 @@ class AdminCashController extends ApplicationController {
          *
          * @var string
          */
-        GET_CASH_SQL = "
+        GET_CASH_STATS_SQL = "
             SELECT
                 round(sum(if(date_format(`changed`, '%H%i') <= date_format(now(), '%H%i'), amount_developer, 0)),2) as `current`,
                 round(sum(amount_developer), 2) as `daily`,
@@ -50,7 +50,7 @@ class AdminCashController extends ApplicationController {
         );
 
         $stmt = $this->getDoctrine()->getConnection()->prepare(
-            str_replace("%LIMIT%", $limit, self::GET_CASH_SQL)
+            str_replace("%LIMIT%", $limit, self::GET_CASH_STATS_SQL)
         );
 
         if ($stmt->execute()) {

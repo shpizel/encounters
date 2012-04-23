@@ -412,6 +412,45 @@ $Layers = {
     },
 
     /**
+     * Показывает лаер слишком частого ДА
+     *
+     * @shows layer
+     */
+    showRepeatableYesLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-repeatable-yes .info-battery span").text($Config.get('webuser')['anketa']['info']['name']);
+        $("div.layer-repeatable-yes").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер слишком частого ВОЗМОЖНО
+     *
+     * @shows layer
+     */
+    showRepeatableMaybeLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-repeatable-maybe .info-battery span").text($Config.get('webuser')['anketa']['info']['name']);
+        $("div.layer-repeatable-maybe").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер слишком частого НЕТ
+     *
+     * @shows layer
+     */
+    showRepeatableNoLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-repeatable-no .info-battery span").text($Config.get('webuser')['anketa']['info']['name']);
+        $("div.layer-repeatable-no").show();
+        this.showLayer();
+    },
+
+    /**
      * Показывает обрамление слоя
      *
      * @shows overflow

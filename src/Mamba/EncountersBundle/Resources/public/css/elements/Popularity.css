@@ -1,0 +1,140 @@
+/**
+ * Popularity element CSS
+ *
+ * @author shpizel
+ */
+
+.info-meet li.item-popularity {
+    width: 140px;
+    margin: 0;
+}
+
+.info-meet li.item-popularity div.bar {
+    position: relative;
+    height: 35px;
+}
+
+.info-meet li.item-popularity div.bar div.level-background {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    top: 7px;
+    background: url('/bundles/encounters/images/levels/levels-background.png');
+    cursor: pointer;
+}
+
+.info-meet li.item-popularity div.bar div.level {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    top: 7px;
+    background: url('/bundles/encounters/images/levels/levels.png');
+    z-index: 100;
+    cursor: pointer;
+}
+
+.info-meet li.item-popularity div.bar div.l1 {
+    background-position: 0 0;
+}
+
+.info-meet li.item-popularity div.bar div.l2 {
+    background-position: 0 -22px;
+}
+
+.info-meet li.item-popularity div.bar div.l3 {
+    background-position: 0 -44px;
+}
+
+.info-meet li.item-popularity div.bar div.l4 {
+    background-position: 0 -66px;
+}
+
+.info-meet li.item-popularity div.bar div.l5 {
+    background-position: 0 -88px;
+}
+
+.info-meet li.item-popularity div.bar div.l6 {
+    background-position: 0 -110px;
+}
+
+.info-meet li.item-popularity div.bar div.l7 {
+    background-position: 0 -132px;
+}
+
+.info-meet li.item-popularity div.bar div.l8 {
+    background-position: 0 -154px;
+}
+
+.info-meet li.item-popularity div.bar div.l9 {
+    background-position: 0 -176px;
+}
+
+.info-meet li.item-popularity div.bar div.l10 {
+    background-position: 0 -198px;
+}
+
+.info-meet li.item-popularity div.bar div.l11 {
+    background-position: 0 -220px;
+}
+
+.info-meet li.item-popularity div.bar div.l12 {
+    background-position: 0 -242px;
+}
+
+.info-meet li.item-popularity div.bar div.l13 {
+    background-position: 0 -264px;
+}
+
+.info-meet li.item-popularity div.bar div.l14 {
+    background-position: 0 -286px;
+}
+
+.info-meet li.item-popularity div.bar div.l15 {
+    background-position: 0 -308px;
+}
+
+.info-meet li.item-popularity div.bar div.l16 {
+    background-position: 0 -330px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc1 {
+    background-position: 0px 0px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc2 {
+    background-position: 0px -22px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc3 {
+    background-position: 0px -44px;
+}
+
+.info-meet li.item-popularity div.bar div.lbc4 {
+    background-position: 0px -66px;
+}
+
+.info-meet li.item-popularity div.bar div.speedo-background {
+    position: absolute;
+    height: 22px;
+    width: 99px;
+    top: 7px;
+    left: 27px;
+
+    background: url('/bundles/encounters/images/levels/speedo-background.png');
+
+    cursor: pointer;
+}
+
+.info-meet li.item-popularity div.bar div.speedo {
+    position: absolute;
+    height: 22px;
+    width: 99px;
+    top: 7px;
+    left: 27px;
+
+    background: url('/bundles/encounters/images/levels/speedo.png');
+    width: 25px;
+    z-index: 100;
+
+    cursor: pointer;
+}

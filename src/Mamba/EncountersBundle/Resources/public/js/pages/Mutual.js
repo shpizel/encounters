@@ -38,7 +38,7 @@ $Mutual = {
             });
         });
 
-        $("div.content div.pictures div.mpic a.close").click(function() {
+        $("div.content div.pictures div.photoListItem a.close").click(function() {
             var $parent = $(this).parent();
             var $userId = $parent.attr('user_id');
 

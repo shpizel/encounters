@@ -28,9 +28,19 @@ class Variables extends Helper {
          * @var array
          */
         $options = array(
-            'search_no_popular_block_hidden' => 86400,
-            'notification_hidden' => 0,
-            'lastaccess' => 0,
+            'search_no_popular_block_hidden'  => 86400,
+            'search_preferences_last_checked' => 0,
+            'notification_hidden'             => 0,
+
+            'lastaccess'                      => 0,
+
+            'last_incoming_decision'          => 0,
+            'last_outgoing_decision'          => 0,
+
+            'last_notification_sent'          => 0,
+            'last_notification_metrics'       => 0,
+
+            'last_lostuser_notification_sent' => 0,
         )
     ;
 

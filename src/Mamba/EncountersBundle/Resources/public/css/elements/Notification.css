@@ -1,0 +1,34 @@
+/**
+ * Notification element CSS
+ *
+ * @author shpizel
+ */
+
+div.notification {
+    margin-left: 3px;
+    margin-right: 6px;
+    background: #fff2d1;
+    border: #ffd777 1px solid;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    padding: 9px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+div.notification div.text {
+    text-align: center;
+}
+
+div.notification a.close {
+    background: url('/bundles/encounters/images/close_icon.png') no-repeat left top;
+    display: block;
+    height: 22px;
+    width: 23px;
+    position: absolute;
+    top: 8px;
+    right: 10px;
+}

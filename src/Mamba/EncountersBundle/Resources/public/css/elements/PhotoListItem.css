@@ -1,0 +1,194 @@
+/**
+ * PhotoListItem element CSS
+ *
+ * @author shpizel
+ */
+
+div.content div.pictures div.title {
+    font: bold italic 24px/50px Georgia;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+div.content div.pictures div.back {
+    font-size: 24px;
+}
+
+/*div.content div.pictures div.mcpic {
+    float: left;
+    width: 142px;
+    height: 222px;
+    font-size: 11px;
+}
+
+div.content div.pictures div.mcpic img {
+    padding-bottom: 9px;
+}
+
+div.content div.pictures div.mcpic div.info {
+    color: #666;
+    line-height: 20px;
+}
+
+div.content div.pictures div.mcpic div.link {
+    display: none;
+    line-height: 20px;
+    font-size: 13px;
+}
+
+div.content div.pictures div.mcpic:hover {
+    background: url("/bundles/encounters/images/hitlist-ramka-4.png") no-repeat;
+}
+
+div.content div.pictures div.mcpic:hover div.info {
+    display: none;
+}
+
+div.content div.pictures div.mcpic:hover div.link {
+    display: block;
+}
+
+div.content div.pictures div.mcpic {
+    padding-left: 16px;
+    padding-top: 15px;
+}*/
+
+div.content div.pictures div.photoListItem {
+    float: left;
+    width: 131px;
+    height: 211px;
+    font-size: 11px;
+    position: relative;
+    margin-right: 27px;
+    margin-bottom: 30px;
+    margin-top: 3px;
+    /*margin-left: 4px;*/
+}
+
+div.content div.pictures div.photoListItem img {
+    padding-top: 11px;
+    padding-left: 10px;
+    height: 150px;
+    width: 110px;
+}
+
+div.content div.pictures div.photoListItem:hover a.close {
+    height: 20px;
+    width: 20px;
+    position: absolute;
+    right: 9px;
+    top: 9px;
+}
+
+/*div.ramka {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 131px;
+    height: 191px;
+    background: url('/bundles/encounters/images/hitlist-ramka-2.png') no-repeat;
+}*/
+
+div.content div.pictures div.photoListItem img {
+    padding-bottom: 9px;
+    height: 150px;
+    width: 110px;
+}
+
+div.waiting div.background {
+    background: url('/bundles/encounters/images/background-waiting-for-decision.png') no-repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 131px;
+    height: 211px;
+}
+
+div.no div.background {
+    background: url('/bundles/encounters/images/background-no-decision.png');
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 131px;
+    height: 191px;
+}
+
+div.maybe div.background {
+    background: url('/bundles/encounters/images/background-maybe-decision.png');
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 131px;
+    height: 191px;
+}
+
+div.yes div.background {
+    background: url('/bundles/encounters/images/background-yes-decision.png');
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 131px;
+    height: 191px;
+}
+
+div.content div.pictures div.info {
+    position: absolute;
+    font-size: 11px;
+    left: 10px;
+    bottom: 28px;
+}
+
+div.content div.pictures div.answer {
+    position: absolute;
+    font-size: 11px;
+    left: 10px;
+    bottom: 11px;
+    color: #666;
+}
+
+div.content div.pictures div.link {
+    position: absolute;
+    font-size: 13px;
+    left: 10px;
+    bottom: 11px;
+    color: #666;
+
+    display:none;
+}
+
+/*div.content div.pictures div.info a {
+    float: left;
+    overflow: hidden;
+    max-width: 80px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}*/
+
+div.pictures div.closed:hover div.background {
+    background: url('/bundles/encounters/images/background-closed-decision.png') no-repeat;
+    position: absolute;
+    top: -5px;
+    left: -6px;
+    width: 142px;
+    height: 222px;
+}
+
+div.pictures div.closed:hover div.answer {
+    display: none;
+}
+
+div.pictures div.closed:hover div.link {
+    display: block;
+}
+
+div.new div.background {
+    position: absolute;
+    background: url('/bundles/encounters/images/background-new-decision.png') no-repeat;
+    top: -7px;
+    left: -8px;
+    width:146px;
+    height:186px;
+}
