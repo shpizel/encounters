@@ -52,19 +52,32 @@ class NotificationSendCommand extends CronScript {
         foreach ($Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY) as $userId) {
             $userId = (int) $userId;
 
-            $lastNotificationSent = $this->getVariablesObject()->get($userId, 'last_notification_sent');
+            $this->log("Current user id = <info>$userId</info>");
+
+            if ($lastNotificationSent = $this->getVariablesObject()->get($userId, 'last_notification_sent')) {
+                $this->log("Last notification sent at <warning>" . date("Y-m-d H:i:s", $lastNotificationSent) . "</warning>");
+            } else {
+                $this->log("Last notification is apsent..", 48);
+            }
+
             if (!$lastNotificationSent || (time() - $lastNotificationSent > self::NOTIFICATION_INTERVAL)) {
+                $this->log("Time to spam..", 48);
+
                 list($visitorsUnread, $mutualUnread) = array(
                     (int) $this->getCountersObject()->get($userId, 'visitors_unread'),
                     (int) $this->getCountersObject()->get($userId, 'mutual_unread'),
                 );
 
                 $currentNotificationMetrics = "v:{$visitorsUnread},m:{$mutualUnread}";
+                $this->log("Current notification metrics: <info>$currentNotificationMetrics</info>");
                 $lastNotificationMetrics = $this->getVariablesObject()->get($userId, 'last_notification_metrics');
+                $this->log("Last notification metrics: <info>$lastNotificationMetrics</info>");
 
-                if ($currentNotificationMetrics != $lastNotificationMetrics) {
+                if ($visitorsUnread && $currentNotificationMetrics != $lastNotificationMetrics) {
                     if ($message = $this->getNotifyMessage($userId)) {
-                        if ($result = $Mamba->Notify()->sendMessage($userId, $message)) {
+                        $this->log("Notification spam message: $message");
+
+                        if ($Mamba->Notify()->sendMessage($userId, $message)) {
                             if (isset($result['count']) && $result['count']) {
                                 $this->log('SUCCESS', 64);
                                 $this->getStatsObject()->incr('notify');
@@ -76,7 +89,12 @@ class NotificationSendCommand extends CronScript {
                             }
                         }
                     }
+                } else {
+                    $this->log("Current AND Last metrics is equal", 16);
                 }
+            } else {
+                $this->log("Too much frequently", 16);
+                $this->log("Last spammed: " . date("Y-m-d H:i:s", $lastNotificationSent), 64);
             }
         }
     }
