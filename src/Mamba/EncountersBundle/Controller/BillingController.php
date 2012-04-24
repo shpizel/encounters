@@ -158,6 +158,7 @@ class BillingController extends ApplicationController {
                     $serviceId = (int) $service['id'];
                     if ($serviceId == 1) {
                         $this->getBatteryObject()->set($webUserId, 5);
+                        $billed = true;
 
                         $this->getNotificationsObject()->add($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
                     } elseif ($serviceId == 2) {
