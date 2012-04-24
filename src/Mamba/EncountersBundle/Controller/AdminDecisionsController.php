@@ -27,8 +27,9 @@ class AdminDecisionsController extends ApplicationController {
                 sum(if(decision = 1, 1, 0))  as `YES`,
                 count(*) as `TOTAL`
             FROM
-                `Decisions2`
-
+                `Decisions`
+            WHERE
+                `changed` >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL %LIMIT% DAY), '%Y-%m-%d 00:00:00')
             GROUP BY
                 `date`
             ORDER BY

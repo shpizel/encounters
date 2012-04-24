@@ -120,11 +120,11 @@ class VisitorsController extends ApplicationController {
                             $anketa['decision'][] = 0;
                         } else {
                             $anketa['decision'][] = -2;
-                            $anketa['decision'][] = (int) --$visitorsUnread > 0;
+                            $anketa['decision'][] = (int) $visitorsUnread-- > 0;
                         }
                     } else {
                         $anketa['decision'][] = -2;
-                        $anketa['decision'][] = (int) --$visitorsUnread > 0;
+                        $anketa['decision'][] = (int) $visitorsUnread-- > 0;
                     }
                 }
                 $data = array_merge($data, $anketasChunk);

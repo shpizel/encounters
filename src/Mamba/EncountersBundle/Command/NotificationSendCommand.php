@@ -87,6 +87,8 @@ class NotificationSendCommand extends CronScript {
                             } else {
                                 $this->log('FAILED', 16);
                             }
+                        } else {
+                            $this->log('FAILED', 16);
                         }
                     }
                 } else {

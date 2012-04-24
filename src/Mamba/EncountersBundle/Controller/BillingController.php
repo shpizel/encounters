@@ -97,7 +97,6 @@ class BillingController extends ApplicationController {
     public function addServiceAction() {
         if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
             if ($service = $this->getRequest()->get('service')) {
-
                 if (is_array($service) && count($service) <= 2 && isset($service['id']) && ($serviceId = (int) $service['id'])) {
                     $this->getServicesObject()->add($webUserId, $service);
                 } else {
@@ -151,7 +150,11 @@ class BillingController extends ApplicationController {
                 /** Костыль */
                 $extra = isset($postParams['extra']) ? $postParams['extra'] : null;
 
-                if ($service = $this->getServicesObject()->get($webUserId)) {
+                if (($extra && ($service = json_decode($extra, true))) || ($service = $this->getServicesObject()->get($webUserId))) {
+                    if (isset($service['service'])) {
+                        $service = $service['service'];
+                    }
+
                     $serviceId = (int) $service['id'];
                     if ($serviceId == 1) {
                         $this->getBatteryObject()->set($webUserId, 5);
