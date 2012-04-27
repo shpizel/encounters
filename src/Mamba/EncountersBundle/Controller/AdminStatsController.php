@@ -36,7 +36,12 @@ class AdminStatsController extends ApplicationController {
         }
 
         if ($data = $Redis->exec()) {
-            foreach ($data as $key=>$item) {;
+            foreach ($data as $key=>$item) {
+
+                if (isset($item['decision_yes']) && isset($item['decision_no']) && isset($item['decision_maybe'])) {
+                    $item['decision_total'] = intval($item['decision_yes']) && intval($item['decision_no']) && intval($item['decision_maybe']);
+                }
+
                 $dataArray['items'][] = array(
                     'date' => date('Y-m-d', strtotime("-$key day")),
                     'item' => $item,

@@ -34,21 +34,21 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $stmt = $this->getDoctrine()->getConnection()->prepare("
-        SELECT
-                        date_format(changed, '%d.%m.%y') as `date`,
-                        sum(if(decision = -1, 1, 0)) as `NO`,
-                        sum(if(decision = 0, 1, 0))  as `MAYBE`,
-                        sum(if(decision = 1, 1, 0))  as `YES`,
-                        count(*) as `TOTAL`
-                    FROM
-                        `Decisions`
-                    WHERE
-                        `changed` >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d 00:00:00')
-                    GROUP BY
-                        `date`
-                    ORDER BY
-                        `changed` DESC");
+        $stmt = $this->getDoctrine()->getConnection()->prepare(
+            "SELECT
+                date_format(changed, '%d%m%y') as `date`,
+                sum(if(decision = -1, 1, 0)) as `NO`,
+                sum(if(decision = 0, 1, 0))  as `MAYBE`,
+                sum(if(decision = 1, 1, 0))  as `YES`
+            FROM
+                `Decisions`
+            WHERE
+                `changed` < '2012-04-28 00:00:00'
+            GROUP BY
+                `date`
+            ORDER BY
+                `changed` DESC"
+        );
 
         $items = array();
         if ($stmt->execute()) {
@@ -58,9 +58,5 @@ class AACommand extends Script {
         }
 
         file_put_contents("counters", json_encode($items));
-
-        $this->log("I'm test script for debug", 64);
-        $this->log("Don't commit me please", 48);
-        $this->log("Bye", 32);
     }
 }

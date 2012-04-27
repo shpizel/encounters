@@ -132,7 +132,7 @@ admin.decisions:
         limit: \d+
         _method: GET
 
-admin.decisions:
+admin.stats:
     pattern: /admin/stats/{limit}
     defaults: { _controller: EncountersBundle:AdminStats:index, limit: 7 }
     requirements:
