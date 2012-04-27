@@ -8,6 +8,23 @@ namespace Mamba\GearmanBundle;
  */
 class Gearman {
 
+    const
+
+        /**
+         * Дефолтный таймаут для клиента
+         *
+         * @var int
+         */
+        GEARMAN_CLIENT_TIMEOUT_DEFAULT = 1000,
+
+        /**
+         * Дефолтный таймаут для воркера
+         *
+         * @var int
+         */
+        GEARMAN_WORKER_TIMEOUT_DEFAULT = 5000
+    ;
+
     protected static
 
         /**
@@ -57,8 +74,8 @@ class Gearman {
         $Client = new \GearmanClient();
         foreach (self::$servers as $server) {
             $Client->addServer($server['host'], $server['port']);
-            $Client->setTimeout(1000);
         }
+        $Client->setTimeout(self::GEARMAN_CLIENT_TIMEOUT_DEFAULT);
 
         return self::$Client = $Client;
     }
@@ -78,6 +95,7 @@ class Gearman {
         foreach (self::$servers as $server) {
             $Worker->addServer($server['host'], $server['port']);
         }
+        $Worker->setTimeout(self::GEARMAN_WORKER_TIMEOUT_DEFAULT);
 
         return self::$Worker = $Worker;
     }

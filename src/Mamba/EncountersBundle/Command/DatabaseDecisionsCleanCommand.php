@@ -34,9 +34,9 @@ class DatabaseDecisionsCleanCommand extends CronScript {
          */
         DECISIONS_CLEAN_SQL = "
             DELETE FROM
-                `Encounters.Decisions`
+                `Decisions`
             WHERE
-                `changed` < DATE_SUB(NOW(), INTERVAL 30 DAY)
+                `changed` <= date_format(DATE_SUB(NOW(), INTERVAL 30 DAY), '%Y-%m-%d 00:00:00')
         "
     ;
 

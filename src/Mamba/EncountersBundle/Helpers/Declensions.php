@@ -22,7 +22,9 @@ class Declensions {
      * @return string
      */
     public static function get($number, $first, $second, $third) {
-        if ($number % 10 == 0) {
+        if ($number >= 11 && $number <= 20) {
+            return $third;
+        } elseif ($number % 10 == 0) {
             return $third;
         } elseif ($number % 10 == 1) {
             return $first;

@@ -96,6 +96,9 @@ abstract class CronScript extends Script {
             throw new CronScriptException("Could not start daemon with debug");
         }
 
+        $this->getGearman()->getClient()->setTimeout(self::GEARMAN_CLIENT_TIMEOUT_DEFAULT);
+        $this->getGearman()->getWorker()->setTimeout(self::GEARMAN_WORKER_TIMEOUT_DEFAULT);
+
         list($this->input, $this->output, $this->copy, $this->memory, $this->lifetime, $this->iterations, $this->daemon, $this->debug)
             = array($input, $output, $copy, $memory, $lifetime, $iterations, $daemon, $debug);
 

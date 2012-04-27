@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Голосования</title>
+</head>
+<body>
+<h2>Статистика</h2>
+
+{% if items %}
+    {% for item in items %}
+        {% if item.item|keys|length > 0 %}
+            <h3>{{ item.date }}</h3>
+            <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+            <tr bgcolor="#f1f1f1">
+                {% for key in item.item|keys %}
+                    <td>{{ key }}</td>
+                {% endfor%}
+            </tr>
+            <tr>
+            {% for data in item.item %}
+                    <td>{{ data }}</td>
+            {% endfor %}
+            </tr>
+            </table>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    Информация по статистике недоступна.
+{% endif %}
+</body>
+</html>

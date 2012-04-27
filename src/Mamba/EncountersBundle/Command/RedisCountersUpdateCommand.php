@@ -44,8 +44,6 @@ class RedisCountersUpdateCommand extends CronScript {
                 d2.decision >= 0
             GROUP BY
                 d.web_user_id
-            ORDER BY
-                `counter`
         ",
 
         /**
@@ -62,8 +60,6 @@ class RedisCountersUpdateCommand extends CronScript {
                 d.decision >= 0
             GROUP BY
                 d.web_user_id
-            ORDER BY
-                `counter`
         ",
 
         /**
@@ -77,12 +73,8 @@ class RedisCountersUpdateCommand extends CronScript {
                 count(*) as `counter`
             FROM
                 Encounters.Decisions
-            WHERE
-                current_user_id in (SELECT web_user_id FROM Encounters.Decisions)
             GROUP BY
                 current_user_id
-            ORDER BY
-                `counter`
         "
     ;
 

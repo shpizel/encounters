@@ -108,7 +108,21 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
         $stmt->bindParam('changed', $time);
 
         $result = $stmt->execute();
-        if (!$result) {
+        if ($result) {
+
+            /**
+             * Если запись в таблицу вставлена успешно — надо обновить счетчики
+             *
+             * @author shpizel
+             */
+            $decisions = array(
+                -1 => 'decision_no',
+                0  => 'decision_maybe',
+                1  => 'decision_yes',
+            );
+
+            $this->getStatsObject()->incr($decisions[$decision]);
+        } else {
             throw new CronScriptException('Unable to store data to DB.');
         }
     }

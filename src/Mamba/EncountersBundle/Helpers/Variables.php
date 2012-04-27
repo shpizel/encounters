@@ -39,8 +39,6 @@ class Variables extends Helper {
 
             'last_notification_sent'          => 0,
             'last_notification_metrics'       => 0,
-
-            'last_lostuser_notification_sent' => 0,
         )
     ;
 

@@ -30,7 +30,7 @@ class MutualController extends ApplicationController {
                 d.decision >=0 and
                 d2.decision >= 0
             ORDER BY
-              d.changed, d2.changed DESC
+                d2.changed DESC
         "
     ;
 

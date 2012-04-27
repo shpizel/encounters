@@ -12,12 +12,11 @@
 <ul style="list-style: square;">
     <li><a href="#platform_settings">Настройки платформы</a></li>
     <li><a href="#search_preferences">Поисковые предпочтения</a></li>
-    <li><a href="#queue">Очередь показа</a> (search: {{ queues.search }}, contacts: {{ queues.contacts }}, hitlist: {{ queues.hitlist }}, priority: {{ queues.priority }})</li>
     <li><a href="#counters">Счетчики</a></li>
     <li><a href="#variables">Переменные</a></li>
     <li><a href="#billing">Биллинг</a></li>
     <li><a href="#notifications">Нотификации</a></li>
-
+    <li><a href="#queue">Очередь показа</a> (search: {{ queues.search }}, contacts: {{ queues.contacts }}, hitlist: {{ queues.hitlist }}, priority: {{ queues.priority }})</li>
 </ul>
 
 <a name="platform_settings"></a>
@@ -68,29 +67,6 @@
 </table>
 {% else %}
     Настройки платформы недоступны.
-{% endif %}
-
-<a name="queue"></a>
-<h2>Очередь показа ({{ queues.current|length }})</h2>
-
-{% if queues.current %}
-
-    <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
-    <tr bgcolor="#f1f1f1">
-        <td>ID</td>
-        <td>Анкета</td>
-        <td>Админка</td>
-    </tr>
-    {% for key, id in queues.current %}
-        <tr>
-            <td>{{ id }}</td>
-            <td><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ id }}">{{ id }}</a></td>
-            <td><a target="_blank" href="/admin/user/{{ id }}">{{ id }}</a></td>
-        </tr>
-    {% endfor %}
-    </table>
-{% else %}
-    Очередь показа недоступна.
 {% endif %}
     
 <a name="counters"></a>
@@ -191,6 +167,28 @@
 {% else %}
     Нотификации недоступны.
 {% endif %}
-    
+
+<a name="queue"></a>
+<h2>Очередь показа ({{ queues.current|length }})</h2>
+
+{% if queues.current %}
+
+    <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+    <tr bgcolor="#f1f1f1">
+        <td>ID</td>
+        <td>Анкета</td>
+        <td>Админка</td>
+    </tr>
+    {% for key, id in queues.current %}
+        <tr>
+            <td>{{ id }}</td>
+            <td><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ id }}">{{ id }}</a></td>
+            <td><a target="_blank" href="/admin/user/{{ id }}">{{ id }}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+{% else %}
+    Очередь показа недоступна.
+{% endif %}
 </body>
 </html>

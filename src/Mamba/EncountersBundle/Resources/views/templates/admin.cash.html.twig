@@ -12,20 +12,19 @@
 <tr bgcolor="#f1f1f1">
     <td>Дата</td>
     <td>На {{ "now"|date("H:i") }}</td>
-    <td>За день</td>
+    <td colspan="2" align="center">За день</td>
 </tr>
 {% for item in items %}
     <tr>
         <td>{{ item.date }}</td>
         <td>{{ item.current }}</td>
-        <td>{{ item.daily }}</td>
+        <td>{{ item.daily }} &copy;</td>
+        <td>{{ item.daily*34 }} <s>P</s></td>
     </tr>
 {% endfor %}
     <tr>
-        <td align="center" colspan="2" rowspan="2">Итого ({{ info.limit }}):</td>
+        <td align="center" colspan="2">Итого ({{ info.limit }}):</td>
         <td>{{ info.sum }} &copy;</td>
-    </tr>
-    <tr>
         <td>{{ info.sum*34 }} <s>P</s></td>
     </tr>
 </table>

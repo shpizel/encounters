@@ -11,18 +11,18 @@
 <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
 <tr bgcolor="#f1f1f1">
     <td>Дата</td>
-    <td>&quot;НЕТ&quot;</td>
-    <td>&quot;ВОЗМОЖНО&quot;</td>
-    <td>&quot;ДА&quot;</td>
+    <td><font color=red>NO</font></td>
+    <td><font color=#999>MAYBE</font></td>
+    <td><font color=green>YES</font></td>
     <td>Всего</td>
 </tr>
 {% for item in items %}
     <tr>
         <td>{{ item.date }}</td>
-        <td>{{ item.NO }}</td>
-        <td>{{ item.MAYBE }}</td>
-        <td>{{ item.YES }}</td>
-        <td>{{ item.TOTAL }}</td>
+        <td>{{ item.decision_no }}</td>
+        <td>{{ item.decision_maybe }}</td>
+        <td>{{ item.decision_yes }}</td>
+        <td>{{ item.decision_no + item.decision_maybe + item.decision_yes }}</td>
     </tr>
 {% endfor %}
     <tr bgcolor="#f1f1f1">

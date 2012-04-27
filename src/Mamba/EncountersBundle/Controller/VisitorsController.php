@@ -118,6 +118,8 @@ class VisitorsController extends ApplicationController {
                         if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                             $anketa['decision'][] = 0;
+
+                            $visitorsUnread--;
                         } else {
                             $anketa['decision'][] = -2;
                             $anketa['decision'][] = (int) $visitorsUnread-- > 0;
@@ -127,6 +129,7 @@ class VisitorsController extends ApplicationController {
                         $anketa['decision'][] = (int) $visitorsUnread-- > 0;
                     }
                 }
+
                 $data = array_merge($data, $anketasChunk);
             }
         }

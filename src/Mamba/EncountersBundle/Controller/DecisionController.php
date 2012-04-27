@@ -130,7 +130,11 @@ class DecisionController extends ApplicationController {
             foreach (range(-1, 1) as $decision) {
                 if ($decision == $this->decision) {
                     if ($this->getCountersObject()->incr($this->webUserId, "noretry-($decision)") >= 10) {
-                        $this->json['data']['repeat_warning'] = $decision;
+                        $repeatWarningKey = "{$this->webUserId}_repear_warning";
+                        if ($this->getMemcache()->add($repeatWarningKey, 1, 3600)) {
+                            $this->json['data']['repeat_warning'] = $decision;
+                        }
+
                         $this->getCountersObject()->set($this->webUserId, "noretry-($decision)", 0);
                     }
                 } else {
