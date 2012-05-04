@@ -6,6 +6,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Mamba\PlatformBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 
+use Mamba\EncountersBundle\Command\SearchQueueUpdateCommand;
+use Mamba\EncountersBundle\Command\HitlistQueueUpdateCommand;
+use Mamba\EncountersBundle\Command\ContactsQueueUpdateCommand;
+
 /**
  * DecisionController
  *
@@ -180,6 +184,14 @@ class DecisionController extends ApplicationController {
                 $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($this->webUserId)),
                 array('level_up' => $levelUp)
             );
+
+            if ($this->getCurrentQueueObject()->getSize($this->webUserId) < (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT) / 1.25) {
+                $this->get('gearman')->getClient()
+                    ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                    'user_id'   => $this->webUserId,
+                    'timestamp' => time(),
+                )));
+            }
         }
 
         return
@@ -276,6 +288,17 @@ class DecisionController extends ApplicationController {
                         'mutual'   => $this->getCountersObject()->decr($webUserId, 'mutual'),
                         'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
                     );
+
+                    $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
+                        'webUserId'     => $webUserId,
+                        'currentUserId' => null,
+                        'decision'      => null,
+                        'time'          => time(),
+                    )));
+
+                    foreach (range(-1, 1) as $decision) {
+                        $this->getCountersObject()->set($webUserId, "noretry-($decision)", 0);
+                    }
                 } else {
                     list($this->json['status'], $this->json['message']) = array(2, "Invalid input data");
                 }
