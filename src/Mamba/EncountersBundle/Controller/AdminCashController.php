@@ -23,7 +23,7 @@ class AdminCashController extends ApplicationController {
             SELECT
                 round(sum(if(date_format(`changed`, '%H%i') <= date_format(now(), '%H%i'), amount_developer, 0)),2) as `current`,
                 round(sum(amount_developer), 2) as `daily`,
-                date_format(`changed`, '%d.%m.%y') as `date`
+                date_format(`changed`, '%Y-%m-%d') as `date`
             FROM
                 Billing
             GROUP BY
@@ -40,7 +40,7 @@ class AdminCashController extends ApplicationController {
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction($limit = 7) {
+    public function indexAction($limit = 10) {
         $dataArray = array(
             'items' => array(),
             'info'  => array(
@@ -55,6 +55,7 @@ class AdminCashController extends ApplicationController {
 
         if ($stmt->execute()) {
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $item['ts'] = strtotime($item['date']);
                 $dataArray['items'][] = $item;
                 $dataArray['info']['sum'] += $item['daily'];
             }

@@ -15,7 +15,7 @@
     <td colspan="2" align="center">За день</td>
 </tr>
 {% for item in items %}
-    <tr>
+    <tr bgcolor="{% if item.ts|date("N") < 6 %}#CCFFCC{% else %}#FFCCCC{% endif %}">
         <td>{{ item.date }}</td>
         <td>{{ item.current }}</td>
         <td>{{ item.daily }} &copy;</td>

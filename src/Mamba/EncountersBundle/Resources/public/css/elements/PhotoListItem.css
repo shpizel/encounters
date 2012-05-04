@@ -170,7 +170,7 @@ div.content div.pictures div.link {
 div.pictures div.closed:hover div.background {
     background: url('/bundles/encounters/images/background-closed-decision.png') no-repeat;
     position: absolute;
-    top: -5px;
+    top: -4px;
     left: -6px;
     width: 142px;
     height: 222px;

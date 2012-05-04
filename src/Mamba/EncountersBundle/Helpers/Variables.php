@@ -28,17 +28,28 @@ class Variables extends Helper {
          * @var array
          */
         $options = array(
+            /** Скрытие рыжего блока - у вас оч низкая популярность */
             'search_no_popular_block_hidden'  => 86400,
+
+            /** когда последний раз проверялись поисковые предпочтения */
             'search_preferences_last_checked' => 0,
+
+            /** Скрытие нотификаций */
             'notification_hidden'             => 0,
 
+            /** последний заход на страницу welcome */
             'lastaccess'                      => 0,
 
+            /** последние голосования */
             'last_incoming_decision'          => 0,
             'last_outgoing_decision'          => 0,
 
+            /** нотификации */
             'last_notification_sent'          => 0,
             'last_notification_metrics'       => 0,
+
+            /** ачивка */
+            'last_achievement_metrics'        => 0,
         )
     ;
 

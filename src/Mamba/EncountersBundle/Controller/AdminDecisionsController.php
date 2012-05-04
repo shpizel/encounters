@@ -17,7 +17,7 @@ class AdminDecisionsController extends ApplicationController {
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function indexAction($limit = 7) {
+    public function indexAction($limit = 10) {
         $dataArray = array(
             'items' => array(),
             'info'  => array(
@@ -41,7 +41,7 @@ class AdminDecisionsController extends ApplicationController {
                 $item['decision_maybe'] = intval(isset($item['decision_maybe']) ? $item['decision_maybe'] : 0);
                 $item['decision_yes'] = intval(isset($item['decision_yes']) ? $item['decision_yes'] : 0);
 
-                $item['date'] = date("Y-m-d", strtotime("-$key day"));
+                $item['date'] = date("Y-m-d", $item['ts'] = strtotime("-$key day"));
 
                 $dataArray['items'][] = $item;
 

@@ -70,10 +70,10 @@ class DecisionController extends ApplicationController {
             $this->getCountersObject()->set($this->currentUserId, 'updated', time());
 
             /** Увеличить энергию WebUser'a */
-            $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
-
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
+
+            $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
 
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {

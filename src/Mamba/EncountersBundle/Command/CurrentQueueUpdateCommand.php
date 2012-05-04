@@ -109,6 +109,7 @@ class CurrentQueueUpdateCommand extends CronScript {
         (
             !$this->getMemcache()->get("cron:stop") &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            filemtime(__FILE__) < $this->started &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
             $this->iterations-- &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)

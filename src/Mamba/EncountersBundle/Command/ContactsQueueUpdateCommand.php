@@ -5,7 +5,6 @@ use Mamba\EncountersBundle\Command\CronScript;
 use Mamba\EncountersBundle\EncountersBundle;
 
 use Mamba\EncountersBundle\Command\SearchQueueUpdateCommand;
-use Mamba\EncountersBundle\Command\ContactsQueueUpdateCommand;
 use Mamba\EncountersBundle\Command\HitlistQueueUpdateCommand;
 
 /**
@@ -101,6 +100,7 @@ class ContactsQueueUpdateCommand extends CronScript {
         (
             !$this->getMemcache()->get("cron:stop") &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
+            filemtime(__FILE__) < $this->started &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
             $this->iterations-- &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
@@ -160,7 +160,7 @@ class ContactsQueueUpdateCommand extends CronScript {
             throw new CronScriptException("Contacts queue for user_id=$webUserId has limit exceed");
         }
 
-        if ($this->getCurrentQueueObject()->getSize($webUserId) >= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
+        if ($this->getCurrentQueueObject()->getSize($webUserId) >= (SearchQueueUpdateCommand::LIMIT + self::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
             throw new CronScriptException("Current queue for user_id=$webUserId has limit exceed");
         }
 

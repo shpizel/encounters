@@ -17,12 +17,12 @@
     <td>Всего</td>
 </tr>
 {% for item in items %}
-    <tr>
-        <td>{{ item.date }}</td>
-        <td>{{ item.decision_no }}</td>
-        <td>{{ item.decision_maybe }}</td>
-        <td>{{ item.decision_yes }}</td>
-        <td>{{ item.decision_no + item.decision_maybe + item.decision_yes }}</td>
+    <tr bgcolor="{% if item.ts|date("N") < 6 %}#CCFFCC{% else %}#FFCCCC{% endif %}">
+        <td>{{ item.date }} </td>
+        <td>{{ item.decision_no|number_format(0, '.') }}</td>
+        <td>{{ item.decision_maybe|number_format(0, '.') }}</td>
+        <td>{{ item.decision_yes|number_format(0, '.') }}</td>
+        <td>{{ (item.decision_no + item.decision_maybe + item.decision_yes)|number_format(0, '.') }}</td>
     </tr>
 {% endfor %}
     <tr bgcolor="#f1f1f1">

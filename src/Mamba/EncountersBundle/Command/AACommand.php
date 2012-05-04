@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Command\Script;
 use Mamba\EncountersBundle\Helpers\Declensions;
+use PDO;
 
 /**
  * AACommand
@@ -34,29 +35,7 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $stmt = $this->getDoctrine()->getConnection()->prepare(
-            "SELECT
-                date_format(changed, '%d%m%y') as `date`,
-                sum(if(decision = -1, 1, 0)) as `NO`,
-                sum(if(decision = 0, 1, 0))  as `MAYBE`,
-                sum(if(decision = 1, 1, 0))  as `YES`
-            FROM
-                `Decisions`
-            WHERE
-                `changed` < '2012-04-28 00:00:00'
-            GROUP BY
-                `date`
-            ORDER BY
-                `changed` DESC"
-        );
-
-        $items = array();
-        if ($stmt->execute()) {
-            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $items[] = $item;
-            }
-        }
-
-        file_put_contents("counters", json_encode($items));
+        print_r($this->getMamba()->Anketa()->getInfo(6379342054509, array()));
+//        print_r($this->getMamba()->Anketa()->getInfo("173262855, 760845353, 6379342054509, 353671355, 757350220", array()));
     }
 }

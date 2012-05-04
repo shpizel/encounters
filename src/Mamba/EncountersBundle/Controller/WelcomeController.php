@@ -5,6 +5,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Mamba\EncountersBundle\Controller\ApplicationController;
 
 use Mamba\PlatformBundle\API\Mamba;
+use Mamba\EncountersBundle\EncountersBundle;
 
 /**
  * WelcomeController
@@ -45,6 +46,20 @@ class WelcomeController extends ApplicationController {
         if ($getPlatformParams) {
             $webUserId = (int) $getPlatformParams['oid'];
             $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
+            $lastAccessTime = $this->getVariablesObject()->get($webUserId, 'lastaccess');
+            if (time() - $lastAccessTime > 24*3600) {
+                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
+                    'webUserId'     => $webUserId,
+                    'currentUserId' => null,
+                    'decision'      => null,
+                    'time'          => time(),
+                )));
+
+                foreach (range(-1, 1) as $decision) {
+                    $this->getCountersObject()->set($webUserId, "noretry-($decision)", 0);
+                }
+            }
+
             $this->getVariablesObject()->set($webUserId, 'lastaccess', time());
         } elseif ($Session->has(Mamba::SESSION_USER_ID_KEY)) {
             $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);

@@ -120,21 +120,21 @@ admin.energy:
 
 admin.cash:
     pattern: /admin/$/{limit}
-    defaults: { _controller: EncountersBundle:AdminCash:index, limit: 7 }
+    defaults: { _controller: EncountersBundle:AdminCash:index, limit: 10 }
     requirements:
         limit: \d+
         _method: GET
 
 admin.decisions:
     pattern: /admin/decisions/{limit}
-    defaults: { _controller: EncountersBundle:AdminDecisions:index, limit: 7 }
+    defaults: { _controller: EncountersBundle:AdminDecisions:index, limit: 10 }
     requirements:
         limit: \d+
         _method: GET
 
 admin.stats:
     pattern: /admin/stats/{limit}
-    defaults: { _controller: EncountersBundle:AdminStats:index, limit: 7 }
+    defaults: { _controller: EncountersBundle:AdminStats:index, limit: 10 }
     requirements:
         limit: \d+
         _method: GET

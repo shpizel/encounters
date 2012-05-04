@@ -49,12 +49,16 @@ class NotificationSendCommand extends CronScript {
                 ON b.user_id = n.user_id
             WHERE
                 (NOT n.lastaccess OR
-                UNIX_TIMESTAMP(NOW()) - n.lastaccess > 24*60*60) AND
+                UNIX_TIMESTAMP(NOW()) - n.lastaccess > 8*60*60) AND
+                (NOT n.last_notification_sent OR
+                UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 12*60*60) AND
                 n.visitors_unread > 0
             GROUP BY
                 user_id
             ORDER BY
-              `amount` DESC",
+                last_notification_sent,
+                last_outgoing_decision,
+                amount DESC",
 
         /**
          * SQL-запрос на получение данных для добавления энергии
