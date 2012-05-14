@@ -418,7 +418,7 @@ class SearchQueueUpdateCommand extends CronScript {
             do {
                 $Mamba->multi();
 
-                foreach (range(1, 10) as $i) {
+                foreach (range(1, 16) as $i) {
                     $Mamba->Search()->get(
                         $whoAmI         = null,
                         $lookingFor     = $searchPreferences['gender'],

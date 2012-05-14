@@ -132,6 +132,13 @@ admin.decisions:
         limit: \d+
         _method: GET
 
+admin.gearman:
+    pattern: /admin/gearman
+    defaults: { _controller: EncountersBundle:AdminGearman:index }
+    requirements:
+        limit: \d+
+        _method: GET
+
 admin.stats:
     pattern: /admin/stats/{limit}
     defaults: { _controller: EncountersBundle:AdminStats:index, limit: 10 }

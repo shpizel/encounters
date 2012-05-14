@@ -61,6 +61,15 @@ class Gearman {
     }
 
     /**
+     * Servers getter
+     *
+     * @return array
+     */
+    public function getServers() {
+        return self::$servers;
+    }
+
+    /**
      * Gearman Client Instance Getter
      *
      * @static

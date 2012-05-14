@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Gearman</title>
+</head>
+<body>
+<h2>Состояние Gearman'a на  {{ "now"|date("H:i") }}</h2>
+
+{% if servers %}
+    {% for name, server in servers %}
+
+        {{ name }}:
+        <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+            <tr bgcolor="#f1f1f1">
+                <td>Функция</td>
+                <td>Задач</td>
+                <td>Активно</td>
+                <td>Рабочих</td>
+            </tr>
+
+            {% for item in server %}
+                <tr>
+                    <td>{{ item.function }}</td>
+                    <td>{{ item.total }}</td>
+                    <td>{{ item.active }}</td>
+                    <td>{{ item.workers }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+    {% endfor %}
+{% else %}
+    Информация по Герману недоступна.
+{% endif %}
+</body>
+</html>

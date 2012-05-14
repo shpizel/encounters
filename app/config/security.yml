@@ -33,5 +33,6 @@ security:
         - { path: ^/admin/stats*, roles: ROLE_USER }
         - { path: ^/admin/\$*, roles: ROLE_ADMIN }
         - { path: ^/admin/decisions*, roles: ROLE_ADMIN }
+        - { path: ^/admin/gearman*, roles: ROLE_ADMIN }
 #        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }
 #        - { path: ^/_internal, roles: IS_AUTHENTICATED_ANONYMOUSLY, ip: 127.0.0.1 }
