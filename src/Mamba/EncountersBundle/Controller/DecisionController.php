@@ -185,13 +185,13 @@ class DecisionController extends ApplicationController {
                 array('level_up' => $levelUp)
             );
 
-            if ($this->getCurrentQueueObject()->getSize($this->webUserId) < (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT) / 1.25) {
+            /*if ($this->getCurrentQueueObject()->getSize($this->webUserId) < (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT) / 1.25) {
                 $this->get('gearman')->getClient()
                     ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
                     'user_id'   => $this->webUserId,
                     'timestamp' => time(),
                 )));
-            }
+            }*/
         }
 
         return

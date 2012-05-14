@@ -49,9 +49,20 @@ class SearchQueueUpdateCommand extends CronScript {
 
                 u.country_id = :country_id AND
                 u.region_id = :region_id AND
-                u.city_id = :city_id
+                u.city_id = :city_id AND
+                u.user_id NOT IN (
+                    SELECT
+                        current_user_id
+                    FROM
+                        Decisions
+                    WHERE
+                        web_user_id = :web_user_id
+                )
+
             ORDER BY
                 e.energy DESC
+            LIMIT
+                2048
         ",
 
         COUNTRY_AND_REGION_SEARCH_SQL = "
@@ -69,9 +80,19 @@ class SearchQueueUpdateCommand extends CronScript {
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
                 u.country_id = :country_id AND
-                u.region_id = :region_id
+                u.region_id = :region_id AND
+                u.user_id NOT IN (
+                    SELECT
+                        current_user_id
+                    FROM
+                        Decisions
+                    WHERE
+                        web_user_id = :web_user_id
+                )
             ORDER BY
                 e.energy DESC
+            LIMIT
+                2048
         ",
 
         COUNTRY_SEARCH_SQL = "
@@ -88,9 +109,19 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
-                u.country_id = :country_id
+                u.country_id = :country_id AND
+                u.user_id NOT IN (
+                    SELECT
+                        current_user_id
+                    FROM
+                        Decisions
+                    WHERE
+                        web_user_id = :web_user_id
+                )
             ORDER BY
                 e.energy DESC
+            LIMIT
+                2048
         ",
 
         /**
@@ -117,7 +148,7 @@ class SearchQueueUpdateCommand extends CronScript {
      * @return bool
      */
     public function lock() {
-        return $this->getMemcache()->add($this->getLockName(), 1, 5*60);
+        return $this->getMemcache()->add($this->getLockName(), 1, ($this->daemon) ? 3600 : 60);
     }
 
     /**
@@ -194,6 +225,9 @@ class SearchQueueUpdateCommand extends CronScript {
     public function updateSearchQueue($job) {
         $Mamba = $this->getMamba();
         list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+        $_webUserId = $webUserId; //copy for PDO
+
+        $this->log("Got task for user_id = $webUserId", 64);
 
         $this->currentUserId = $webUserId;
         if (!$this->lock()) {
@@ -223,13 +257,9 @@ class SearchQueueUpdateCommand extends CronScript {
             throw new CronScriptException("Search queue for user_id=$webUserId has limit exceed");
         }
 
-        if ($this->getCurrentQueueObject()->getSize($webUserId) >= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
-            throw new CronScriptException("Current queue for user_id=$webUserId has limit exceed");
-        }
-
         $usersAddedCount = 0;
 
-        /** Ищем по базе, полностью */
+        $this->log("Searching by DB with country, region, city..", 64);
         $stmt = $this->getEntityManager()->getConnection()->prepare(self::FULL_SEARCH_SQL);
 
         $stmt->bindParam('gender', $searchPreferences['gender']);
@@ -238,14 +268,17 @@ class SearchQueueUpdateCommand extends CronScript {
         $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
         $stmt->bindParam('region_id', $searchPreferences['geo']['region_id']);
         $stmt->bindParam('city_id', $searchPreferences['geo']['city_id']);
+        $stmt->bindParam('web_user_id', $_webUserId);
 
         if ($result = $stmt->execute()) {
+            $this->log("SQL query OK", 64);
+
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $currentUserId = (int) $item['user_id'];
 
                 if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId) &&
-                    !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}") &&
-                    $this->getCountersObject()->get($currentUserId, 'visitors_unread') < 25
+                    !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId) &&
+                    !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                 ) {
                     try {
                         $this->getMamba()->Photos()->get($currentUserId);
@@ -265,49 +298,76 @@ class SearchQueueUpdateCommand extends CronScript {
             }
 
             $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+        } else {
+            $this->log("SQL query FAILED", 64);
         }
 
         if ($usersAddedCount < self::LIMIT) {
-            $offset = -10;
+            $this->log("Searching by ASearch with country, region, city..", 64);
+
+            $offset = $this->getMemcache()->get("asearch_page_by_{$webUserId}_{$searchPreferences['geo']['country_id']}_{$searchPreferences['geo']['region_id']}_{$searchPreferences['geo']['city_id']}")
+                ?: -10;
+
             do {
-                $result = $Mamba->Search()->get(
-                    $whoAmI         = null,
-                    $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = (int) $searchPreferences['age_from'],
-                    $ageTo          = (int) $searchPreferences['age_to'],
-                    $target         = null,
-                    $onlyWithPhoto  = true,
-                    $onlyReal       = true,
-                    $onlyWithWebCam = false,
-                    $noIntim        = true,
-                    $countryId      = (int) $searchPreferences['geo']['country_id'],
-                    $regionId       = (int) $searchPreferences['geo']['region_id'],
-                    $cityId         = (int) $searchPreferences['geo']['city_id'],
-                    $metroId        = null,
-                    $offset         = $offset + 10,
-                    $blocks         = array(),
-                    $idsOnly        = true
-                );
+                $Mamba->multi();
 
-                if (isset($result['users'])) {
-                    foreach ($result['users'] as $currentUserId) {
-                        if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                                && $usersAddedCount++;
+                foreach (range(1, 16) as $i) {
+                    $Mamba->Search()->get(
+                        $whoAmI         = null,
+                        $lookingFor     = $searchPreferences['gender'],
+                        $ageFrom        = (int) $searchPreferences['age_from'],
+                        $ageTo          = (int) $searchPreferences['age_to'],
+                        $target         = null,
+                        $onlyWithPhoto  = true,
+                        $onlyReal       = true,
+                        $onlyWithWebCam = false,
+                        $noIntim        = true,
+                        $countryId      = (int) $searchPreferences['geo']['country_id'],
+                        $regionId       = (int) $searchPreferences['geo']['region_id'],
+                        $cityId         = (int) $searchPreferences['geo']['city_id'],
+                        $metroId        = null,
+                        $offset         = $offset + 10,
+                        $blocks         = array(),
+                        $idsOnly        = true
+                    );
+                }
 
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
+                if ($results = $Mamba->exec()) {
+                    foreach ($results as $rindex => $result) {
+                        if (isset($result['users'])) {
+
+                            /** Запишем номер страницы которую мы смотрим */
+                            $this->log("Offset: " . ($offset - (16 - $rindex)*10), 48);
+                            $this->getMemcache()->set(
+                                "asearch_page_by_{$webUserId}_{$searchPreferences['geo']['country_id']}_{$searchPreferences['geo']['region_id']}_{$searchPreferences['geo']['city_id']}",
+                                $offset - (16 - $rindex)*10,
+                                12*3600
+                            );
+
+                            foreach ($result['users'] as $currentUserId) {
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                        && $usersAddedCount++;
+
+                                    if ($usersAddedCount >= self::LIMIT) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-            } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
+                    $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added at offset <comment>$offset</comment>");
+
+                    if (!(isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT)) {
+                        break;
+                    }
+                }
+            } while (true);
         }
 
         if ($usersAddedCount < self::LIMIT) {
-            /** Ищем по базе, страна и регион */
+            $this->log("Searching by DB with country and region..", 64);
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_AND_REGION_SEARCH_SQL);
 
             $stmt->bindParam('gender', $searchPreferences['gender']);
@@ -315,13 +375,16 @@ class SearchQueueUpdateCommand extends CronScript {
             $stmt->bindParam('age_to', $searchPreferences['age_to']);
             $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
             $stmt->bindParam('region_id', $searchPreferences['geo']['region_id']);
+            $stmt->bindParam('web_user_id', $_webUserId);
 
             if ($result = $stmt->execute()) {
+                $this->log("SQL query OK", 64);
+
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $currentUserId = (int) $item['user_id'];
                     if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId) &&
-                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}") &&
-                        $this->getCountersObject()->get($currentUserId, 'visitors_unread') < 25
+                        !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId) &&
+                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                     ) {
                         try {
                             $this->getMamba()->Photos()->get($currentUserId);
@@ -341,64 +404,93 @@ class SearchQueueUpdateCommand extends CronScript {
                 }
 
                 $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            } else {
+                $this->log("SQL query FAILED", 16);
             }
         }
 
-        /** Никого не нашли — ищем по стране и региону */
         if ($usersAddedCount < self::LIMIT) {
-            $offset = -10;
+            $this->log("Searching by ASearch with country and region..", 64);
+
+            $offset = $this->getMemcache()->get("asearch_page_by_{$webUserId}_{$searchPreferences['geo']['country_id']}_{$searchPreferences['geo']['region_id']}")
+                ?: -10;
+
             do {
-                $result = $Mamba->Search()->get(
-                    $whoAmI         = null,
-                    $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = (int) $searchPreferences['age_from'],
-                    $ageTo          = (int) $searchPreferences['age_to'],
-                    $target         = null,
-                    $onlyWithPhoto  = true,
-                    $onlyReal       = true,
-                    $onlyWithWebCam = false,
-                    $noIntim        = true,
-                    $countryId      = (int) $searchPreferences['geo']['country_id'],
-                    $regionId       = (int) $searchPreferences['geo']['region_id'],
-                    $cityId         = null,
-                    $metroId        = null,
-                    $offset         = $offset + 10,
-                    $blocks         = array(),
-                    $idsOnly        = true
-                );
+                $Mamba->multi();
 
-                if (isset($result['users'])) {
-                    foreach ($result['users'] as $currentUserId) {
-                        if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                                && $usersAddedCount++;
+                foreach (range(1, 10) as $i) {
+                    $Mamba->Search()->get(
+                        $whoAmI         = null,
+                        $lookingFor     = $searchPreferences['gender'],
+                        $ageFrom        = (int) $searchPreferences['age_from'],
+                        $ageTo          = (int) $searchPreferences['age_to'],
+                        $target         = null,
+                        $onlyWithPhoto  = true,
+                        $onlyReal       = true,
+                        $onlyWithWebCam = false,
+                        $noIntim        = true,
+                        $countryId      = (int) $searchPreferences['geo']['country_id'],
+                        $regionId       = (int) $searchPreferences['geo']['region_id'],
+                        $cityId         = null,
+                        $metroId        = null,
+                        $offset         = $offset + 10,
+                        $blocks         = array(),
+                        $idsOnly        = true
+                    );
+                }
 
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
+                if ($results = $Mamba->exec()) {
+                    foreach ($results as $rindex=>$result) {
+
+                        /** Запишем номер страницы которую мы смотрим */
+                        $this->log("Offset: " . ($offset - (16 - $rindex)*10), 48);
+                        $this->getMemcache()->set(
+                            "asearch_page_by_{$webUserId}_{$searchPreferences['geo']['country_id']}_{$searchPreferences['geo']['region_id']}",
+                            $offset - (16 - $rindex)*10,
+                            12*3600
+                        );
+
+                        if (isset($result['users'])) {
+                            foreach ($result['users'] as $currentUserId) {
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                        && $usersAddedCount++;
+
+                                    if ($usersAddedCount >= self::LIMIT) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-            } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
+                    $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added at offset <comment>$offset</comment>");
+
+                    if (!(isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT)) {
+                        break;
+                    }
+                }
+            } while (true);
         }
 
         if ($usersAddedCount < self::LIMIT) {
-            /** Ищем по базе, страна */
+            $this->log("Searching by DB with country..", 64);
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_SEARCH_SQL);
 
             $stmt->bindParam('gender', $searchPreferences['gender']);
             $stmt->bindParam('age_from', $searchPreferences['age_from']);
             $stmt->bindParam('age_to', $searchPreferences['age_to']);
             $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
+            $stmt->bindParam('web_user_id', $_webUserId);
 
             if ($result = $stmt->execute()) {
+                $this->log("SQL query OK", 64);
+
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $currentUserId = (int) $item['user_id'];
                     if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId) &&
-                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}") &&
-                        $this->getCountersObject()->get($currentUserId, 'visitors_unread') < 25
+                        !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId) &&
+                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                     ) {
                         try {
                             $this->getMamba()->Photos()->get($currentUserId);
@@ -418,87 +510,126 @@ class SearchQueueUpdateCommand extends CronScript {
                 }
 
                 $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            } else {
+                $this->log("SQL query FAILED", 16);
             }
         }
 
-        /** Никого не нашли — ищем по стране */
         if ($usersAddedCount < self::LIMIT) {
-            $offset = -10;
+            $this->log("Searching by ASearch with country..", 64);
+
+            $offset = $this->getMemcache()->get("asearch_page_by_{$webUserId}_{$searchPreferences['geo']['country_id']}")
+                ?: -10;
+
             do {
-                $result = $Mamba->Search()->get(
-                    $whoAmI         = null,
-                    $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = (int) $searchPreferences['age_from'],
-                    $ageTo          = (int) $searchPreferences['age_to'],
-                    $target         = null,
-                    $onlyWithPhoto  = true,
-                    $onlyReal       = true,
-                    $onlyWithWebCam = false,
-                    $noIntim        = true,
-                    $countryId      = (int) $searchPreferences['geo']['country_id'],
-                    $regionId       = null,
-                    $cityId         = null,
-                    $metroId        = null,
-                    $offset         = $offset + 10,
-                    $blocks         = array(),
-                    $idsOnly        = true
-                );
+                $Mamba->multi();
 
-                if (isset($result['users'])) {
-                    foreach ($result['users'] as $currentUserId) {
-                        if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                                && $usersAddedCount++;
+                foreach (range(1, 16) as $i) {
+                    $Mamba->Search()->get(
+                        $whoAmI         = null,
+                        $lookingFor     = $searchPreferences['gender'],
+                        $ageFrom        = (int) $searchPreferences['age_from'],
+                        $ageTo          = (int) $searchPreferences['age_to'],
+                        $target         = null,
+                        $onlyWithPhoto  = true,
+                        $onlyReal       = true,
+                        $onlyWithWebCam = false,
+                        $noIntim        = true,
+                        $countryId      = (int) $searchPreferences['geo']['country_id'],
+                        $regionId       = null,
+                        $cityId         = null,
+                        $metroId        = null,
+                        $offset         = $offset + 10,
+                        $blocks         = array(),
+                        $idsOnly        = true
+                    );
+                }
 
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
+                if ($results = $Mamba->exec()) {
+                    foreach ($results as $rindex=>$result) {
+
+                        /** Запишем номер страницы которую мы смотрим */
+                        $this->log("Offset: " . ($offset - (16 - $rindex)*10), 48);
+                        $this->getMemcache()->set(
+                            "asearch_page_by_{$webUserId}_{$searchPreferences['geo']['country_id']}",
+                            $offset - (16 - $rindex)*10,
+                            12*3600
+                        );
+
+                        if (isset($result['users'])) {
+                            foreach ($result['users'] as $currentUserId) {
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                        && $usersAddedCount++;
+
+                                    if ($usersAddedCount >= self::LIMIT) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-            } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
+                    $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added at offset <comment>$offset</comment>");
+
+                    if (!(isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT)) {
+                        break;
+                    }
+                }
+            } while (true);
         }
 
-        /** Никого не нашли — ищем по Рашке */
         if ($usersAddedCount < self::LIMIT) {
+            $this->log("Searching by ASearch with RUSSIA..", 64);
+
             $offset = -10;
             do {
-                $result = $Mamba->Search()->get(
-                    $whoAmI         = null,
-                    $lookingFor     = $searchPreferences['gender'],
-                    $ageFrom        = (int) $searchPreferences['age_from'],
-                    $ageTo          = (int) $searchPreferences['age_to'],
-                    $target         = null,
-                    $onlyWithPhoto  = true,
-                    $onlyReal       = true,
-                    $onlyWithWebCam = false,
-                    $noIntim        = true,
-                    $countryId      = 3159, //Россия
-                    $regionId       = null,
-                    $cityId         = null,
-                    $metroId        = null,
-                    $offset         = $offset + 10,
-                    $blocks         = array(),
-                    $idsOnly        = true
-                );
+                $Mamba->multi();
 
-                if (isset($result['users'])) {
-                    foreach ($result['users'] as $currentUserId) {
-                        if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                            $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
-                                && $usersAddedCount++;
+                foreach (range(1, 16) as $i) {
+                    $Mamba->Search()->get(
+                        $whoAmI         = null,
+                        $lookingFor     = $searchPreferences['gender'],
+                        $ageFrom        = (int) $searchPreferences['age_from'],
+                        $ageTo          = (int) $searchPreferences['age_to'],
+                        $target         = null,
+                        $onlyWithPhoto  = true,
+                        $onlyReal       = true,
+                        $onlyWithWebCam = false,
+                        $noIntim        = true,
+                        $countryId      = 3159,
+                        $regionId       = null,
+                        $cityId         = null,
+                        $metroId        = null,
+                        $offset         = $offset + 10,
+                        $blocks         = array(),
+                        $idsOnly        = true
+                    );
+                }
 
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
+                if ($results = $Mamba->exec()) {
+                    foreach ($results as $result) {
+                        if (isset($result['users'])) {
+                            foreach ($result['users'] as $currentUserId) {
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                        && $usersAddedCount++;
+
+                                    if ($usersAddedCount >= self::LIMIT) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-            } while (isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT);
+                    $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added at offset <comment>$offset</comment>");
+
+                    if (!(isset($result['users']) && count($result['users']) && $usersAddedCount < self::LIMIT)) {
+                        break;
+                    }
+                }
+            } while (true);
         }
     }
 }

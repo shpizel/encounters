@@ -132,6 +132,10 @@ class MutualController extends ApplicationController {
             }
         }
         $dataArray['data'] = $data ?: null;
+        if (!$data) {
+            $this->getCountersObject()->set($webUserId, 'mutual', 0);
+        }
+
         $dataArray['json'] = json_encode($json) ?: null;
 
         $Response = $this->render("EncountersBundle:templates:mutual.html.twig", $dataArray);

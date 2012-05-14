@@ -18,7 +18,14 @@ class ViewedQueue extends Helper {
          *
          * @var str
          */
-        MEMCACHE_VIEWED_QUEUE_ITEM_KEY = 'decision_from_%d_to_%d'
+        MEMCACHE_VIEWED_QUEUE_ITEM_KEY = 'decision_from_%d_to_%d',
+
+        /**
+         * Время жизни одной оценки в кеше
+         *
+         * @var int
+         */
+        DECISION_LIFETIME = 1209600 /** 2 недели */
     ;
 
     /**
@@ -38,7 +45,7 @@ class ViewedQueue extends Helper {
             throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
         }
 
-        return $this->getMemcache()->set(sprintf(self::MEMCACHE_VIEWED_QUEUE_ITEM_KEY, $webUserId, $currentUserId), json_encode($data));
+        return $this->getMemcache()->set(sprintf(self::MEMCACHE_VIEWED_QUEUE_ITEM_KEY, $webUserId, $currentUserId), json_encode($data), self::DECISION_LIFETIME);
     }
 
     /**
@@ -55,7 +62,7 @@ class ViewedQueue extends Helper {
         }
 
         if (!is_int($currentUserId)) {
-            throw new ViewedQueueException("Invalid curent user id: \n" . var_export($currentUserId, true));
+            throw new ViewedQueueException("Invalid current user id: \n" . var_export($currentUserId, true));
         }
 
         if ($result = $this->getMemcache()->get(sprintf(self::MEMCACHE_VIEWED_QUEUE_ITEM_KEY, $webUserId, $currentUserId))) {

@@ -55,7 +55,7 @@ class HitlistQueueUpdateCommand extends CronScript {
      * @return bool
      */
     public function lock() {
-        return $this->getMemcache()->add($this->getLockName(), 1, 5*60);
+        return $this->getMemcache()->add($this->getLockName(), 1, ($this->daemon) ? 3600 : 60);
     }
 
     /**
@@ -161,10 +161,6 @@ class HitlistQueueUpdateCommand extends CronScript {
             throw new CronScriptException("Hitlist queue for user_id=$webUserId has limit exceed");
         }
 
-        if ($this->getCurrentQueueObject()->getSize($webUserId) >= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
-            throw new CronScriptException("Current queue for user_id=$webUserId has limit exceed");
-        }
-
         if ($hitList = $Mamba->Anketa()->getHitlist(-30)) {
             $usersAddedCount = 0;
             foreach ($hitList['visitors'] as $user) {
@@ -175,7 +171,7 @@ class HitlistQueueUpdateCommand extends CronScript {
                     if ($gender == $searchPreferences['gender']) {
                         if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
 
-                            if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                            if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
                                 $this->getHitlistQueueObject()->put($webUserId, $currentUserId)
                                     && $usersAddedCount++;
 

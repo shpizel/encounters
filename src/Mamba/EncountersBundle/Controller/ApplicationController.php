@@ -341,6 +341,7 @@ abstract class ApplicationController extends Controller {
             'contacts'    => array(
                 'all'           => $contactListIds,
                 'not_app_users' => array_filter($contactListIds, function($item) use ($searchPreferencesObject) {
+                    return true; /** костыль */
                     return !$searchPreferencesObject->exists($item);
                 }),
             ),

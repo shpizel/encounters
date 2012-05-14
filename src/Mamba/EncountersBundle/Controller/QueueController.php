@@ -117,16 +117,14 @@ class QueueController extends ApplicationController {
             }
         }
 
+        $this->get('gearman')->getClient()
+            ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+            'user_id'   => $webUserId,
+            'timestamp' => time(),
+        )));
+
         if (!$this->json['data']) {
             list($this->json['status'], $this->json['message']) = array(2, "Current queue is not ready");
-
-            if (isset($webUserId)) {
-                $this->get('gearman')->getClient()
-                    ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-                    'user_id'   => $webUserId,
-                    'timestamp' => time(),
-                )));
-            }
         }
 
         return

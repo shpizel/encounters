@@ -63,7 +63,7 @@ class CurrentQueueUpdateCommand extends CronScript {
      * @return bool
      */
     public function lock() {
-        return $this->getMemcache()->add($this->getLockName(), 1, 5*60);
+        return $this->getMemcache()->add($this->getLockName(), 1, ($this->daemon) ? 3600 : 60);
     }
 
     /**

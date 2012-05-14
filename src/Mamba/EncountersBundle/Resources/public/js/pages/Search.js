@@ -215,8 +215,12 @@ $Search = {
                 $status = $data.status;
                 $message = $data.message;
 
-                $Search.showNextPhoto();
+                //$Search.showNextPhoto();
                 $Search.$storage['locked'] = false;
+                this.loadQueue(function(){
+                    return $Search.unlockUI();
+                });
+                this.lockUI();
             }
         }).error(function() {
             top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
