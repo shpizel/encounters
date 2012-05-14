@@ -813,8 +813,6 @@ final class Mamba {
                 : $this->getClientToServerSignature($resultParams);
 
             $httpQuery = self::PLATFORM_GATEWAY_ADDRESS . "/?" . http_build_query($resultParams);
-            var_dump($httpQuery);
-            //exit();
 
             if ($this->mode == self::MULTI_MODE) {
                 $this->multiQueue[] = array(
