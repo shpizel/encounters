@@ -117,7 +117,7 @@ class QueueController extends ApplicationController {
             }
         }
 
-        $this->get('gearman')->getClient()
+        isset($webUserId) && $this->get('gearman')->getClient()
             ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
             'user_id'   => $webUserId,
             'timestamp' => time(),
