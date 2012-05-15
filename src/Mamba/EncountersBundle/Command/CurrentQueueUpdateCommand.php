@@ -140,7 +140,7 @@ class CurrentQueueUpdateCommand extends CronScript {
     public function updateCurrentQueue($job) {
         list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
 
-        do {
+        while ($this->getCurrentQueueObject()->getSize($webUserId) <= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
             $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
             $usersAddedCount = 0;
             foreach ($searchQueueChunk as $currentUserId) {
@@ -197,7 +197,6 @@ class CurrentQueueUpdateCommand extends CronScript {
             }
             $this->log("[Current queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added from contacts queue;");
         }
-        while ($this->getCurrentQueueObject()->getSize($webUserId) <= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT));
 
         /**
          * SearchPreferences GEO

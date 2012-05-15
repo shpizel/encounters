@@ -25,18 +25,10 @@ gearman:
 memcache:
     servers:
         server1:
-            host: 10.10.10.21
+            host: 10.10.10.21 # 8192
             port: 11211
-            weight: 50
+            weight: 40
         server2:
-            host: 10.10.10.31
+            host: 10.10.10.22 #12228
             port: 11211
-            weight: 8
-        server3:
-            host: 10.10.10.41
-            port: 11211
-            weight: 21
-        server4:
-            host: 10.10.10.42
-            port: 11211
-            weight: 21
+            weight: 60

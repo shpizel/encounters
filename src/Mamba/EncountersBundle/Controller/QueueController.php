@@ -125,6 +125,8 @@ class QueueController extends ApplicationController {
 
         if (!$this->json['data']) {
             list($this->json['status'], $this->json['message']) = array(2, "Current queue is not ready");
+        } else {
+            $this->json['data'] = array_values($this->json['data']);
         }
 
         return
