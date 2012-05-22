@@ -19,7 +19,7 @@ redis:
 gearman:
     servers:
         server1:
-            host: 10.10.10.31
+            host: 10.10.10.22 # memory2
             port: 4730
 
 memcache:
