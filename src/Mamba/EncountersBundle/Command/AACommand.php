@@ -35,7 +35,6 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        print_r($this->getMamba()->Anketa()->getInfo(6379342054509, array()));
-//        print_r($this->getMamba()->Anketa()->getInfo("173262855, 760845353, 6379342054509, 353671355, 757350220", array()));
+        $this->getMemcache()->set("cron:stop", time());
     }
 }

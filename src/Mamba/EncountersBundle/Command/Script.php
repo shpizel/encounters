@@ -125,11 +125,12 @@ abstract class Script extends ContainerAwareCommand {
         }
 
         list($this->input, $this->output, $this->copy, $this->debug) = array($input, $output, $copy, $debug);
+        $this->started = time();
 
         $this->getGearman()->getClient()->setTimeout(self::GEARMAN_CLIENT_TIMEOUT_DEFAULT);
         $this->getGearman()->getWorker()->setTimeout(self::GEARMAN_WORKER_TIMEOUT_DEFAULT);
 
-        if (!$this->hasAnotherInstances() && !$this->getMemcache()->get("cron:stop")) {
+        if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
             $this->process();
 
             fclose($this->lockFilePointer);
@@ -175,8 +176,10 @@ abstract class Script extends ContainerAwareCommand {
         };
 
         if ($this->debug) {
-            $this->output->writeln("[" . date("d.m.y H:i:s") . "] " . $colorize(trim($message), $code));
+            $this->output->writeln("[" . date("d/m/y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
         }
+
+        return true;
     }
 
     /**

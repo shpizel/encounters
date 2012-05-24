@@ -48,16 +48,17 @@ class AchievementSetCommand extends CronScript {
             }
         });
 
+        $iterations = $this->iterations;
         while
         (
-            !$this->getMemcache()->get("cron:stop") &&
+            (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimeStamp = (int) $this->getMemcache()->get("cron:stop")) && ($stopCommandTimeStamp < $this->started))) &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
             filemtime(__FILE__) < $this->started &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
-            --$this->iterations &&
+            $this->iterations-- &&
+            $this->log(($iterations - $this->iterations) . " iteration:", 48) &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
-            $this->log("Iterations: {$this->iterations}", 64);
             if ($worker->returnCode() == GEARMAN_TIMEOUT) {
                 $this->log("Timed out", 48);
                 continue;
@@ -65,7 +66,7 @@ class AchievementSetCommand extends CronScript {
                 $this->log("Failed", 16);
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
-                $this->log("Success", 64);
+                $this->log("Completed", 64);
             }
         }
 
@@ -82,31 +83,33 @@ class AchievementSetCommand extends CronScript {
         $Redis = $this->getRedis();
 
         list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
+
+        $this->log("Got task for <info>current_user_id</info> = {$currentUserId}, <info>web_user_id</info> = {$webUserId}, <info>decision</info> = {$decision}");
+
         if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
-                $this->log("Mamba is not ready!", 16);
-                return;
+                throw new CronScriptException("Mamba is not ready!");
             }
         } else {
             throw new CronScriptException("Invalid workload");
         }
 
         if ($message = $this->getAchievement($webUserId)) {
-            $this->log("Achievement spam message: $message");
+            $this->log("<comment>Achievement spam message</comment>: $message");
             if ($result = $Mamba->Achievement()->set($message)) {
                 if (isset($result['update']) && $result['update']) {
-                    $this->log('SUCCESS', 64);
+                    $this->log('Achievement was set successfully', 64);
                     $this->getStatsObject()->incr('achievement');
                 } else {
-                    $this->log('FAILED', 16);
+                    throw new CronScriptException("Failed to set achievement");
                 }
             } else {
-                $this->log('FAILED', 16);
+                throw new CronScriptException("Failed to set achievement");
             }
         } else {
-            $this->log("Could not get achievement message", 16);
+            throw new CronScriptException("Could not get achievement message");
         }
     }
 

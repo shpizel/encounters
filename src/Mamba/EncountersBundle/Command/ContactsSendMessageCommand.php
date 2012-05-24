@@ -54,16 +54,17 @@ class ContactsSendMessageCommand extends CronScript {
             }
         });
 
+        $iterations = $this->iterations;
         while
         (
-            !$this->getMemcache()->get("cron:stop") &&
+            (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimeStamp = (int) $this->getMemcache()->get("cron:stop")) && ($stopCommandTimeStamp < $this->started))) &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
             filemtime(__FILE__) < $this->started &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
-            --$this->iterations &&
+            $this->iterations-- &&
+            $this->log(($iterations - $this->iterations) . " iteration:", 48) &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
-            $this->log("Iterations: {$this->iterations}", 64);
             if ($worker->returnCode() == GEARMAN_TIMEOUT) {
                 $this->log("Timed out", 48);
                 continue;
@@ -71,7 +72,7 @@ class ContactsSendMessageCommand extends CronScript {
                 $this->log("Failed", 16);
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
-                $this->log("Success", 64);
+                $this->log("Completed", 64);
             }
         }
 
@@ -88,24 +89,24 @@ class ContactsSendMessageCommand extends CronScript {
         $Redis = $this->getRedis();
 
         list($webUserId, $currentUserId, $decision) = array_values(unserialize($job->workload()));
+
+        $this->log("Got task for <info>current_user_id</info> = {$currentUserId}, <info>web_user_id</info> = {$webUserId}, <info>decision</info> = {$decision}");
+
         if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
-                $this->log("Mamba is not ready!", 16);
-                return;
+                throw new CronScriptException("Mamba is not ready!");
             }
         } else {
             throw new CronScriptException("Invalid workload");
         }
 
-        $this->log("Current user id: " . $currentUserId);
-
         $lockCacheKey = "personal_{$currentUserId}_spam";
         $lockCacheKeyExpire = 7*24*3600;
 
         if ($message = $this->getPersonalMessage($webUserId, $currentUserId)) {
-            $this->log("Personal spam message: $message");
+            $this->log("<comment>Personal spam message</comment>: $message");
             if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
                 if (!$this->getMemcache()->get($lockCacheKey)) {
                     if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
@@ -114,19 +115,19 @@ class ContactsSendMessageCommand extends CronScript {
                             $this->getStatsObject()->incr('contacts');
                             $this->getMemcache()->add($lockCacheKey, time(), $lockCacheKeyExpire);
                         } else {
-                            $this->log('FAILED', 16);
+                            throw new CronScriptException("Failed to send message");
                         }
                     } else {
-                        $this->log('FAILED', 16);
+                        throw new CronScriptException("Failed to send message");
                     }
                 } else {
-                    $this->log("Too much frequently", 16);
+                    throw new CronScriptException("Too much frequently");
                 }
             } else {
-                $this->log("Already app user", 16);
+                throw new CronScriptException("Already app user");
             }
         } else {
-            $this->log("Could not get personal message", 16);
+            throw new CronScriptException("Could not get personal message");
         }
     }
 

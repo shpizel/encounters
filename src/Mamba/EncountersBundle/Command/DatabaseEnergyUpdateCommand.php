@@ -62,26 +62,26 @@ class DatabaseEnergyUpdateCommand extends CronScript {
             }
         });
 
+        $iterations = $this->iterations;
         while
         (
-            !$this->getMemcache()->get("cron:stop") &&
+            (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimeStamp = (int) $this->getMemcache()->get("cron:stop")) && ($stopCommandTimeStamp < $this->started))) &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
             filemtime(__FILE__) < $this->started &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
             $this->iterations-- &&
+            $this->log(($iterations - $this->iterations) . " iteration:", 48) &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
             if ($worker->returnCode() == GEARMAN_TIMEOUT) {
-                $this->log(($this->iterations + 1) . ") Timed out (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 48);
+                $this->log("Timed out", 48);
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
-                $this->log(($this->iterations + 1) . ") Failed (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 16);
+                $this->log("Failed", 16);
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
-                $this->log(($this->iterations + 1) . ") Success (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 64);
+                $this->log("Completed", 64);
             }
-
-
         }
 
         $this->log("Bye", 48);
@@ -94,6 +94,9 @@ class DatabaseEnergyUpdateCommand extends CronScript {
      */
     public function updateEnergy($job) {
         list($userId, $energy) = array_values(unserialize($job->workload()));
+
+        $this->log("Got task for <info>current_user_id</info> = {$userId}, <info>energy</info> = {$energy}");
+
         if ($this->getSearchPreferencesObject()->exists($userId)) {
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_ENERGY_UPDATE);
             $stmt->bindValue('user_id', $userId);

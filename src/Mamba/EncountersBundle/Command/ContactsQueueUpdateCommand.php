@@ -96,25 +96,27 @@ class ContactsQueueUpdateCommand extends CronScript {
             }
         });
 
+        $iterations = $this->iterations;
         while
         (
-            !$this->getMemcache()->get("cron:stop") &&
+            (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimeStamp = (int) $this->getMemcache()->get("cron:stop")) && ($stopCommandTimeStamp < $this->started))) &&
             ((time() - $this->started < $this->lifetime) || !$this->lifetime) &&
             filemtime(__FILE__) < $this->started &&
             ((memory_get_usage() < $this->memory) || !$this->memory) &&
             $this->iterations-- &&
+            $this->log(($iterations - $this->iterations) . " iteration:", 48) &&
             (@$worker->work() || $worker->returnCode() == GEARMAN_TIMEOUT)
         ) {
             if ($worker->returnCode() == GEARMAN_TIMEOUT) {
-                $this->log(($this->iterations + 1) . ") Timed out (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 48);
+                $this->log("Timed out", 48);
                 continue;
             } elseif ($worker->returnCode() != GEARMAN_SUCCESS) {
-                $this->log(($this->iterations + 1) . ") Failed (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 16);
+                $this->log("Failed", 16);
                 $this->unlock();
 
                 break;
             } elseif ($worker->returnCode() == GEARMAN_SUCCESS) {
-                $this->log(($this->iterations + 1) . ") Success (".  round(memory_get_usage(true)/1024/1024, 2) . "M/" . (time() - $this->started) . "s)", 64);
+                $this->log("Completed", 64);
             }
 
             $this->unlock();
@@ -131,6 +133,8 @@ class ContactsQueueUpdateCommand extends CronScript {
     public function updateContactsQueue($job) {
         $Mamba = $this->getMamba();
         list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
+
+        $this->log("Got task for <info>current_user_id</info> = {$webUserId}, <info>timestamp</info> = {$timestamp}");
 
         $this->currentUserId = $webUserId;
         if (!$this->lock()) {
@@ -184,7 +188,7 @@ class ContactsQueueUpdateCommand extends CronScript {
                 }
             }
 
-            $this->log("[Contacts queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            $this->log("<error>$usersAddedCount</error> users were added to contacts queue for <info>user_id</info> = {$webUserId}");
         } else {
             throw new CronScriptException("Could not fetch contact list for user_id=$webUserId");
         }
