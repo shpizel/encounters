@@ -48,17 +48,16 @@ class NotificationSendCommand extends CronScript {
             LEFT JOIN Billing b
                 ON b.user_id = n.user_id
             WHERE
-                (NOT n.lastaccess OR
-                UNIX_TIMESTAMP(NOW()) - n.lastaccess > 8*60*60) AND
+                n.last_online AND
+                n.last_notification_sent < n.last_online AND
                 (NOT n.last_notification_sent OR
-                UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 12*60*60) AND
-                n.visitors_unread > 0
+                UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*60*60) AND
+                n.visitors_unread > 0 AND
+                n.last_notification_metrics <> concat('v:', n.visitors_unread, ',m:', n.mutual_unread)
             GROUP BY
                 user_id
             ORDER BY
-                last_notification_sent,
-                last_outgoing_decision,
-                amount DESC",
+                lastaccess desc",
 
         /**
          * SQL-запрос на получение данных для добавления энергии
@@ -124,6 +123,8 @@ class NotificationSendCommand extends CronScript {
             $stage++;
             $this->log("Stage {$stage}", 64);
 
+            $_chunk = array_chunk($chunk, 30);
+
             $Redis->multi();
 
             foreach ($chunk as $userId) {
@@ -159,40 +160,58 @@ class NotificationSendCommand extends CronScript {
                     $dataArray[$userId]['mutual_unread'] = $this->getCountersObject()->get($userId, 'mutual_unread');
                 }
 
-                $this->log("Fetch variables from redis completed", 48);
+                $this->getMamba()->multi();
+                foreach ($_chunk as $__chunk) {
+                    $this->getMamba()->Anketa()->isOnline(array_map(function($i){return (int)$i;},$__chunk));
+                }
+                if ($onlineCheckResult = $this->getMamba()->exec(35)) {
+                    foreach ($onlineCheckResult as $onlineCheckResultChunk) {
+                        foreach ($onlineCheckResultChunk as $_item) {
+                            if (isset($dataArray[$_item['anketa_id']])) {
+                                $dataArray[$_item['anketa_id']]['last_online'] = $_item['is_online'] == 1 ? time() : $_item['is_online'];
+                            }
+                        }
+                    }
+                }
 
+                $this->log("Fetch variables from redis completed", 48);
                 $this->log("Storing data to database..");
-                $stmt = $DB->prepare(
-                    "INSERT INTO
+
+                foreach ($dataArray as $userId => $variables) {
+                    $variables['last_online'] = isset($variables['last_online']) ? $variables['last_online'] : null;
+
+                    $sql = "INSERT INTO
                         Notifications
                     SET
-                        user_id    = :user_id,
-                        lastaccess = :lastaccess,
-                        last_outgoing_decision = :last_outgoing_decision,
-                        last_notification_sent = :last_notification_sent,
-                        last_notification_metrics = :last_notification_metrics,
-                        visitors_unread = :visitors_unread,
-                        mutual_unread = :mutual_unread
+                        user_id    = ':user_id',
+                        lastaccess = ':lastaccess',
+                        last_online = ':last_online',
+                        last_outgoing_decision = ':last_outgoing_decision',
+                        last_notification_sent = ':last_notification_sent',
+                        last_notification_metrics = ':last_notification_metrics',
+                        visitors_unread = ':visitors_unread',
+                        mutual_unread = ':mutual_unread'
                     ON DUPLICATE KEY UPDATE
-                        lastaccess = :lastaccess,
-                        last_outgoing_decision = :last_outgoing_decision,
-                        last_notification_sent = :last_notification_sent,
-                        last_notification_metrics = :last_notification_metrics,
-                        visitors_unread = :visitors_unread,
-                        mutual_unread = :mutual_unread
-                    "
-                );
+                        lastaccess = ':lastaccess',
+                        last_online = ':last_online',
+                        last_outgoing_decision = ':last_outgoing_decision',
+                        last_notification_sent = ':last_notification_sent',
+                        last_notification_metrics = ':last_notification_metrics',
+                        visitors_unread = ':visitors_unread',
+                        mutual_unread = ':mutual_unread'"
+                    ;
 
-                foreach ($dataArray as $userId=>$variables) {
-                    $stmt->bindParam('user_id', $variables['user_id']);
-                    $stmt->bindParam('lastaccess', $variables['lastaccess']);
-                    $stmt->bindParam('last_outgoing_decision', $variables['last_outgoing_decision']);
-                    $stmt->bindParam('last_notification_sent', $variables['last_notification_sent']);
-                    $stmt->bindParam('last_notification_metrics', $variables['last_notification_metrics']);
-                    $stmt->bindParam('visitors_unread', $variables['visitors_unread']);
-                    $stmt->bindParam('mutual_unread', $variables['mutual_unread']);
+                    $sql = str_replace(':user_id', $variables['user_id'], $sql);
+                    $sql = str_replace(':lastaccess', $variables['lastaccess'], $sql);
+                    $sql = str_replace(':last_online', $variables['last_online'], $sql);
+                    $sql = str_replace(':last_outgoing_decision', $variables['last_outgoing_decision'], $sql);
+                    $sql = str_replace(':last_notification_sent', $variables['last_notification_sent'], $sql);
+                    $sql = str_replace(':last_notification_metrics', $variables['last_notification_metrics'], $sql);
+                    $sql = str_replace(':visitors_unread', $variables['visitors_unread'], $sql);
+                    $sql = str_replace(':mutual_unread', $variables['mutual_unread'], $sql);
 
-                    $stmt->execute();
+                    //$this->log($sql);
+                    $DB->exec($sql);
                 }
 
                 $this->log("Preparation completed", 64);
@@ -201,7 +220,7 @@ class NotificationSendCommand extends CronScript {
             }
         }
 
-        $dataArray = null;
+        $dataArray = $result = null;
 
         $this->log("Performing energy", 48);
         $stmt = $DB->prepare(self::GET_ENERGY_SQL);

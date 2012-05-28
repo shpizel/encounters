@@ -27,10 +27,10 @@
 {% endfor %}
     <tr bgcolor="#f1f1f1">
         <td>Итого:</td>
-        <td>{{ info.no }}</td>
-        <td>{{ info.maybe }}</td>
-        <td>{{ info.yes }}</td>
-        <td>{{ info.total }}</td>
+        <td>{{ info.no|number_format(0, '.') }}</td>
+        <td>{{ info.maybe|number_format(0, '.') }}</td>
+        <td>{{ info.yes|number_format(0, '.') }}</td>
+        <td>{{ info.total|number_format(0, '.') }}</td>
     </tr>
 </table>
 {% else %}
