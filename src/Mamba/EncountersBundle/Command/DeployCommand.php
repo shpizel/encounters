@@ -115,13 +115,6 @@ class DeployCommand extends Script {
         );
 
         $commands[] = array(
-            'description' => "Cleaning cache and log folders",
-            'command'     => array(
-
-            ),
-        );
-
-        $commands[] = array(
             'description' => "Preparing project",
             'command'     => array(
                 'cd /home/shpizel/encounters/;rm -fr /home/shpizel/app/cache/*;rm -fr /home/shpizel/app/logs/*',
