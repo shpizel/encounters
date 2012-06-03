@@ -187,7 +187,8 @@ class DeployCommand extends Script {
         foreach ($commands as $item) {
             $this->log($item['description'] . "..", 48);
             foreach ($item['command'] as $command) {
-                system('ls', $code);
+                $this->log("<comment>Executing</comment>: $command");
+                system($command, $code);
 
                 if (!$code) {
                     $this->log("SUCCESS", 64);

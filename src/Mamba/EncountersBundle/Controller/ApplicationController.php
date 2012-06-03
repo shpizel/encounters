@@ -328,7 +328,7 @@ abstract class ApplicationController extends Controller {
 
         $webUser = $Mamba->Anketa()->getInfo($webUserId);
 
-        $contactList = $Mamba->Contacts()->getContactList();
+        $contactList = array();//$Mamba->Contacts()->getContactList();
         $contactListIds = array();
         if (isset($contactList['contacts'])) {
             $contactListIds = array_map(function($item){return (int) $item['info']['oid'];}, $contactList['contacts']);
