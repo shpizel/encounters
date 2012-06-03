@@ -117,7 +117,7 @@ class DeployCommand extends Script {
         $commands[] = array(
             'description' => "Preparing project",
             'command'     => array(
-                'cd /home/shpizel/encounters/;rm -fr /home/shpizel/app/cache/*;rm -fr /home/shpizel/app/logs/*',
+                'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*',
                 'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/',
                 '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug',
                 '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug',
@@ -139,7 +139,7 @@ class DeployCommand extends Script {
                     $commands[] = array(
                         'description' => "Preparing project on $server server",
                         'command'     => array(
-                            "ssh $server 'cd /home/shpizel/encounters/;rm -fr /home/shpizel/app/cache/*;rm -fr /home/shpizel/app/logs/*'",
+                            "ssh $server 'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*'",
                             "ssh $server 'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/'",
                             "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug'",
                             "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug'",
