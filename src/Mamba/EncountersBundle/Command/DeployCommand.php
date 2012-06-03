@@ -109,7 +109,7 @@ class DeployCommand extends Script {
             'description' => "Sync code base and saving parameters.ini",
             'command'     => array(
                 'cp /home/shpizel/encounters/app/config/parameters.ini /tmp/',
-                'cd /home/shpizel/encouners/;git stash;git pull',
+                'cd /home/shpizel/encounters/;git stash;git pull',
                 'cp /tmp/parameters.ini /home/shpizel/encounters/app/config/',
             ),
         );
@@ -128,7 +128,7 @@ class DeployCommand extends Script {
                 '/usr/bin/php /home/shpizel/encounters/app/console assets:install web/',
                 '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug',
                 '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug',
-                'cd /home/shpizel/encouners/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs',
+                'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs',
             ),
         );
 
@@ -149,7 +149,7 @@ class DeployCommand extends Script {
                             "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console assets:install web/'",
                             "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug'",
                             "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug'",
-                            "ssh $server 'cd /home/shpizel/encouners/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs'",
+                            "ssh $server 'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs'",
                         ),
                     );
                 }
