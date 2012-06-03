@@ -79,58 +79,43 @@ class VisitorsController extends ApplicationController {
                 $usersArray[(int) $item['web_user_id']] = (int) $item['decision'];
             }
 
-            $usersArray = array_reverse($usersArray, true);
-            $usersArray = array_chunk($usersArray, 100, true);
-            foreach ($usersArray as $key => $users) {
-                $usersArray[$key] = array_reverse($users, true);
-            }
-            $usersArray = array_reverse($usersArray);
+            $anketasArray = $Mamba->Anketa()->getInfo(array_keys($usersArray));
 
-            $Mamba->multi();
-            foreach ($usersArray as $users) {
-                $Mamba->Anketa()->getInfo(array_keys($users));
-            }
-            $anketasArray = $Mamba->exec();
+            foreach ($anketasArray as &$anketa) {
+                $json[$anketa['info']['oid']] = array(
+                    'info' => array(
+                        'id'               => $anketa['info']['oid'],
+                        'name'             => $anketa['info']['name'],
+                        'gender'           => $anketa['info']['gender'],
+                        'age'              => $anketa['info']['age'],
+                        'small_photo_url'  => $anketa['info']['small_photo_url'],
+                        'medium_photo_url' => $anketa['info']['medium_photo_url'],
+                        'is_app_user'      => $anketa['info']['is_app_user'],
+                        'location'         => $anketa['location'],
+                        'flags'            => $anketa['flags'],
+                        'familiarity'      => $anketa['familiarity'],
+                        'other'            => $anketa['other'],
+                    ),
+                );
 
-            foreach ($anketasArray as $k => $anketasChunk) {
-                foreach ($anketasChunk as &$anketa) {
-                    $json[$anketa['info']['oid']] = array(
-                        'info' => array(
-                            'id'               => $anketa['info']['oid'],
-                            'name'             => $anketa['info']['name'],
-                            'gender'           => $anketa['info']['gender'],
-                            'age'              => $anketa['info']['age'],
-                            'small_photo_url'  => $anketa['info']['small_photo_url'],
-                            'medium_photo_url' => $anketa['info']['medium_photo_url'],
-                            'is_app_user'      => $anketa['info']['is_app_user'],
-                            'location'         => $anketa['location'],
-                            'flags'            => $anketa['flags'],
-                            'familiarity'      => $anketa['familiarity'],
-                            'other'            => $anketa['other'],
-                        ),
-                    );
+                $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
 
-                    $anketa['decision'] = array(
-                        $usersArray[$k][$anketa['info']['oid']]
-                    );
+                if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
+                    if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
+                        $anketa['decision'][] = $tmp['decision'];
+                        $anketa['decision'][] = 0;
 
-                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
-                            $anketa['decision'][] = $tmp['decision'];
-                            $anketa['decision'][] = 0;
-
-                            $visitorsUnread--;
-                        } else {
-                            $anketa['decision'][] = -2;
-                            $anketa['decision'][] = (int) $visitorsUnread-- > 0;
-                        }
+                        $visitorsUnread--;
                     } else {
                         $anketa['decision'][] = -2;
                         $anketa['decision'][] = (int) $visitorsUnread-- > 0;
                     }
+                } else {
+                    $anketa['decision'][] = -2;
+                    $anketa['decision'][] = (int) $visitorsUnread-- > 0;
                 }
 
-                $data = array_merge($data, $anketasChunk);
+                $data[] = $anketa;
             }
         }
 

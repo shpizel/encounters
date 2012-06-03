@@ -82,55 +82,42 @@ class MutualController extends ApplicationController {
                 $usersArray[(int) $item['current_user_id']] = 1;
             }
 
-            $usersArray = array_reverse($usersArray, true);
-            $usersArray = array_chunk($usersArray, 100, true);
-            foreach ($usersArray as $key => $users) {
-                $usersArray[$key] = array_reverse($users, true);
-            }
-            $usersArray = array_reverse($usersArray);
-
-            $Mamba->multi();
-            foreach ($usersArray as $users) {
-                $Mamba->Anketa()->getInfo(array_keys($users));
-            }
-            $anketasArray = $Mamba->exec();
+            $anketasArray = $Mamba->Anketa()->getInfo(array_keys($usersArray));
 
             $data = array();
-            foreach ($anketasArray as $k => $anketasChunk) {
-                foreach ($anketasChunk as &$anketa) {
-                    $json[$anketa['info']['oid']] = array(
-                        'info' => array(
-                            'id'               => $anketa['info']['oid'],
-                            'name'             => $anketa['info']['name'],
-                            'gender'           => $anketa['info']['gender'],
-                            'age'              => $anketa['info']['age'],
-                            'small_photo_url'  => $anketa['info']['small_photo_url'],
-                            'medium_photo_url' => $anketa['info']['medium_photo_url'],
-                            'is_app_user'      => $anketa['info']['is_app_user'],
-                            'location'         => $anketa['location'],
-                            'flags'            => $anketa['flags'],
-                            'familiarity'      => $anketa['familiarity'],
-                            'other'            => $anketa['other'],
-                        ),
-                    );
+            foreach ($anketasArray as &$anketa) {
+                $json[$anketa['info']['oid']] = array(
+                    'info' => array(
+                        'id'               => $anketa['info']['oid'],
+                        'name'             => $anketa['info']['name'],
+                        'gender'           => $anketa['info']['gender'],
+                        'age'              => $anketa['info']['age'],
+                        'small_photo_url'  => $anketa['info']['small_photo_url'],
+                        'medium_photo_url' => $anketa['info']['medium_photo_url'],
+                        'is_app_user'      => $anketa['info']['is_app_user'],
+                        'location'         => $anketa['location'],
+                        'flags'            => $anketa['flags'],
+                        'familiarity'      => $anketa['familiarity'],
+                        'other'            => $anketa['other'],
+                    ),
+                );
 
-                    $anketa['decision'] = array(
-                        $usersArray[$k][$anketa['info']['oid']]
-                    );
+                $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
 
-                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($webUserId, $anketa['info']['oid'])) {
-                            $anketa['decision'][] = $tmp['decision'];
-                        } else {
-                            $anketa['decision'][] = -2;
-                        }
+                if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
+                    if ($tmp = $this->getViewedQueueObject()->get($webUserId, $anketa['info']['oid'])) {
+                        $anketa['decision'][] = $tmp['decision'];
                     } else {
                         $anketa['decision'][] = -2;
                     }
+                } else {
+                    $anketa['decision'][] = -2;
                 }
-                $data = array_merge($data, $anketasChunk);
+
+                $data[] = $anketa;
             }
         }
+
         $dataArray['data'] = $data ?: null;
         if (!$data) {
             $this->getCountersObject()->set($webUserId, 'mutual', 0);

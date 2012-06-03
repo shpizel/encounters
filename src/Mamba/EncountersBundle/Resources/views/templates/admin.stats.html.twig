@@ -8,23 +8,33 @@
 <h2>Статистика</h2>
 
 {% if items %}
+<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+    <tr bgcolor="#f1f1f1">
+        <td>Дата</td>
+        <td>Достижений</td>
+        <td>Сообщений</td>
+        <td>Нотификаций</td>
+        <td><font color=red>NO</font></td>
+        <td><font color=#999>MAYBE</font></td>
+        <td><font color=green>YES</font></td>
+        <td>Всего</td>
+    </tr>
     {% for item in items %}
         {% if item.item|keys|length > 0 %}
-            <h3>{{ item.date }}</h3>
-            <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
-            <tr bgcolor="#f1f1f1">
-                {% for key in item.item|keys %}
-                    <td>{{ key }}</td>
-                {% endfor%}
-            </tr>
             <tr>
-            {% for data in item.item %}
-                    <td>{{ data }}</td>
-            {% endfor %}
+                <td>{{ item.date }}</td>
+                <td>{% if item.item.achievement != null %}{{item.item.achievement}}{% else %}&mdash;{% endif %}</td>
+                <td>{% if item.item.contacts != null %}{{item.item.contacts}}{% else %}&mdash;{% endif %}</td>
+                <td>{% if item.item.notify != null %}{{item.item.notify}}{% else %}&mdash;{% endif %}</td>
+
+                <td>{% if item.item.decision_no != null %}{{item.item.decision_no|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
+                <td>{% if item.item.decision_maybe != null %}{{item.item.decision_maybe|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
+                <td>{% if item.item.decision_yes != null %}{{item.item.decision_yes|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
+                <td>{% if item.item.decision_total != null %}{{item.item.decision_total|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
             </tr>
-            </table>
         {% endif %}
     {% endfor %}
+</table>
 {% else %}
     Информация по статистике недоступна.
 {% endif %}

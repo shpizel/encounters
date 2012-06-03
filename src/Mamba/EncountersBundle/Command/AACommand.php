@@ -35,6 +35,20 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $this->getMemcache()->set("cron:stop", time());
+        $this->log($this->getUserNameById(560015854));
+    }
+
+    /**
+     * Возвращает имя пользователя
+     *
+     * @param int $userId
+     * @return string|null
+     */
+    private function getUserNameById($userId) {
+        if ($anketa = $this->getMamba()->nocache()->Anketa()->getInfo($userId)) {
+            $name = $anketa[0]['info']['name'];
+
+            return $name;
+        }
     }
 }

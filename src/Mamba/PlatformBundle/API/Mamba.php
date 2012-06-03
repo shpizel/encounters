@@ -825,7 +825,18 @@ final class Mamba {
             }
 
             $this->noCacheMode = false;
-            if ($platformResponse = @file_get_contents($httpQuery)) {
+
+            $ch = curl_init($httpQuery);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            /** for network debug */
+            #curl_setopt($ch, CURLOPT_VERBOSE, 1);
+            $platformResponse = curl_exec($ch);
+
+            if (!curl_error($ch) && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
+
+
+
                 if (in_array($method, $this->sidRequiredMethods)) {
                     $this->getPlatformSettingsObject()->setLastQueryTime($this->getWebUserId());
                 }
@@ -840,7 +851,7 @@ final class Mamba {
                 }
             }
 
-            throw new MambaException("Could not fetch platform url: $httpQuery");
+            throw new MambaException("Could not fetch platform url: $httpQuery\n" . curl_error($ch), curl_getinfo($ch, CURLINFO_HTTP_CODE));
         }
     }
 

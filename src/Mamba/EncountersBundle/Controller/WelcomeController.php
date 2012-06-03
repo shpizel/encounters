@@ -20,7 +20,9 @@ class WelcomeController extends ApplicationController {
      * @return \Symfony\Bundle\FrameworkBundle\Controller\RedirectResponse|\Symfony\Bundle\FrameworkBundle\Controller\Response
      */
     public function indexAction() {
-        return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
+        /** Debug 500 page */
+        #return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
+
         $Request  = $this->getRequest();
         $Session  = $this->getSession();
         $Mamba    = $this->getMamba();

@@ -573,6 +573,20 @@ div.content div.none div.title {
     text-align: center;
 }
 
+div.content div.none div.error-title {
+    font: bold 24px/50px Arial;
+    margin-bottom: 15px;
+    /*text-align: center;*/
+    /*padding-left: 50px;*/
+
+    background: url('/bundles/encounters/images/warning.png') left no-repeat;
+
+    margin: 0 auto 0 auto;
+    padding-left:40px;
+    min-width: 600px;
+    width: 600px;
+}
+
 div.content div.none div.info {
     margin: 0 auto 0 auto;
     min-width: 485px;
@@ -584,6 +598,17 @@ div.content div.none div.info {
     border-radius: 7px;
     -moz-border-radius: 7px;
     -webkit-border-radius: 7px;
+    margin-bottom: 25px;
+}
+
+div.content div.none div.error {
+    margin: 0 auto 0 auto;
+    min-width: 640px;
+    width: 640px;
+    text-align: center;
+    line-height: 25px;
+    /*padding: 32px;*/
+    padding-top:32px;
     margin-bottom: 25px;
 }
 

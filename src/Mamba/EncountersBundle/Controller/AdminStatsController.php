@@ -42,6 +42,12 @@ class AdminStatsController extends ApplicationController {
                     $item['decision_total'] = intval($item['decision_yes']) + intval($item['decision_no']) + intval($item['decision_maybe']);
                 }
 
+                foreach (array('achievement', 'contacts', 'notify', 'decision_no', 'decision_yes', 'decision_maybe', 'decision_total') as $_key) {
+                    if (!isset($item[$_key])) {
+                        $item[$_key] = null;
+                    }
+                }
+
                 $dataArray['items'][] = array(
                     'date' => date('Y-m-d', strtotime("-$key day")),
                     'item' => $item,

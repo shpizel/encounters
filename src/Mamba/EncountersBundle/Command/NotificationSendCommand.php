@@ -57,7 +57,11 @@ class NotificationSendCommand extends CronScript {
             GROUP BY
                 user_id
             ORDER BY
-                lastaccess desc",
+                last_online DESC,
+                lastaccess DESC, -- оч странная хуйня пиздец (было ASC)
+                last_notification_sent ASC,
+                visitors_unread DESC,
+                mutual_unread DESC",
 
         /**
          * SQL-запрос на получение данных для добавления энергии
@@ -78,10 +82,27 @@ class NotificationSendCommand extends CronScript {
             WHERE
                 (NOT n.lastaccess OR
                 UNIX_TIMESTAMP(NOW()) - n.lastaccess > 7*24*60*60) AND
-                not n.visitors_unread AND
+                NOT n.visitors_unread AND
                 NOT energy
             GROUP BY
-                user_id"
+                user_id",
+
+        /**
+         * SQL-запрос на получение данных о последних голосованиях за пользователя
+         *
+         * @var str
+         */
+        GET_LAST_DECISIONS = "
+            SELECT
+                *
+            FROM
+                Decisions
+            WHERE
+                current_user_id = :current_user_id
+            ORDER BY
+                changed DESC
+            LIMIT
+                99"
     ;
 
     /**
@@ -108,8 +129,8 @@ class NotificationSendCommand extends CronScript {
         );
 
         $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
-        //shuffle($appUsers);
-        //$appUsers = array_slice($appUsers, 0, 1000);
+        shuffle($appUsers);
+        $appUsers = array_slice($appUsers, 0, 1000);
 
         $this->log("Users: <info>" . count($appUsers) . "</info>");
 
@@ -316,31 +337,150 @@ class NotificationSendCommand extends CronScript {
     /**
      * Генерирует и возвращает сообщение от менеджера сообщений для карент юзера
      *
+     * Марина (25) оценила вас в приложении «Выбиратор»!
+     * Марина (25) и Ксения (21) оценили вас в приложении «Выбиратор»!
+     * Марина (25), Ксения (21) и еще 23 пользователя оценили вас в приложении «Выбиратор»!
+     * Марина (25) оценила вас в приложении «Выбиратор», плюс у вас одна новая взаимная симпатия :)
+     * Марина (25) оценила вас в приложении «Выбиратор», плюс у вас 5 новых взаимных симпатий :)
+     *
      * @param int $currentUserId
      * @return str
      */
     private function getNotifyMessage($currentUserId, $visitorsUnread, $mutualUnread) {
-        if ($anketa = $this->getMamba()->Anketa()->getInfo($currentUserId)) {
-            $name = $anketa[0]['info']['name'];
-            $name = explode(" ", $name);
-            $name = array_shift($name);
-
+        if ($webUsers = $this->getWebUsersInfo($currentUserId)) {
             if ($visitorsUnread && !$mutualUnread) {
-                if ($visitorsUnread == 1) {
-                    $message = "$name, у вас появилась новая оценка в приложении «Выбиратор»!";
+                if ($visitorsUnread == 1 || count($webUsers) < 2) {
+                    //Марина (25) оценила вас в приложении «Выбиратор»!
+                    $webUser = array_shift($webUsers);
+                    $message = $webUser['name'];
+                    if ($webUser['age']) {
+                        $message.=" (" . $webUser['age'] . ")";
+                    }
+
+                    if ($webUser['gender'] == 'F') {
+                        $message.= " оценила вас в приложении «Выбиратор»!";
+                    } else {
+                        $message.= " оценил вас в приложении «Выбиратор»!";
+                    }
+
+                } elseif ($visitorsUnread == 2 && count($webUsers) >= 2) {
+                    //Марина (25) и Ксения (21) оценили вас в приложении «Выбиратор»!
+                    $message = "";
+                    $index = 0;
+                    while ($webUser = array_shift($webUsers)) {
+                        if ($index) {
+                            $message.= " и ";
+                        }
+
+                        $message .= $webUser['name'];
+                        if ($webUser['age']) {
+                            $message.=" (" . $webUser['age'] . ")";
+                        }
+
+                        if ($index >= 1) {
+                            break;
+                        }
+
+                        $index++;
+                    }
+
+                    if ($message) {
+                        $message .= " оценили вас в приложении «Выбиратор»!";
+                    }
                 } else {
-                    $message = "$name, у вас $visitorsUnread " . Declensions::get($visitorsUnread, "новая оценка", "новые оценки", "новых оценок") . " в приложении «Выбиратор»!";
+                    //Марина (25), Ксения (21) и еще 23 пользователя оценили вас в приложении «Выбиратор»!
+
+                    $message = "";
+                    $index = 0;
+                    while ($webUser = array_shift($webUsers)) {
+                        if ($index) {
+                            $message.= ", ";
+                        }
+
+                        $message .= $webUser['name'];
+                        if ($webUser['age']) {
+                            $message.=" (" . $webUser['age'] . ")";
+                        }
+
+                        if ($index >= 1) {
+                            break;
+                        }
+
+                        $index++;
+                    }
+
+                    if ($message) {
+                        $message .= " и еще " . ($visitorsUnread - 2) . " " . Declensions::get($visitorsUnread - 2, "пользователь", "пользователя", "пользователей");
+                        $message .= " оценили вас в приложении «Выбиратор»!";
+                    }
                 }
             } elseif ($mutualUnread && !$visitorsUnread) {
-                $message = "$name, вам ответили взаимностью в приложении «Выбиратор»!";
-                $message = "$name, у вас $mutualUnread " . Declensions::get($mutualUnread, "новая взаимная симпатия", "новые взаимные симпатии", "новых взаимных симпатий") . " в приложении «Выбиратор»!";
+                $message = "У вас $mutualUnread " . Declensions::get($mutualUnread, "новая взаимная симпатия", "новые взаимные симпатии", "новых взаимных симпатий") . " в приложении «Выбиратор»!";
             } elseif ($mutualUnread && $visitorsUnread) {
-                $message = "$name, у вас $visitorsUnread " . Declensions::get($visitorsUnread, "новая оценка", "новые оценки", "новых оценок") . " и $mutualUnread " . Declensions::get($mutualUnread, "новая взаимная симпатия", "новые взаимные симпатии", "новых взаимных симпатий") . " в приложении «Выбиратор»!";
+                $webUser = array_shift($webUsers);
+                $message = $webUser['name'];
+                if ($webUser['age']) {
+                    $message.=" (" . $webUser['age'] . ")";
+                }
+
+                if ($visitorsUnread > 1) {
+                    $message .= " и еще " . ($visitorsUnread - 1) . " " . Declensions::get($visitorsUnread - 2, "пользователь", "пользователя", "пользователей") . " оценили вас в приложении «Выбиратор»";
+                } else {
+                    if ($webUser['gender'] == 'F') {
+                        $message.= " оценила вас в приложении «Выбиратор»";
+                    } else {
+                        $message.= " оценил вас в приложении «Выбиратор»";
+                    }
+                }
+
+
+                if ($mutualUnread) {
+                    $message .= ", плюс у вас $mutualUnread " . Declensions::get($mutualUnread, "новая взаимная симпатия", "новые взаимные симпатии", "новых взаимных симпатий") . " :)";
+                }
             }
 
             if (isset($message)) {
                 return $message;
             }
+        }
+    }
+
+    private function getWebUsersInfo($currentUserId) {
+        $stmt = $this->getDoctrine()->getConnection()->prepare(self::GET_LAST_DECISIONS);
+        $stmt->bindParam('current_user_id', $currentUserId);
+        if ($stmt->execute()) {
+            $webUsers = array();
+            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $webUsers[] = (int) $item['web_user_id'];
+            }
+
+            if ($webUsers && ($result = $this->getMamba()->Anketa()->getInfo($webUsers))) {
+                $ret = array();
+
+                foreach ($result as $item) {
+                    $ret[$item['info']['oid']] = array(
+                        'name'   => $item['info']['name'],
+                        'age'    => $item['info']['age'],
+                        'gender' => $item['info']['gender'],
+                    );
+                }
+
+                return $ret;
+            }
+        }
+    }
+
+    /**
+     * Возвращает имя пользователя
+     *
+     * @param int $userId
+     * @return string|null
+     */
+    private function getUserNameById($userId) {
+        if ($anketa = $this->getMamba()->Anketa()->getInfo($userId)) {
+            $name = $anketa[0]['info']['name'];
+
+            return $name;
         }
     }
 }

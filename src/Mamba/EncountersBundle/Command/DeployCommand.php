@@ -84,53 +84,127 @@ class DeployCommand extends Script {
     protected function process() {
         $commands = array();
 
-        /** Сначала нужно остановить все крон-скрипты */
         foreach (self::$servers as $servers) {
             foreach ($servers as $server) {
-                $commands[] = "ssh $server 'sudo /etc/init.d/cron stop'";
+                $commands[] = array(
+                    'description' => "Stopping cron daemon at $server server",
+                    'command'     => array(
+                        ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/cron stop'" : 'sudo /etc/init.d/cron stop',
+                    ),
+                );
             }
         }
 
-        /** Установим ключ в memcache, который убьет текущие процессы */
-        //$this->getMemcache()->set('cron:stop', time());
-
         /** Останавливаем веб-сервер */
-        $commands[] = 'sudo /etc/init.d/cron stop';
-        $commands[] = 'sudo /etc/init.d/php5-fpm stop';
+        $commands[] = array(
+            'description' => "Stopping nginx and php5-fpm",
+            'command'     => array(
+                'sudo /etc/init.d/nginx stop',
+                'sudo /etc/init.d/php5-fpm stop',
+            ),
+        );
 
         /** www1 */
-        $commands[] = 'cp /home/shpizel/encounters/app/config/parameters.ini /tmp/parameters.ini';
-        $commands[] = 'cd /home/shpizel/encouners/;git stash;git stash clear;git pull;';
-        $commands[] = 'cp /tmp/parameters.ini /home/shpizel/encounters/app/config/parameters.ini';
-        $commands[] = 'rm -fr /home/shpizel/app/cache/*';
-        $commands[] = 'rm -fr /home/shpizel/app/logs/*';
-        $commands[] = '/usr/bin/php /home/shpizel/encounters/app/console assets:install web/';
-        $commands[] = '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug';
-        $commands[] = '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug';
-        $commands[] = 'cd /home/shpizel/encouners/;chmod -R 777 app/cache;chmod -R 777 app/logs;';
+        $commands[] = array(
+            'description' => "Sync code base and saving parameters.ini",
+            'command'     => array(
+                'cp /home/shpizel/encounters/app/config/parameters.ini /tmp/',
+                'cd /home/shpizel/encouners/;git stash;git pull',
+                'cp /tmp/parameters.ini /home/shpizel/encounters/app/config/',
+            ),
+        );
+
+        $commands[] = array(
+            'description' => "Cleaning cache and log folders",
+            'command'     => array(
+                'rm -fr /home/shpizel/app/cache/*',
+                'rm -fr /home/shpizel/app/logs/*',
+            ),
+        );
+
+        $commands[] = array(
+            'description' => "Preparing project",
+            'command'     => array(
+                '/usr/bin/php /home/shpizel/encounters/app/console assets:install web/',
+                '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug',
+                '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug',
+                'cd /home/shpizel/encouners/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs',
+            ),
+        );
 
         /** rsync на другие тачки */
         foreach (self::$servers as $servers) {
             foreach ($servers as $server) {
                 if ($server != 'www1') {
-                    $commands[] = "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters";
+                    $commands[] = array(
+                        'description' => "Copying code to $server server",
+                        'command'     => array(
+                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters",
+                        ),
+                    );
+
+                    $commands[] = array(
+                        'description' => "Preparing project on $server server",
+                        'command'     => array(
+                            "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console assets:install web/'",
+                            "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug'",
+                            "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug'",
+                            "ssh $server 'cd /home/shpizel/encouners/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs'",
+                        ),
+                    );
                 }
             }
         }
 
-        /** Останавливаем веб-сервер */
-        $commands[] = 'sudo /etc/init.d/cron start';
-        $commands[] = 'sudo /etc/init.d/php5-fpm start';
+        /**
+         * Нужно
+         *
+         * @author shpizel
+         */
+
+        /** Стартуем веб-сервер */
+        $commands[] = array(
+            'description' => "Starting nginx and php5-fpm",
+            'command'     => array(
+                'sudo /etc/init.d/nginx start',
+                'sudo /etc/init.d/php5-fpm start',
+            ),
+        );
 
         /** Сначала нужно запустить все крон-скрипты */
         foreach (self::$servers as $servers) {
             foreach ($servers as $server) {
-                $commands[] = "ssh $server 'sudo /etc/init.d/cron stop'";
+                $commands[] = array(
+                    'description' => "Starting cron daemon at $server server",
+                    'command' => array(
+                        ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/cron start'" : 'sudo /etc/init.d/cron start',
+                    ),
+                );
             }
         }
 
-        print_r($commands);
+        $hostname = $this->getCurrentHostName();
+        foreach ($commands as $item) {
+            $this->log($item['description'] . "..", 48);
+            foreach ($item['command'] as $command) {
+                system('ls', $code);
 
+                if (!$code) {
+                    $this->log("SUCCESS", 64);
+                } else {
+                    throw new \Exception("Operation failed");
+                }
+            }
+        }
+
+        $this->log("Stopping all cron scripts..", 48);
+        if ($this->getMemcache()->set('cron:stop', time())) {
+            $this->log("SUCCESS", 64);
+        } else {
+            throw new \Exception("Operation failed");
+        }
+
+        $this->log("Completed, check project in browser..", 64);
     }
 
     /**
