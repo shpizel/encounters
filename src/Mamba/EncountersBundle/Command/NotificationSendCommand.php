@@ -129,8 +129,8 @@ class NotificationSendCommand extends CronScript {
         );
 
         $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
-        shuffle($appUsers);
-        $appUsers = array_slice($appUsers, 0, 1000);
+        //shuffle($appUsers);
+        //$appUsers = array_slice($appUsers, 0, 1000);
 
         $this->log("Users: <info>" . count($appUsers) . "</info>");
 

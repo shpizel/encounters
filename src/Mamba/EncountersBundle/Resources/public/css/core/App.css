@@ -574,7 +574,7 @@ div.content div.none div.title {
 }
 
 div.content div.none div.error-title {
-    font: bold 24px/50px Arial;
+    font: 24px/50px Arial;
     margin-bottom: 15px;
     /*text-align: center;*/
     /*padding-left: 50px;*/
