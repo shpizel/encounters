@@ -102,7 +102,7 @@ class NotificationSendCommand extends CronScript {
             ORDER BY
                 changed DESC
             LIMIT
-                99"
+                2"
     ;
 
     /**
@@ -129,12 +129,12 @@ class NotificationSendCommand extends CronScript {
         );
 
         $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
-        //shuffle($appUsers);
-        //$appUsers = array_slice($appUsers, 0, 1000);
+//        shuffle($appUsers);
+//        $appUsers = array_slice($appUsers, 0, 1000);
 
         $this->log("Users: <info>" . count($appUsers) . "</info>");
 
-        $appUsers = array_chunk($appUsers, 1024);
+        $appUsers = array_chunk($appUsers, 1000);
         $stage = 0;
 
         while ($chunk = array_shift($appUsers)) {
@@ -144,7 +144,8 @@ class NotificationSendCommand extends CronScript {
             $stage++;
             $this->log("Stage {$stage}", 64);
 
-            $_chunk = array_chunk($chunk, 30);
+            $lastOnlineChunk = array_chunk($chunk, 30);
+            $anketaChunk = array_chunk($chunk, 100);
 
             $Redis->multi();
 
@@ -182,14 +183,29 @@ class NotificationSendCommand extends CronScript {
                 }
 
                 $this->getMamba()->multi();
-                foreach ($_chunk as $__chunk) {
+                foreach ($lastOnlineChunk as $__chunk) {
                     $this->getMamba()->Anketa()->isOnline(array_map(function($i){return (int)$i;},$__chunk));
                 }
                 if ($onlineCheckResult = $this->getMamba()->exec(35)) {
                     foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-                        foreach ($onlineCheckResultChunk as $_item) {
-                            if (isset($dataArray[$_item['anketa_id']])) {
-                                $dataArray[$_item['anketa_id']]['last_online'] = $_item['is_online'] == 1 ? time() : $_item['is_online'];
+                        foreach ($onlineCheckResultChunk as $_anketa) {
+                            if (isset($dataArray[$_anketa['anketa_id']])) {
+                                $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
+                            }
+                        }
+                    }
+                }
+
+                $this->getMamba()->multi();
+                foreach ($anketaChunk as $__chunk) {
+                    $this->getMamba()->Anketa()->getInfo(array_map(function($i){return (int)$i;},$__chunk));
+                }
+                if ($anketaResult = $this->getMamba()->exec(10)) {
+                    foreach ($anketaResult as $anketaResultChunk) {
+                        foreach ($anketaResultChunk as $_anketa) {
+
+                            if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
+                                $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
                             }
                         }
                     }
@@ -199,6 +215,10 @@ class NotificationSendCommand extends CronScript {
                 $this->log("Storing data to database..");
 
                 foreach ($dataArray as $userId => $variables) {
+                    if (!(isset($variables['is_app_user']) && $variables['is_app_user'])) {
+                        continue;
+                    }
+
                     $variables['last_online'] = isset($variables['last_online']) ? $variables['last_online'] : null;
 
                     $sql = "INSERT INTO

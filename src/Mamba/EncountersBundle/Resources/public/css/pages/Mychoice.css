@@ -3,3 +3,39 @@
  *
  * @author shpizel
  */
+
+div.mychoice div.pictures div.waiting div.background {
+    background: url('/bundles/encounters/images/background-orange.png') no-repeat;
+
+    position: absolute;
+    top: -4px;
+    left: -6px;
+    width: 142px;
+    height: 222px;
+}
+
+/*div.mychoice div.pictures div.waiting div.link a.ln {*/
+    /*background: url('/bundles/encounters/images/button-start-meeting-orange.png') no-repeat;*/
+/*}*/
+
+div.mychoice div.pictures div.closed div.link a.ln {
+    background: url('/bundles/encounters/images/button-start-meeting-gray.png') no-repeat;
+}
+
+div.mychoice div.pictures div.waiting div.link a.m {
+    background: url('/bundles/encounters/images/button-he-has-not-viewed-you-yet.png');
+    width:132px;
+    height:30px;
+    display: block;
+}
+
+div.mychoice div.pictures div.waiting div.link a.f {
+    background: url('/bundles/encounters/images/button-she-has-not-viewed-you-yet.png');
+    width:132px;
+    height:30px;
+    display: block;
+}
+
+div.content div.pictures div.waiting div.link a.ln:hover {
+    background: url('/bundles/encounters/images/button-start-meeting-orange.png') no-repeat;
+}

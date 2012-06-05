@@ -12,7 +12,7 @@ $Visitors = {
      */
     initUI: function() {
         this.initButtons();
-        $(".photoListItem a.ln").click(function() {
+        $(".closed a.ln").click(function() {
             var $source = $(this).parent().parent();
 
             var $dataArray = {
@@ -33,10 +33,13 @@ $Visitors = {
                         $Layers.showAnswerNotSeeYetLayer($dataArray);
                     } else if ($data.decision == -1) {
                         $Layers.showAnswerNoLayer($dataArray);
+                        //$("div[user_id=" + $dataArray['user_id'] + "]").removeClass('closed').addClass('no');
                     } else if ($data.decision == 0) {
                         $Layers.showAnswerMaybeLayer($dataArray);
+                        //$("div[user_id=" + $dataArray['user_id'] + "]").removeClass('closed').addClass('maybe');
                     } else if ($data.decision == 1) {
                         $Layers.showAnswerYesLayer($dataArray);
+                        //$("div[user_id=" + $dataArray['user_id'] + "]").removeClass('closed').addClass('yes');
                     }
                 } else if ($data.status == 3) {
                     $Layers.showEnergyLayer($dataArray);
@@ -47,6 +50,15 @@ $Visitors = {
         });
 
         $(".content div.info a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
+
+        $(".content div.link a").click(function() {
             var $source = $(this).parent().parent();
             var $userId = $source.attr('user_id');
 

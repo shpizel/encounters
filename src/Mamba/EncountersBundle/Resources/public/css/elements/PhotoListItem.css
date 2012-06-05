@@ -55,6 +55,7 @@ div.content div.pictures div.mcpic {
 
 div.content div.pictures div.photoListItem {
     float: left;
+    /*width: 131px;*/
     width: 131px;
     height: 211px;
     font-size: 11px;
@@ -66,18 +67,20 @@ div.content div.pictures div.photoListItem {
 }
 
 div.content div.pictures div.photoListItem img {
-    padding-top: 11px;
-    padding-left: 10px;
+    padding-top: 6px;
+    padding-left: 5px;
     height: 150px;
     width: 110px;
 }
 
 div.content div.pictures div.photoListItem:hover a.close {
-    height: 20px;
-    width: 20px;
+    height: 35px;
+    width: 35px;
     position: absolute;
-    right: 9px;
-    top: 9px;
+    right: -7px;
+    top: -17px;
+
+    background: url('/bundles/encounters/images/button-delete-decision.png');
 }
 
 /*div.ramka {
@@ -95,50 +98,52 @@ div.content div.pictures div.photoListItem img {
     width: 110px;
 }
 
-div.waiting div.background {
-    background: url('/bundles/encounters/images/background-waiting-for-decision.png') no-repeat;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 131px;
-    height: 211px;
-}
-
 div.no div.background {
-    background: url('/bundles/encounters/images/background-no-decision.png');
+    background: url('/bundles/encounters/images/background-gray.png') no-repeat;
 
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 131px;
-    height: 191px;
+    top: -4px;
+    left: -6px;
+    width: 142px;
+    height: 222px;
 }
 
-div.maybe div.background {
-    background: url('/bundles/encounters/images/background-maybe-decision.png');
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 131px;
-    height: 191px;
+div.content div.pictures div.no div.link a.ln {
+    background: url('/bundles/encounters/images/button-no-decision.png');
+    width:132px;
+    height:30px;
+    display: block;
 }
 
-div.yes div.background {
-    background: url('/bundles/encounters/images/background-yes-decision.png');
+div.maybe div.background, div.yes div.background {
+    background: url('/bundles/encounters/images/background-orange.png') no-repeat;
 
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 131px;
-    height: 191px;
+    top: -4px;
+    left: -6px;
+    width: 142px;
+    height: 222px;
+}
+
+div.content div.pictures div.maybe div.link a.ln {
+    background: url('/bundles/encounters/images/button-maybe-decision.png');
+    width:132px;
+    height:30px;
+    display: block;
+}
+
+div.content div.pictures div.yes div.link a.ln {
+    background: url('/bundles/encounters/images/button-yes-decision.png');
+    width:132px;
+    height:30px;
+    display: block;
 }
 
 div.content div.pictures div.info {
     position: absolute;
     font-size: 11px;
-    left: 10px;
-    bottom: 28px;
+    left: 6px;
+    bottom: 37px;
 }
 
 div.content div.pictures div.answer {
@@ -152,11 +157,25 @@ div.content div.pictures div.answer {
 div.content div.pictures div.link {
     position: absolute;
     font-size: 13px;
-    left: 10px;
-    bottom: 11px;
+    left: -6px;
+    bottom: 4px;
     color: #666;
 
-    display:none;
+    /*display:none;*/
+}
+
+div.content div.pictures div.link a.ln {
+    background: url('/bundles/encounters/images/button-show-decision-gray.png');
+    width:132px;
+    height:30px;
+    display: block;
+}
+
+div.content div.pictures div.new div.link a.ln {
+    background: url('/bundles/encounters/images/button-show-decision-gray-new.png');
+    width:132px;
+    height:30px;
+    display: block;
 }
 
 /*div.content div.pictures div.info a {
@@ -167,8 +186,9 @@ div.content div.pictures div.link {
     white-space: nowrap;
 }*/
 
-div.pictures div.closed:hover div.background {
-    background: url('/bundles/encounters/images/background-closed-decision.png') no-repeat;
+div.pictures div.closed div.background {
+    background: url('/bundles/encounters/images/background-gray.png') no-repeat;
+
     position: absolute;
     top: -4px;
     left: -6px;
@@ -176,19 +196,29 @@ div.pictures div.closed:hover div.background {
     height: 222px;
 }
 
-div.pictures div.closed:hover div.answer {
-    display: none;
+/*div.pictures div:hover div.answer {*/
+    /*display: none;*/
+/*}*/
+
+/*div.pictures div.closed:hover div.link {*/
+    /*display: block;*/
+/*}*/
+
+div.content div.pictures div.no div.link a.ln:hover {
+    background: url('/bundles/encounters/images/button-start-meeting-gray.png') no-repeat;
 }
 
-div.pictures div.closed:hover div.link {
-    display: block;
+div.content div.pictures div.yes div.link a.ln:hover,
+div.content div.pictures div.maybe div.link a.ln:hover {
+    background: url('/bundles/encounters/images/button-start-meeting-orange.png') no-repeat;
 }
 
-div.new div.background {
+div.pictures div.new div.background {
+
+    background: url('/bundles/encounters/images/background-orange-new.png') no-repeat;
     position: absolute;
-    background: url('/bundles/encounters/images/background-new-decision.png') no-repeat;
-    top: -7px;
-    left: -8px;
-    width:146px;
-    height:186px;
+    top: -4px;
+    left: -6px;
+    width: 142px;
+    height: 222px;
 }

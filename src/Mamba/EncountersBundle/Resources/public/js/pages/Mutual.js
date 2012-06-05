@@ -21,6 +21,15 @@ $Mutual = {
 
             return false;
         });
+
+        $(".content div.link a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
     },
 
     /**

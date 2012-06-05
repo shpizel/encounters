@@ -11,7 +11,7 @@ $Mychoice = {
      * @init
      */
     initUI: function() {
-        $(".photoListItem a.ln").click(function() {
+        $("div.content div.closed a.ln").click(function() {
             var $source = $(this).parent().parent();
 
             var $dataArray = {
@@ -46,6 +46,42 @@ $Mychoice = {
         });
 
         $(".content div.info a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
+
+        $(".content div.waiting div.link a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
+
+        $(".content div.maybe div.link a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
+
+        $(".content div.yes div.link a").click(function() {
+            var $source = $(this).parent().parent();
+            var $userId = $source.attr('user_id');
+
+            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
+
+            return false;
+        });
+
+        $(".content div.no div.link a").click(function() {
             var $source = $(this).parent().parent();
             var $userId = $source.attr('user_id');
 

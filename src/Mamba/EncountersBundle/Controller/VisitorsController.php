@@ -50,6 +50,8 @@ class VisitorsController extends ApplicationController {
         $this->getCountersObject()->set($webUserId, 'visitors_unread', 0);
         $dataArray  = $this->getInitialData();
 
+        $visitorsUnread = 100;
+
         /**
          * Пагинатор
          *
