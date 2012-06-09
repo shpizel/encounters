@@ -26,6 +26,7 @@ class PreferencesController extends ApplicationController {
         $redisSearchPreferences = $this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'));
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
+
             $webUserAnketa = $this->getMamba()->Anketa()->getInfo($webUserId);
 
             $searchPreferences['geo'] = array(
@@ -34,18 +35,21 @@ class PreferencesController extends ApplicationController {
                 'city_id'    => (isset($webUserAnketa[0]['location']['city_id'])) ? $webUserAnketa[0]['location']['city_id'] : null,
             );
 
+            $searchPreferences['orientation'] = intval($webUserAnketa[0]['info']['gender'] != $searchPreferences['gender']);
+
             $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
 
             $this->getGearman()->getClient()->doHighBackground(
                 EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
-                        'user_id'    => $webUserId,
-                        'gender'     => $webUserAnketa[0]['info']['gender'],
-                        'age'        => $webUserAnketa[0]['info']['age'],
-                        'country_id' => $searchPreferences['geo']['country_id'],
-                        'region_id'  => $searchPreferences['geo']['region_id'],
-                        'city_id'    => $searchPreferences['geo']['city_id'],
+                        'user_id'     => $webUserId,
+                        'gender'      => $webUserAnketa[0]['info']['gender'],
+                        'orientation' => intval($webUserAnketa[0]['info']['gender'] != $searchPreferences['gender']),
+                        'age'         => $webUserAnketa[0]['info']['age'],
+                        'country_id'  => $searchPreferences['geo']['country_id'],
+                        'region_id'   => $searchPreferences['geo']['region_id'],
+                        'city_id'     => $searchPreferences['geo']['city_id'],
                     )
                 )
             );

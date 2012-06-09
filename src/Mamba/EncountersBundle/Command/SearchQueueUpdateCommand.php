@@ -44,6 +44,7 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.user_id = u.user_id
             WHERE
                 u.gender = :gender AND
+                u.orientation = :orientation AND
                 e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
@@ -76,6 +77,7 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.user_id = u.user_id
             WHERE
                 u.gender = :gender AND
+                u.orientation = :orientation AND
                 e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
@@ -106,6 +108,7 @@ class SearchQueueUpdateCommand extends CronScript {
                 e.user_id = u.user_id
             WHERE
                 u.gender = :gender AND
+                u.orientation = :orientation AND
                 e.energy > 0 AND
                 (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
 
@@ -264,6 +267,7 @@ class SearchQueueUpdateCommand extends CronScript {
         $stmt = $this->getEntityManager()->getConnection()->prepare(self::FULL_SEARCH_SQL);
 
         $stmt->bindParam('gender', $searchPreferences['gender']);
+        $stmt->bindParam('orientation', $searchPreferences['orientation']);
         $stmt->bindParam('age_from', $searchPreferences['age_from']);
         $stmt->bindParam('age_to', $searchPreferences['age_to']);
         $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
@@ -372,6 +376,7 @@ class SearchQueueUpdateCommand extends CronScript {
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_AND_REGION_SEARCH_SQL);
 
             $stmt->bindParam('gender', $searchPreferences['gender']);
+            $stmt->bindParam('orientation', $searchPreferences['orientation']);
             $stmt->bindParam('age_from', $searchPreferences['age_from']);
             $stmt->bindParam('age_to', $searchPreferences['age_to']);
             $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
@@ -479,6 +484,7 @@ class SearchQueueUpdateCommand extends CronScript {
             $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_SEARCH_SQL);
 
             $stmt->bindParam('gender', $searchPreferences['gender']);
+            $stmt->bindParam('orientation', $searchPreferences['orientation']);
             $stmt->bindParam('age_from', $searchPreferences['age_from']);
             $stmt->bindParam('age_to', $searchPreferences['age_to']);
             $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);

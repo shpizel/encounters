@@ -78,38 +78,45 @@ class MyChoiceController extends ApplicationController {
                 $usersArray[(int) $item['current_user_id']] = (int) $item['decision'];
             }
 
-            $anketasArray = $Mamba->Anketa()->getInfo(array_keys($usersArray));
+            if ($usersArray) {
+                $anketasArray = $Mamba->Anketa()->getInfo(array_keys($usersArray));
 
-            foreach ($anketasArray as &$anketa) {
-                $json[$anketa['info']['oid']] = array(
-                    'info' => array(
-                        'id'               => $anketa['info']['oid'],
-                        'name'             => $anketa['info']['name'],
-                        'gender'           => $anketa['info']['gender'],
-                        'age'              => $anketa['info']['age'],
-                        'small_photo_url'  => $anketa['info']['small_photo_url'],
-                        'medium_photo_url' => $anketa['info']['medium_photo_url'],
-                        'is_app_user'      => $anketa['info']['is_app_user'],
-                        'location'         => $anketa['location'],
-                        'flags'            => $anketa['flags'],
-                        'familiarity'      => $anketa['familiarity'],
-                        'other'            => $anketa['other'],
-                    ),
-                );
+                foreach ($anketasArray as &$anketa) {
 
-                $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
-
-                if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                    if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
-                        $anketa['decision'][] = $tmp['decision'];
-                    } else {
-                        $anketa['decision'][] = -3;
+                    if (!isset($usersArray[$anketa['info']['oid']])) {
+                        continue;
                     }
-                } else {
-                    $anketa['decision'][] = -2;
-                }
 
-                $data[] = $anketa;
+                    $json[$anketa['info']['oid']] = array(
+                        'info' => array(
+                            'id'               => $anketa['info']['oid'],
+                            'name'             => $anketa['info']['name'],
+                            'gender'           => $anketa['info']['gender'],
+                            'age'              => $anketa['info']['age'],
+                            'small_photo_url'  => $anketa['info']['small_photo_url'],
+                            'medium_photo_url' => $anketa['info']['medium_photo_url'],
+                            'is_app_user'      => $anketa['info']['is_app_user'],
+                            'location'         => $anketa['location'],
+                            'flags'            => $anketa['flags'],
+                            'familiarity'      => $anketa['familiarity'],
+                            'other'            => $anketa['other'],
+                        ),
+                    );
+
+                    $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
+
+                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
+                            $anketa['decision'][] = $tmp['decision'];
+                        } else {
+                            $anketa['decision'][] = -3;
+                        }
+                    } else {
+                        $anketa['decision'][] = -2;
+                    }
+
+                    $data[] = $anketa;
+                }
             }
         }
 

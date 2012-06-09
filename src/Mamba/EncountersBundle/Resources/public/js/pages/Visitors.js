@@ -12,7 +12,8 @@ $Visitors = {
      */
     initUI: function() {
         this.initButtons();
-        $(".closed a.ln").click(function() {
+
+        var $showDecisionFunction = function() {
             var $source = $(this).parent().parent();
 
             var $dataArray = {
@@ -32,6 +33,7 @@ $Visitors = {
                     if ($data.decision === false) {
                         $Layers.showAnswerNotSeeYetLayer($dataArray);
                     } else if ($data.decision == -1) {
+                        console.log($dataArray);
                         $Layers.showAnswerNoLayer($dataArray);
                         //$("div[user_id=" + $dataArray['user_id'] + "]").removeClass('closed').addClass('no');
                     } else if ($data.decision == 0) {
@@ -47,25 +49,29 @@ $Visitors = {
             }, 'json');
 
             return false;
-        });
+        };
 
-        $(".content div.info a").click(function() {
+        $(".closed a.ln").click($showDecisionFunction);
+        $(".content div.info a").click($showDecisionFunction);
+        $(".content div.link a").click($showDecisionFunction);
+
+        /*$(".content div.info a").click(function() {
             var $source = $(this).parent().parent();
             var $userId = $source.attr('user_id');
 
             $Layers.showUserInfoLayer($Config.get('users')[$userId]);
 
             return false;
-        });
+        });*/
 
-        $(".content div.link a").click(function() {
+        /*$(".content div.link a").click(function() {
             var $source = $(this).parent().parent();
             var $userId = $source.attr('user_id');
 
             $Layers.showUserInfoLayer($Config.get('users')[$userId]);
 
             return false;
-        });
+        });*/
     },
 
     /**

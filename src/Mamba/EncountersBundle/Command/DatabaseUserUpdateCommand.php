@@ -36,18 +36,20 @@ class DatabaseUserUpdateCommand extends CronScript {
             INSERT INTO
                 Encounters.User
             SET
-                `user_id`    = :user_id,
-                `gender`     = :gender,
-                `age`        = :age,
-                `country_id` = :country_id,
-                `region_id`  = :region_id,
-                `city_id`    = :city_id
+                `user_id`     = :user_id,
+                `gender`      = :gender,
+                `orientation` = :orientation,
+                `age`         = :age,
+                `country_id`  = :country_id,
+                `region_id`   = :region_id,
+                `city_id`     = :city_id
             ON DUPLICATE KEY UPDATE
-                `gender`     = :gender,
-                `age`        = :age,
-                `country_id` = :country_id,
-                `region_id`  = :region_id,
-                `city_id`    = :city_id
+                `gender`      = :gender,
+                `orientation` = :orientation,
+                `age`         = :age,
+                `country_id`  = :country_id,
+                `region_id`   = :region_id,
+                `city_id`     = :city_id
         "
     ;
 
@@ -101,13 +103,14 @@ class DatabaseUserUpdateCommand extends CronScript {
      * @param $job
      */
     public function updateUser($job) {
-        list($userId, $gender, $age, $countryId, $regionId, $cityId) = array_values(unserialize($job->workload()));
+        list($userId, $gender, $orientation, $age, $countryId, $regionId, $cityId) = array_values(unserialize($job->workload()));
 
         $this->log("Got task for <info>current_user_id</info> = {$userId}");
 
         $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_UPDATE);
         $stmt->bindValue('user_id', $userId);
         $stmt->bindValue('gender', $gender);
+        $stmt->bindValue('orientation', $orientation);
         $stmt->bindValue('age', $age);
         $stmt->bindValue('country_id', $countryId);
         $stmt->bindValue('region_id', $regionId);
