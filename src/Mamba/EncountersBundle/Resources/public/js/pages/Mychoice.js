@@ -11,7 +11,7 @@ $Mychoice = {
      * @init
      */
     initUI: function() {
-        $("div.content div.closed a.ln").click(function() {
+        var $showLayerFunction = function() {
             var $source = $(this).parent().parent();
 
             var $dataArray = {
@@ -40,55 +40,17 @@ $Mychoice = {
                 } else if ($data.status == 3) {
                     $Layers.showEnergyLayer($dataArray);
                 }
-            }, 'json');
+            });
 
             return false;
-        });
+        };
 
-        $(".content div.info a").click(function() {
-            var $source = $(this).parent().parent();
-            var $userId = $source.attr('user_id');
-
-            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
-
-            return false;
-        });
-
-        $(".content div.waiting div.link a").click(function() {
-            var $source = $(this).parent().parent();
-            var $userId = $source.attr('user_id');
-
-            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
-
-            return false;
-        });
-
-        $(".content div.maybe div.link a").click(function() {
-            var $source = $(this).parent().parent();
-            var $userId = $source.attr('user_id');
-
-            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
-
-            return false;
-        });
-
-        $(".content div.yes div.link a").click(function() {
-            var $source = $(this).parent().parent();
-            var $userId = $source.attr('user_id');
-
-            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
-
-            return false;
-        });
-
-        $(".content div.no div.link a").click(function() {
-            var $source = $(this).parent().parent();
-            var $userId = $source.attr('user_id');
-
-            $Layers.showUserInfoLayer($Config.get('users')[$userId]);
-
-            return false;
-        });
+        $("div.content div.closed a.ln").click($showLayerFunction);
+        $("div.content div.info a").click($showLayerFunction);
+        $("div.content div.waiting div.link a").click($showLayerFunction);
+        $("div.content div.maybe div.link a").click($showLayerFunction);
+        $("div.content div.yes div.link a").click($showLayerFunction);
+        $("div.content div.no div.link a").click($showLayerFunction);
     },
 
     /**

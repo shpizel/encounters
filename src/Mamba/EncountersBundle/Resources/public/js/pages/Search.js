@@ -36,7 +36,7 @@ $Search = {
             $(this).fadeTo('fast', 1);
         }
 
-        $("p.app-see-block a").click(function() {
+        var $showLayerFunction = function() {
             $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $data = $data.data;
@@ -59,24 +59,27 @@ $Search = {
             });
 
             return false;
-        });
+        };
 
-        $("div.app-image-member div.name-container div.content a").click(function() {
-            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
-                if ($data.status == 0 && $data.message == "") {
-                    $data = $data.data;
-                    if ($data.hasOwnProperty('charge')) {
-                        $Battery.setCharge($data.charge);
-                    }
+        $("p.app-see-block a").click($showLayerFunction);
+        $("div.app-image-member div.name-container div.content a").click($showLayerFunction);
 
-                    $Layers.showUserInfoLayer();
-                } else if ($data.status == 3) {
-                    $Layers.showEnergyLayer();
-                }
-            });
-
-            return false;
-        });
+//        $("div.app-image-member div.name-container div.content a").click(function() {
+//            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
+//                if ($data.status == 0 && $data.message == "") {
+//                    $data = $data.data;
+//                    if ($data.hasOwnProperty('charge')) {
+//                        $Battery.setCharge($data.charge);
+//                    }
+//
+//                    $Layers.showUserInfoLayer();
+//                } else if ($data.status == 3) {
+//                    $Layers.showEnergyLayer();
+//                }
+//            });
+//
+//            return false;
+//        });
 
         $("div.app-block-no-popular a.close").click(function() {
             $.post($Routing.getPath('variable.set'), { key: 'search_no_popular_block_hidden', data: 1}, function($data) {

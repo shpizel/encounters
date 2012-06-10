@@ -144,6 +144,7 @@ div.content div.pictures div.info {
     font-size: 11px;
     left: 6px;
     bottom: 37px;
+    width: 110px;
 }
 
 div.content div.pictures div.answer {
@@ -178,13 +179,23 @@ div.content div.pictures div.new div.link a.ln {
     display: block;
 }
 
-/*div.content div.pictures div.info a {
+div.content div.pictures div.info a,
+div.content div.pictures div.info span.name
+{
     float: left;
     overflow: hidden;
-    max-width: 80px;
+    max-width: 90px;
     text-overflow: ellipsis;
     white-space: nowrap;
-}*/
+}
+
+div.content div.pictures div.info i.ico {
+    display:none;
+}
+
+div.content div.pictures div.info b {
+    float:right;
+}
 
 div.pictures div.closed div.background {
     background: url('/bundles/encounters/images/background-gray.png') no-repeat;

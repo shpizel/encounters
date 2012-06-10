@@ -1,7 +1,18 @@
 <div class="layer-maybe" style="display: none;">
     <div class="title{% if webuser.preferences.gender == 'F' %} female{% else %} male{% endif %}">{% if webuser.preferences.gender == 'F' %}Она ответила{% else %}Он ответил{% endif %} возможно</div>
-    <div class="photo"><img/></div>
+    {#<div class="photo"><img/></div>#}
     <div class="content-center"><a target="_blank"></a> {% if webuser.preferences.gender == 'F' %}ответила{% else %}ответил{% endif %} &laquo;возможно&raquo; на&nbsp;предложение встретиться с&nbsp;вами</div>
-    <div class="center"><a class="close">Закрыть окно</a><a target="_blank" class="see">Показать {% if webuser.preferences.gender == 'F' %}ее{% else %}его{% endif %} анкету</a>
+    {#<div class="center"><a class="close">Закрыть окно</a><a target="_blank" class="see">Показать {% if webuser.preferences.gender == 'F' %}ее{% else %}его{% endif %} анкету</a></div>#}
+
+    <div class="info-battery">
+        <i class="arrow"></i>
+        <div class="info">
+            <div class="face"><img/></div>
+            <div class="name"><a target="_blank" href=""></a> <i class="ico"></i></div>
+            <div class="location"></div>
+            <div class="age"></div>
+            <div class="lookingfor"><strong>Познакомится</strong>:<br><span>&mdash;</span></div>
+            <a href="#" class="ui-btn ui-btn-big" style="margin-top: 13px;">Написать сообщение</a>
+        </div>
     </div>
 </div>

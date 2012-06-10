@@ -77,7 +77,7 @@ class DecisionController extends ApplicationController {
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
 
-            $this->getEnergyObject()->incr($this->webUserId, $this->decision + 2);
+            $this->getEnergyObject()->incr($this->webUserId, ($this->decision + 2)*100);
 
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {
@@ -94,7 +94,7 @@ class DecisionController extends ApplicationController {
             $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
 
             if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
-                $this->getEnergyObject()->decr($this->currentUserId, 5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+                $this->getEnergyObject()->decr(100*$this->currentUserId, 5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
             }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */

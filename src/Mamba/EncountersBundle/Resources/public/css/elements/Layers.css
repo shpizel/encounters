@@ -428,7 +428,12 @@
 .layer-level .info-battery,
 .layer-repeatable-yes .info-battery,
 .layer-repeatable-no .info-battery,
-.layer-repeatable-maybe .info-battery {
+.layer-repeatable-maybe .info-battery,
+.layer-no .info-battery,
+.layer-yes .info-battery,
+.layer-maybe .info-battery,
+.layer-not-see-yet .info-battery
+{
     background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
     display: block;
@@ -448,13 +453,33 @@
     margin-top: 30px;
 }
 
+.layer-no .info-battery,
+.layer-yes .info-battery,
+.layer-maybe .info-battery,
+.layer-not-see-yet .info-battery {
+    text-align: left;
+    margin-bottom: 17px;
+}
+
+.layer-no .info,
+.layer-yes .info,
+.layer-maybe .info,
+.layer-not-see-yet .info {
+    padding: 8px !important;
+}
+
 .layer-energy .info-battery .arrow,
 .layer-battery .info-battery .arrow,
 .layer-level-achievement .info-battery .arrow,
 .layer-level .info-battery .arrow,
 .layer-repeatable-yes .info-battery .arrow,
 .layer-repeatable-no .info-battery .arrow,
-.layer-repeatable-maybe .info-battery .arrow {
+.layer-repeatable-maybe .info-battery .arrow,
+.layer-no .info-battery .arrow,
+.layer-yes .info-battery .arrow,
+.layer-maybe .info-battery .arrow,
+.layer-not-see-yet .info-battery .arrow
+{
     background: none;
     position: absolute;
     left: 49%;
@@ -487,38 +512,73 @@
     /*background: #ccc;*/
 }
 
-.layer-user-info div.info {
+.layer-user-info div.info,
+.layer-maybe div.info,
+.layer-yes div.info,
+.layer-no div.info,
+.layer-not-see-yet div.info
+{
     font-size: 13px;
     padding: 20px;
     padding-bottom: 30px;
 }
 
-.layer-user-info div.info div.face {
+.layer-user-info div.info div.face,
+.layer-maybe div.info div.face,
+.layer-yes div.info div.face,
+.layer-no div.info div.face,
+.layer-not-see-yet div.info div.face
+{
     float: left;
     margin-right: 15px;
 }
 
-.layer-user-info div.info div.face img {
+.layer-user-info div.info div.face img,
+.layer-maybe div.info div.face img,
+.layer-yes div.info div.face img,
+.layer-no div.info div.face img,
+.layer-not-see-yet div.info div.face img
+{
     box-shadow: 0 0 2px #666;
     padding: 4px;
     width: 110px;
     height: 150px;
 }
 
-.layer-user-info div.info div.name {
+.layer-user-info div.info div.name,
+.layer-maybe div.info div.name,
+.layer-yes div.info div.name,
+.layer-no div.info div.name,
+.layer-not-see-yet div.info div.name
+{
     font-size: 24px;
     margin-bottom: 3px;
 }
 
-.layer-user-info div.info div.location {
+.layer-user-info div.info div.location,
+.layer-maybe div.info div.location,
+.layer-yes div.info div.location,
+.layer-no div.info div.location,
+.layer-not-see-yet div.info div.location
+{
     color: #666;
 }
 
-.layer-user-info div.info div.age {
+.layer-user-info div.info div.age,
+.layer-maybe div.info  div.age,
+.layer-yes div.info  div.age,
+.layer-no div.info  div.age,
+.layer-not-see-yet div.info  div.age
+{
     margin-top: 4px;
 }
 
-.layer-user-info div.info div.lookingfor {
+.layer-user-info div.info div.lookingfor,
+.layer-maybe div.info div.lookingfor,
+.layer-yes div.info div.lookingfor,
+.layer-no div.info div.lookingfor,
+.layer-not-see-yet div.info div.lookingfor
+{
     margin-top: 10px;
 }
 
@@ -528,11 +588,11 @@
     height: 37px;
 }
 
-.layer-no .male {
+.layer-no div.male {
     background: url('/bundles/encounters/images/texts/male/title-say-no.gif') no-repeat center top;
 }
 
-.layer-no .female {
+.layer-no div.female {
     background: url('/bundles/encounters/images/texts/female/title-say-no.gif') no-repeat center top;
 }
 
@@ -550,11 +610,11 @@
     height: 37px;
 }
 
-.layer-maybe .male {
+.layer-maybe div.male {
     background: url('/bundles/encounters/images/texts/male/title-say-maybe.gif') no-repeat center top;
 }
 
-.layer-maybe .female {
+.layer-maybe div.female {
     background: url('/bundles/encounters/images/texts/female/title-say-maybe.gif') no-repeat center top;
 }
 
@@ -610,11 +670,11 @@
     height: 37px;
 }
 
-.layer-yes .male {
+.layer-yes div.male {
     background: url('/bundles/encounters/images/texts/male/title-say-yes.gif') no-repeat center top;
 }
 
-.layer-yes .female {
+.layer-yes div.female {
     background: url('/bundles/encounters/images/texts/female/title-say-yes.gif') no-repeat center top;
 }
 
@@ -666,11 +726,11 @@
     padding-bottom: 15px;
 }
 
-.layer-not-see-yet .male {
+.layer-not-see-yet div.male {
     background: url('/bundles/encounters/images/texts/male/title-not-see.gif') no-repeat center top;
 }
 
-.layer-not-see-yet .female {
+.layer-not-see-yet div.female {
     background: url('/bundles/encounters/images/texts/female/title-not-see.gif') no-repeat center top;
 }
 

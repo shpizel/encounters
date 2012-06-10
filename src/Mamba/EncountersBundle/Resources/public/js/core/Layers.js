@@ -48,7 +48,7 @@ $Layers = {
             return false;
         });
 
-        $("div.layer-not-see-yet div.center a").click(function() {
+        $("div.layer-not-see-yet div.content-center a.first").click(function() {
             var $extra = {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}};
             $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
@@ -79,7 +79,7 @@ $Layers = {
             return false;
         });
 
-        $("div.layer-user-info a.ui-btn").click(function() {
+        var $openMessengerWindowFunction = function() {
             var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
             try {
                 $Config.get('messenger.popup') && $Config.get('messenger.popup').close();
@@ -88,7 +88,15 @@ $Layers = {
             } catch (e) {}
 
             return false;
-        });
+        };
+
+        $("div.layer-user-info a.ui-btn").click($openMessengerWindowFunction);
+
+        /** Warning */
+        $("div.layer-yes a.ui-btn").click($openMessengerWindowFunction);
+        $("div.layer-no a.ui-btn").click($openMessengerWindowFunction);
+        $("div.layer-maybe a.ui-btn").click($openMessengerWindowFunction);
+        $("div.layer-not-see-yet a.ui-btn").click($openMessengerWindowFunction);
 
         $("div.layer-level-achievement div._tell a.see").click(function() {
             if ($Config.get('webuser')['contacts']['not_app_users'].length) {
@@ -149,14 +157,33 @@ $Layers = {
         this.hideInners();
         if (!$data) {
             var currentQueueElement = $Search.$storage['currentQueueElement'];
-            $("div.layer-maybe div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            /*$("div.layer-maybe div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);*/
             $("div.layer-maybe div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
             $("div.layer-maybe div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
         } else {
-            $("div.layer-maybe div.photo img").attr('src', $data['medium_photo_url']);
+            $Config.set('current_user_id', $data['user_id']);
+            /*$("div.layer-maybe div.photo img").attr('src', $data['medium_photo_url']);*/
             $("div.layer-maybe div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']).text($data['name']);
             $("div.layer-maybe div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']);
         }
+
+        /** Нужно заполнить user info block */
+        var currentQueueElement = ($data) ? $Config.get('users')[$Config.get('current_user_id')] : $Search.$storage['currentQueueElement'];
+        $("div.layer-maybe div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        $("div.layer-maybe a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
+        $("div.layer-maybe div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+
+        if (currentQueueElement['info']['gender'] == 'F') {
+            $("div.layer-maybe div.info div.name i").removeClass('male');
+            $("div.layer-maybe div.info div.name i").addClass('female');
+        } else {
+            $("div.layer-maybe div.info div.name i").removeClass('female');
+            $("div.layer-maybe div.info div.name i").addClass('male');
+        }
+
+        $("div.layer-maybe div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-maybe div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-maybe div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-maybe").show();
         this.showLayer();
@@ -171,14 +198,33 @@ $Layers = {
         this.hideInners();
         if (!$data) {
             var currentQueueElement = $Search.$storage['currentQueueElement'];
-            $("div.layer-yes div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            /*$("div.layer-yes div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);*/
             $("div.layer-yes div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
             $("div.layer-yes div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']);
         } else {
-            $("div.layer-yes div.photo img").attr('src', $data['medium_photo_url']);
+            $Config.set('current_user_id', $data['user_id']);
+            /*$("div.layer-yes div.photo img").attr('src', $data['medium_photo_url']);*/
             $("div.layer-yes div.content-center a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']).text($data['name']);
             $("div.layer-yes div.center a.see").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + $data['user_id']);
         }
+
+        /** Нужно заполнить user info block */
+        var currentQueueElement = ($data) ? $Config.get('users')[$Config.get('current_user_id')] : $Search.$storage['currentQueueElement'];
+        $("div.layer-yes div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        $("div.layer-yes a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
+        $("div.layer-yes div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+
+        if (currentQueueElement['info']['gender'] == 'F') {
+            $("div.layer-yes div.info div.name i").removeClass('male');
+            $("div.layer-yes div.info div.name i").addClass('female');
+        } else {
+            $("div.layer-yes div.info div.name i").removeClass('female');
+            $("div.layer-yes div.info div.name i").addClass('male');
+        }
+
+        $("div.layer-yes div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-yes div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-yes div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-yes").show();
         this.showLayer();
@@ -193,12 +239,31 @@ $Layers = {
         this.hideInners();
         if (!$data) {
             var currentQueueElement = $Search.$storage['currentQueueElement'];
-            $("div.layer-no div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            /*$("div.layer-no div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);*/
             $("div.layer-no div.content-center span.name").text(currentQueueElement['info']['name']);
         } else {
-            $("div.layer-no div.photo img").attr('src', $data['medium_photo_url']);
+            $Config.set('current_user_id', $data['user_id']);
+            /*$("div.layer-no div.photo img").attr('src', $data['medium_photo_url']);*/
             $("div.layer-no div.content-center span.name").text($data['name']);
         }
+
+        /** Нужно заполнить user info block */
+        var currentQueueElement = ($data) ? $Config.get('users')[$Config.get('current_user_id')] : $Search.$storage['currentQueueElement'];
+        $("div.layer-no div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        $("div.layer-no a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
+        $("div.layer-no div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+
+        if (currentQueueElement['info']['gender'] == 'F') {
+            $("div.layer-no div.info div.name i").removeClass('male');
+            $("div.layer-no div.info div.name i").addClass('female');
+        } else {
+            $("div.layer-no div.info div.name i").removeClass('female');
+            $("div.layer-no div.info div.name i").addClass('male');
+        }
+
+        $("div.layer-no div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-no div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-no div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-no").show();
         this.showLayer();
@@ -244,11 +309,32 @@ $Layers = {
         this.hideInners();
         if (!$data) {
             var currentQueueElement = $Search.$storage['currentQueueElement'];
-            $("div.layer-not-see-yet div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);
+            $("div.layer-not-see-yet div.content-center span.name").text(currentQueueElement['info']['name']);
+            /*$("div.layer-not-see-yet div.photo img").attr('src', currentQueueElement['info']['medium_photo_url']);*/
         } else {
             $Config.set('current_user_id', $data['user_id']);
-            $("div.layer-not-see-yet div.photo img").attr('src', $data['medium_photo_url']);
+            $("div.layer-not-see-yet div.content-center span.name").text($data['name']);
+            /*$("div.layer-not-see-yet div.photo img").attr('src', $data['medium_photo_url']);*/
         }
+
+        /** Нужно заполнить user info block */
+        var currentQueueElement = ($data) ? $Config.get('users')[$Config.get('current_user_id')] : $Search.$storage['currentQueueElement'];
+        $("div.layer-not-see-yet div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
+        $("div.layer-not-see-yet a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
+        $("div.layer-not-see-yet div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+
+        if (currentQueueElement['info']['gender'] == 'F') {
+            $("div.layer-not-see-yet div.info div.name i").removeClass('male');
+            $("div.layer-not-see-yet div.info div.name i").addClass('female');
+        } else {
+            $("div.layer-not-see-yet div.info div.name i").removeClass('female');
+            $("div.layer-not-see-yet div.info div.name i").addClass('male');
+        }
+
+        $("div.layer-not-see-yet div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-not-see-yet div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-not-see-yet div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
+
         $("div.layer-not-see-yet").show();
         this.showLayer();
     },

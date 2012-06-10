@@ -14,7 +14,7 @@
         <div class="title">Они ответили вам взаимностью</div>
         {% for item in data %}
 
-        <div user_id="{{ item.info.oid }}" class="photoListItem" user_id="{{ item.info.oid }}">
+        <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem" user_id="{{ item.info.oid }}">
             <div class="background"></div>
             <a class="close"></a>
             <img src="{{ item.info.medium_photo_url }}"><br>
@@ -27,7 +27,6 @@
         {% include 'EncountersBundle:tools:paginator.html.twig' %}
     </div>
     {% endif %}
-
 
 </div>
 {% include 'EncountersBundle:layers:layers.html.twig' %}
