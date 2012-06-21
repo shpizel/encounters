@@ -31,7 +31,7 @@ class Energy extends Helper {
          *
          * @var int
          */
-        MAXIMUM_ENERGY = 4250,
+        MAXIMUM_ENERGY = 425000,
 
         /**
          * Ключ для хранения энергии

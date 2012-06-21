@@ -213,17 +213,16 @@ $Search = {
                 $Search.showNextPhoto();
                 $Search.$storage['locked'] = false;
 
-
             } else {
                 $status = $data.status;
                 $message = $data.message;
 
                 //$Search.showNextPhoto();
                 $Search.$storage['locked'] = false;
-                this.loadQueue(function(){
+                $Search.loadQueue(function(){
                     return $Search.unlockUI();
                 });
-                this.lockUI();
+                $Search.lockUI();
             }
         }).error(function() {
             top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
@@ -236,6 +235,7 @@ $Search = {
      * @queue next
      */
     showNextPhoto: function() {
+
         var $currentQueueElement;
 
         if (this.$storage['currentQueueElement'] = $currentQueueElement = $Queue.get()) {
@@ -421,7 +421,7 @@ $Search = {
      */
     loadQueue: function($callback) {
         $.post($Routing.getPath('queue.get'), function($data) {
-            if ($data.status == 0 && $data.message == "") {
+            if (typeof $data == 'object' && $data.status == 0 && $data.message == "") {
                 for (var $i=0;$i<$data.data.length;$i++) {
                     $Queue.put($data.data[$i]);
                 }

@@ -43,6 +43,7 @@ class DeployCommand extends Script {
              */
             'www' => array(
                 'www1',
+                'www2',
             ),
 
             /**
@@ -93,6 +94,13 @@ class DeployCommand extends Script {
                     ),
                 );
             }
+        }
+
+        $this->log("Stopping all cron scripts..", 48);
+        if ($this->getMemcache()->set('cron:stop', time())) {
+            $this->log("SUCCESS", 64);
+        } else {
+            throw new \Exception("Operation failed");
         }
 
         /** Останавливаем веб-сервер */
@@ -190,13 +198,6 @@ class DeployCommand extends Script {
                     throw new \Exception("Operation failed");
                 }
             }
-        }
-
-        $this->log("Stopping all cron scripts..", 48);
-        if ($this->getMemcache()->set('cron:stop', time())) {
-            $this->log("SUCCESS", 64);
-        } else {
-            throw new \Exception("Operation failed");
         }
 
         $this->log("Completed, check project in browser..", 64);
