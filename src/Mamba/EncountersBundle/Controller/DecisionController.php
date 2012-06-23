@@ -94,7 +94,7 @@ class DecisionController extends ApplicationController {
             $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
 
             if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
-                $this->getEnergyObject()->decr(100*$this->currentUserId, 5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+                $this->getEnergyObject()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
             }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */

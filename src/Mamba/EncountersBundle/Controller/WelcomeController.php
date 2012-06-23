@@ -48,7 +48,9 @@ class WelcomeController extends ApplicationController {
 
         if ($getPlatformParams) {
             $webUserId = (int) $getPlatformParams['oid'];
+            $this->get('session')->start();
             $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
+
             $lastAccessTime = $this->getVariablesObject()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
                 $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
