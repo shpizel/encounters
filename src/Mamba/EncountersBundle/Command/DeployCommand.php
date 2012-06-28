@@ -103,14 +103,16 @@ class DeployCommand extends Script {
             throw new \Exception("Operation failed");
         }
 
-        /** Останавливаем веб-сервер */
-        $commands[] = array(
-            'description' => "Stopping nginx and php5-fpm",
-            'command'     => array(
-                'sudo /etc/init.d/nginx stop',
-                'sudo /etc/init.d/php5-fpm stop',
-            ),
-        );
+        /** Останавливаем веб-серверы */
+        foreach (self::$servers['www'] as $server) {
+            $commands[] = array(
+                'description' => "Stopping nginx and php5-fpm at $server server",
+                'command'     => array(
+                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/nginx stop'" : 'sudo /etc/init.d/nginx stop',
+                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/php5-fpm stop'" : 'sudo /etc/init.d/php5-fpm stop',
+                ),
+            );
+        }
 
         /** www1 */
         $commands[] = array(
@@ -164,14 +166,16 @@ class DeployCommand extends Script {
          * @author shpizel
          */
 
-        /** Стартуем веб-сервер */
-        $commands[] = array(
-            'description' => "Starting nginx and php5-fpm",
-            'command'     => array(
-                'sudo /etc/init.d/nginx start',
-                'sudo /etc/init.d/php5-fpm start',
-            ),
-        );
+        /** Стартуем веб-серверы */
+        foreach (self::$servers['www'] as $server) {
+            $commands[] = array(
+                'description' => "Starting nginx and php5-fpm at $server server",
+                'command'     => array(
+                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/nginx start'" : 'sudo /etc/init.d/nginx start',
+                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/php5-fpm start'" : 'sudo /etc/init.d/php5-fpm start',
+                ),
+            );
+        }
 
         /** Сначала нужно запустить все крон-скрипты */
         foreach (self::$servers as $servers) {

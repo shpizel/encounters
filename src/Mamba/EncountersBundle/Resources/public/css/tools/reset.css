@@ -17,7 +17,7 @@ menu, nav, section, summary, time, mark, audio, video {
 
 html, body {
     height: 100%;
-    /*min-width: 900px;*/
+    min-width: 800px;
 }
 
 table {
