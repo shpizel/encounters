@@ -48,8 +48,28 @@ class WelcomeController extends ApplicationController {
 
         if ($getPlatformParams) {
             $webUserId = (int) $getPlatformParams['oid'];
-            $this->get('session')->start();
-            $this->get('session')->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
+
+            $Session->start();
+
+            /** Встроим защиту от непустой сессии: если сессия НЕпустая — разрушаем, логируем, рестартуем до тех пор пока не добьемся уникальности */
+            if ($Session->all() && $Session->get(Mamba::SESSION_USER_ID_KEY) != $webUserId) {
+
+                $log = date("Y-m-d H:i:s") . PHP_EOL;
+                $log.= "session_id:" . PHP_EOL;
+                $log.= $Session->getId() . PHP_EOL;
+                $log.= "getPlatformParams:" . PHP_EOL;
+                $log.= print_r($getPlatformParams, true) . PHP_EOL;
+                $log.= "Session data:" . PHP_EOL;
+                $log.= print_r($Session->all(), true);
+                $log.= str_repeat("=", 16) . PHP_EOL;
+
+                file_put_contents("/tmp/session.log", $log, FILE_APPEND);
+
+                $Session->migrate();
+                $Session->clear();
+            }
+
+            $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
 
             $lastAccessTime = $this->getVariablesObject()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
