@@ -341,6 +341,14 @@
     background-position: 0 -84px
 }
 
+.app-meet-button a.app-menu1-active,
+.app-meet-button a.app-menu1-active:link,
+.app-meet-button a.app-menu1-active:hover,
+.app-meet-button a.app-menu1-active:active {
+    background-position: 0 -84px;
+    color: white;
+}
+
 .app-meet-button a.app-menu2 {
     background-position: -131px 0;
     width: 130px;
@@ -355,6 +363,14 @@
     background-position: -131px -84px;
 }
 
+.app-meet-button a.app-menu2-active,
+.app-meet-button a.app-menu2-active:link,
+.app-meet-button a.app-menu2-active:hover,
+.app-meet-button a.app-menu2-active:active {
+    background-position: -131px -84px;
+    color: white;
+}
+
 .app-meet-button a.app-menu3 {
     background-position: -261px 0;
     width: 131px;
@@ -367,6 +383,14 @@
 
 .app-meet-button a.app-menu3:active {
     background-position: -261px -84px
+}
+
+.app-meet-button a.app-menu3-active,
+.app-meet-button a.app-menu3-active:link,
+.app-meet-button a.app-menu3-active:hover,
+.app-meet-button a.app-menu3-active:active {
+    background-position: -261px -84px;
+    color: white;
 }
 
 .app-meet-button a:hover,

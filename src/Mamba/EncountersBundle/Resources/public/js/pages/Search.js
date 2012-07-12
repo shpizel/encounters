@@ -159,6 +159,14 @@ $Search = {
             return;
         }
 
+        if ($decision == 0) {
+            $("div.app-meet-button > a.app-menu2").addClass("app-menu2-active");
+        } else if ($decision == 1) {
+            $("div.app-meet-button > a.app-menu1").addClass("app-menu1-active");
+        } else if ($decision == -1) {
+            $("div.app-meet-button > a.app-menu3").addClass("app-menu3-active");
+        }
+
         $Search.$storage['locked'] = true;
 
         $.post($Routing.getPath('decision.set'), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
@@ -212,6 +220,10 @@ $Search = {
 
                 $Search.showNextPhoto();
                 $Search.$storage['locked'] = false;
+
+                $("div.app-meet-button > a.app-menu1").removeClass("app-menu1-active");
+                $("div.app-meet-button > a.app-menu2").removeClass("app-menu2-active");
+                $("div.app-meet-button > a.app-menu3").removeClass("app-menu3-active");
 
             } else {
                 $status = $data.status;
