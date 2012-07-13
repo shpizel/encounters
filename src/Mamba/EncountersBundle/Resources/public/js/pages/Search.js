@@ -113,6 +113,10 @@ $Search = {
      */
     unlockUI: function() {
         $Search.$storage['locked'] = false;
+        $("div.app-meet-button > a.app-menu1").removeClass("app-menu1-active");
+        $("div.app-meet-button > a.app-menu2").removeClass("app-menu2-active");
+        $("div.app-meet-button > a.app-menu3").removeClass("app-menu3-active");
+
         this.showNextPhoto();
     },
 
