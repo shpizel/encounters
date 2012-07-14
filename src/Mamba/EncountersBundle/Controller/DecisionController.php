@@ -67,6 +67,9 @@ class DecisionController extends ApplicationController {
             $this->getVariablesObject()->set($this->webUserId, 'last_outgoing_decision', time());
             $this->getVariablesObject()->set($this->currentUserId, 'last_incoming_decision', time());
 
+            /** увеличиваем счетчик дневных голосований */
+            $dailyDecisionsCounter = $this->getCountersObject()->incr($this->webUserId, 'daily_decisions_counter_by_' . date("Ymd"));
+
             /** Инкрементируем счетчик просмотров у currentUser'a */
             $this->getCountersObject()->incr($this->currentUserId, 'visitors');
             $this->getCountersObject()->incr($this->currentUserId, 'visitors_unread');
@@ -77,7 +80,9 @@ class DecisionController extends ApplicationController {
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
 
-            $this->getEnergyObject()->incr($this->webUserId, ($this->decision + 2)*100);
+            /** увеличиваем энергию веб-юзера на 100-300 очков базово и делим на логарифмический делитель */
+            $log = log($dailyDecisionsCounter, 16) ?: log($dailyDecisionsCounter + 1, 16);
+            $this->getEnergyObject()->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
 
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
             if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {
