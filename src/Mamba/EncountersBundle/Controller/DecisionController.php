@@ -81,7 +81,11 @@ class DecisionController extends ApplicationController {
             $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
 
             /** увеличиваем энергию веб-юзера на 100-300 очков базово и делим на логарифмический делитель */
-            $log = log($dailyDecisionsCounter, 16) ?: log($dailyDecisionsCounter + 1, 16);
+            $log = log($dailyDecisionsCounter, 16);
+            if ($log < 0.5) {
+                $log = 0.5;
+            }
+
             $this->getEnergyObject()->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
 
             $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
