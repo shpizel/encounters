@@ -67,8 +67,11 @@ class DecisionController extends ApplicationController {
             $this->getVariablesObject()->set($this->webUserId, 'last_outgoing_decision', time());
             $this->getVariablesObject()->set($this->currentUserId, 'last_incoming_decision', time());
 
-            /** увеличиваем счетчик дневных голосований */
-            $dailyDecisionsCounter = $this->getCountersObject()->incr($this->webUserId, 'daily_decisions_counter_by_' . date("Ymd"));
+            /** увеличиваем счетчик дневных голосований в мемкеше */
+            $dailyDecisionsCounter = $this->getMemcache()->increment($dailyDecisionsCounterMemcacheKey = $this->webUserId . '_daily_decisions_counter_by_' . date("Ymd"));
+            if (false == $dailyDecisionsCounter) {
+                $this->getMemcache()->add($dailyDecisionsCounterMemcacheKey, $dailyDecisionsCounter = 1);
+            }
 
             /** Инкрементируем счетчик просмотров у currentUser'a */
             $this->getCountersObject()->incr($this->currentUserId, 'visitors');
@@ -82,8 +85,8 @@ class DecisionController extends ApplicationController {
 
             /** увеличиваем энергию веб-юзера на 100-300 очков базово и делим на логарифмический делитель */
             $log = log($dailyDecisionsCounter, 16);
-            if ($log < 0.5) {
-                $log = 0.5;
+            if ($log < 1) {
+                $log = 1; //бодрости не будет
             }
 
             $this->getEnergyObject()->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
@@ -142,7 +145,7 @@ class DecisionController extends ApplicationController {
             /** Не спишком ли часто мы спамим? */
             foreach (range(-1, 1) as $decision) {
                 if ($decision == $this->decision) {
-                    if ($this->getCountersObject()->incr($this->webUserId, "noretry-($decision)") >= 10) {
+                    if ($this->getCountersObject()->incr($this->webUserId, "noretry-($decision)") >= 25) {
                         $repeatWarningKey = "{$this->webUserId}_repear_warning";
                         if ($this->getMemcache()->add($repeatWarningKey, 1, 3600)) {
                             $this->json['data']['repeat_warning'] = $decision;
