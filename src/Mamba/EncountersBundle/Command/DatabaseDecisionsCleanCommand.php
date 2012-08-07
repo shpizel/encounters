@@ -46,10 +46,6 @@ class DatabaseDecisionsCleanCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        /**
-         * Нужно написать такой SQL-запрос чтобы не проебал нам взаимные
-         *
-         * $this->getEntityManager()->getConnection()->prepare(self::DECISIONS_CLEAN_SQL)->execute();
-         */
+        $this->getEntityManager()->getConnection()->prepare(self::DECISIONS_CLEAN_SQL)->execute();
     }
 }
