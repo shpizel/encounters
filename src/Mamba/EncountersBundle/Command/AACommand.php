@@ -34,7 +34,7 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $Redis = $this->getRedis();
+        $Redis = $this->getRedis(1);
 
         $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
         foreach ($appUsers as $userId) {
