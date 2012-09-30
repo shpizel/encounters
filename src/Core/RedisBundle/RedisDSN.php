@@ -246,7 +246,7 @@ class RedisDSN {
      * @return string
      */
     public function __toString() {
-        return "redis://" . $this->getHost() . ":" . $this->getPort() . "/" . $this->getDatabase() . "/?timeout=" . $this->getTimeout() . "&persistent=" . ($this->getPersistent() ? "true" : "false") . "&prefix=" . $this->getPrefix();
+        return "redis://" . $this->getHost() . ":" . $this->getPort() . "/" . $this->getDatabase() . "?timeout=" . $this->getTimeout() . "&persistent=" . ($this->getPersistent() ? "true" : "false") . "&prefix=" . $this->getPrefix();
     }
 
     /**

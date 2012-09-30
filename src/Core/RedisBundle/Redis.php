@@ -138,7 +138,7 @@ class Redis {
      * @return \Redis
      */
     public function getNodeConnectionByKey($key) {
-        return $this->getNodeConnection($this->getNodeByKey($key));
+        return $this->getNodeConnection($this->getDSNByKey($key));
     }
 
     /**
@@ -151,12 +151,12 @@ class Redis {
     }
 
     /**
-     * Get connection info
+     * Get DSN from
      *
      * @param str $key
-     * @return array
+     * @return RedisDSN
      */
-    public function getNodeByKey($key) {
+    public function getDSNByKey($key) {
         return $this->nodes[$this->getNodeNumberByKey($key)];
     }
 
@@ -168,6 +168,29 @@ class Redis {
      */
     public function getNodeNumberByKey($key) {
         return crc32($key) % count($this->nodes);
+    }
+
+    /**
+     * Redis nodes setter
+     *
+     * @param array $nodes
+     */
+    public function setNodes(array $nodes) {
+        $this->nodes = $nodes;
+        $this->closeConnections();
+    }
+
+    /**
+     * Закрывает все открытые соединения с редисами
+     *
+     * @return null
+     */
+    public function closeConnections() {
+        foreach ($this->connections as $connection) {
+            $connection->close();
+        }
+
+        $this->connections = array();
     }
 
     /**
