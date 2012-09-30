@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers;
 
-use Mamba\RedisBundle\Redis;
+use Core\RedisBundle\Redis;
 
 /**
  * PlatformParams

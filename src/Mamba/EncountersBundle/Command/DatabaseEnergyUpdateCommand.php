@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -105,7 +106,7 @@ class DatabaseEnergyUpdateCommand extends CronScript {
             $result = $stmt->execute();
             $this->getMemcache()->delete("energy_update_lock_by_user_" . $userId);
             if (!$result) {
-                throw new CronScriptException('Unable to store data to DB.');
+                throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
             }
         }
     }

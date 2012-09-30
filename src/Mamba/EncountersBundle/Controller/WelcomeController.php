@@ -4,7 +4,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
 
-use Mamba\PlatformBundle\API\Mamba;
+use Core\MambaBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**

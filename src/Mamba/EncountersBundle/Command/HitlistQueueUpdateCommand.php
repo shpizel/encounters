@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 use Mamba\EncountersBundle\Command\ContactsQueueUpdateCommand;
@@ -137,21 +138,21 @@ class HitlistQueueUpdateCommand extends CronScript {
 
         $this->currentUserId = $webUserId;
         if (!$this->lock()) {
-            throw new CronScriptException("Could not obtain lock");
+            throw new \Core\ScriptBundle\CronScriptException("Could not obtain lock");
         }
 
         if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
-                throw new CronScriptException("Mamba is not ready!");
+                throw new \Core\ScriptBundle\CronScriptException("Mamba is not ready!");
             }
         } else {
-            throw new CronScriptException("Invalid workload");
+            throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
         if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
-            throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
+            throw new \Core\ScriptBundle\CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
         if ($searchPreferences['changed'] > $timestamp) {
@@ -159,7 +160,7 @@ class HitlistQueueUpdateCommand extends CronScript {
         }
 
         if ($this->getHitlistQueueObject()->getSize($webUserId) >= self::LIMIT) {
-            throw new CronScriptException("Hitlist queue for user_id=$webUserId has limit exceed");
+            throw new \Core\ScriptBundle\CronScriptException("Hitlist queue for user_id=$webUserId has limit exceed");
         }
 
         if ($hitList = $Mamba->Anketa()->getHitlist(-30)) {
@@ -187,7 +188,7 @@ class HitlistQueueUpdateCommand extends CronScript {
 
             $this->log("<error>$usersAddedCount</error> users were added to hitlist queue for <info>user_id</info> = {$webUserId}");
         } else {
-            throw new CronScriptException("Could not fetch hitlist for user_id=$webUserId");
+            throw new \Core\ScriptBundle\CronScriptException("Could not fetch hitlist for user_id=$webUserId");
         }
     }
 }

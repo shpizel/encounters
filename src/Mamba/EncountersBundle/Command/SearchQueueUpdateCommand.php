@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 use Mamba\EncountersBundle\Command\HitlistQueueUpdateCommand;
@@ -236,21 +237,21 @@ class SearchQueueUpdateCommand extends CronScript {
 
         $this->currentUserId = $webUserId;
         if (!$this->lock()) {
-            throw new CronScriptException("Could not obtain lock");
+            throw new \Core\ScriptBundle\CronScriptException("Could not obtain lock");
         }
 
         if ($webUserId = (int) $webUserId) {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
-                throw new CronScriptException("Mamba is not ready!");
+                throw new \Core\ScriptBundle\CronScriptException("Mamba is not ready!");
             }
         } else {
-            throw new CronScriptException("Invalid workload");
+            throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
         if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
-            throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
+            throw new \Core\ScriptBundle\CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
         if ($searchPreferences['changed'] > $timestamp) {
@@ -258,7 +259,7 @@ class SearchQueueUpdateCommand extends CronScript {
         }
 
         if ($this->getSearchQueueObject()->getSize($webUserId) >= self::LIMIT) {
-            throw new CronScriptException("Search queue for user_id=$webUserId has limit exceed");
+            throw new \Core\ScriptBundle\CronScriptException("Search queue for user_id=$webUserId has limit exceed");
         }
 
         $usersAddedCount = 0;

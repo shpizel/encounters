@@ -1,7 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle\Command;
-
-use Symfony\Component\Console\Input\InputOption;
+namespace Core\ServersBundle\Command;
 
 use Core\ScriptBundle\Script;
 
@@ -62,19 +60,6 @@ class ServerSSHCopyIdCommand extends Script {
             ),
         )
     ;
-
-    /**
-     * Конфигурирование крон-скрипта
-     *
-     *
-     */
-    protected function configure() {
-        parent::configure();
-
-        $this
-            ->addOption('hostname', null, InputOption::VALUE_REQUIRED, 'hostname', null)
-        ;
-    }
 
     /**
      * Processor

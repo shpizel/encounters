@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -126,7 +127,7 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
 
             $this->getStatsObject()->incr($decisions[$decision]);
         } else {
-            throw new CronScriptException('Unable to store data to DB.');
+            throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
         }
     }
 }

@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Helpers\Declensions;
 
@@ -90,10 +91,10 @@ class AchievementSetCommand extends CronScript {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
-                throw new CronScriptException("Mamba is not ready!");
+                throw new \Core\ScriptBundle\CronScriptException("Mamba is not ready!");
             }
         } else {
-            throw new CronScriptException("Invalid workload");
+            throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
         if ($message = $this->getAchievement($webUserId)) {
@@ -103,13 +104,13 @@ class AchievementSetCommand extends CronScript {
                     $this->log('Achievement was set successfully', 64);
                     $this->getStatsObject()->incr('achievement');
                 } else {
-                    throw new CronScriptException("Failed to set achievement");
+                    throw new \Core\ScriptBundle\CronScriptException("Failed to set achievement");
                 }
             } else {
-                throw new CronScriptException("Failed to set achievement");
+                throw new \Core\ScriptBundle\CronScriptException("Failed to set achievement");
             }
         } else {
-            throw new CronScriptException("Could not get achievement message");
+            throw new \Core\ScriptBundle\CronScriptException("Could not get achievement message");
         }
     }
 

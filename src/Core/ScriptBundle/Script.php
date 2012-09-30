@@ -12,9 +12,7 @@ use Core\RedisBundle\Redis;
 use Core\MemcacheBundle\Memcache;
 use Core\MambaBundle\API\Mamba;
 
-//нахуй отсюда
-
-/*use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
+use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
 use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
 use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
 use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
@@ -31,7 +29,7 @@ use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\Services;
 use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
-use Mamba\EncountersBundle\Helpers\Variables;*/
+use Mamba\EncountersBundle\Helpers\Variables;
 
 /**
  * Script
@@ -178,7 +176,8 @@ abstract class Script extends ContainerAwareCommand {
         };
 
         if ($this->debug) {
-            $this->output->writeln("[" . date("d/m/y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
+            $writeFunction = ($code >= 0) ? "writeln" : "write";
+            $this->output->$writeFunction((($code < 0) ? "\r" : "") . "[" . date("d/m/y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
         }
 
         return true;

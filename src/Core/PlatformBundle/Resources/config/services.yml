@@ -1,5 +1,5 @@
 parameters:
-    mamba.class: Mamba\PlatformBundle\API\Mamba
+    mamba.class: Core\MambaBundle\API\Mamba
 
 services:
     mamba:

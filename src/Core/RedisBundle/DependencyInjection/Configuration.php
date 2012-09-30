@@ -20,25 +20,15 @@ class Configuration implements ConfigurationInterface {
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('redis');
 
-        $rootNode
-            ->children()
-                ->scalarNode('host')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                    ->end()
-                ->scalarNode('port')
-                    ->defaultValue(6379)
-                    ->cannotBeEmpty()
-                    ->end()
-                ->scalarNode('timeout')
-                    ->defaultValue(0)
-                    ->end()
-                ->scalarNode('database')
-                    ->isRequired()
-                    ->defaultValue(0)
-                    ->end()
+        $rootNode->children()
+            ->arrayNode('nodes')
+                ->isRequired()
+                ->requiresAtLeastOneElement()
+                ->prototype('variable')
+                ->end()
             ->end()
-        ;
+
+        ->end();
 
         return $treeBuilder;
     }

@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\Script;
+use Core\ScriptBundle\Script;
 
 /**
  * DeployCommand
@@ -100,7 +100,7 @@ class DeployCommand extends Script {
         if ($this->getMemcache()->set('cron:stop', time())) {
             $this->log("SUCCESS", 64);
         } else {
-            throw new \Exception("Operation failed");
+            throw new \Core\ScriptBundle\ScriptException("Operation failed");
         }
 
         /** Останавливаем веб-серверы */
@@ -199,7 +199,7 @@ class DeployCommand extends Script {
                 if (!$code) {
                     $this->log("SUCCESS", 64);
                 } else {
-                    throw new \Exception("Operation failed");
+                    throw new \Core\ScriptBundle\ScriptException("Operation failed");
                 }
             }
         }

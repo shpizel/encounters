@@ -2,7 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
-use Mamba\PlatformBundle\API\Mamba;
+use Core\MambaBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -174,20 +174,17 @@ class PreferencesController extends ApplicationController {
      * @return mixed
      */
     private function cleanUserQueues() {
-        return
-            $this->getRedis()
-                ->multi()
-                    ->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')))
-                    ->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId))
-                    ->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId))
+        $Redis = $this->getRedis();
 
-                    /**
-                     * По идее тут втупую удалять не нужно, потому что тут могут быть пользователи из PriorityQueue
-                     *
-                     * @author shpizel
-                     */
-                    ->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId))
-                ->exec()
-        ;
+        $Redis->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')));
+        $Redis->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId));
+        $Redis->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId));
+
+        /**
+         * По идее тут втупую удалять не нужно, потому что тут могут быть пользователи из PriorityQueue
+         *
+         * @author shpizel
+         */
+        $Redis->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId));
     }
 }

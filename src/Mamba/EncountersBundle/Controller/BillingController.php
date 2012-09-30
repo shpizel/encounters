@@ -3,7 +3,7 @@ namespace Mamba\EncountersBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
-use Mamba\PlatformBundle\API\Mamba;
+use Core\MambaBundle\API\Mamba;
 use Mamba\EncountersBundle\Helpers\Popularity;
 
 /**

@@ -15,8 +15,9 @@ use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
 
-use Mamba\PlatformBundle\API\Mamba;
-use Mamba\GearmanBundle\Gearman;
+use Core\MambaBundle\API\Mamba;
+use Core\GearmanBundle\Gearman;
+use Core\RedisBundle\Redis;
 use Symfony\Component\HttpFoundation\Session;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;

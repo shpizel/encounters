@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -96,10 +97,10 @@ class ContactsSendMessageCommand extends CronScript {
             $Mamba->set('oid', $webUserId);
 
             if (!$Mamba->getReady()) {
-                throw new CronScriptException("Mamba is not ready!");
+                throw new \Core\ScriptBundle\CronScriptException("Mamba is not ready!");
             }
         } else {
-            throw new CronScriptException("Invalid workload");
+            throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
         $lockCacheKey = "personal_{$currentUserId}_spam";
@@ -115,19 +116,19 @@ class ContactsSendMessageCommand extends CronScript {
                             $this->getStatsObject()->incr('contacts');
                             $this->getMemcache()->add($lockCacheKey, time(), $lockCacheKeyExpire);
                         } else {
-                            throw new CronScriptException("Failed to send message");
+                            throw new \Core\ScriptBundle\CronScriptException("Failed to send message");
                         }
                     } else {
-                        throw new CronScriptException("Failed to send message");
+                        throw new \Core\ScriptBundle\CronScriptException("Failed to send message");
                     }
                 } else {
-                    throw new CronScriptException("Too much frequently");
+                    throw new \Core\ScriptBundle\CronScriptException("Too much frequently");
                 }
             } else {
-                throw new CronScriptException("Already app user");
+                throw new \Core\ScriptBundle\CronScriptException("Already app user");
             }
         } else {
-            throw new CronScriptException("Could not get personal message");
+            throw new \Core\ScriptBundle\CronScriptException("Could not get personal message");
         }
     }
 

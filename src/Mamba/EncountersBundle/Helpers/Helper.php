@@ -1,8 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers;
 
-use Mamba\RedisBundle\Redis;
-use Mamba\MemcacheBundle\Memcache;
+use Core\RedisBundle\Redis;
+use Core\MemcacheBundle\Memcache;
 
 /**
  * Helper

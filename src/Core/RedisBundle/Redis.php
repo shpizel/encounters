@@ -25,130 +25,149 @@ class Redis {
      * все функции нужно переопределить
      * lazy-инициализация и коннекты
      */
+    const
+
+        /**
+         * Single mode
+         *
+         * @var int
+         */
+        SINGLE_MODE = 1,
+
+        /**
+         * Multi mode
+         *
+         * @var int
+         */
+        MULTI_MODE = 2
+    ;
+
+     private
+
+         /**
+          * Ноды редиса
+          *
+          * @var array
+          */
+         $nodes = array(),
+
+         /**
+          * Пул соединений
+          *
+          * @var array
+          */
+         $connections = array(),
+
+         /**
+          * Режим работы класса
+          *
+          * @var int
+          */
+         $mode = self::SINGLE_MODE,
+
+         /**
+          * Multi queue
+          *
+          * @var array
+          */
+         $multiQueue = array()
+     ;
 
     /**
      * Конструктор
      *
-     *
+     * @param array $nodes = array(array(
+     *     host: ...
+     *     port: ...
+     *     timeout: ...
+     *     options: ...
+     *         persistent: true
+     *         database: 0
+     *         prefix: false
+     * ))
      */
-    public function __construct($host, $port, $timeout, $database) {
-
+    public function __construct(array $nodes) {
+        $this->nodes = array_map(function($nodeArray) {
+            return RedisDSN::getDSNFromArray($nodeArray);
+        }, $nodes);
     }
 
     /**
-     * Connects to a Redis instance.
+     * Redis nodes getter
      *
-     * @param string    $host       can be a host, or the path to a unix domain socket
-     * @param int       $port       optional
-     * @param float     $timeout    value in seconds (optional, default is 0.0 meaning unlimited)
-     * @return bool                 TRUE on success, FALSE on error.
-     * @example
-     * <pre>
-     * $redis->connect('127.0.0.1', 6379);
-     * $redis->connect('127.0.0.1');            // port 6379 by default
-     * $redis->connect('127.0.0.1', 6379, 2.5); // 2.5 sec timeout.
-     * $redis->connect('/tmp/redis.sock');      // unix domain socket.
-     * </pre>
+     * @return array
      */
-    public function connect($host, $port = 6379, $timeout = 0.0) {
-
+    public function getNodes() {
+        return $this->nodes;
     }
 
     /**
-     * @see connect()
-     * @param string    $host
-     * @param int       $port
-     * @param float     $timeout
+     * @param RedisDSN $node
      */
-    public function open($host, $port = 6379, $timeout = 0.0) {
+    public function getNodeConnection(RedisDSN $node) {
+        $hostKey = (string) $node;
+        if (isset($this->connections[$hostKey])) {
+            return $this->connections[$hostKey];
+        } else {
+            $Redis = new \Redis;
+            $connectFunction = ($node->getPersistent()) ? 'pconnect' : 'connect';
+            if ($Redis->$connectFunction($node->getHost(), (int) $node->getPort(), (float) $node->getTimeout(), $hostKey)) {
+                if ($prefix = $node->getPrefix()) {
+                    if (!$Redis->setOption(\Redis::OPT_PREFIX, $prefix)) {
+                        throw new RedisException("Could not set prefix for Redis node");
+                    }
+                }
 
+                if ($database = $node->getDatabase()) {
+                    if (!$Redis->select($database)) {
+                        throw new RedisException("Could not select database for Redis node");
+                    }
+                }
+
+                return $this->connections[$hostKey] = $Redis;
+            }
+        }
+
+        throw new RedisException("Could not connect to Redis node");
     }
 
     /**
-     * Connects to a Redis instance or reuse a connection already established with pconnect/popen.
+     * Connect to redis node by key
      *
-     * The connection will not be closed on close or end of request until the php process ends.
-     * So be patient on to many open FD's (specially on redis server side) when using persistent connections on
-     * many servers connecting to one redis server.
-     *
-     * Also more than one persistent connection can be made identified by either host + port + timeout
-     * or unix socket + timeout.
-     *
-     * This feature is not available in threaded versions. pconnect and popen then working like their non persistent
-     * equivalents.
-     *
-     * @param string    $host       can be a host, or the path to a unix domain socket
-     * @param int       $port       optional
-     * @param float     $timeout    value in seconds (optional, default is 0 meaning unlimited)
-     * @return bool                 TRUE on success, FALSE on error.
-     * @example
-     * <pre>
-     * $redis->connect('127.0.0.1', 6379);
-     * $redis->connect('127.0.0.1');            // port 6379 by default
-     * $redis->connect('127.0.0.1', 6379, 2.5); // 2.5 sec timeout.
-     * $redis->connect('/tmp/redis.sock');      // unix domain socket.
-     * </pre>
+     * @param str $key
+     * @return \Redis
      */
-    public function pconnect($host, $port = 6379, $timeout = 0.0) {
-
+    public function getNodeConnectionByKey($key) {
+        return $this->getNodeConnection($this->getNodeByKey($key));
     }
 
     /**
-     * @see pconnect()
-     * @param string    $host
-     * @param int       $port
-     * @param float     $timeout
-     */
-    public function popen($host, $port = 6379, $timeout = 0.0) {
-
-    }
-
-    /**
-     * Disconnects from the Redis instance, except when pconnect is used.
-     */
-    public function close() {
-
-    }
-
-    /**
-     * Set client option.
+     * Connection to redis node by number
      *
-     * @param   string  $name    parameter name
-     * @param   string  $value   parameter value
-     * @return  bool:   TRUE on success, FALSE on error.
-     * @example
-     * <pre>
-     * $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);        // don't serialize data
-     * $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);         // use built-in serialize/unserialize
-     * $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY);    // use igBinary serialize/unserialize
-     * $redis->setOption(Redis::OPT_PREFIX, 'myAppName:');                      // use custom prefix on all keys
-     * </pre>
+     * @param int $number
      */
-    public function setOption($name, $value) {
-
+    public function getNodeConnectionByNodeNumber($number) {
+        return $this->getNodeConnection($this->nodes[$number]);
     }
 
     /**
-     * Get client option
+     * Get connection info
      *
-     * @param   string  $name parameter name
-     * @return  int     Parameter value.
-     * @example
-     * // return Redis::SERIALIZER_NONE, Redis::SERIALIZER_PHP, or Redis::SERIALIZER_IGBINARY.
-     * $redis->getOption(Redis::OPT_SERIALIZER);
+     * @param str $key
+     * @return array
      */
-    public function getOption($name) {
-
+    public function getNodeByKey($key) {
+        return $this->nodes[$this->getNodeNumberByKey($key)];
     }
 
     /**
-     * Check the current connection status
+     * Returns node number by key
      *
-     * @return  string STRING: +PONG on success. Throws a RedisException object on connectivity error, as described above.
-     * @link    http://redis.io/commands/ping
+     * @param $key
+     * @return mixed
      */
-    public function ping() {
-
+    public function getNodeNumberByKey($key) {
+        return crc32($key) % count($this->nodes);
     }
 
     /**
@@ -160,7 +179,17 @@ class Redis {
      * @example $redis->get('key');
      */
     public function get($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -175,7 +204,17 @@ class Redis {
      * @example $redis->set('key', 'value');
      */
     public function set($key, $value, $timeout = 0.0) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -189,7 +228,17 @@ class Redis {
      * @example $redis->setex('key', 3600, 'value'); // sets key → value, with 1h TTL.
      */
     public function setex($key, $ttl, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -206,7 +255,17 @@ class Redis {
      * </pre>
      */
     public function setnx($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -228,7 +287,26 @@ class Redis {
      * </pre>
      */
     public function del($key1, $key2 = null, $key3 = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
 
+        $counter = 0;
+        $chunks = array();
+        foreach (func_get_args() as $key) {
+            $nodeNumber = $this->getNodeNumberByKey($key);
+            if (isset($chunks[$nodeNumber])) {
+                $chunks[$nodeNumber][] = $key;
+            } else {
+                $chunks[$nodeNumber] = array($key);
+            }
+        }
+
+        foreach ($chunks as $nodeNumber=>$args) {
+            $counter+= call_user_func_array(array($this->getNodeConnectionByNodeNumber($nodeNumber), __FUNCTION__), $args);
+        }
+
+        return $counter;
     }
 
     /**
@@ -238,7 +316,7 @@ class Redis {
      * @param null $key3
      */
     public function delete($key1, $key2 = null, $key3 = null) {
-
+        return call_user_func_array(array($this, 'del'), func_get_args());
     }
 
     /**
@@ -269,7 +347,9 @@ class Redis {
      * </pre>
      */
     public function multi() {
-
+        $this->mode = self::MULTI_MODE;
+        $this->multiQueue = array();
+        return $this;
     }
 
     /**
@@ -277,7 +357,50 @@ class Redis {
      * @link    http://redis.io/commands/exec
      */
     public function exec() {
+        $result = array();
+        $chunks = array();
 
+        foreach ($this->multiQueue as $item) {
+            $function = $item['function'];
+            $args = $item['args'];
+            $key = $item['key'];
+
+            $nodeNumber = $this->getNodeNumberByKey($key);
+            $resultKey = $function . ":" . md5(http_build_query($args));
+            $result[$resultKey] = false;
+
+            if (isset($chunks[$nodeNumber])) {
+                $chunks[$nodeNumber][$resultKey] = array(
+                    'function' => $function,
+                    'args'     => $args,
+                );
+            } else {
+                $chunks[$nodeNumber] = array(
+                    $resultKey => array(
+                        'function' => $function,
+                        'args'     => $args,
+                    )
+                );
+            }
+        }
+
+        foreach ($chunks as $nodeNumber => $queue) {
+            $_keys = array_keys($queue);
+            $nodeConnection = $this->getNodeConnectionByNodeNumber($nodeNumber);
+
+            $nodeConnection->multi();
+            foreach ($queue as $queueItem) {
+                call_user_func_array(array($nodeConnection, $queueItem['function']), $queueItem['args']);
+            }
+            $nodeResult = $nodeConnection->exec();
+
+            foreach ($_keys as $index=>$_key) {
+                $result[$_key] = $nodeResult[$index];
+            }
+        }
+
+        $this->mode = self::SINGLE_MODE;
+        return array_values($result);
     }
 
     /**
@@ -285,35 +408,8 @@ class Redis {
      * @link    http://redis.io/commands/discard
      */
     public function discard() {
-
-    }
-
-    /**
-     * Watches a key for modifications by another client. If the key is modified between WATCH and EXEC,
-     * the MULTI/EXEC transaction will fail (return FALSE). unwatch cancels all the watching of all keys by this client.
-     * @param string | array $key: a list of keys
-     * @return void
-     * @link    http://redis.io/commands/watch
-     * @example
-     * <pre>
-     * $redis->watch('x');
-     * // long code here during the execution of which other clients could well modify `x`
-     * $ret = $redis->multi()
-     *          ->incr('x')
-     *          ->exec();
-     * // $ret = FALSE if x has been modified between the call to WATCH and the call to EXEC.
-     * </pre>
-     */
-    public function watch($key) {
-
-    }
-
-    /**
-     * @see watch()
-     * @link    http://redis.io/commands/unwatch
-     */
-    public function unwatch() {
-
+        $this->multiQueue = array();
+        $this->mode = self::SINGLE_MODE;
     }
 
     /**
@@ -345,7 +441,7 @@ class Redis {
      * </pre>
      */
     public function subscribe($channels, $callback) {
-
+        throw new RedisException(__FUNCTION__ . " not implemented yet");
     }
 
     /**
@@ -357,7 +453,7 @@ class Redis {
      * @example $redis->publish('chan-1', 'hello, world!'); // send message.
      */
     public function publish($channel, $message) {
-
+        throw new RedisException(__FUNCTION__ . " not implemented yet");
     }
 
     /**
@@ -374,7 +470,17 @@ class Redis {
      * </pre>
      */
     public function exists($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -392,7 +498,17 @@ class Redis {
      * </pre>
      */
     public function incr($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -414,7 +530,17 @@ class Redis {
      * </pre>
      */
     public function incrByFloat($key, $increment) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -435,7 +561,17 @@ class Redis {
      * </pre>
      */
     public function incrBy($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -452,7 +588,17 @@ class Redis {
      * </pre>
      */
     public function decr($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -472,26 +618,17 @@ class Redis {
      * </pre>
      */
     public function decrBy($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Get the values of all the specified keys. If one or more keys dont exist, the array will contain FALSE at the
-     * position of the key.
-     *
-     * @param   array $keys Array containing the list of the keys
-     * @return  array Array containing the values related to keys in argument
-     * @example
-     * <pre>
-     * $redis->set('key1', 'value1');
-     * $redis->set('key2', 'value2');
-     * $redis->set('key3', 'value3');
-     * $redis->getMultiple(array('key1', 'key2', 'key3')); // array('value1', 'value2', 'value3');
-     * $redis->getMultiple(array('key0', 'key1', 'key5')); // array(`FALSE`, 'value2', `FALSE`);
-     * </pre>
-     */
-    public function getMultiple(array $keys) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -518,7 +655,17 @@ class Redis {
      * </pre>
      */
     public function lPush($key, $value1, $value2 = null, $valueN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -545,7 +692,17 @@ class Redis {
      * </pre>
      */
     public function rPush($key, $value1, $value2 = null, $valueN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -566,7 +723,17 @@ class Redis {
      * </pre>
      */
     public function lPushx($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -587,7 +754,17 @@ class Redis {
      * </pre>
      */
     public function rPushx($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -605,7 +782,17 @@ class Redis {
      * </pre>
      */
     public function lPop($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -623,94 +810,18 @@ class Redis {
      * </pre>
      */
     public function rPop($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
-
-    /**
-     * Is a blocking lPop primitive. If at least one of the lists contains at least one element,
-     * the element will be popped from the head of the list and returned to the caller.
-     * Il all the list identified by the keys passed in arguments are empty, blPop will block
-     * during the specified timeout until an element is pushed to one of those lists. This element will be popped.
-     *
-     * @param   array $keys Array containing the keys of the lists INTEGER Timeout
-     * Or STRING Key1 STRING Key2 STRING Key3 ... STRING Keyn INTEGER Timeout
-     * @return  array array('listName', 'element')
-     * @link    http://redis.io/commands/blpop
-     * @example
-     * <pre>
-     * // Non blocking feature
-     * $redis->lPush('key1', 'A');
-     * $redis->delete('key2');
-     *
-     * $redis->blPop('key1', 'key2', 10); // array('key1', 'A')
-     * // OR
-     * $redis->blPop(array('key1', 'key2'), 10); // array('key1', 'A')
-     *
-     * $redis->brPop('key1', 'key2', 10); // array('key1', 'A')
-     * // OR
-     * $redis->brPop(array('key1', 'key2'), 10); // array('key1', 'A')
-     *
-     * // Blocking feature
-     *
-     * // process 1
-     * $redis->delete('key1');
-     * $redis->blPop('key1', 10);
-     * // blocking for 10 seconds
-     *
-     * // process 2
-     * $redis->lPush('key1', 'A');
-     *
-     * // process 1
-     * // array('key1', 'A') is returned
-     * </pre>
-     */
-    public function blPop(array $keys) {
-
-    }
-
-    /**
-     * Is a blocking rPop primitive. If at least one of the lists contains at least one element,
-     * the element will be popped from the head of the list and returned to the caller.
-     * Il all the list identified by the keys passed in arguments are empty, brPop will
-     * block during the specified timeout until an element is pushed to one of those lists. T
-     * his element will be popped.
-     *
-     * @param   array $keys Array containing the keys of the lists INTEGER Timeout
-     * Or STRING Key1 STRING Key2 STRING Key3 ... STRING Keyn INTEGER Timeout
-     * @return  array array('listName', 'element')
-     * @link    http://redis.io/commands/brpop
-     * @example
-     * <pre>
-     * // Non blocking feature
-     * $redis->lPush('key1', 'A');
-     * $redis->delete('key2');
-     *
-     * $redis->blPop('key1', 'key2', 10); // array('key1', 'A')
-     * // OR
-     * $redis->blPop(array('key1', 'key2'), 10); // array('key1', 'A')
-     *
-     * $redis->brPop('key1', 'key2', 10); // array('key1', 'A')
-     * // OR
-     * $redis->brPop(array('key1', 'key2'), 10); // array('key1', 'A')
-     *
-     * // Blocking feature
-     *
-     * // process 1
-     * $redis->delete('key1');
-     * $redis->blPop('key1', 10);
-     * // blocking for 10 seconds
-     *
-     * // process 2
-     * $redis->lPush('key1', 'A');
-     *
-     * // process 1
-     * // array('key1', 'A') is returned
-     * </pre>
-     */
-    public function brPop(array $keys) {
-
-    }
-
 
     /**
      * Returns the size of a list identified by Key. If the list didn't exist or is empty,
@@ -731,7 +842,17 @@ class Redis {
      * </pre>
      */
     public function lLen($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -741,7 +862,17 @@ class Redis {
      * @link    http://redis.io/commands/llen
      */
     public function lSize($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -765,7 +896,17 @@ class Redis {
      * </pre>
      */
     public function lIndex($key, $index) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -775,7 +916,17 @@ class Redis {
      * @link    http://redis.io/commands/lindex
      */
     public function lGet($key, $index) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -799,7 +950,17 @@ class Redis {
      * </pre>
      */
     public function lSet($key, $index, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -821,7 +982,17 @@ class Redis {
      * </pre>
      */
     public function lRange($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -832,7 +1003,17 @@ class Redis {
      * @param int       $end
      */
     public function lGetRange($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -855,20 +1036,18 @@ class Redis {
      * </pre>
      */
     public function lTrim($key, $start, $stop) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
-
-    /**
-     * @see lTrim()
-     * @link  http://redis.io/commands/ltrim
-     * @param string    $key
-     * @param int       $start
-     * @param int       $stop
-     */
-    public function listTrim($key, $start, $stop) {
-
-    }
-
 
     /**
      * Removes the first count occurences of the value element from the list.
@@ -895,7 +1074,17 @@ class Redis {
      * </pre>
      */
     public function lRem($key, $value, $count) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -906,7 +1095,7 @@ class Redis {
      * @param int       $count
      */
     public function lRemove($key, $value, $count) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), "lRem"), func_get_args());
     }
 
 
@@ -940,7 +1129,17 @@ class Redis {
      * </pre>
      */
     public function lInsert($key, $position, $pivot, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -960,7 +1159,17 @@ class Redis {
      * </pre>
      */
     public function sAdd($key, $value1, $value2 = null, $valueN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -985,7 +1194,17 @@ class Redis {
      * </pre>
      */
     public function sRem($key, $member1, $member2 = null, $memberN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -997,32 +1216,17 @@ class Redis {
      * @param   string  $memberN
      */
     public function sRemove($key, $member1, $member2 = null, $memberN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-
-    /**
-     * Moves the specified member from the set at srcKey to the set at dstKey.
-     *
-     * @param   string  $srcKey
-     * @param   string  $dstKey
-     * @param   string  $member
-     * @return  bool    If the operation is successful, return TRUE.
-     * If the srcKey and/or dstKey didn't exist, and/or the member didn't exist in srcKey, FALSE is returned.
-     * @link    http://redis.io/commands/smove
-     * @example
-     * <pre>
-     * $redis->sAdd('key1' , 'set11');
-     * $redis->sAdd('key1' , 'set12');
-     * $redis->sAdd('key1' , 'set13');          // 'key1' => {'set11', 'set12', 'set13'}
-     * $redis->sAdd('key2' , 'set21');
-     * $redis->sAdd('key2' , 'set22');          // 'key2' => {'set21', 'set22'}
-     * $redis->sMove('key1', 'key2', 'set13');  // 'key1' =>  {'set11', 'set12'}
-     *                                          // 'key2' =>  {'set21', 'set22', 'set13'}
-     * </pre>
-     */
-    public function sMove($srcKey, $dstKey, $member) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -1044,7 +1248,17 @@ class Redis {
      * </pre>
      */
     public function sIsMember($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1054,7 +1268,17 @@ class Redis {
      * @param   string  $value
      */
     public function sContains($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1073,9 +1297,37 @@ class Redis {
      * </pre>
      */
     public function sCard($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
+    /**
+     * @see sCard()
+     * @link    http://redis.io/commands/sSize
+     * @param   string  $key
+     */
+    public function sSize($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
+
+            return $this;
+        }
+
+        return $this->sCard($key);
+    }
 
     /**
      * Removes and returns a random element from the set value at Key.
@@ -1094,7 +1346,17 @@ class Redis {
      * </pre>
      */
     public function sPop($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -1115,232 +1377,17 @@ class Redis {
      * </pre>
      */
     public function sRandMember($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Returns the members of a set resulting from the intersection of all the sets
-     * held at the specified keys. If just a single key is specified, then this command
-     * produces the members of this set. If one of the keys is missing, FALSE is returned.
-     *
-     * @param   string  $key1  keys identifying the different sets on which we will apply the intersection.
-     * @param   string  $key2  ...
-     * @param   string  $keyN  ...
-     * @return  array, contain the result of the intersection between those keys.
-     * If the intersection between the different sets is empty, the return value will be empty array.
-     * @link    http://redis.io/commands/sinterstore
-     * @example
-     * <pre>
-     * $redis->sAdd('key1', 'val1');
-     * $redis->sAdd('key1', 'val2');
-     * $redis->sAdd('key1', 'val3');
-     * $redis->sAdd('key1', 'val4');
-     *
-     * $redis->sAdd('key2', 'val3');
-     * $redis->sAdd('key2', 'val4');
-     *
-     * $redis->sAdd('key3', 'val3');
-     * $redis->sAdd('key3', 'val4');
-     *
-     * var_dump($redis->sInter('key1', 'key2', 'key3'));
-     *
-     * //array(2) {
-     * //  [0]=>
-     * //  string(4) "val4"
-     * //  [1]=>
-     * //  string(4) "val3"
-     * //}
-     * </pre>
-     */
-    public function sInter($key1, $key2, $keyN = null) {
-
-    }
-
-    /**
-     * Performs a sInter command and stores the result in a new set.
-     *
-     * @param   string  $dstKey the key to store the diff into.
-     * @param   string  $key1 are intersected as in sInter.
-     * @param   string  $key2 ...
-     * @param   string  $keyN ...
-     * @return  int:    The cardinality of the resulting set, or FALSE in case of a missing key.
-     * @link    http://redis.io/commands/sinterstore
-     * @example
-     * <pre>
-     * $redis->sAdd('key1', 'val1');
-     * $redis->sAdd('key1', 'val2');
-     * $redis->sAdd('key1', 'val3');
-     * $redis->sAdd('key1', 'val4');
-     *
-     * $redis->sAdd('key2', 'val3');
-     * $redis->sAdd('key2', 'val4');
-     *
-     * $redis->sAdd('key3', 'val3');
-     * $redis->sAdd('key3', 'val4');
-     *
-     * var_dump($redis->sInterStore('output', 'key1', 'key2', 'key3'));
-     * var_dump($redis->sMembers('output'));
-     *
-     * //int(2)
-     * //
-     * //array(2) {
-     * //  [0]=>
-     * //  string(4) "val4"
-     * //  [1]=>
-     * //  string(4) "val3"
-     * //}
-     * </pre>
-     */
-    public function sInterStore($dstKey, $key1, $key2, $keyN = null) {
-
-    }
-
-    /**
-     * Performs the union between N sets and returns it.
-     *
-     * @param   string  $key1 Any number of keys corresponding to sets in redis.
-     * @param   string  $key2 ...
-     * @param   string  $keyN ...
-     * @return  array   of strings: The union of all these sets.
-     * @link    http://redis.io/commands/sunionstore
-     * @example
-     * <pre>
-     * $redis->delete('s0', 's1', 's2');
-     *
-     * $redis->sAdd('s0', '1');
-     * $redis->sAdd('s0', '2');
-     * $redis->sAdd('s1', '3');
-     * $redis->sAdd('s1', '1');
-     * $redis->sAdd('s2', '3');
-     * $redis->sAdd('s2', '4');
-     *
-     * var_dump($redis->sUnion('s0', 's1', 's2'));
-     *
-     * array(4) {
-     * //  [0]=>
-     * //  string(1) "3"
-     * //  [1]=>
-     * //  string(1) "4"
-     * //  [2]=>
-     * //  string(1) "1"
-     * //  [3]=>
-     * //  string(1) "2"
-     * //}
-     * </pre>
-     */
-    public function sUnion($key1, $key2, $keyN = null) {
-
-    }
-
-    /**
-     * Performs the same action as sUnion, but stores the result in the first key
-     *
-     * @param   string  $dstKey  the key to store the diff into.
-     * @param   string  $key1    Any number of keys corresponding to sets in redis.
-     * @param   string  $key2    ...
-     * @param   string  $keyN    ...
-     * @return  int     Any number of keys corresponding to sets in redis.
-     * @link    http://redis.io/commands/sunionstore
-     * @example
-     * <pre>
-     * $redis->delete('s0', 's1', 's2');
-     *
-     * $redis->sAdd('s0', '1');
-     * $redis->sAdd('s0', '2');
-     * $redis->sAdd('s1', '3');
-     * $redis->sAdd('s1', '1');
-     * $redis->sAdd('s2', '3');
-     * $redis->sAdd('s2', '4');
-     *
-     * var_dump($redis->sUnionStore('dst', 's0', 's1', 's2'));
-     * var_dump($redis->sMembers('dst'));
-     *
-     * //int(4)
-     * //array(4) {
-     * //  [0]=>
-     * //  string(1) "3"
-     * //  [1]=>
-     * //  string(1) "4"
-     * //  [2]=>
-     * //  string(1) "1"
-     * //  [3]=>
-     * //  string(1) "2"
-     * //}
-     * </pre>
-     */
-    public function sUnionStore($dstKey, $key1, $key2, $keyN = null) {
-
-    }
-
-    /**
-     * Performs the difference between N sets and returns it.
-     *
-     * @param   string  $key1 Any number of keys corresponding to sets in redis.
-     * @param   string  $key2 ...
-     * @param   string  $keyN ...
-     * @return  array   of strings: The difference of the first set will all the others.
-     * @link    http://redis.io/commands/sdiff
-     * @example
-     * <pre>
-     * $redis->delete('s0', 's1', 's2');
-     *
-     * $redis->sAdd('s0', '1');
-     * $redis->sAdd('s0', '2');
-     * $redis->sAdd('s0', '3');
-     * $redis->sAdd('s0', '4');
-     *
-     * $redis->sAdd('s1', '1');
-     * $redis->sAdd('s2', '3');
-     *
-     * var_dump($redis->sDiff('s0', 's1', 's2'));
-     *
-     * //array(2) {
-     * //  [0]=>
-     * //  string(1) "4"
-     * //  [1]=>
-     * //  string(1) "2"
-     * //}
-     * </pre>
-     */
-    public function sDiff($key1, $key2, $keyN = null) {
-
-    }
-
-    /**
-     * Performs the same action as sDiff, but stores the result in the first key
-     *
-     * @param   string  $dstKey    the key to store the diff into.
-     * @param   string  $key1      Any number of keys corresponding to sets in redis
-     * @param   string  $key2      ...
-     * @param   string  $keyN      ...
-     * @return  int:    The cardinality of the resulting set, or FALSE in case of a missing key.
-     * @link    http://redis.io/commands/sdiffstore
-     * @example
-     * <pre>
-     * $redis->delete('s0', 's1', 's2');
-     *
-     * $redis->sAdd('s0', '1');
-     * $redis->sAdd('s0', '2');
-     * $redis->sAdd('s0', '3');
-     * $redis->sAdd('s0', '4');
-     *
-     * $redis->sAdd('s1', '1');
-     * $redis->sAdd('s2', '3');
-     *
-     * var_dump($redis->sDiffStore('dst', 's0', 's1', 's2'));
-     * var_dump($redis->sMembers('dst'));
-     *
-     * //int(2)
-     * //array(2) {
-     * //  [0]=>
-     * //  string(1) "4"
-     * //  [1]=>
-     * //  string(1) "2"
-     * //}
-     * </pre>
-     */
-    public function sDiffStore($dstKey, $key1, $key2, $keyN = null) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1370,7 +1417,17 @@ class Redis {
      * </pre>
      */
     public function sMembers($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1379,7 +1436,7 @@ class Redis {
      * @link    http://redis.io/commands/smembers
      */
     public function sGetMembers($key) {
-
+        return $this->sMembers($key);
     }
 
     /**
@@ -1397,42 +1454,17 @@ class Redis {
      * </pre>
      */
     public function getSet($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Returns a random key.
-     *
-     * @return string: an existing key in redis.
-     * @link    http://redis.io/commands/randomkey
-     * @example
-     * <pre>
-     * $key = $redis->randomKey();
-     * $surprise = $redis->get($key);  // who knows what's in there.
-     * </pre>
-     */
-    public function randomKey() {
-
-    }
-
-
-    /**
-     * Switches to a given database.
-     *
-     * @param   int     $dbindex
-     * @return  bool    TRUE in case of success, FALSE in case of failure.
-     * @link    http://redis.io/commands/select
-     * @example
-     * <pre>
-     * $redis->select(0);       // switch to DB 0
-     * $redis->set('x', '42');  // write 42 to x
-     * $redis->move('x', 1);    // move to DB 1
-     * $redis->select(1);       // switch to DB 1
-     * $redis->get('x');        // will return 42
-     * </pre>
-     */
-    public function select($dbindex) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1452,58 +1484,17 @@ class Redis {
      * </pre>
      */
     public function move($key, $dbindex) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Renames a key.
-     *
-     * @param   string  $srcKey
-     * @param   string  $dstKey
-     * @return  bool:   TRUE in case of success, FALSE in case of failure.
-     * @link    http://redis.io/commands/rename
-     * @example
-     * <pre>
-     * $redis->set('x', '42');
-     * $redis->rename('x', 'y');
-     * $redis->get('y');   // → 42
-     * $redis->get('x');   // → `FALSE`
-     * </pre>
-     */
-    public function rename($srcKey, $dstKey) {
-
-    }
-
-    /**
-     * @see rename()
-     * @link    http://redis.io/commands/rename
-     * @param   string  $srcKey
-     * @param   string  $dstKey
-     */
-    public function renameKey($srcKey, $dstKey) {
-
-    }
-
-    /**
-     * Renames a key.
-     *
-     * Same as rename, but will not replace a key if the destination already exists.
-     * This is the same behaviour as setNx.
-     *
-     * @param   string  $srcKey
-     * @param   string  $dstKey
-     * @return  bool:   TRUE in case of success, FALSE in case of failure.
-     * @link    http://redis.io/commands/renamenx
-     * @example
-     * <pre>
-     * $redis->set('x', '42');
-     * $redis->rename('x', 'y');
-     * $redis->get('y');   // → 42
-     * $redis->get('x');   // → `FALSE`
-     * </pre>
-     */
-    public function renameNx($srcKey, $dstKey) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1522,7 +1513,17 @@ class Redis {
      * </pre>
      */
     public function expire($key, $ttl) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1541,7 +1542,17 @@ class Redis {
      * </pre>
      */
     public function pExpire($key, $ttl) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1551,7 +1562,17 @@ class Redis {
      * @link    http://redis.io/commands/expire
      */
     public function setTimeout($key, $ttl) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1571,7 +1592,17 @@ class Redis {
      * </pre>
      */
     public function expireAt($key, $timestamp) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1590,90 +1621,17 @@ class Redis {
      * </pre>
      */
     public function pExpireAt($key, $timestamp) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Returns the keys that match a certain pattern.
-     *
-     * @param   string  $pattern pattern, using '*' as a wildcard.
-     * @return  array   of STRING: The keys that match a certain pattern.
-     * @link    http://redis.io/commands/keys
-     * @example
-     * <pre>
-     * $allKeys = $redis->keys('*');   // all keys will match this.
-     * $keyWithUserPrefix = $redis->keys('user*');
-     * </pre>
-     */
-    public function keys($pattern) {
-
-    }
-
-    /**
-     * @see keys()
-     * @param   string  $pattern
-     * @link    http://redis.io/commands/keys
-     */
-    public function getKeys($pattern) {
-
-    }
-
-    /**
-     * Returns the current database's size.
-     *
-     * @return int:     DB size, in number of keys.
-     * @link    http://redis.io/commands/dbsize
-     * @example
-     * <pre>
-     * $count = $redis->dbSize();
-     * echo "Redis has $count keys\n";
-     * </pre>
-     */
-    public function dbSize() {
-
-    }
-
-    /**
-     * Authenticate the connection using a password.
-     * Warning: The password is sent in plain-text over the network.
-     *
-     * @param   string  $password
-     * @return  bool:   TRUE if the connection is authenticated, FALSE otherwise.
-     * @link    http://redis.io/commands/auth
-     * @example $redis->auth('foobared');
-     */
-    public function auth($password) {
-
-    }
-
-    /**
-     * Starts the background rewrite of AOF (Append-Only File)
-     *
-     * @return  bool:   TRUE in case of success, FALSE in case of failure.
-     * @link    http://redis.io/commands/bgrewriteaof
-     * @example $redis->bgrewriteaof();
-     */
-    public function bgrewriteaof() {
-
-    }
-
-    /**
-     * Changes the slave status
-     * Either host and port, or no parameter to stop being a slave.
-     *
-     * @param   string  $host [optional]
-     * @param   int $port [optional]
-     * @return  bool:   TRUE in case of success, FALSE in case of failure.
-     * @link    http://redis.io/commands/slaveof
-     * @example
-     * <pre>
-     * $redis->slaveof('10.0.1.7', 6379);
-     * // ...
-     * $redis->slaveof();
-     * </pre>
-     */
-    public function slaveof($host = '127.0.0.1', $port = 6379) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1696,44 +1654,18 @@ class Redis {
      * </pre>
      */
     public function object($string = '', $key = '') {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
-
-    /**
-     * Performs a synchronous save.
-     *
-     * @return  bool:   TRUE in case of success, FALSE in case of failure.
-     * If a save is already running, this command will fail and return FALSE.
-     * @link    http://redis.io/commands/save
-     * @example $redis->save();
-     */
-    public function save() {
-
-    }
-
-    /**
-     * Performs a background save.
-     *
-     * @return  bool:    TRUE in case of success, FALSE in case of failure.
-     * If a save is already running, this command will fail and return FALSE.
-     * @link    http://redis.io/commands/bgsave
-     * @example $redis->bgSave();
-     */
-    public function bgsave() {
-
-    }
-
-    /**
-     * Returns the timestamp of the last disk save.
-     *
-     * @return  int:    timestamp.
-     * @link    http://redis.io/commands/lastsave
-     * @example $redis->lastSave();
-     */
-    public function lastSave() {
-
-    }
-
 
     /**
      * Returns the type of data pointed by a given key.
@@ -1753,7 +1685,17 @@ class Redis {
      * @example $redis->type('key');
      */
     public function type($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1771,7 +1713,17 @@ class Redis {
      * </pre>
      */
     public function append($key, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -1791,7 +1743,17 @@ class Redis {
      * </pre>
      */
     public function getRange($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1803,7 +1765,17 @@ class Redis {
      * @param   int     $end
      */
     public function substr($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
 
@@ -1823,7 +1795,17 @@ class Redis {
      * </pre>
      */
     public function setRange($key, $offset, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1839,7 +1821,17 @@ class Redis {
      * </pre>
      */
     public function strlen($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1857,7 +1849,17 @@ class Redis {
      * </pre>
      */
     public function getBit($key, $offset) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1877,7 +1879,17 @@ class Redis {
      * </pre>
      */
     public function setBit($key, $offset, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1896,53 +1908,17 @@ class Redis {
      * </pre>
      */
     public function bitCount($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Bitwise operation on multiple keys.
-     *
-     * @param   string  $operation  either "AND", "OR", "NOT", "XOR"
-     * @param   string  $retKey     return key
-     * @param   string  $key1
-     * @param   string  $key2
-     * @return  int     The size of the string stored in the destination key.
-     * @link    http://redis.io/commands/bitop
-     * @example
-     * <pre>
-     * $redis->set('bit1', '1'); // 11 0001
-     * $redis->set('bit2', '2'); // 11 0010
-     *
-     * $redis->bitOp('AND', 'bit', 'bit1', 'bit2'); // bit = 110000
-     * $redis->bitOp('OR',  'bit', 'bit1', 'bit2'); // bit = 110011
-     * $redis->bitOp('NOT', 'bit', 'bit1', 'bit2'); // bit = 110011
-     * $redis->bitOp('XOR', 'bit', 'bit1', 'bit2'); // bit = 11
-     * </pre>
-     */
-    public function bitOp($operation, $retKey, $key1, $key2, $key3 = null) {
-
-    }
-
-    /**
-     * Removes all entries from the current database.
-     *
-     * @return  bool: Always TRUE.
-     * @link    http://redis.io/commands/flushdb
-     * @example $redis->flushDB();
-     */
-    public function flushDB() {
-
-    }
-
-    /**
-     * Removes all entries from all databases.
-     *
-     * @return  bool: Always TRUE.
-     * @link    http://redis.io/commands/flushall
-     * @example $redis->flushAll();
-     */
-    public function flushAll() {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -1974,88 +1950,17 @@ class Redis {
      * </pre>
      */
     public function sort($key, $option = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-
-    /**
-     * Returns an associative array of strings and integers
-     * @param   string   $option    Optional. The option to provide redis.
-     * SERVER | CLIENTS | MEMORY | PERSISTENCE | STATS | REPLICATION | CPU | CLASTER | KEYSPACE | COMANDSTATS
-     *
-     * Returns an associative array of strings and integers, with the following keys:
-     * - redis_version
-     * - redis_git_sha1
-     * - redis_git_dirty
-     * - arch_bits
-     * - multiplexing_api
-     * - process_id
-     * - uptime_in_seconds
-     * - uptime_in_days
-     * - lru_clock
-     * - used_cpu_sys
-     * - used_cpu_user
-     * - used_cpu_sys_children
-     * - used_cpu_user_children
-     * - connected_clients
-     * - connected_slaves
-     * - client_longest_output_list
-     * - client_biggest_input_buf
-     * - blocked_clients
-     * - used_memory
-     * - used_memory_human
-     * - used_memory_peak
-     * - used_memory_peak_human
-     * - mem_fragmentation_ratio
-     * - mem_allocator
-     * - loading
-     * - aof_enabled
-     * - changes_since_last_save
-     * - bgsave_in_progress
-     * - last_save_time
-     * - total_connections_received
-     * - total_commands_processed
-     * - expired_keys
-     * - evicted_keys
-     * - keyspace_hits
-     * - keyspace_misses
-     * - hash_max_zipmap_entries
-     * - hash_max_zipmap_value
-     * - pubsub_channels
-     * - pubsub_patterns
-     * - latest_fork_usec
-     * - vm_enabled
-     * - role
-     * @link    http://redis.io/commands/info
-     * @example
-     * <pre>
-     * $redis->info();
-     *
-     * or
-     *
-     * $redis->info("COMMANDSTATS"); //Information on the commands that have been run (>=2.6 only)
-     * $redis->info("CPU"); // just CPU information from Redis INFO
-     * </pre>
-     */
-    public function info($option = null) {
-
-    }
-
-    /**
-     * Resets the statistics reported by Redis using the INFO command (`info()` function).
-     * These are the counters that are reset:
-     *      - Keyspace hits
-     *      - Keyspace misses
-     *      - Number of commands processed
-     *      - Number of connections received
-     *      - Number of expired keys
-     *
-     * @return bool: `TRUE` in case of success, `FALSE` in case of failure.
-     * @example $redis->resetStat();
-     * @link http://redis.io/commands/config-resetstat
-     */
-    public function resetStat() {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2067,7 +1972,17 @@ class Redis {
      * @example $redis->ttl('key');
      */
     public function ttl($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2081,7 +1996,17 @@ class Redis {
      * @example $redis->pttl('key');
      */
     public function pttl($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2093,7 +2018,17 @@ class Redis {
      * @example $redis->persist('key');
      */
     public function persist($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2114,7 +2049,58 @@ class Redis {
      * </pre>
      */
     public function mset(array $array) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
 
+        $result = true;
+        $chunks = array();
+        foreach ($array as $key=>$value) {
+            $nodeNumber = $this->getNodeNumberByKey($key);
+            if (isset($chunks[$nodeNumber])) {
+                $chunks[$nodeNumber][$key] = $value;
+            } else {
+                $chunks[$nodeNumber] = array($key => $value);
+            }
+        }
+
+        foreach ($chunks as $nodeNumber => $dataChunk) {
+            if (!call_user_func_array(array($this->getNodeConnectionByNodeNumber($nodeNumber), __FUNCTION__), array($dataChunk))) {
+                $result = false;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @see mset()
+     * @param   array $array
+     * @link    http://redis.io/commands/msetnx
+     */
+    public function msetnx(array $array) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
+
+        $result = true;
+        $chunks = array();
+        foreach ($array as $key=>$value) {
+            $nodeNumber = $this->getNodeNumberByKey($key);
+            if (isset($chunks[$nodeNumber])) {
+                $chunks[$nodeNumber][$key] = $value;
+            } else {
+                $chunks[$nodeNumber] = array($key => $value);
+            }
+        }
+
+        foreach ($chunks as $nodeNumber => $dataChunk) {
+            if (!call_user_func_array(array($this->getNodeConnectionByNodeNumber($nodeNumber), __FUNCTION__), array($dataChunk))) {
+                $result = false;
+            }
+        }
+
+        return $result;
     }
 
 
@@ -2147,73 +2133,50 @@ class Redis {
      * </pre>
      */
     public function mget(array $array) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
 
+        $result = array();
+        $chunks = array();
+        foreach ($array as $key) {
+            $result[$key] = false;
+
+            $nodeNumber = $this->getNodeNumberByKey($key);
+            if (isset($chunks[$nodeNumber])) {
+                $chunks[$nodeNumber][] = $key;
+            } else {
+                $chunks[$nodeNumber] = array($key);
+            }
+        }
+
+        foreach ($chunks as $nodeNumber=>$keys) {
+            $nodeResult = call_user_func_array(array($this->getNodeConnectionByNodeNumber($nodeNumber), __FUNCTION__), array($keys));
+            foreach ($keys as $index=>$key) {
+                $result[$key] = $nodeResult[$index];
+            }
+        }
+
+        return array_values($result);
     }
 
     /**
-     * @see mset()
-     * @param   array $array
-     * @link    http://redis.io/commands/msetnx
-     */
-    public function msetnx(array $array) {
-
-    }
-
-    /**
-     * Pops a value from the tail of a list, and pushes it to the front of another list.
-     * Also return this value.
+     * Get the values of all the specified keys. If one or more keys dont exist, the array will contain FALSE at the
+     * position of the key.
      *
-     * @since   redis >= 1.1
-     * @param   string  $srcKey
-     * @param   string  $dstKey
-     * @return  string  The element that was moved in case of success, FALSE in case of failure.
-     * @link    http://redis.io/commands/rpoplpush
+     * @param   array $keys Array containing the list of the keys
+     * @return  array Array containing the values related to keys in argument
      * @example
      * <pre>
-     * $redis->delete('x', 'y');
-     *
-     * $redis->lPush('x', 'abc');
-     * $redis->lPush('x', 'def');
-     * $redis->lPush('y', '123');
-     * $redis->lPush('y', '456');
-     *
-     * // move the last of x to the front of y.
-     * var_dump($redis->rpoplpush('x', 'y'));
-     * var_dump($redis->lRange('x', 0, -1));
-     * var_dump($redis->lRange('y', 0, -1));
-     *
-     * //Output:
-     * //
-     * //string(3) "abc"
-     * //array(1) {
-     * //  [0]=>
-     * //  string(3) "def"
-     * //}
-     * //array(3) {
-     * //  [0]=>
-     * //  string(3) "abc"
-     * //  [1]=>
-     * //  string(3) "456"
-     * //  [2]=>
-     * //  string(3) "123"
-     * //}
+     * $redis->set('key1', 'value1');
+     * $redis->set('key2', 'value2');
+     * $redis->set('key3', 'value3');
+     * $redis->getMultiple(array('key1', 'key2', 'key3')); // array('value1', 'value2', 'value3');
+     * $redis->getMultiple(array('key0', 'key1', 'key5')); // array(`FALSE`, 'value2', `FALSE`);
      * </pre>
      */
-    public function rpoplpush($srcKey, $dstKey) {
-
-    }
-
-    /**
-     * A blocking version of rpoplpush, with an integral timeout in the third parameter.
-     *
-     * @param   string  $srcKey
-     * @param   string  $dstKey
-     * @param   int     $timeout
-     * @return  string  The element that was moved in case of success, FALSE in case of timeout.
-     * @link    http://redis.io/commands/brpoplpush
-     */
-    public function brpoplpush($srcKey, $dstKey, $timeout) {
-
+    public function getMultiple(array $keys) {
+        return call_user_func_array(array($this, "mget"), func_get_args());
     }
 
     /**
@@ -2243,7 +2206,17 @@ class Redis {
      * </pre>
      */
     public function zAdd($key, $score1, $value1, $score2 = null, $value2 = null, $scoreN = null, $valueN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2271,7 +2244,17 @@ class Redis {
      * </pre>
      */
     public function zRange($key, $start, $end, $withscores = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2296,7 +2279,17 @@ class Redis {
      * </pre>
      */
     public function zRem($key, $member1, $member2 = null, $memberN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2308,7 +2301,17 @@ class Redis {
      * @link    http://redis.io/commands/zrem
      */
     public function zDelete($key, $member1, $member2 = null, $memberN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2337,7 +2340,17 @@ class Redis {
      * </pre>
      */
     public function zRevRange($key, $start, $end, $withscore = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2368,7 +2381,17 @@ class Redis {
      * </pre>
      */
     public function zRangeByScore($key, $start, $end, array $options = array()) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2381,7 +2404,17 @@ class Redis {
      * @return     array
      */
     public function zRevRangeByScore($key, $start, $end, array $options = array()) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2403,7 +2436,17 @@ class Redis {
      * </pre>
      */
     public function zCount($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2423,7 +2466,17 @@ class Redis {
      * </pre>
      */
     public function zRemRangeByScore($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2433,7 +2486,17 @@ class Redis {
      * @param float     $end
      */
     public function zDeleteRangeByScore($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2454,7 +2517,17 @@ class Redis {
      * </pre>
      */
     public function zRemRangeByRank($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2465,7 +2538,17 @@ class Redis {
      * @link    http://redis.io/commands/zremrangebyscore
      */
     public function zDeleteRangeByRank($key, $start, $end) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2483,7 +2566,17 @@ class Redis {
      * </pre>
      */
     public function zCard($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2491,7 +2584,17 @@ class Redis {
      * @param string $key
      */
     public function zSize($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2508,7 +2611,17 @@ class Redis {
      * </pre>
      */
     public function zScore($key, $member) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2531,7 +2644,17 @@ class Redis {
      * </pre>
      */
     public function zRank($key, $member) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2540,7 +2663,17 @@ class Redis {
      * @param string $member
      */
     public function zRevRank($key, $member) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2560,93 +2693,17 @@ class Redis {
      * </pre>
      */
     public function zIncrBy($key, $value, $member) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Creates an union of sorted sets given in second argument.
-     * The result of the union will be stored in the sorted set defined by the first argument.
-     * The third optionnel argument defines weights to apply to the sorted sets in input.
-     * In this case, the weights will be multiplied by the score of each element in the sorted set
-     * before applying the aggregation. The forth argument defines the AGGREGATE option which
-     * specify how the results of the union are aggregated.
-     *
-     * @param string    $Output
-     * @param array     $ZSetKeys
-     * @param array     $Weights
-     * @param string    $aggregateFunction  Either "SUM", "MIN", or "MAX": defines the behaviour to use on
-     * duplicate entries during the zUnion.
-     * @return int The number of values in the new sorted set.
-     * @link    http://redis.io/commands/zunionstore
-     * @example
-     * <pre>
-     * $redis->delete('k1');
-     * $redis->delete('k2');
-     * $redis->delete('k3');
-     * $redis->delete('ko1');
-     * $redis->delete('ko2');
-     * $redis->delete('ko3');
-     *
-     * $redis->zAdd('k1', 0, 'val0');
-     * $redis->zAdd('k1', 1, 'val1');
-     *
-     * $redis->zAdd('k2', 2, 'val2');
-     * $redis->zAdd('k2', 3, 'val3');
-     *
-     * $redis->zUnion('ko1', array('k1', 'k2')); // 4, 'ko1' => array('val0', 'val1', 'val2', 'val3')
-     *
-     * // Weighted zUnion
-     * $redis->zUnion('ko2', array('k1', 'k2'), array(1, 1)); // 4, 'ko1' => array('val0', 'val1', 'val2', 'val3')
-     * $redis->zUnion('ko3', array('k1', 'k2'), array(5, 1)); // 4, 'ko1' => array('val0', 'val2', 'val3', 'val1')
-     * </pre>
-     */
-    public function zUnion($Output, $ZSetKeys, array $Weights = null, $aggregateFunction = 'SUM') {
-
-    }
-
-    /**
-     * Creates an intersection of sorted sets given in second argument.
-     * The result of the union will be stored in the sorted set defined by the first argument.
-     * The third optional argument defines weights to apply to the sorted sets in input.
-     * In this case, the weights will be multiplied by the score of each element in the sorted set
-     * before applying the aggregation. The forth argument defines the AGGREGATE option which
-     * specify how the results of the union are aggregated.
-     *
-     * @param   string  $Output
-     * @param   array   $ZSetKeys
-     * @param   array   $Weights
-     * @param   string  $aggregateFunction Either "SUM", "MIN", or "MAX":
-     * defines the behaviour to use on duplicate entries during the zInter.
-     * @return  int     The number of values in the new sorted set.
-     * @link    http://redis.io/commands/zinterstore
-     * @example
-     * <pre>
-     * $redis->delete('k1');
-     * $redis->delete('k2');
-     * $redis->delete('k3');
-     *
-     * $redis->delete('ko1');
-     * $redis->delete('ko2');
-     * $redis->delete('ko3');
-     * $redis->delete('ko4');
-     *
-     * $redis->zAdd('k1', 0, 'val0');
-     * $redis->zAdd('k1', 1, 'val1');
-     * $redis->zAdd('k1', 3, 'val3');
-     *
-     * $redis->zAdd('k2', 2, 'val1');
-     * $redis->zAdd('k2', 3, 'val3');
-     *
-     * $redis->zInter('ko1', array('k1', 'k2'));               // 2, 'ko1' => array('val1', 'val3')
-     * $redis->zInter('ko2', array('k1', 'k2'), array(1, 1));  // 2, 'ko2' => array('val1', 'val3')
-     *
-     * // Weighted zInter
-     * $redis->zInter('ko3', array('k1', 'k2'), array(1, 5), 'min'); // 2, 'ko3' => array('val1', 'val3')
-     * $redis->zInter('ko4', array('k1', 'k2'), array(1, 5), 'max'); // 2, 'ko4' => array('val3', 'val1')
-     * </pre>
-     */
-    public function zInter($Output, $ZSetKeys, array $Weights = null, $aggregateFunction = 'SUM') {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2670,7 +2727,17 @@ class Redis {
      * </pre>
      */
     public function hSet($key, $hashKey, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2690,7 +2757,17 @@ class Redis {
      * </pre>
      */
     public function hSetNx($key, $hashKey, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2703,7 +2780,17 @@ class Redis {
      * @link    http://redis.io/commands/hget
      */
     public function hGet($key, $hashKey) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2721,7 +2808,17 @@ class Redis {
      * </pre>
      */
     public function hLen($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2755,7 +2852,17 @@ class Redis {
      * </pre>
      */
     public function hDel($key, $hashKey1, $hashKey2 = null, $hashKeyN = null) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2787,8 +2894,18 @@ class Redis {
      * // The order is random and corresponds to redis' own internal representation of the set structure.
      * </pre>
      */
-    public function hKeys($key){
-        throw new RedisException("Not implemented");
+    public function hKeys($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
+
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2821,7 +2938,17 @@ class Redis {
      * </pre>
      */
     public function hVals($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2854,7 +2981,17 @@ class Redis {
      * </pre>
      */
     public function hGetAll($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2872,7 +3009,17 @@ class Redis {
      * </pre>
      */
     public function hExists($key, $hashKey) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2891,7 +3038,17 @@ class Redis {
      * </pre>
      */
     public function hIncrBy($key, $hashKey, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2921,7 +3078,17 @@ class Redis {
      * </pre>
      */
     public function hIncrByFloat($key, $field, $increment) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2940,7 +3107,17 @@ class Redis {
      * </pre>
      */
     public function hMset($key, $hashKeys) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
+            return $this;
+        }
+
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -2960,118 +3137,17 @@ class Redis {
      * </pre>
      */
     public function hMGet($key, $hashKeys) {
+        if ($this->mode == self::MULTI_MODE) {
+            $this->multiQueue[] = array(
+                'function' => __FUNCTION__,
+                'args'     => func_get_args(),
+                'key'      => $key,
+            );
 
-    }
+            return $this;
+        }
 
-    /**
-     * Get or Set the redis config keys.
-     *
-     * @param   string  $operation  either `GET` or `SET`
-     * @param   string  $key        for `SET`, glob-pattern for `GET`. See http://redis.io/commands/config-get for examples.
-     * @param   string  $value      optional string (only for `SET`)
-     * @return  array   Associative array for `GET`, key -> value
-     * @link    http://redis.io/commands/config-get
-     * @link    http://redis.io/commands/config-set
-     * @example
-     * <pre>
-     * $redis->config("GET", "*max-*-entries*");
-     * $redis->config("SET", "dir", "/var/run/redis/dumps/");
-     * </pre>
-     */
-    public function config($operation, $key, $value) {
-
-    }
-
-    /**
-     * Evaluate a LUA script serverside, from the SHA1 hash of the script instead of the script itself.
-     * In order to run this command Redis will have to have already loaded the script, either by running it or via
-     * the SCRIPT LOAD command.
-     * @param   string  $scriptSha
-     * @param   array   $args
-     * @param   int     $numKeys
-     * @return  mixed. @see eval()
-     * @see     eval()
-     * @link    http://redis.io/commands/evalsha
-     * @example
-     * <pre>
-     * $script = 'return 1';
-     * $sha = $redis->script('load', $script);
-     * $redis->evalSha($sha); // Returns 1
-     * </pre>
-     */
-    public function evalSha($scriptSha, $args = array(), $numKeys = 0) {
-
-    }
-
-    /**
-     * Execute the Redis SCRIPT command to perform various operations on the scripting subsystem.
-     * @param   string  $command load | flush | kill | exists
-     * @param   string  $script
-     * @return  mixed
-     * @link    http://redis.io/commands/script-load
-     * @link    http://redis.io/commands/script-kill
-     * @link    http://redis.io/commands/script-flush
-     * @link    http://redis.io/commands/script-exists
-     * @example
-     * <pre>
-     * $redis->script('load', $script);
-     * $redis->script('flush');
-     * $redis->script('kill');
-     * $redis->script('exists', $script1, [$script2, $script3, ...]);
-     * </pre>
-     *
-     * SCRIPT LOAD will return the SHA1 hash of the passed script on success, and FALSE on failure.
-     * SCRIPT FLUSH should always return TRUE
-     * SCRIPT KILL will return true if a script was able to be killed and false if not
-     * SCRIPT EXISTS will return an array with TRUE or FALSE for each passed script
-     */
-    public function script($command, $script) {
-
-    }
-
-    /**
-     * The last error message (if any) returned from a SCRIPT call
-     * @return  string  A string with the last returned script based error message, or NULL if there is no error
-     * @example
-     * <pre>
-     * $redis->eval('this-is-not-lua');
-     * $err = $redis->getLastError();
-     * // "ERR Error compiling script (new function): user_script:1: '=' expected near '-'"
-     * </pre>
-     */
-    public function getLastError() {
-
-    }
-
-    /**
-     * A utility method to prefix the value with the prefix setting for phpredis.
-     * @param   $value  The value you wish to prefix
-     * @return  string  If a prefix is set up, the value now prefixed.  If there is no prefix, the value will be returned unchanged.
-     * @example
-     * <pre>
-     * $redis->setOpt(Redis::OPT_PREFIX, 'my-prefix:');
-     * $redis->_prefix('my-value'); // Will return 'my-prefix:my-value'
-     * </pre>
-     */
-    public function _prefix($value) {
-
-    }
-
-    /**
-     * A utility method to unserialize data with whatever serializer is set up.  If there is no serializer set, the
-     * value will be returned unchanged.  If there is a serializer set up, and the data passed in is malformed, an
-     * exception will be thrown. This can be useful if phpredis is serializing values, and you return something from
-     * redis in a LUA script that is serialized.
-     * @param   string  $value  The value to be unserialized
-     * @return mixed
-     * @example
-     * <pre>
-     * $redis->setOpt(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-     * $redis->_unserialize('a:3:{i:0;i:1;i:1;i:2;i:2;i:3;}'); // Will return Array(1,2,3)
-     * </pre>
-     */
-    public function _unserialize($value) {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -3087,7 +3163,11 @@ class Redis {
      * </pre>
      */
     public function dump($key) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
 
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -3106,7 +3186,11 @@ class Redis {
      * </pre>
      */
     public function restore($key, $ttl, $value) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
 
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 
     /**
@@ -3125,25 +3209,11 @@ class Redis {
      * </pre>
      */
     public function migrate($host, $port, $key, $db, $timeout) {
+        if ($this->mode == self::MULTI_MODE) {
+            throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
+        }
 
-    }
-
-    /**
-     * Return the current Redis server time.
-     * @return  array If successfull, the time will come back as an associative array with element zero being the
-     * unix timestamp, and element one being microseconds.
-     * @link    http://redis.io/commands/time
-     * @example
-     * <pre>
-     * var_dump( $redis->time() );
-     * // array(2) {
-     * //   [0] => string(10) "1342364352"
-     * //   [1] => string(6) "253002"
-     * // }
-     * </pre>
-     */
-    public function time() {
-
+        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
     }
 }
 
@@ -3152,7 +3222,6 @@ class Redis {
  *
  * @package RedisBundle
  */
-class RedisException extends \Exception
-{
+class RedisException extends \Exception {
 
 }

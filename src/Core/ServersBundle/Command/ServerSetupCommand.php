@@ -1,7 +1,5 @@
 <?php
-namespace Mamba\EncountersBundle\Command;
-
-use Symfony\Component\Console\Input\InputOption;
+namespace Core\ServersBundle\Command;
 
 use Core\ScriptBundle\Script;
 
@@ -35,6 +33,6 @@ class ServerSetupCommand extends Script {
      * @return null
      */
     protected function process() {
-        $this->log('ssh-copy-id');
+        $this->log(`ls -la`);
     }
 }

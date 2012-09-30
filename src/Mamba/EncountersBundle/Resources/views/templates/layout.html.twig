@@ -17,6 +17,20 @@
 {% stylesheets '@EncountersBundle/Resources/public/css/tools/ie.css' output="css/compiled/tools/ie.css" filter="?yui_css" %}
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
+<script>
+    /**
+     * JS-error tracking using Google Analytics
+     *
+     * @link http://habrahabr.ru/post/149926/
+     * @copyright Nikolay Borisov
+     */
+    var _gaq = window._gaq || [];
+    window.onerror = function(msg, url, line) {
+        var preventErrorAlert = true;
+        _gaq.push(['_trackEvent', 'JS Error', msg, navigator.userAgent + ' -> ' + url + " : " + line, 0, true]);
+        return preventErrorAlert;
+    };
+</script>
 </head>
 <body>
 <div id="wrapper">
@@ -101,6 +115,10 @@ $Routing.setRoutes({{ routes }});
 {% endautoescape %}
 {% block pagejs %}{% endblock %}
 $(document).ready(function(){
+    jQuery.error = function (message) {
+        _gaq.push(['_trackEvent', 'jQuery Error', message, navigator.userAgent, 0, true]);
+    }
+
     $App.init(location.pathname).run();
 });
 </script>

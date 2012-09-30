@@ -2,7 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
-use Mamba\PlatformBundle\API\Mamba;
+use Core\MambaBundle\API\Mamba;
 use PDO;
 
 /**

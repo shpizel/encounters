@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\Script;
+use Core\ScriptBundle\Script;
 
 /**
  * BillingTestCommand

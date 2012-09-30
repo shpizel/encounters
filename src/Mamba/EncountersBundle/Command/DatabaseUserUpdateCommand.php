@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
@@ -118,7 +119,7 @@ class DatabaseUserUpdateCommand extends CronScript {
 
         $result = $stmt->execute();
         if (!$result) {
-            throw new CronScriptException('Unable to store data to DB.');
+            throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
         }
     }
 }

@@ -4,4 +4,4 @@ parameters:
 services:
     redis:
         class: %redis.class%
-        arguments: [%redis.host%, %redis.port%, %redis.timeout%, %redis.database%]
+        arguments: [%redis.nodes%]

@@ -20,10 +20,7 @@ class RedisExtension extends Extension {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter("redis.host", $config['host']);
-        $container->setParameter("redis.port", $config['port']);
-        $container->setParameter("redis.timeout", $config['timeout']);
-        $container->setParameter("redis.database", $config['database']);
+        $container->setParameter("redis.nodes", $config['nodes']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

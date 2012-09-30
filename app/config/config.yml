@@ -11,7 +11,7 @@ framework:
     form:            true
     csrf_protection: true
     validation:      { enable_annotations: true }
-    templating:      { engines: ['twig'], assets_version: 'updated=140712' }
+    templating:      { engines: ['twig'], assets_version: 'updated=180912' }
     session:
         default_locale: %locale%
         lifetime:       14400
@@ -72,3 +72,16 @@ mamba:
     app_id: 355
     secret_key: 'jn6OUU2pS5nz7O37Srj9'
     private_key: 'Ot018UW4jOYQSWKpQ2l9'
+
+servers:
+    www:
+        www1: '178.132.207.50'
+        www2: '178.132.207.203'
+    memory:
+        memory1: '178.132.207.51'
+        memory2: '178.132.207.52'
+    storage:
+        storage1: '178.132.207.202'
+    script:
+        script1: '178.132.207.53'
+        script2: '178.132.207.54'

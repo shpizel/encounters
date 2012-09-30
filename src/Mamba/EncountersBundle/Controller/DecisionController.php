@@ -3,7 +3,7 @@ namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
 use Symfony\Component\HttpFoundation\Response;
-use Mamba\PlatformBundle\API\Mamba;
+use Core\MambaBundle\API\Mamba;
 use Mamba\EncountersBundle\EncountersBundle;
 
 use Mamba\EncountersBundle\Command\SearchQueueUpdateCommand;

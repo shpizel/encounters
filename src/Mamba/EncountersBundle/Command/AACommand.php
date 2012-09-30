@@ -1,8 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\Script;
-use Mamba\EncountersBundle\Helpers\SearchPreferences;
+use Core\ScriptBundle\Script;
 
 /**
  * AACommand
@@ -34,18 +33,6 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $Redis = $this->getRedis(1);
-
-        $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
-        foreach ($appUsers as $userId) {
-            $userId = (int) $userId;
-            $lastAccess = $this->getVariablesObject()->get($userId, 'lastaccess');
-            if (!$lastAccess || ((time() - $lastAccess)/86400) > 28) {
-                $Redis->del($this->getContactsQueueObject()->getRedisQueueKey($userId));
-                $Redis->del($this->getCurrentQueueObject()->getRedisQueueKey($userId));
-                $Redis->del($this->getHitlistQueueObject()->getRedisQueueKey($userId));
-                $Redis->del($this->getSearchQueueObject()->getRedisQueueKey($userId));
-            }
-        }
+        print_r(\Core\RedisBundle\RedisDSN::getDSNFromString("redis://localhost:6379/3/?timeout=2.5&persistent=true&prefix=node3:"));
     }
 }

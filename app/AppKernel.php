@@ -17,11 +17,16 @@ class AppKernel extends Kernel
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new JMS\SecurityExtraBundle\JMSSecurityExtraBundle(),
-            new Mamba\MemcacheBundle\MemcacheBundle(),
-            new Mamba\PlatformBundle\MambaBundle(),
+            new Core\MemcacheBundle\MemcacheBundle(),
+            //new Mamba\PlatformBundle\MambaBundle(),
             new Mamba\EncountersBundle\EncountersBundle(),
-            new Mamba\RedisBundle\RedisBundle(),
-            new Mamba\GearmanBundle\GearmanBundle(),
+            new Core\RedisBundle\RedisBundle(),
+            new Core\GearmanBundle\GearmanBundle(),
+            new Core\ServersBundle\ServersBundle(),
+            new Core\ScriptBundle\ScriptBundle(),
+            new Core\VKBundle\VKBundle(),
+            new Core\FBBundle\FBBundle(),
+            new Core\MambaBundle\MambaBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

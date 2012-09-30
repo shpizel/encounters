@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Command\CronScript;
+use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 
 use Mamba\EncountersBundle\Command\SearchQueueUpdateCommand;
@@ -138,7 +139,7 @@ class ContactsQueueUpdateCommand extends CronScript {
 
         $this->currentUserId = $webUserId;
         if (!$this->lock()) {
-            throw new CronScriptException("Could not obtain lock");
+            throw new \Core\ScriptBundle\CronScriptException("Could not obtain lock");
         }
 
         if ($webUserId = (int) $webUserId) {
@@ -149,11 +150,11 @@ class ContactsQueueUpdateCommand extends CronScript {
                 return;
             }
         } else {
-            throw new CronScriptException("Invalid workload");
+            throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
         if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
-            throw new CronScriptException("Could not get search preferences for user_id=$webUserId");
+            throw new \Core\ScriptBundle\CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
         if ($searchPreferences['changed'] > $timestamp) {
@@ -161,7 +162,7 @@ class ContactsQueueUpdateCommand extends CronScript {
         }
 
         if ($this->getContactsQueueObject()->getSize($webUserId) >= self::LIMIT) {
-            throw new CronScriptException("Contacts queue for user_id=$webUserId has limit exceed");
+            throw new \Core\ScriptBundle\CronScriptException("Contacts queue for user_id=$webUserId has limit exceed");
         }
 
         if ($contactsFolders = $Mamba->Contacts()->getFolderList()) {
@@ -190,7 +191,7 @@ class ContactsQueueUpdateCommand extends CronScript {
 
             $this->log("<error>$usersAddedCount</error> users were added to contacts queue for <info>user_id</info> = {$webUserId}");
         } else {
-            throw new CronScriptException("Could not fetch contact list for user_id=$webUserId");
+            throw new \Core\ScriptBundle\CronScriptException("Could not fetch contact list for user_id=$webUserId");
         }
     }
 }
