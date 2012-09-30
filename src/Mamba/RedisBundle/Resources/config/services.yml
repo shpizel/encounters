@@ -1,7 +1,0 @@
-parameters:
-    redis.class: Mamba\RedisBundle\Redis
-
-services:
-    redis:
-        class: %redis.class%
-        arguments: [%redis.host%, %redis.port%, %redis.timeout%, %redis.database%]

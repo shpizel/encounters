@@ -1,7 +1,0 @@
-parameters:
-    gearman.class: Mamba\GearmanBundle\Gearman
-
-services:
-    gearman:
-        class: %gearman.class%
-        arguments: [%gearman.servers%]

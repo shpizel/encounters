@@ -1,7 +1,0 @@
-parameters:
-    memcache.class: Mamba\MemcacheBundle\Memcache
-
-services:
-    memcache:
-        class: %memcache.class%
-        arguments: [%memcache.servers%]
