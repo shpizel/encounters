@@ -1,0 +1,7 @@
+parameters:
+    gearman.class: Core\GearmanBundle\Gearman
+
+services:
+    gearman:
+        class: %gearman.class%
+        arguments: [%gearman.servers%]

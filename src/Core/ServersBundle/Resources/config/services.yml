@@ -1,0 +1,7 @@
+parameters:
+    servers.class: Core\ServersBundle\Servers
+
+services:
+    servers:
+        class: %servers.class%
+        arguments: [%servers.www%, %servers.memory%, %servers.storage%, %servers.script%]

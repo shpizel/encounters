@@ -1,0 +1,7 @@
+parameters:
+    #fb.class: Core\FBBundle\FB
+
+services:
+    #fb:
+    #    class: %fb.class%
+    #    arguments: [@service_id, "plain_value", %parameter%]
