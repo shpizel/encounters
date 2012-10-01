@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Command;
 
 use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Declensions;

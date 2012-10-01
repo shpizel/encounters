@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Command;
 
 use Core\ScriptBundle\CronScript;
+
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 
 /**

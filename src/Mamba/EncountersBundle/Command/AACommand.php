@@ -1,7 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Core\ScriptBundle\Script;
+use Mamba\EncountersBundle\Script\Script;
 
 /**
  * AACommand
@@ -33,18 +33,6 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $keys = array_map(function($line) {
-            return trim($line);
-        }, file("/home/shpizel/rdb/0-1-5-3.keys"));
-
-        $source = $this->getRedis()->getNodeConnectionByNodeNumber(0);
-
-        $source->multi();
-        foreach ($keys as $key) {
-            $source->hGetAll($key);
-        }
-        $ret = $source->exec();
-
-        print_r($ret[730]);
+        $this->log(123);
     }
 }
