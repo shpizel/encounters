@@ -4,4 +4,4 @@ parameters:
 services:
     memcache:
         class: %memcache.class%
-        arguments: [%memcache.servers%]
+        arguments: [%memcache.nodes%]

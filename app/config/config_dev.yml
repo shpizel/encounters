@@ -58,14 +58,17 @@ redis:
                 prefix: node3:
 
 gearman:
-    servers:
-        server1:
+    nodes:
+        node1:
             host: localhost
-            #port: 123
+            port: 4730
+#        node2:
+#            host: localhost
+#            port: 4730
 
 memcache:
-    servers:
-        server1:
+    nodes:
+        node1:
             host: localhost
             port: 11211
             weight: 25

@@ -21,7 +21,7 @@ class Configuration implements ConfigurationInterface {
         $rootNode = $treeBuilder->root('memcache');
 
         $rootNode->children()
-            ->arrayNode('servers')
+            ->arrayNode('nodes')
                 ->isRequired()
                 ->requiresAtLeastOneElement()
                 ->prototype('array')
@@ -31,11 +31,12 @@ class Configuration implements ConfigurationInterface {
                             ->cannotBeEmpty()
                             ->end()
                         ->scalarNode('port')
-                            ->defaultValue(11211)
+                            ->isRequired()
                             ->cannotBeEmpty()
                             ->end()
                         ->scalarNode('weight')
-                            ->defaultValue(0)
+                            ->isRequired()
+                            ->cannotBeEmpty()
                             ->end()
                     ->end()
                 ->end()

@@ -23,7 +23,7 @@ class GearmanExtension extends Extension {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('gearman.servers', $config['servers']);
+        $container->setParameter('gearman.nodes', $config['nodes']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

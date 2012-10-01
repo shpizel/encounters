@@ -4,4 +4,4 @@ parameters:
 services:
     gearman:
         class: %gearman.class%
-        arguments: [%gearman.servers%]
+        arguments: [%gearman.nodes%]

@@ -13,22 +13,48 @@ monolog:
             level: debug
 
 redis:
-    host: 10.10.10.21
-    database: 0
+    nodes:
+        node1:
+            host: 10.10.10.21
+            port: 6379
+            timeout: 2.5
+
+            options:
+                persistent: true
+                database: 0
+                prefix: null
+
+#        enable after migration
+
+#        node2:
+#            host: 10.10.10.22
+#            port: 6379
+#            timeout: 2.5
+#
+#            options:
+#                persistent: true
+#                database: 0
+#                prefix: null
 
 gearman:
-    servers:
-        server1:
-            host: 10.10.10.22 # memory2
+    nodes:
+        node1:
+            host: 10.10.10.21
             port: 4730
 
+#        enable after migration
+
+#        node2:
+#            host: 10.10.10.22 # memory2
+#            port: 4730
+
 memcache:
-    servers:
-        server1:
-            host: 10.10.10.21 # 8192
+    nodes:
+        node1:
+            host: 10.10.10.21
             port: 11211
             weight: 40
-        server2:
-            host: 10.10.10.22 #12228
+        node2:
+            host: 10.10.10.22
             port: 11211
             weight: 60

@@ -23,7 +23,7 @@ class MemcacheExtension extends Extension {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('memcache.servers', $config['servers']);
+        $container->setParameter('memcache.nodes', $config['nodes']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

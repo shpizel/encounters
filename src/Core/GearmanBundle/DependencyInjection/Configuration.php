@@ -21,7 +21,7 @@ class Configuration implements ConfigurationInterface {
         $rootNode = $treeBuilder->root('gearman');
 
         $rootNode->children()
-            ->arrayNode('servers')
+            ->arrayNode('nodes')
                 ->isRequired()
                 ->requiresAtLeastOneElement()
                 ->prototype('array')
@@ -31,7 +31,7 @@ class Configuration implements ConfigurationInterface {
                             ->cannotBeEmpty()
                             ->end()
                         ->scalarNode('port')
-                            ->defaultValue(4730)
+                            ->isRequired()
                             ->cannotBeEmpty()
                             ->end()
                     ->end()
