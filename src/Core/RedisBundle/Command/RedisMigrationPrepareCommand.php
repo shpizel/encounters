@@ -144,6 +144,16 @@ class RedisMigrationPrepareCommand extends Script {
             }
         }
 
+        /**
+         * Проверить правильность чанка можно командами:
+         * ls -1 | egrep "^[0-9]+-[0-9]+-[0-9]+\.keys" | xargs cat | wc -l
+         * ls -1 | egrep "^[0-9]+-[0-9]+-[0-9]+-[0-9]+\.keys" | xargs cat | wc -l
+         *
+         * результат должен быть один
+         *
+         * @author shpizel
+         */
+
         $files = glob($this->dir . "/*.keys");
         $keysCounter = 0;
         foreach ($files as $number=>$keysFile) {

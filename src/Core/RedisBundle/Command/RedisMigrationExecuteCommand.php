@@ -33,7 +33,7 @@ class RedisMigrationExecuteCommand extends Script {
         SCRIPT_NAME = "redis:migration:execute",
 
         /**
-         * Размер блока
+         * Размер fork
          *
          * @var int
          */
@@ -57,6 +57,8 @@ class RedisMigrationExecuteCommand extends Script {
 
         $this
             ->addOption('dir', null, InputOption::VALUE_REQUIRED, "Migration data path", null)
+            ->addOption('forks', null, InputOption::VALUE_REQUIRED, "Forks block size", self::CHUNK_SIZE)
+            ->addOption('mode', null, InputOption::VALUE_REQUIRED, "dump - just dump, migrate - dump and migrate", "migrate")
         ;
     }
 
@@ -68,15 +70,34 @@ class RedisMigrationExecuteCommand extends Script {
     protected function process() {
         $this->prepare();
 
-        $files = glob($this->dir . DIRECTORY_SEPARATOR . "*.keys");
-        $files = array_filter($files, function($filename) {
-            $filename = basename($filename, ".keys");
-            $parts = explode("-", $filename);
-            return count($parts) == 4;
-        });
+        while (true) {
+            $this->files = glob($this->dir . DIRECTORY_SEPARATOR . "*.keys");
+            $this->files = array_filter($this->files, function($filename) {
+                $filename = basename($filename, ".keys");
+                $parts = explode("-", $filename);
+                return count($parts) == 4 && !file_exists($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed");
+            });
 
-        $chunks = array_chunk($files, self::CHUNK_SIZE);
-        //unset($files);
+            if (count($this->files) > 0) {
+                try {
+                    $this->processFiles();
+                } catch (\Exception $e) {
+                    $this->log($e->getMessage(), 16);
+                }
+            } else {
+                $this->log("Completed", 64);
+                break;
+            }
+        }
+    }
+
+    /**
+     * processFiles
+     *
+     * @return null
+     */
+    public function processFiles() {
+        $chunks = array_chunk($this->files, $this->forks);
 
         $counter = 0;
         foreach ($chunks as $chunk) {
@@ -104,7 +125,7 @@ class RedisMigrationExecuteCommand extends Script {
                         unset($pids[$key]);
                         $counter++;
 
-                       $this->log("{$counter}/" . count($files), -1);
+                        $this->log("{$counter}/" . count($this->files), -1);
                     }
                 }
 
@@ -137,14 +158,47 @@ class RedisMigrationExecuteCommand extends Script {
             }
             $smret = $sourceConnection->exec();
 
+            $sourceConnection->multi();
+            foreach ($keys as $key) {
+                $sourceConnection->ttl($key);
+            }
+            $ttlret = $sourceConnection->exec();
+
+            /**
+             * Нужно сохранить данные в дамп в формате json
+             *
+             * @author shpizel
+             */
+            $json = array();
+            foreach ($keys as $index=>$key) {
+                $data = $smret[$index];
+                $ttl  = $ttlret[$index];
+
+                $json[] = array(
+                    'key'   => $key,
+                    'ttl'   => $ttl,
+                    'value' => $data,
+                );
+            }
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            if ($this->mode == 'dump') {
+                return;
+            }
+
             /** Удалим ключи у приемщика */
             $destinationConnection->del($keys);
 
             $destinationConnection->multi();
             foreach ($keys as $index=>$key) {
                 $data = $smret[$index];
+                $ttl  = $ttlret[$index];
 
-                $destinationConnection->set($key, $data);
+                if ($ttl > 0) {
+                    $destinationConnection->setex($key, $ttl, $data);
+                } else {
+                    $destinationConnection->set($key, $data);
+                }
+
             }
             $ret = $destinationConnection->exec();
             $ret = array_filter($ret, function($item) {
@@ -155,14 +209,33 @@ class RedisMigrationExecuteCommand extends Script {
                 throw new \Core\ScriptBundle\ScriptException("setex error");
             }
 
-            /** в случае успешного завершения нужно удалить ключи из источника */
-            $sourceConnection->del($keys);
+            /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 2 /** set */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
                 $sourceConnection->sMembers($key);
             }
             $smret = $sourceConnection->exec();
+
+            /**
+             * Нужно сохранить данные в дамп в формате json
+             *
+             * @author shpizel
+             */
+            $json = array();
+            foreach ($keys as $index=>$key) {
+                $data = $smret[$index];
+
+                $json[] = array(
+                    'key'   => $key,
+                    'value' => $data,
+                );
+            }
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            if ($this->mode == 'dump') {
+                return;
+            }
 
             /** Удалим ключи у приемщика */
             $destinationConnection->del($keys);
@@ -199,14 +272,33 @@ class RedisMigrationExecuteCommand extends Script {
                 throw new \Core\ScriptBundle\ScriptException("sAdd error");
             }
 
-            /** в случае успешного завершения нужно удалить ключи из источника */
-            $sourceConnection->del($keys);
+            /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 3 /** list */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
                 $sourceConnection->lRange($key, 0, -1);
             }
             $smret = $sourceConnection->exec();
+
+            /**
+             * Нужно сохранить данные в дамп в формате json
+             *
+             * @author shpizel
+             */
+            $json = array();
+            foreach ($keys as $index=>$key) {
+                $data = $smret[$index];
+
+                $json[] = array(
+                    'key'   => $key,
+                    'value' => $data,
+                );
+            }
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            if ($this->mode == 'dump') {
+                return;
+            }
 
             /** Удалим ключи у приемщика */
             $destinationConnection->del($keys);
@@ -243,14 +335,33 @@ class RedisMigrationExecuteCommand extends Script {
                 throw new \Core\ScriptBundle\ScriptException("lPush error");
             }
 
-            /** в случае успешного завершения нужно удалить ключи из источника */
-            $sourceConnection->del($keys);
+            /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 4 /** zset */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
                 $sourceConnection->zRange($key, 0, -1, true /** withsccores */);
             }
             $smret = $sourceConnection->exec();
+
+            /**
+             * Нужно сохранить данные в дамп в формате json
+             *
+             * @author shpizel
+             */
+            $json = array();
+            foreach ($keys as $index=>$key) {
+                $data = $smret[$index];
+
+                $json[] = array(
+                    'key'   => $key,
+                    'value' => $data,
+                );
+            }
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            if ($this->mode == 'dump') {
+                return;
+            }
 
             /** Удалим ключи у приемщика */
             $destinationConnection->del($keys);
@@ -287,14 +398,33 @@ class RedisMigrationExecuteCommand extends Script {
                 throw new \Core\ScriptBundle\ScriptException("zAdd error");
             }
 
-            /** в случае успешного завершения нужно удалить ключи из источника */
-            $sourceConnection->del($keys);
+            /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 5 /** hash */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
                 $sourceConnection->hGetAll($key);
             }
             $smret = $sourceConnection->exec();
+
+            /**
+             * Нужно сохранить данные в дамп в формате json
+             *
+             * @author shpizel
+             */
+            $json = array();
+            foreach ($keys as $index=>$key) {
+                $data = $smret[$index];
+
+                $json[] = array(
+                    'key'   => $key,
+                    'value' => $data,
+                );
+            }
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            if ($this->mode == 'dump') {
+                return;
+            }
 
             /** Удалим ключи у приемщика */
             $destinationConnection->del($keys);
@@ -331,13 +461,11 @@ class RedisMigrationExecuteCommand extends Script {
                 throw new \Core\ScriptBundle\ScriptException("hSet error");
             }
 
-            /** в случае успешного завершения нужно удалить ключи из источника */
-            $sourceConnection->del($keys);
+            /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } else {
             throw new \Core\ScriptBundle\ScriptException("Invalid resource type");
         }
-
-        return 0;
     }
 
     private function prepare() {
@@ -375,6 +503,14 @@ class RedisMigrationExecuteCommand extends Script {
             foreach ($this->dst as &$node) {
                 $node = \Core\RedisBundle\RedisDSN::getDSNFromString($node);
             }
+        }
+
+        if (!$this->forks = intval($this->input->getOption('forks'))) {
+            throw new \Core\ScriptBundle\ScriptException("Invalid forks count");
+        }
+
+        if (!in_array($this->mode = $this->input->getOption('mode'), array('dump', 'migrate'))) {
+            throw new \Core\ScriptBundle\ScriptException("Invalid script mode");
         }
     }
 }

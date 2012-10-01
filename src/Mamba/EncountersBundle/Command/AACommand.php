@@ -33,6 +33,8 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $this->log(123);
+        $Redis = $this->getRedis();
+
+        var_dump($Redis->rPush('x', '1', '2', '3'));
     }
 }
