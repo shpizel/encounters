@@ -40,21 +40,7 @@ abstract class Script extends ContainerAwareCommand {
          *
          * @var int
          */
-        DEFAULT_COPY_NUMBER = 1,
-
-        /**
-         *
-         *
-         * @var int
-         */
-        GEARMAN_CLIENT_TIMEOUT_DEFAULT = 1000,
-
-        /**
-         *
-         *
-         * @var int
-         */
-        GEARMAN_WORKER_TIMEOUT_DEFAULT = 5000
+        DEFAULT_COPY_NUMBER = 1
     ;
 
     protected
@@ -107,9 +93,6 @@ abstract class Script extends ContainerAwareCommand {
 
         list($this->input, $this->output, $this->copy, $this->debug) = array($input, $output, $copy, $debug);
         $this->started = time();
-
-        $this->getGearman()->getClient()->setTimeout(self::GEARMAN_CLIENT_TIMEOUT_DEFAULT);
-        $this->getGearman()->getWorker()->setTimeout(self::GEARMAN_WORKER_TIMEOUT_DEFAULT);
 
         if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
             $this->process();

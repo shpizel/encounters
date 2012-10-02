@@ -53,7 +53,7 @@ class RepairSearchPreferencesGeoCommand extends CronScript {
 
                     $this->getSearchPreferencesObject()->set($userId, $searchPreferences);
 
-                    $this->getGearman()->getClient()->doHighBackground(
+                    $this->getGearmanClient()->doHighBackground(
                         EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
                         serialize(
                             array(

@@ -1,14 +1,14 @@
 <?php
-namespace Mamba\EncountersBundle\Helpers;
+namespace Core\MambaBundle\Helpers;
 
 use Core\RedisBundle\Redis;
 
 /**
  * PlatformParams
  *
- * @package EncountersBundle
+ * @package MambaBundle
  */
-class PlatformSettings extends Helper {
+class PlatformSettings {
 
     protected
 

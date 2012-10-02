@@ -8,37 +8,6 @@ namespace Core\GearmanBundle;
  */
 class Gearman {
 
-    const
-
-        /**
-         * Дефолтный таймаут для клиента
-         *
-         * @var int
-         */
-        GEARMAN_CLIENT_TIMEOUT_DEFAULT = 1000,
-
-        /**
-         * Дефолтный таймаут для воркера
-         *
-         * @var int
-         */
-        GEARMAN_WORKER_TIMEOUT_DEFAULT = 5000,
-
-        /**
-         * Client const
-         *
-         * @var int
-         */
-        GEARMAN_CLIENT = 1,
-
-        /**
-         * Worker constant
-         *
-         * @var int
-         */
-        GEARMAN_WORKER = 2
-    ;
-
     private
 
         /**
@@ -62,7 +31,9 @@ class Gearman {
      * @param array $nodes
      */
     public function __construct(array $nodes) {
-        $this->nodes = $nodes;
+        $this->nodes = array_map(function($nodeArray) {
+            return GearmanDSN::getDSNFromArray($nodeArray);
+        }, $nodes);
     }
 
     /**
@@ -75,39 +46,51 @@ class Gearman {
     }
 
     /**
-     * Node connection getter
+     * Gearman client getter
      *
-     * @return \GearmanClient | \GearmanWorker
+     * @param GearmanDSN $node (if $node is NULL -> we will connect to random instance)
+     * @return \GearmanClient
      */
-    public function getNodeConnection(array $node, $type) {
-        $dsn = "gearman://{$node['host']}:{$node['port']}";
-        if ($type == self::GEARMAN_CLIENT || $type == 'client') {
-            $dsn .= "/client";
-
-            if (isset($this->connections[$dsn])) {
-                return $this->connections[$dsn];
-            }
-
-            $Client = new \GearmanClient();
-            $Client->addServer($node['host'], $node['port']);
-            $Client->setTimeout(self::GEARMAN_CLIENT_TIMEOUT_DEFAULT);
-
-            return $this->connections[$dsn] = $Client;
-        } elseif ($type == self::GEARMAN_WORKER || $type == 'worker') {
-            $dsn .= "/worker";
-
-            if (isset($this->connections[$dsn])) {
-                return $this->connections[$dsn];
-            }
-
-            $Worker = new \GearmanWorker();
-            $Worker->addServer($node['host'], $node['port']);
-            $Worker->setTimeout(self::GEARMAN_WORKER_TIMEOUT_DEFAULT);
-
-            return $this->connections[$dsn] = $Worker;
+    public function getClient(GearmanDSN $node = null) {
+        if (null === $node) {
+            $node = $this->nodes[array_rand($this->nodes)];
         }
 
-        throw new GearmanException("Invalid type");
+        $dsn = (string) $node . "/client";
+
+        if (isset($this->connections[$dsn])) {
+            return $this->connections[$dsn];
+        }
+
+        $Client = new \GearmanClient();
+        $Client->addServer($node->getHost(), $node->getPort());
+        $Client->setTimeout($node->getClientTimeout());
+
+        return $this->connections[$dsn] = $Client;
+    }
+
+    /**
+     * Gearman worker getter
+     *
+     * @param GearmanDSN $node (if $node is NULL -> we will connect to random instance)
+     * @return \GearmanWorker
+     */
+    public function getWorker(GearmanDSN $node = null) {
+        if (null === $node) {
+            $node = $this->nodes[array_rand($this->nodes)];
+        }
+
+        $dsn = (string) $node . "/worker";
+
+        if (isset($this->connections[$dsn])) {
+            return $this->connections[$dsn];
+        }
+
+        $Worker = new \GearmanWorker();
+        $Worker->addServer($node->getHost(), $node->getPort());
+        $Worker->setTimeout($node->getWorkerTimeout());
+
+        return $this->connections[$dsn] = $Worker;
     }
 
     /**
@@ -119,19 +102,6 @@ class Gearman {
     public function getNodeNumberByKey($key) {
         return crc32($key) % count($this->nodes);
     }
-
-    /**
-     * Node connection getter by number
-     *
-     * @param int $number
-     * @param mixed $type
-     * @return \GearmanClient|\GearmanWorker
-     */
-    public function getNodeConnectionByNodeNumber($number, $type) {
-        return $this->getNodeConnection($this->nodes[$number], $type);
-    }
-
-
 }
 
 /**

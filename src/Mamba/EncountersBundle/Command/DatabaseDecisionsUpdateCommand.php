@@ -53,8 +53,7 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $worker = $this->getGearman()->getWorker();
-        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
+        $worker = $this->getGearmanWorker();
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, function($job) use($class) {

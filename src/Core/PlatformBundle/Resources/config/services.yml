@@ -1,7 +1,0 @@
-parameters:
-    mamba.class: Core\MambaBundle\API\Mamba
-
-services:
-    mamba:
-        class: %mamba.class%
-        arguments: [%mamba.app_id%, %mamba.secret_key%, %mamba.private_key%, @session, @memcache, @redis]

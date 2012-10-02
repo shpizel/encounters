@@ -1,10 +1,6 @@
 <?php
 namespace Core\MambaBundle\API;
 
-use Mamba\EncountersBundle\Helpers\PlatformSettings; // - потенциальная хуйня
-
-// не должна эта хуйня зависеть от бизнес-логики приложения
-
 use Core\MambaBundle\API\Achievement;
 use Core\MambaBundle\API\Anketa;
 use Core\MambaBundle\API\Contacts;
@@ -13,6 +9,8 @@ use Core\MambaBundle\API\Geo;
 use Core\MambaBundle\API\Notify;
 use Core\MambaBundle\API\Photos;
 use Core\MambaBundle\API\Search;
+
+use Core\MambaBundle\Helpers\PlatformSettings;
 
 /**
  * Mamba

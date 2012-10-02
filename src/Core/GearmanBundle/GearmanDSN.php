@@ -15,7 +15,7 @@ class GearmanDSN {
          *
          * @var int
          */
-        DEFAULT_PORT = 6379,
+        DEFAULT_PORT = 4730,
 
         /**
          * Default client timeout
@@ -73,7 +73,7 @@ class GearmanDSN {
     }
 
     /**
-     * Gearman host setter
+     * GearmanDSN host setter
      *
      * @param string $host
      * @return GearmanDSN
@@ -88,7 +88,7 @@ class GearmanDSN {
     }
 
     /**
-     * Gearman port getter
+     * GearmanDSN port getter
      *
      * @return int
      */
@@ -97,7 +97,7 @@ class GearmanDSN {
     }
 
     /**
-     * Gearman port setter
+     * GearmanDSN port setter
      *
      * @param int $port
      * @return GearmanDSN
@@ -113,53 +113,53 @@ class GearmanDSN {
     }
 
     /**
-     * Gearman client timeout getter
+     * GearmanClient timeout getter
      *
-     * @return float
+     * @return int
      */
-    public function getTimeout() {
-        return $this->timeout;
+    public function getClientTimeout() {
+        return $this->clientTimeout;
     }
 
     /**
-     * Redis timeout setter
+     * GearmanClient timeout setter
      *
-     * @param float $timeout
-     * @return RedisDSN
-     * @throws RedisDSNException
+     * @param int $timeout
+     * @return GearmanDSN
+     * @throws GearmanDSNException
      */
-    public function setTimeout($timeout) {
-        if (is_float($timeout) || is_double($timeout)) {
-            $this->timeout = $timeout;
+    public function setClientTimeout($timeout) {
+        if (is_int($timeout)) {
+            $this->clientTimeout = $timeout;
             return $this;
         }
 
-        throw new RedisDSNException("Invalid timeout: " . var_export($timeout, true));
+        throw new GearmanDSNException("Invalid timeout: " . var_export($timeout, true));
     }
 
     /**
-     * Redis persistent getter
+     * GearmanWorker timeout getter
      *
-     * @return bool
+     * @return int
      */
-    public function getPersistent() {
-        return $this->persistent;
+    public function getWorkerTimeout() {
+        return $this->workerTimeout;
     }
 
     /**
-     * Redis persistent setter
+     * GearmanWorker timeout setter
      *
-     * @param bool $persistent
-     * @return RedisDSN
-     * @throws RedisDSNException
+     * @param int $timeout
+     * @return GearmanDSN
+     * @throws GearmanDSNException
      */
-    public function setPersistent($persistent) {
-        if (is_bool($persistent)) {
-            $this->persistent = $persistent;
+    public function setWorkerTimeout($timeout) {
+        if (is_int($timeout)) {
+            $this->workerTimeout = $timeout;
             return $this;
         }
 
-        throw new RedisDSNException("Invalid persistent: " . var_export($persistent, true));
+        throw new GearmanDSNException("Invalid timeout: " . var_export($timeout, true));
     }
 
     /**
@@ -168,43 +168,35 @@ class GearmanDSN {
      * @return string
      */
     public function __toString() {
-        return "redis://" . $this->getHost() . ":" . $this->getPort() . "/" . $this->getDatabase() . "?timeout=" . $this->getTimeout() . "&persistent=" . ($this->getPersistent() ? "true" : "false") . "&prefix=" . $this->getPrefix();
+        return "gearman://" . $this->getHost() . ":" . $this->getPort() . "?client_timeout=" . $this->getClientTimeout() . "&worker_timeout=" . $this->getWorkerTimeout();
     }
 
     /**
-     * Returns RedisDSN from array
+     * Returns GearmanDSN from array
      *
      * @static
-     * @return RedisDSN
+     * @return GearmanDSN
      */
     public static function getDSNFromArray(array $dsn) {
-        $result = new RedisDSN;
+        $result = new GearmanDSN;
 
         if (isset($dsn['host'])) {
             $result->setHost($dsn['host']);
         } else {
-            throw new RedisDSNException("Invalid host");
+            throw new GearmanDSNException("Invalid host");
         }
 
         if (isset($dsn['port'])) {
             $result->setPort($dsn['port']);
         }
 
-        if (isset($dsn['timeout'])) {
-            $result->setTimeout($dsn['timeout']);
-        }
-
         if (isset($dsn['options']) && is_array($dsn['options'])) {
-            if (isset($dsn['options']['persistent'])) {
-                $result->setPersistent($dsn['options']['persistent']);
+            if (isset($dsn['options']['client_timeout'])) {
+                $result->setClientTimeout($dsn['options']['client_timeout']);
             }
 
-            if (isset($dsn['options']['database'])) {
-                $result->setDatabase($dsn['options']['database']);
-            }
-
-            if (isset($dsn['options']['prefix'])) {
-                $result->setPrefix($dsn['options']['prefix']);
+            if (isset($dsn['options']['worker_timeout'])) {
+                $result->setWorkerTimeout($dsn['options']['worker_timeout']);
             }
         }
 
@@ -219,52 +211,39 @@ class GearmanDSN {
      */
     public static function getDSNFromString($dsn) {
         if ($dsn = parse_url($dsn)) {
-            $result = new RedisDSN;
+            $result = new GearmanDSN;
             $result->setHost($dsn['host']);
 
             if (isset($dsn['port'])) {
                 $result->setPort($dsn['port']);
             }
 
-            if (isset($dsn['path'])) {
-                $path = (int) trim($dsn['path'], DIRECTORY_SEPARATOR);
-                $result->setDatabase($path);
-            }
-
             if (isset($dsn['query'])) {
                 parse_str($dsn['query'], $query);
 
-                if (isset($query['timeout'])) {
-                    $timeout = (float) $query['timeout'];
+                if (isset($query['client_timeout'])) {
+                    $timeout = (int) $query['client_timeout'];
                     if ($timeout) {
-                        $result->setTimeout($timeout);
+                        $result->setClientTimeout($timeout);
                     } else {
-                        throw new RedisDSNException("Invalid timeout: " . var_export($timeout, true));
+                        throw new GearmanDSNException("Invalid timeout: " . var_export($timeout, true));
                     }
                 }
 
-                if (isset($query['persistent'])) {
-                    $persistent = $query['persistent'];
-                    if (strtolower($persistent) == 'true') {
-                        $persistent = true;
-                    } elseif (strtolower($persistent) == 'false') {
-                        $persistent = false;
+                if (isset($query['worker_timeout'])) {
+                    $timeout = (int) $query['worker_timeout'];
+                    if ($timeout) {
+                        $result->setWorkerTimeout($timeout);
                     } else {
-                        throw new RedisDSNException("Invalid persistent: " . var_export($persistent, true));
+                        throw new GearmanDSNException("Invalid timeout: " . var_export($timeout, true));
                     }
-
-                    $result->setPersistent($persistent);
-                }
-
-                if (isset($query['prefix'])) {
-                    $result->setPrefix($query['prefix']);
                 }
             }
 
             return $result;
         }
 
-        throw new RedisDSNException("Could not parse dsn string");
+        throw new GearmanDSNException("Could not parse dsn string");
     }
 }
 

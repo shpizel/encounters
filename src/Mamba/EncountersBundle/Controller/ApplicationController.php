@@ -7,7 +7,8 @@ use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Counters;
-use Mamba\EncountersBundle\Helpers\PlatformSettings;
+use Core\MambaBundle\Helpers\PlatformSettings;
+
 use Mamba\EncountersBundle\Helpers\Popularity;
 use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\Services;

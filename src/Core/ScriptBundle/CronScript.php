@@ -35,14 +35,7 @@ abstract class CronScript extends Script {
          *
          * @var int
          */
-        DEFAULT_LIFETIME = 0 /* undead */,
-
-        /**
-         * Время на получение нового задания
-         *
-         * @var int
-         */
-        GEARMAN_WORKER_TIMEOUT = 5000
+        DEFAULT_LIFETIME = 0 /* undead */
     ;
 
     /**
@@ -93,9 +86,6 @@ abstract class CronScript extends Script {
         if ($daemon && $debug) {
             throw new CronScriptException("Could not start daemon with debug");
         }
-
-        $this->getGearman()->getClient()->setTimeout(self::GEARMAN_CLIENT_TIMEOUT_DEFAULT);
-        $this->getGearman()->getWorker()->setTimeout(self::GEARMAN_WORKER_TIMEOUT_DEFAULT);
 
         list($this->input, $this->output, $this->copy, $this->memory, $this->lifetime, $this->iterations, $this->daemon, $this->debug)
             = array($input, $output, $copy, $memory, $lifetime, $iterations, $daemon, $debug);

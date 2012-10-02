@@ -1,6 +1,12 @@
 <?php
 namespace Mamba\EncountersBundle\Script;
 
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
 use Mamba\EncountersBundle\Helpers\Queues\CurrentQueue;
 use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
@@ -12,7 +18,7 @@ use Mamba\EncountersBundle\Helpers\SearchPreferences;
 use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Counters;
-use Mamba\EncountersBundle\Helpers\PlatformSettings;
+use Core\MambaBundle\Helpers\PlatformSettings;
 use Mamba\EncountersBundle\Helpers\Popularity;
 use Mamba\EncountersBundle\Helpers\Notifications;
 use Mamba\EncountersBundle\Helpers\Services;
@@ -26,6 +32,43 @@ use Mamba\EncountersBundle\Helpers\Variables;
  * @package EncountersBundle
  */
 trait ScriptTrait {
+
+    /**
+     * Конфигурирование крон-скрипта
+     *
+     *
+     */
+    protected function configure() {
+        parent::configure();
+
+        $this->addOption('gearman', null, InputOption::VALUE_OPTIONAL, 'Gearman DSN', null);
+    }
+
+    /**
+     * Gearman client getter
+     *
+     * @return \GearmanClient
+     */
+    public function getGearmanClient() {
+        if ($dsn = $this->input->getOption('gearman')) {
+            return $this->getGearman()->getClient(\Core\GearmanBundle\GearmanDSN::getDSNFromString($dsn));
+        }
+
+        return $this->getGearman()->getClient();
+    }
+
+    /**
+     * Gearman worker getter
+     *
+     * @return \GearmanWorker
+     */
+    public function getGearmanWorker() {
+        if ($dsn = $this->input->getOption('gearman')) {
+            return $this->getGearman()->getWorker(\Core\GearmanBundle\GearmanDSN::getDSNFromString($dsn));
+        }
+
+        return $this->getGearman()->getWorker();
+    }
 
     /**
      * Purchased object getter

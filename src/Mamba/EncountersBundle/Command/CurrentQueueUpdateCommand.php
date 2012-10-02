@@ -91,8 +91,7 @@ class CurrentQueueUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $worker = $this->getGearman()->getWorker();
-        $worker->setTimeout(static::GEARMAN_WORKER_TIMEOUT);
+        $worker = $this->getGearmanWorker();
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, function($job) use($class) {
@@ -221,7 +220,7 @@ class CurrentQueueUpdateCommand extends CronScript {
 
                         $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
 
-                        $this->getGearman()->getClient()->doHighBackground(
+                        $this->getGearmanClient()->doHighBackground(
                             EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
                             serialize(
                                 array(
@@ -242,7 +241,7 @@ class CurrentQueueUpdateCommand extends CronScript {
             }
         }
 
-        $GearmanClient = $this->getGearman()->getClient();
+        $GearmanClient = $this->getGearmanClient();
 
         $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
             'user_id'   => $webUserId,
