@@ -40,7 +40,14 @@ abstract class Script extends ContainerAwareCommand {
          *
          * @var int
          */
-        DEFAULT_COPY_NUMBER = 1
+        DEFAULT_COPY_NUMBER = 1,
+
+        /**
+         * Папка логов
+         *
+         * @var string
+         */
+        LOG_DIR = "/var/log/cron/"
     ;
 
     protected
@@ -95,7 +102,11 @@ abstract class Script extends ContainerAwareCommand {
         $this->started = time();
 
         if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
-            $this->process();
+            try {
+                $this->process();
+            } catch (\Exception $e) {
+                $this->log("Error: " . $e->getMessage(), 16);
+            }
 
             fclose($this->lockFilePointer);
             unlink($this->lockFileName);
@@ -142,6 +153,10 @@ abstract class Script extends ContainerAwareCommand {
         if ($this->debug) {
             $writeFunction = ($code >= 0) ? "writeln" : "write";
             $this->output->$writeFunction((($code < 0) ? "\r" : "") . "[" . date("d/m/y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
+        } else {
+            $message = "[" . date("d/m/y H:i:s") . " @ " . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s & " . round(memory_get_usage(true)/1024/1024, 0) . "M] " . trim($message) . PHP_EOL;
+            $filename = rtrim(static::LOG_DIR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . static::SCRIPT_NAME . "." . $this->copy . ".log";
+            error_log($message, 3, $filename);
         }
 
         return true;

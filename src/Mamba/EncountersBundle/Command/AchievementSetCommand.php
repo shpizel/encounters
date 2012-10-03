@@ -43,7 +43,7 @@ class AchievementSetCommand extends CronScript {
             try {
                 return $class->sendNotifications($job);
             } catch (\Exception $e) {
-                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
+                $class->log("Error: " . static::SCRIPT_NAME . ":" . $e->getCode() . " " . $e->getMessage(), 16);
                 return;
             }
         });

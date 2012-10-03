@@ -1,14 +1,14 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Script\Script;
+use Mamba\EncountersBundle\Script\CronScript;
 
 /**
  * AACommand
  *
  * @package EncountersBundle
  */
-class AACommand extends Script {
+class AACommand extends CronScript {
 
     const
 
@@ -33,8 +33,9 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $Redis = $this->getRedis();
+        ini_set('error_log', "/home/shpizel/nastya");
+        $this->log(ini_get('log_errors'));
 
-        var_dump($Redis->rPush('x', '1', '2', '3'));
+        mysql_disconnect(1/0);
     }
 }

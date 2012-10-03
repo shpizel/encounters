@@ -71,7 +71,8 @@ class VisitorsController extends ApplicationController {
         );
 
         $data = $json = array();
-        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::VISITORS_SQL . " LIMIT $perPage OFFSET " . (abs($dataArray['paginator']['current'] -1) * $perPage));
+        $offset = $dataArray['paginator']['current'] > 0 ? ($dataArray['paginator']['current'] -1) * $perPage : 0;
+        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::VISITORS_SQL . " LIMIT $perPage OFFSET {$offset}");
         $_webUserId = $webUserId;
         $stmt->bindParam('web_user_id',  $_webUserId);
 

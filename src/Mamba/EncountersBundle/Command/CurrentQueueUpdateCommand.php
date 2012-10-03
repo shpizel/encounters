@@ -98,7 +98,7 @@ class CurrentQueueUpdateCommand extends CronScript {
             try {
                 return $class->updateCurrentQueue($job);
             } catch (\Exception $e) {
-                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
+                $class->log("Error: " . static::SCRIPT_NAME . ":" . $e->getCode() . " " . $e->getMessage(), 16);
                 $class->unlock();
 
                 return;

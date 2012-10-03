@@ -46,7 +46,7 @@ $Mychoice = {
         };
 
         $("div.content div.closed a.ln").click($showLayerFunction);
-        $("div.content div.info a").click($showLayerFunction);
+        $("div.content div.photoListItem div.info a").click($showLayerFunction);
         $("div.content div.waiting div.link a").click($showLayerFunction);
         $("div.content div.maybe div.link a").click($showLayerFunction);
         $("div.content div.yes div.link a").click($showLayerFunction);

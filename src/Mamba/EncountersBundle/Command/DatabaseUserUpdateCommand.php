@@ -64,12 +64,7 @@ class DatabaseUserUpdateCommand extends CronScript {
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME, function($job) use($class) {
-            try {
-                return $class->updateUser($job);
-            } catch (\Exception $e) {
-                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
-                throw $e;
-            }
+            return $class->updateUser($job);
         });
 
         $iterations = $this->iterations;

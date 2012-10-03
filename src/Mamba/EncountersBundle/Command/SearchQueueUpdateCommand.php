@@ -186,7 +186,7 @@ class SearchQueueUpdateCommand extends CronScript {
             try {
                 return $class->updateSearchQueue($job);
             } catch (\Exception $e) {
-                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
+                $class->log("Error: " . static::SCRIPT_NAME . ":" . $e->getCode() . " " . $e->getMessage(), 16);
                 $class->unlock();
 
                 return;

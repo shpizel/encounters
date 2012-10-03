@@ -74,7 +74,10 @@
             </div>
         </div>
     </div>
+{% if not app.debug %}
     {% include 'EncountersBundle:tools:ym.html.twig' %}
+    {% include 'EncountersBundle:tools:ga.html.twig' %}
+{% endif %}
 </div>
 {% block javascripts %}{% endblock %}
 {% javascripts

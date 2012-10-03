@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+declare(ticks=1);
+
 /**
  * CronScript
  *
@@ -112,8 +114,11 @@ abstract class CronScript extends Script {
                     pcntl_signal(SIGHUP, $exit);
 
                     if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
-
-                        $this->process();
+                        try {
+                            $this->process();
+                        } catch (\Exception $e) {
+                            $this->log("Error: " . $e->getMessage(), 16);
+                        }
 
                         fclose($this->lockFilePointer);
                         unlink($this->lockFileName);
@@ -126,7 +131,11 @@ abstract class CronScript extends Script {
             }
         } else {
             if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
-                $this->process();
+                try {
+                    $this->process();
+                } catch (\Exception $e) {
+                    $this->log("Error: " . $e->getMessage(), 16);
+                }
 
                 fclose($this->lockFilePointer);
                 unlink($this->lockFileName);

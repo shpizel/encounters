@@ -54,12 +54,7 @@ class DatabaseEnergyUpdateCommand extends CronScript {
 
         $class = $this;
         $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME, function($job) use($class) {
-            try {
-                return $class->updateEnergy($job);
-            } catch (\Exception $e) {
-                $class->log($e->getCode() . ": " . $e->getMessage(), 16);
-                throw $e;
-            }
+            return $class->updateEnergy($job);
         });
 
         $iterations = $this->iterations;
