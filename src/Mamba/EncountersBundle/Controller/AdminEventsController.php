@@ -6,11 +6,11 @@ use Mamba\EncountersBundle\Controller\ApplicationController;
 use PDO;
 
 /**
- * AdminStatsController
+ * AdminEventsController
  *
  * @package EncountersBundle
  */
-class AdminStatsController extends ApplicationController {
+class AdminEventsController extends ApplicationController {
 
     /**
      * Index action
@@ -55,6 +55,8 @@ class AdminStatsController extends ApplicationController {
             }
         }
 
-        return $this->render('EncountersBundle:templates:admin.stats.html.twig', $dataArray);
+        $dataArray['controller'] = $this->getControllerName(__CLASS__);
+
+        return $this->render('EncountersBundle:templates:admin.events.html.twig', $dataArray);
     }
 }

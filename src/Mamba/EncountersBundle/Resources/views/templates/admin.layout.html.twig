@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{% block title %}Welcome!{% endblock %}</title>
+{% block stylesheets %}{% endblock %}
+{% stylesheets
+    '@EncountersBundle/Resources/public/css/bootstrap/bootstrap.css'
+    '@EncountersBundle/Resources/public/css/bootstrap/bootstrap-responsive.css'
+    output="css/compiled/bootstrap.css"
+    filter="?yui_css"
+%}
+<link rel="stylesheet" href="{{ asset_url }}" />
+{% endstylesheets %}
+</head>
+<body style="margin:10px;">
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container">
+
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+
+            <a class="brand" href="/admin/">Выбиратор</a>
+
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Приложение <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/admin/application/decisions">Голосования</a></li>
+                            <li><a href="/admin/application/events">События</a></li>
+                            <li><a href="/admin/application/users">Пользователи</a></li>
+                            <li><a href="/admin/application/finances">Финансы</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Сетевые сервисы<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/admin/services/redis">Redis</a></li>
+                            <li><a href="/admin/services/memcache">Memcache</a></li>
+                            <li><a href="/admin/services/nginx">Nginx</a></li>
+                            <li><a href="/admin/services/php-fpm">PHP-FPM</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Мониторинг <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Платформа приложений</a></li>
+                            <li><a href="#">Крон-скрипты</a></li>
+                            <li class="divider"></li>
+                            <li><a href="http://yandex.ru" target="_blank">Nagios</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid" style="padding-right: 0px; padding-left: 0px;">
+    <div class="row-fluid">
+        <div class="span3">
+            <div class="sidebar-nav">
+                <ul class="nav nav-list">
+                    <li class="nav-header">Приложение</li>
+                    <li{% if controller == 'AdminDecisions' %} class="active"{% endif %}><a href="/admin/application/decisions">Голосования</a></li>
+                    <li{% if controller == 'AdminEvents' %} class="active"{% endif %}><a href="/admin/application/events">События</a></li>
+                    <li{% if controller == 'AdminUsers' %} class="active"{% endif %}><a href="/admin/application/users">Пользователи</a></li>
+                    <li{% if controller == 'AdminFinances' %} class="active"{% endif %}><a href="/admin/application/finances">Финансы</a></li>
+
+                    <li class="nav-header">Сетевые сервисы</li>
+                    <li{% if controller == 'AdminRedis' %} class="active"{% endif %}><a href="/admin/services/redis">Redis</a></li>
+                    <li{% if controller == 'AdminMemcache' %} class="active"{% endif %}><a href="/admin/services/memcache">Memcache</a></li>
+                    <li{% if controller == 'AdminGearman' %} class="active"{% endif %}><a href="/admin/services/gearman">Gearman</a></li>
+                    <li{% if controller == 'AdminNginx' %} class="active"{% endif %}><a href="/admin/services/nginx">Nginx</a></li>
+                    <li{% if controller == 'AdminPhpFpm' %} class="active"{% endif %}><a href="/admin/services/php-fpm">PHP-FPM</a></li>
+
+                    <li class="nav-header">Мониторинг</li>
+                    <li{% if controller == 'AdminPlatform' %} class="active"{% endif %}><a href="/admin/monitoring/platform">Платформа приложений</a></li>
+                    <li{% if controller == 'AdminCron' %} class="active"{% endif %}><a href="/admin/monitoring/cron">Крон-скрипты</a></li>
+                    <li class="divider"></li>
+                    <li><a href="http://yandex.ru" target="_blank">Nagios</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="span9">{% block content %}Welcome!{% endblock %}</div>
+    </div>
+</div>
+
+{% block javascripts %}{% endblock %}
+{% javascripts
+'@EncountersBundle/Resources/public/js/core/Jquery.js'
+'@EncountersBundle/Resources/public/js/bootstrap/bootstrap.js'
+output="js/compiled/bootstrap.js"
+filter="?yui_js"
+%}
+<script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+</body>
+</html>

@@ -12,6 +12,7 @@ security:
                 nastya:  { password: dOFupQMHuKWPphKGe4svuZVGNDbfnXyljDXXygdyKt2DPRRPFM, roles: [ 'ROLE_USER' ] }
                 ilya:    { password: zDydGKrBzh1aXtpbcpzTpPBbldTZGvRpFVFMkXMYgrSyW7VbbL, roles: [ 'ROLE_ADMIN' ] }
                 igor:    { password: XsKS2QALeHZFvfLstqdZRrZUsNTV6sNVdINxTOwuMWxaahqjRK, roles: [ 'ROLE_ADMIN' ] }
+
 #                user:  { password: userpass, roles: [ 'ROLE_USER' ] }
 #                admin: { password: adminpass, roles: [ 'ROLE_ADMIN' ] }
 
@@ -27,6 +28,7 @@ security:
                 realm: "Secured area"
 
     access_control:
+        - { path: ^/admin/?, roles: ROLE_USER }
         - { path: ^/admin/user*, roles: ROLE_USER }
         - { path: ^/admin/battery*, roles: ROLE_USER }
         - { path: ^/admin/energy*, roles: ROLE_USER }
@@ -34,5 +36,6 @@ security:
         - { path: ^/admin/\$*, roles: ROLE_ADMIN }
         - { path: ^/admin/decisions*, roles: ROLE_ADMIN }
         - { path: ^/admin/gearman*, roles: ROLE_ADMIN }
+
 #        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }
 #        - { path: ^/_internal, roles: IS_AUTHENTICATED_ANONYMOUSLY, ip: 127.0.0.1 }

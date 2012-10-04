@@ -1,23 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Gearman</title>
-</head>
-<body>
-<h2>Состояние Gearman'a на  {{ "now"|date("H:i") }}</h2>
+{% extends 'EncountersBundle:templates:admin.layout.html.twig' %}
+{% block title %}Gearman{% endblock %}
 
+{% block content %}
 {% if servers %}
     {% for name, server in servers %}
-
-        {{ name }}:
-        <table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
-            <tr bgcolor="#f1f1f1">
-                <td>Функция</td>
-                <td>Задач</td>
-                <td>Активно</td>
-                <td>Рабочих</td>
-            </tr>
+        <div class="span6">
+        <h2>{{ name }}</h2>
+        <table class="table table-bordered">
+            <thead>
+                <th>Функция</th>
+                <th>Задач</th>
+                <th>Активно</th>
+                <th>Рабочих</th>
+            </thead>
 
             {% for item in server %}
                 <tr>
@@ -28,10 +23,10 @@
                 </tr>
             {% endfor %}
         </table>
+        </div>
 
     {% endfor %}
 {% else %}
     Информация по Герману недоступна.
 {% endif %}
-</body>
-</html>
+{%  endblock %}

@@ -19,10 +19,10 @@ class AdminGearmanController extends ApplicationController {
      */
     public function indexAction() {
         $dataArray = array('servers' => array());
-        foreach ($this->getGearman()->getServers() as $server) {
-            $dataArray['servers'][$server['host']] = array();
+        foreach ($this->getGearman()->getNodes() as $node) {
+            $dataArray['servers'][$node->getHost() . ":" . $node->getPort()] = array();
 
-            if (null != $handle = fsockopen($server['host'], $server['port'], $errorNumber, $errorString, 30)) {
+            if (null != $handle = fsockopen($node->getHost(), $node->getPort(), $errorNumber, $errorString, 30)) {
                 fwrite($handle,"status\n");
                 while (!feof($handle)) {
                     $line = fgets($handle, 4096);
@@ -32,7 +32,7 @@ class AdminGearmanController extends ApplicationController {
 
                     if( preg_match("~^(.*)[ \t](\d+)[ \t](\d+)[ \t](\d+)~",$line,$matches) ){
                         $function = $matches[1];
-                        $dataArray['servers'][$server['host']][$function] = array(
+                        $dataArray['servers'][$node->getHost() . ":" . $node->getPort()][$function] = array(
                             'function' => $function,
                             'total' => $matches[2],
                             'active' => $matches[3],
@@ -42,6 +42,8 @@ class AdminGearmanController extends ApplicationController {
                 }
             }
         }
+
+        $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
         return $this->render('EncountersBundle:templates:admin.gearman.html.twig', $dataArray);
     }

@@ -1,0 +1,193 @@
+{% extends 'EncountersBundle:templates:admin.layout.html.twig' %}
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+    <h2>Current user: <a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{  user.id }}</a></h2>
+    <div class="tabbable tabs-right">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#platform_settings" data-toggle="tab">Настройки платформы</a></li>
+            <li><a href="#search_preferences" data-toggle="tab">Поисковые предпочтения</a></li>
+            <li><a href="#counters" data-toggle="tab">Счетчики</a></li>
+            <li><a href="#variables" data-toggle="tab">Переменные</a></li>
+            <li><a href="#billing" data-toggle="tab">Биллинг</a></li>
+            <li><a href="#notifications" data-toggle="tab">Нотификации</a></li>
+            <li><a href="#queue"data-toggle="tab">Очередь показа</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="platform_settings">
+                {% if platform_settings %}
+                    <div class="span5">
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Поле</th>
+                            <th>Значение</th>
+                        </thead>
+                        {% for key, item in platform_settings %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ item }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    </div>
+                {% else %}
+                    Настройки платформы недоступны.
+                {% endif %}
+            </div>
+
+            <div class="tab-pane" id="search_preferences">
+                {% if search_preferences %}
+                    <div class="span6">
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Поле</th>
+                            <th>Значение</th>
+                        </thead>
+                        {% for key, item in search_preferences %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>
+                                    {% if item|keys|length > 0 %}
+                                        {{ item|json_encode }}
+                                    {% else %}
+                                        {% if key == 'changed' %}
+                                            {{ item|date("Y-m-d H:i:s") }}
+                                        {% else %}
+                                            {{ item }}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    </div>
+                {% else %}
+                    Настройки платформы недоступны.
+                {% endif %}
+            </div>
+
+            <div class="tab-pane" id="counters">
+                {% if counters %}
+                    <div class="span4">
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Счетчик</th>
+                            <th>Значение</th>
+                        </thead>
+                        {% for key, item in counters %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ item }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    </div>
+                {% else %}
+                    Счетчики недоступны.
+                {% endif %}
+            </div>
+
+            <div class="tab-pane" id="variables">
+                {% if variables %}
+                    <div class="span7">
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Название</th>
+                            <th>Значение</th>
+                            <th>Срок жизни</th>
+                        </thead>
+                        {% for key, item in variables %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td>{{ item.data }}</td>
+                                <td>
+                                    {% if item.expires %}
+                                        {% if "now"|date("U") > item.expires %}
+                                            <font color="red">—</font>
+                                        {% else %}
+                                            <font color="green">{{ item.expires|date("Y-m-d H:i:s") }}</font>
+                                        {% endif %}
+                                    {% else %}
+                                        <font color="green">&infin;</font>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    </div>
+                {% else %}
+                    Переменные недоступны.
+                {% endif %}
+            </div>
+
+            <div class="tab-pane" id="billing">
+                {% if billing %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>user_id</th>
+                            <th>operation_id</th>
+                            <th>amount</th>
+                            <th>amount_developer</th>
+                            <th>validation_id</th>
+                            <th>extra</th>
+                            <th>changed</th>
+                            <th>billed</th>
+                        </thead>
+                        {% for item in billing %}
+                            <tr>
+                                {% for value in item %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Биллинг недоступен.
+                {% endif %}
+            </div>
+
+            <div class="tab-pane" id="notifications">
+                {% if notifications %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Текст</th>
+                            <th>Дата</th>
+                        </thead>
+                        {% for item in notifications %}
+                            <tr>
+                                <td>{{item.data}}</td>
+                                <td>{{item.ts|date("Y-m-d H:i:s")}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    Нотификации недоступны.
+                {% endif %}
+            </div>
+
+            <div class="tab-pane" id="queue">
+                {% if queues.current %}
+                    <div class="span6"><table class="table table-bordered">
+                        <thead>
+                            <th>ID</th>
+                            <th>Анкета</th>
+                            <th>Админка</th>
+                        </thead>
+                        {% for key, id in queues.current %}
+                            <tr>
+                                <td>{{ id }}</td>
+                                <td><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ id }}"><i class="icon-arrow-right"></i> Перейти</a></td>
+                                <td><a target="_blank" href="/admin/application/users/{{ id }}"><i class="icon-wrench"></i> Перейти</a></td>
+                            </tr>
+                        {% endfor %}
+                    </table></div>
+                {% else %}
+                    Очередь показа недоступна.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {#Информация по пользователю <a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.id }}</a>#}
+    {#(<font color="green">{{ user.energy }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;"><a href="/admin/energy/{{ user.id }}">энергия</a></sup> / <font color="blue">{{ user.level }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;">уровень</sup> / <font color="#F60">{{ user.battery }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;"><a href="/admin/battery/{{ user.id }}">батарейка</a></sup>):</h1>#}
+{% endblock %}

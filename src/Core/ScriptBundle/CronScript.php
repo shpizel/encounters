@@ -114,6 +114,9 @@ abstract class CronScript extends Script {
                     pcntl_signal(SIGHUP, $exit);
 
                     if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
+                        ini_set('error_log', $this->getLogFilename());
+                        ini_set('log_errors', true);
+
                         try {
                             $this->process();
                         } catch (\Exception $e) {
@@ -131,6 +134,7 @@ abstract class CronScript extends Script {
             }
         } else {
             if (!$this->hasAnotherInstances() && (!$this->getMemcache()->get("cron:stop") || (($stopCommandTimestamp = (int)$this->getMemcache()->get("cron:stop")) && ($stopCommandTimestamp < $this->started)))) {
+
                 try {
                     $this->process();
                 } catch (\Exception $e) {

@@ -1,28 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Доходы</title>
-</head>
-<body>
-<h2>Доходы</h2>
+{% extends 'EncountersBundle:templates:admin.layout.html.twig' %}
+{% block title %}Финансы{% endblock %}
 
+{% block content %}
+<div class="span8">
 {% if items %}
-<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
+<table class="table table-bordered">
 <tr bgcolor="#f1f1f1">
     <td>Дата</td>
     <td>На {{ "now"|date("H:i") }}</td>
     <td colspan="2" align="center">За день</td>
 </tr>
 {% for item in items %}
-    <tr bgcolor="{% if item.ts|date("N") < 6 %}#CCFFCC{% else %}#FFCCCC{% endif %}">
+    <tr bgcolor="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
         <td>{{ item.date }}</td>
         <td>{{ item.current }}</td>
         <td>{{ item.daily }} &copy;</td>
         <td>{{ item.daily*34 }} <s>P</s></td>
     </tr>
 {% endfor %}
-    <tr>
+    <tr class="info">
         <td align="center" colspan="2">Итого ({{ info.limit }}):</td>
         <td>{{ info.sum }} &copy;</td>
         <td>{{ info.sum*34 }} <s>P</s></td>
@@ -31,5 +27,5 @@
 {% else %}
     Информация по доходам недоступна.
 {% endif %}
-</body>
-</html>
+</div>
+{%  endblock %}

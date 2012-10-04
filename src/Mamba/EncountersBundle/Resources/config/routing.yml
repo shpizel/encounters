@@ -97,9 +97,15 @@ billing.gateway:
         _method: POST
 
 # Admin
-admin.user:
-    pattern: /admin/user/{user_id}
-    defaults: { _controller: EncountersBundle:AdminUser:index }
+admin:
+    pattern: /admin/
+    defaults: { _controller: EncountersBundle:Admin:index }
+    requirements:
+        _method: GET
+
+admin.users:
+    pattern: /admin/application/users/{user_id}
+    defaults: { _controller: EncountersBundle:AdminUsers:index, user_id: 560015854 }
     requirements:
         user_id: \d+
         _method: GET
@@ -118,30 +124,66 @@ admin.energy:
         user_id: \d+
         _method: GET|POST
 
-admin.cash:
-    pattern: /admin/$/{limit}
-    defaults: { _controller: EncountersBundle:AdminCash:index, limit: 10 }
+admin.finances:
+    pattern: /admin/application/finances/{limit}
+    defaults: { _controller: EncountersBundle:AdminFinances:index, limit: 10 }
     requirements:
         limit: \d+
         _method: GET
 
 admin.decisions:
-    pattern: /admin/decisions/{limit}
+    pattern: /admin/application/decisions/{limit}
     defaults: { _controller: EncountersBundle:AdminDecisions:index, limit: 10 }
     requirements:
         limit: \d+
         _method: GET
 
-admin.gearman:
-    pattern: /admin/gearman
-    defaults: { _controller: EncountersBundle:AdminGearman:index }
+admin.events:
+    pattern: /admin/application/events/{limit}
+    defaults: { _controller: EncountersBundle:AdminEvents:index, limit: 10 }
     requirements:
         limit: \d+
         _method: GET
 
-admin.stats:
-    pattern: /admin/stats/{limit}
-    defaults: { _controller: EncountersBundle:AdminStats:index, limit: 10 }
+admin.redis:
+    pattern: /admin/services/redis
+    defaults: { _controller: EncountersBundle:AdminRedis:index }
     requirements:
-        limit: \d+
+        _method: GET
+
+admin.memcache:
+    pattern: /admin/services/memcache
+    defaults: { _controller: EncountersBundle:AdminMemcache:index }
+    requirements:
+        _method: GET
+
+admin.gearman:
+    pattern: /admin/services/gearman
+    defaults: { _controller: EncountersBundle:AdminGearman:index }
+    requirements:
+        _method: GET
+
+admin.nginx:
+    pattern: /admin/services/nginx
+    defaults: { _controller: EncountersBundle:AdminNginx:index }
+    requirements:
+        _method: GET
+
+admin.fpm:
+    pattern: /admin/services/php-fpm
+    defaults: { _controller: EncountersBundle:AdminPhpFpm:index }
+    requirements:
+        _method: GET
+
+
+admin.platform:
+    pattern: /admin/monitoring/platform
+    defaults: { _controller: EncountersBundle:AdminPlatform:index }
+    requirements:
+        _method: GET
+
+admin.cron:
+    pattern: /admin/monitoring/cron
+    defaults: { _controller: EncountersBundle:AdminCron:index }
+    requirements:
         _method: GET

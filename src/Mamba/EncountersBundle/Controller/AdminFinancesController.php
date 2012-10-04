@@ -6,11 +6,11 @@ use Mamba\EncountersBundle\Controller\ApplicationController;
 use PDO;
 
 /**
- * AdminCashController
+ * AdminFinancesController
  *
  * @package EncountersBundle
  */
-class AdminCashController extends ApplicationController {
+class AdminFinancesController extends ApplicationController {
 
     const
 
@@ -61,6 +61,8 @@ class AdminCashController extends ApplicationController {
             }
         }
 
-        return $this->render('EncountersBundle:templates:admin.cash.html.twig', $dataArray);
+        $dataArray['controller'] = $this->getControllerName(__CLASS__);
+
+        return $this->render('EncountersBundle:templates:admin.finances.html.twig', $dataArray);
     }
 }

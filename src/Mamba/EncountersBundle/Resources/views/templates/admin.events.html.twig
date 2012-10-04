@@ -1,24 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Статистика</title>
-</head>
-<body>
-<h2>Статистика</h2>
+{% extends 'EncountersBundle:templates:admin.layout.html.twig' %}
+{% block title %}События{% endblock %}
 
+{% block content %}
+<div class="span8">
 {% if items %}
-<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
-    <tr bgcolor="#f1f1f1">
-        <td>Дата</td>
-        <td>Достижений</td>
-        <td>Сообщений</td>
-        <td>Нотификаций</td>
-        <td><font color=red>NO</font></td>
-        <td><font color=#999>MAYBE</font></td>
-        <td><font color=green>YES</font></td>
-        <td>Всего</td>
-    </tr>
+<table class="table table-bordered">
+    <thead>
+        <th>Дата</th>
+        <th>Достижений</th>
+        <th>Сообщений</th>
+        <th>Нотификаций</th>
+        <th>NO</th>
+        <th>MAYBE</th>
+        <th>YES</th>
+        <th>Всего</th>
+    </thead>
+
     {% for item in items %}
         {% if item.item|keys|length > 0 %}
             <tr>
@@ -38,5 +35,5 @@
 {% else %}
     Информация по статистике недоступна.
 {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

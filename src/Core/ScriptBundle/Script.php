@@ -152,14 +152,24 @@ abstract class Script extends ContainerAwareCommand {
 
         if ($this->debug) {
             $writeFunction = ($code >= 0) ? "writeln" : "write";
-            $this->output->$writeFunction((($code < 0) ? "\r" : "") . "[" . date("d/m/y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
+            $this->output->$writeFunction((($code < 0) ? "\r" : "") . "[" . date("d-M-Y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
         } else {
-            $message = "[" . date("d/m/y H:i:s") . " @ " . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s & " . round(memory_get_usage(true)/1024/1024, 0) . "M] " . trim($message) . PHP_EOL;
-            $filename = rtrim(static::LOG_DIR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . static::SCRIPT_NAME . "." . $this->copy . ".log";
-            error_log($message, 3, $filename);
+            $message = date("[d-M-Y H:i:s") . " @ " . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s & " . round(memory_get_usage(true)/1024/1024, 0) . "M] " . trim($message) . PHP_EOL;
+            error_log($message, 3, $this->getLogFilename());
         }
 
         return true;
+    }
+
+    /**
+     * Возвращает имя файла лога скрипта
+     *
+     * @return str
+     */
+    protected function getLogFilename() {
+        $filename = trim(self::LOG_DIR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . "{$this->scriptName}.{$this->copy}.log";
+
+        return $filename;
     }
 
     /**

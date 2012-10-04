@@ -1,23 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Голосования</title>
-</head>
-<body>
-<h2>Голосования на  {{ "now"|date("H:i") }}</h2>
+{% extends 'EncountersBundle:templates:admin.layout.html.twig' %}
+{% block title %}Голосования{% endblock %}
 
+{% block content %}
+<div class="span7">
 {% if items %}
-<table border="1" cellspacing="10" cellpadding="10" style="border-collapse: collapse;">
-<tr bgcolor="#f1f1f1">
-    <td>Дата</td>
-    <td><font color=red>NO</font></td>
-    <td><font color=#999>MAYBE</font></td>
-    <td><font color=green>YES</font></td>
-    <td>Всего</td>
-</tr>
+<table class="table table-bordered">
+<thead>
+    <th>Дата</th>
+    <th>NO</th>
+    <th>MAYBE</th>
+    <th>YES</th>
+    <th>Всего</th>
+</thead>
 {% for item in items %}
-    <tr bgcolor="{% if item.ts|date("N") < 6 %}#CCFFCC{% else %}#FFCCCC{% endif %}">
+    <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
         <td>{{ item.date }} </td>
         <td>{{ item.decision_no|number_format(0, '.') }}</td>
         <td>{{ item.decision_maybe|number_format(0, '.') }}</td>
@@ -25,7 +21,7 @@
         <td>{{ (item.decision_no + item.decision_maybe + item.decision_yes)|number_format(0, '.') }}</td>
     </tr>
 {% endfor %}
-    <tr bgcolor="#f1f1f1">
+    <tr class="info">
         <td>Итого:</td>
         <td>{{ info.no|number_format(0, '.') }}</td>
         <td>{{ info.maybe|number_format(0, '.') }}</td>
@@ -36,5 +32,5 @@
 {% else %}
     Информация по голосованиям недоступна.
 {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

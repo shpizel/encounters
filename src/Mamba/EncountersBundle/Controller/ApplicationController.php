@@ -381,7 +381,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return str
      */
-    private function getControllerName($className) {
+    protected function getControllerName($className) {
         $className = explode("\\", $className);
         $className = array_pop($className);
         return str_replace("Controller", "", $className);
