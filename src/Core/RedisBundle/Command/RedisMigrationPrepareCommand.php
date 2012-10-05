@@ -44,7 +44,7 @@ class RedisMigrationPrepareCommand extends Script {
          *
          * @var str
          */
-        KEY_DUMP_DIR = "keydump",
+        KEYS_DUMP_DIR = "keydump",
 
         /**
          * Keys directory
@@ -58,7 +58,7 @@ class RedisMigrationPrepareCommand extends Script {
          *
          * @var str
          */
-        KEY_DUMP_CHUNKS_DIR = "chunks",
+        KEYS_DUMP_CHUNKS_DIR = "chunks",
 
         /**
          * Keys chunks directory
@@ -114,7 +114,7 @@ class RedisMigrationPrepareCommand extends Script {
                  *
                  * @author shpizel
                  */
-                $keysFilename = $this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR . DIRECTORY_SEPARATOR . "{$number}-{$word}.keydump";
+                $keysFilename = $this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . "{$number}-{$word}.keydump";
                 $cmd = "redis-cli -h " . $dsn->getHost() . " -p " . $dsn->getPort() . " -n " . $dsn->getDatabase() . " keys '{$word}*' > {$keysFilename}";
                 $this->log("Executing <comment>{$cmd}</comment>..");
                 exec($cmd, $ret, $code);
@@ -143,7 +143,7 @@ class RedisMigrationPrepareCommand extends Script {
                                 $keys[] = $key;
 
                                 if (count($keys) >= self::CHUNK_SIZE) {
-                                    file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+                                    file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
 
                                     $chunkNumber++;
                                     $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
@@ -154,7 +154,7 @@ class RedisMigrationPrepareCommand extends Script {
                     }
 
                     if ($keys) {
-                        file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+                        file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
                         $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
                     }
                     echo "\n";
@@ -170,7 +170,7 @@ class RedisMigrationPrepareCommand extends Script {
                     throw new \Core\ScriptBundle\ScriptException("Failed opening {$keysFilename}");
                 }
 
-                if ($chunks = glob($this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . "{$number}-{$word}-*.keydump")) {
+                if ($chunks = glob($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . "{$number}-{$word}-*.keydump")) {
 
                     /**
                      * Готовим структуру данных
@@ -303,8 +303,8 @@ class RedisMigrationPrepareCommand extends Script {
         if
         (!
             (
-                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR) &&
-                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR) &&
                 mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR) &&
                 mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . self::KEYS_CHUNKS_DIR)
             )
