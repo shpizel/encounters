@@ -38,7 +38,7 @@ class Energy extends Helper {
          *
          * @var str
          */
-        REDIS_HASH_USERS_ENERGIES_KEY = "energies"
+        REDIS_USER_ENERGY_KEY = "energy_by_%d"
     ;
 
     /**
@@ -52,7 +52,7 @@ class Energy extends Helper {
             throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $energy = $this->getRedis()->hGet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId);
+        $energy = $this->getRedis()->get(sprintf(self::REDIS_USER_ENERGY_KEY, $userId));
         if (false === $energy) {
             $this->set($userId, $energy = self::DEFAULT_ENERGY);
 
@@ -83,7 +83,7 @@ class Energy extends Helper {
         }
 
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
-            $result = $this->getRedis()->hSet(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $energy);
+            $result = $this->getRedis()->set(sprintf(self::REDIS_USER_ENERGY_KEY, $userId), $energy);
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) &&  $this->getGearman()->getClient()->doHighBackground(
                 EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
@@ -116,7 +116,7 @@ class Energy extends Helper {
             throw new EnergyException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->getRedis()->hIncrBy(self::REDIS_HASH_USERS_ENERGIES_KEY, $userId, $rate);
+        $incrementResult = $this->getRedis()->incrBy(sprintf(self::REDIS_USER_ENERGY_KEY, $userId), $rate);
         if ($incrementResult < self::MINIMUM_ENERGY) {
             $result =  $this->set($userId, $incrementResult = self::MINIMUM_ENERGY);
 

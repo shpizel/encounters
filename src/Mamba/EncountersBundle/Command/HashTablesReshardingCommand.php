@@ -38,17 +38,17 @@ class HashTablesReshardingCommand extends Script {
         /**
          * 1. batteries
          */
-        $this->log("Fetching batteries..");
-        $items = $Redis->hGetAll("batteries");
-        $this->log("SUCCESS", 64);
-
-        $counter = 0;
-        foreach ($items as $userId => $value) {
-            $Redis->set("battery_by_" . $userId, $value);
-            $counter++;
-
-            $this->log(number_format($counter) . "/" . number_format(count($items)) , -1);
-        }
+//        $this->log("Fetching batteries..");
+//        $items = $Redis->hGetAll("batteries");
+//        $this->log("SUCCESS", 64);
+//
+//        $counter = 0;
+//        foreach ($items as $userId => $value) {
+//            $Redis->set("battery_by_" . $userId, $value);
+//            $counter++;
+//
+//            $this->log(number_format($counter) . "/" . number_format(count($items)) , -1);
+//        }
 
         /**
          * 2. energies
@@ -57,12 +57,14 @@ class HashTablesReshardingCommand extends Script {
         $items = $Redis->hGetAll("energies");
         $this->log("SUCCESS", 64);
 
+        $users = $Redis->hKeys("users_search_preferences");
+
         $counter = 0;
-        foreach ($items as $userId => $value) {
-            $Redis->set("energy_by_" . $userId, $value);
+        foreach ($users as $userId) {
+            $Redis->set("energy_by_" . $userId, $value = $items[$userId]);
             $counter++;
 
-            $this->log(number_format($counter) . "/" . number_format(count($items)) , -1);
+            $this->log(number_format($counter) . "/" . number_format(count($users)) , -1);
         }
 
 //        /**
