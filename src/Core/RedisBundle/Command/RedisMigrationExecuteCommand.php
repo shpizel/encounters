@@ -71,11 +71,18 @@ class RedisMigrationExecuteCommand extends Script {
         $this->prepare();
 
         while (true) {
-            $this->files = glob($this->dir . DIRECTORY_SEPARATOR . "*.keys");
+            $this->files = glob($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::KEYS_DIR . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::KEYS_CHUNKS_DIR . DIRECTORY_SEPARATOR . "*.keys");
             $this->files = array_filter($this->files, function($filename) {
                 $filename = basename($filename, ".keys");
                 $parts = explode("-", $filename);
-                return count($parts) == 4 && !file_exists($this->dir . DIRECTORY_SEPARATOR . $filename . (($this->mode == 'migrate') ? ".completed" : ".dump"));
+                return
+                    count($parts) == 4 &&
+                    !file_exists(
+                        ($this->mode == 'migrate')
+                            ? $this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed"
+                            : $this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::DUMP_DIR . DIRECTORY_SEPARATOR . $filename . ".dump"
+                    )
+                ;
             });
 
             if (count($this->files) > 0) {
@@ -180,7 +187,8 @@ class RedisMigrationExecuteCommand extends Script {
                     'value' => $data,
                 );
             }
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::DUMP_DIR . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
             if ($this->mode == 'dump') {
                 return;
             }
@@ -210,7 +218,7 @@ class RedisMigrationExecuteCommand extends Script {
             }
 
             /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 2 /** set */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
@@ -232,7 +240,7 @@ class RedisMigrationExecuteCommand extends Script {
                     'value' => $data,
                 );
             }
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::DUMP_DIR . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
             if ($this->mode == 'dump') {
                 return;
             }
@@ -273,7 +281,7 @@ class RedisMigrationExecuteCommand extends Script {
             }
 
             /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 3 /** list */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
@@ -295,7 +303,7 @@ class RedisMigrationExecuteCommand extends Script {
                     'value' => $data,
                 );
             }
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::DUMP_DIR . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
             if ($this->mode == 'dump') {
                 return;
             }
@@ -336,7 +344,7 @@ class RedisMigrationExecuteCommand extends Script {
             }
 
             /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 4 /** zset */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
@@ -358,7 +366,7 @@ class RedisMigrationExecuteCommand extends Script {
                     'value' => $data,
                 );
             }
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::DUMP_DIR . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
             if ($this->mode == 'dump') {
                 return;
             }
@@ -399,7 +407,7 @@ class RedisMigrationExecuteCommand extends Script {
             }
 
             /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } elseif ($resourceType == 5 /** hash */) {
             $sourceConnection->multi();
             foreach ($keys as $key) {
@@ -421,7 +429,7 @@ class RedisMigrationExecuteCommand extends Script {
                     'value' => $data,
                 );
             }
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::DUMP_DIR . DIRECTORY_SEPARATOR . $filename . ".dump", json_encode($json));
             if ($this->mode == 'dump') {
                 return;
             }
@@ -462,7 +470,7 @@ class RedisMigrationExecuteCommand extends Script {
             }
 
             /** Если все ОК то сохраняем метку о том, что этот кусок успешно обработан */
-            file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed", time());
+            file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed", time());
         } else {
             throw new \Core\ScriptBundle\ScriptException("Invalid resource type");
         }

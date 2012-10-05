@@ -65,7 +65,28 @@ class RedisMigrationPrepareCommand extends Script {
          *
          * @var str
          */
-        KEYS_CHUNKS_DIR = "chunks"
+        KEYS_CHUNKS_DIR = "chunks",
+
+        /**
+         * Data dump directory
+         *
+         * @var str
+         */
+        DUMP_DIR = "dump",
+
+        /**
+         * Completed labels dir
+         *
+         * @var str
+         */
+        COMPLETED_DIR = "completed",
+
+        /**
+         * Cleanup dir
+         *
+         * @var str
+         */
+        CLEANUP_DIR = "cleanup"
     ;
 
     /**
@@ -163,7 +184,7 @@ class RedisMigrationPrepareCommand extends Script {
                     echo "\n";
 
                     if ($processedKeys) {
-                        $this->log("<info>SUCCESS</info> processed <comment>" . number_format($processedKeys) . "</comment> key(s) and <comment>" . number_format($chunkNumber) . "</comment> chunks");
+                        $this->log("<info>SUCCESS</info> processed <comment>" . number_format($processedKeys) . "</comment> key(s) and <comment>" . number_format($chunkNumber) . "</comment> chunks generated");
                     } else {
                         $this->log("No keys was found..", 16);
                     }
@@ -309,7 +330,10 @@ class RedisMigrationPrepareCommand extends Script {
                 mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR) &&
                 mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR) &&
                 mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR) &&
-                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . self::KEYS_CHUNKS_DIR)
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . self::KEYS_CHUNKS_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::DUMP_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::COMPLETED_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::CLEANUP_DIR)
             )
         ) {
             throw new \Core\ScriptBundle\ScriptException("Could not create directories");
@@ -341,8 +365,8 @@ class RedisMigrationPrepareCommand extends Script {
     private function getWords() {
         return
             array_merge(
-                range("a", "z"),
-                range("A", "Z"),
+//                range("a", "z"),
+//                range("A", "Z"),
                 range(0, 9)
             )
         ;
