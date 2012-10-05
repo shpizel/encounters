@@ -146,7 +146,7 @@ class RedisMigrationPrepareCommand extends Script {
                                     file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
 
                                     $chunkNumber++;
-                                    $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
+                                    $this->log("<info>" . number_format($chunkNumber) . "</info> chunks generated", -1);
                                     $keys = array();
                                 }
                             }
@@ -155,7 +155,10 @@ class RedisMigrationPrepareCommand extends Script {
 
                     if ($keys) {
                         file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEYS_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
-                        $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
+
+                        $chunkNumber++;
+                        $this->log("<info>" . number_format($chunkNumber) . "</info> chunks generated", -1);
+                        $keys = array();
                     }
                     echo "\n";
 
