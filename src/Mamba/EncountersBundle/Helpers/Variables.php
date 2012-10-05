@@ -65,7 +65,7 @@ class Variables extends Helper {
             throw new VariablesException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if (key_exists($key, self::$options)) {
+        if (array_key_exists($key, self::$options)) {
             if ($result = $this->getRedis()->hGet(sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId), $key)) {
                 $result = json_decode($result, true);
                 if ($result['expires'] > time() || !$result['expires']) {
@@ -101,7 +101,7 @@ class Variables extends Helper {
             throw new VariablesException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if (key_exists($key, self::$options)) {
+        if (array_key_exists($key, self::$options)) {
             return
                 false !== $this->getRedis()->hSet(
                     sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId),

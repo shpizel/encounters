@@ -37,7 +37,35 @@ class RedisMigrationPrepareCommand extends Script {
          *
          * @var int
          */
-        CHUNK_SIZE = 1024
+        CHUNK_SIZE = 1024,
+
+        /**
+         * Key dump directory
+         *
+         * @var str
+         */
+        KEY_DUMP_DIR = "keydump",
+
+        /**
+         * Keys directory
+         *
+         * @var str
+         */
+        KEYS_DIR = "keys",
+
+        /**
+         * Key dump chunks directory
+         *
+         * @var str
+         */
+        KEY_DUMP_CHUNKS_DIR = "chunks",
+
+        /**
+         * Keys chunks directory
+         *
+         * @var str
+         */
+        KEYS_CHUNKS_DIR = "chunks"
     ;
 
     /**
@@ -86,7 +114,7 @@ class RedisMigrationPrepareCommand extends Script {
                  *
                  * @author shpizel
                  */
-                $keysFilename = $this->dir . DIRECTORY_SEPARATOR . "{$number}-{$word}.keydump";
+                $keysFilename = $this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR . DIRECTORY_SEPARATOR . "{$number}-{$word}.keydump";
                 $cmd = "redis-cli -h " . $dsn->getHost() . " -p " . $dsn->getPort() . " -n " . $dsn->getDatabase() . " keys '{$word}*' > {$keysFilename}";
                 $this->log("Executing <comment>{$cmd}</comment>..");
                 exec($cmd, $ret, $code);
@@ -104,35 +132,37 @@ class RedisMigrationPrepareCommand extends Script {
                     $chunkNumber = 0;
 
                     while (($key = fgets($filePointer)) !== false) {
-                        $key = trim($key);
-                        if ($prefix = $dsn->getPrefix()) {
-                            $key = substr($key, strlen($prefix));
-                        }
-
-                        if ((string) $this->getRedis()->getDSNByKey($key) != (string) $dsn) {
-                            $keys[] = $key;
+                        if ($key = trim($key)) {
                             $processedKeys++;
 
-                            if (count($keys) >= self::CHUNK_SIZE) {
-                                file_put_contents($this->dir . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+                            if ($prefix = $dsn->getPrefix()) {
+                                $key = substr($key, strlen($prefix));
+                            }
 
-                                $chunkNumber++;
-                                $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
-                                $keys = array();
+                            if ((string) $this->getRedis()->getDSNByKey($key) != (string) $dsn) {
+                                $keys[] = $key;
+
+                                if (count($keys) >= self::CHUNK_SIZE) {
+                                    file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+
+                                    $chunkNumber++;
+                                    $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
+                                    $keys = array();
+                                }
                             }
                         }
                     }
 
                     if ($keys) {
-                        file_put_contents($this->dir . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+                        file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
                         $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
                     }
                     echo "\n";
 
                     if ($processedKeys) {
-                        $this->log("<info>SUCCESS</info> with <comment>" . number_format($processedKeys) . "</comment> key(s)");
+                        $this->log("<info>SUCCESS</info> processed <comment>" . number_format($processedKeys) . "</comment> key(s) and <comment>" . number_format($chunkNumber) . "</comment> chunks");
                     } else {
-                        $this->log("No keys was found..", 48);
+                        $this->log("No keys was found..", 16);
                     }
 
                 } else {
@@ -140,7 +170,7 @@ class RedisMigrationPrepareCommand extends Script {
                     throw new \Core\ScriptBundle\ScriptException("Failed opening {$keysFilename}");
                 }
 
-                if ($chunks = glob($this->dir . DIRECTORY_SEPARATOR . "{$number}-{$word}-*.keydump")) {
+                if ($chunks = glob($this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR . DIRECTORY_SEPARATOR . "{$number}-{$word}-*.keydump")) {
 
                     /**
                      * Готовим структуру данных
@@ -155,7 +185,9 @@ class RedisMigrationPrepareCommand extends Script {
                     foreach ($chunks as $chunk) {
                         $chunk = file($chunk);
                         foreach ($chunk as $ci=>$cv) {
-                            $chunk[$ci] = trim($cv);
+                            if (!$chunk[$ci] = trim($cv)) {
+                                unset($chunk[$ci]);
+                            }
                         }
 
                         $_keys = array();
@@ -187,7 +219,7 @@ class RedisMigrationPrepareCommand extends Script {
 
                         foreach ($_keys as $_key => $chunk) {
                             foreach ($chunk as $type => $data) {
-                                file_put_contents($this->dir . DIRECTORY_SEPARATOR . "{$_key}-{$type}.keys", implode(PHP_EOL, $data) . PHP_EOL, FILE_APPEND);
+                                file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . "{$_key}-{$type}.keys", implode(PHP_EOL, $data) . PHP_EOL, FILE_APPEND);
                             }
                         }
                     }
@@ -207,24 +239,25 @@ class RedisMigrationPrepareCommand extends Script {
          * @author shpizel
          */
 
-        $files = glob($this->dir . "/*.keys");
+        $files = glob($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . "*.keys");
         $keysCounter = 0;
         foreach ($files as $number=>$keysFile) {
             if ($filePointer = @fopen($keysFile, 'r')) {
                 $counter = 0;
                 $chunk = array();
                 while (($key = fgets($filePointer)) !== false) {
-                    $key = trim($key);
-                    $chunk[] = $key;
-                    $keysCounter++;
-                    $this->log("<info>" . ($number + 1) . "/" . count($files) . "</info>, <comment>" . number_format($keysCounter) . "</comment> keys processed", -1);
+                    if ($key = trim($key)) {
+                        $chunk[] = $key;
+                        $keysCounter++;
+                        $this->log("<info>" . ($number + 1) . "/" . count($files) . "</info>, <comment>" . number_format($keysCounter) . "</comment> keys processed", -1);
 
-                    if (count($chunk) >= self::CHUNK_SIZE) {
-                        /** Получаем имя файла */
-                        $filename = basename($keysFile, ".keys") . "-{$counter}.keys";
-                        file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, implode(PHP_EOL, $chunk) . PHP_EOL);
-                        $chunk = array();
-                        $counter++;
+                        if (count($chunk) >= self::CHUNK_SIZE) {
+                            /** Получаем имя файла */
+                            $filename = basename($keysFile, ".keys") . "-{$counter}.keys";
+                            file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . self::KEYS_CHUNKS_DIR . DIRECTORY_SEPARATOR . $filename, implode(PHP_EOL, $chunk) . PHP_EOL);
+                            $chunk = array();
+                            $counter++;
+                        }
                     }
                 }
 
@@ -237,11 +270,8 @@ class RedisMigrationPrepareCommand extends Script {
                 if ($chunk) {
                     /** Получаем имя файла */
                     $filename = basename($keysFile, ".keys") . "-{$counter}.keys";
-                    file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, implode(PHP_EOL, $chunk) . PHP_EOL);
+                    file_put_contents($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . self::KEYS_CHUNKS_DIR . DIRECTORY_SEPARATOR . $filename, implode(PHP_EOL, $chunk) . PHP_EOL);
                 }
-
-                /** @todo: посчитать число строк в этих файлах и в остальных (правильно ли работают чанки) */
-                //@unlink($keysFile);
             } else {
                 throw new \Core\ScriptBundle\ScriptException("Could not open {$keysFile}");
             }
@@ -260,8 +290,26 @@ class RedisMigrationPrepareCommand extends Script {
             }
         }
 
-        foreach (glob($this->dir . "/*") as $filename) {
-            @unlink($filename);
+        $cmd = "rm -fr {$this->dir}" . DIRECTORY_SEPARATOR . "*";
+        $this->log("Executing <comment>{$cmd}</comment>..");
+        exec($cmd, $ret, $code);
+        if ($code) {
+            $this->log("FAILED", 16);
+            throw new \Core\ScriptBundle\ScriptException("Failed executing {$cmd}");
+        } else {
+            $this->log("SUCCESS", 64);
+        }
+
+        if
+        (!
+            (
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEY_DUMP_DIR . DIRECTORY_SEPARATOR . self::KEY_DUMP_CHUNKS_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR) &&
+                mkdir($this->dir . DIRECTORY_SEPARATOR . self::KEYS_DIR . DIRECTORY_SEPARATOR . self::KEYS_CHUNKS_DIR)
+            )
+        ) {
+            throw new \Core\ScriptBundle\ScriptException("Could not create directories");
         }
 
         if (!$this->src = $this->input->getOption('src')) {
