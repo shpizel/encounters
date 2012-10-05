@@ -2,19 +2,47 @@
 {% block title %}Пользователи{% endblock %}
 
 {% block content %}
-    <h2>Current user: <a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{  user.id }}</a></h2>
+    {% if user.info %}
+    <h2 style="padding-top: 0px; margin-top:0px;float:left;"><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.info.info.name }}</a>, {{ user.info.info.age }}</h2>
+    <span>energy: {{ user.energy }}, battery: {{ user.battery }}</span>
+    <br clear="all"/>
+
+    {% if action is defined %}
+        {% if action.result %}
+            <div class="alert alert-success">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <strong>Success!</strong> {{ action.action }} succesfully completed.
+            </div>
+        {% else %}
+            <div class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <strong>Error!</strong> {{ action.action }} has encountered error.
+            </div>
+        {% endif %}
+    {% endif %}
     <div class="tabbable tabs-right">
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#platform_settings" data-toggle="tab">Настройки платформы</a></li>
-            <li><a href="#search_preferences" data-toggle="tab">Поисковые предпочтения</a></li>
-            <li><a href="#counters" data-toggle="tab">Счетчики</a></li>
-            <li><a href="#variables" data-toggle="tab">Переменные</a></li>
-            <li><a href="#billing" data-toggle="tab">Биллинг</a></li>
-            <li><a href="#notifications" data-toggle="tab">Нотификации</a></li>
-            <li><a href="#queue"data-toggle="tab">Очередь показа</a></li>
+            <li class="active"><a href="#info" data-toggle="tab"><em class="icon-info-sign"></em> Данные платформы</a></li>
+            <li><a href="#platform_settings" data-toggle="tab"><em class="{% if platform_settings %}icon-ok{% else %}icon-remove{% endif %}"></em> Настройки платформы</a></li>
+            <li><a href="#search_preferences" data-toggle="tab"><em class="{% if search_preferences %}icon-ok{% else %}icon-remove{% endif %}"></em> Поисковые предпочтения</a></li>
+            <li><a href="#counters" data-toggle="tab"><em class="{% if counters %}icon-ok{% else %}icon-remove{% endif %}"></em> Счетчики</a></li>
+            <li><a href="#variables" data-toggle="tab"><em class="{% if variables %}icon-ok{% else %}icon-remove{% endif %}"></em> Переменные</a></li>
+            <li><a href="#billing" data-toggle="tab"><em class="{% if billing %}icon-ok{% else %}icon-remove{% endif %}"></em> Биллинг</a></li>
+            <li><a href="#notifications" data-toggle="tab"><em class="{% if notifications %}icon-ok{% else %}icon-remove{% endif %}"></em> Нотификации</a></li>
+            <li><a href="#queue" data-toggle="tab"><em class="{% if queues.current %}icon-ok{% else %}icon-remove{% endif %}"></em> Очередь показа</a></li>
+
+            <li><a href="#energy" data-toggle="tab"><em class="icon-wrench"></em> Энергия</a></li>
+            <li><a href="#battery" data-toggle="tab"><em class="icon-wrench"></em> Батарейка</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane active" id="platform_settings">
+            <div class="tab-pane active" id="info">
+                {% for key, info in user.info_dump %}
+                    <h3 style="padding-top:0px;margin-top:0px;">{{ key }}:</h3>
+                    <pre>{{ info }}</pre>
+                {% endfor %}
+            </div>
+
+            <div class="tab-pane" id="platform_settings">
                 {% if platform_settings %}
                     <div class="span5">
                     <table class="table table-bordered">
@@ -122,7 +150,7 @@
 
             <div class="tab-pane" id="billing">
                 {% if billing %}
-                    <table class="table table-bordered">
+                    <table class="table table-bordered table-striped">
                         <thead>
                             <th>user_id</th>
                             <th>operation_id</th>
@@ -167,7 +195,7 @@
 
             <div class="tab-pane" id="queue">
                 {% if queues.current %}
-                    <div class="span6"><table class="table table-bordered">
+                    <div class="span6"><table class="table table-bordered table-striped">
                         <thead>
                             <th>ID</th>
                             <th>Анкета</th>
@@ -185,9 +213,31 @@
                     Очередь показа недоступна.
                 {% endif %}
             </div>
+
+            <div class="tab-pane" id="energy">
+                <form method="post"{# onsubmit="return confirm('Уверены?');"#}>
+                    <legend>Редактирование энергии</legend>
+                    <label>Энергия:</label>
+                    <input name="energy" type="text" placeholder="{{ user.energy }}" required="required">
+                    <input type="hidden" name="action" value="saveEnergy">
+                    <br/>
+                    <button type="submit" class="btn">Сохранить</button>
+                </form>
+            </div>
+
+            <div class="tab-pane" id="battery">
+                <form method="post" {#onsubmit="return confirm('Уверены?');"#}>
+                    <legend>Редактирование заряда батарейки</legend>
+                    <label>Заряд (0—5):</label>
+                    <input name="battery" type="text" placeholder="{{ user.battery }}" required="required">
+                    <input type="hidden" name="action" value="saveBattery">
+                    <br/>
+                    <button type="submit" class="btn">Сохранить</button>
+                </form>
+            </div>
         </div>
     </div>
-
-    {#Информация по пользователю <a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.id }}</a>#}
-    {#(<font color="green">{{ user.energy }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;"><a href="/admin/energy/{{ user.id }}">энергия</a></sup> / <font color="blue">{{ user.level }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;">уровень</sup> / <font color="#F60">{{ user.battery }}</font><sup style="font-size:13px;font-weight: normal;padding-left:4px;"><a href="/admin/battery/{{ user.id }}">батарейка</a></sup>):</h1>#}
+    {% else %}
+        Пользователь <strong>id{{ user.id }}</strong> не найден.
+    {% endif %}
 {% endblock %}

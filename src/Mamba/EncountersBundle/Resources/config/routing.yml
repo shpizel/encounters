@@ -108,20 +108,6 @@ admin.users:
     defaults: { _controller: EncountersBundle:AdminUsers:index, user_id: 560015854 }
     requirements:
         user_id: \d+
-        _method: GET
-
-admin.battery:
-    pattern: /admin/battery/{user_id}
-    defaults: { _controller: EncountersBundle:AdminBattery:index }
-    requirements:
-        user_id: \d+
-        _method: GET|POST
-
-admin.energy:
-    pattern: /admin/energy/{user_id}
-    defaults: { _controller: EncountersBundle:AdminEnergy:index }
-    requirements:
-        user_id: \d+
         _method: GET|POST
 
 admin.finances:

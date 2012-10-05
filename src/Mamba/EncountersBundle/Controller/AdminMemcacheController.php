@@ -17,6 +17,10 @@ class AdminMemcacheController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
+        $stats = $this->getMemcache()->getStats();
+
+        $dataArray['items'] = $stats;
+        $dataArray['keys'] = array_keys($stats);
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
         return $this->render('EncountersBundle:templates:admin.memcache.html.twig', $dataArray);

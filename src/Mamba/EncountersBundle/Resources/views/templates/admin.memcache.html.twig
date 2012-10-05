@@ -2,5 +2,47 @@
 {% block title %}Memcache{% endblock %}
 
 {% block content %}
-    memcache
+    {% if items %}
+    <div class="tabbable tabs-right">
+        <ul class="nav nav-tabs">
+            {% for i, node in keys %}
+                <li{% if i == 0 %} class="active"{% endif %}><a href="#{{ node }}" data-toggle="tab"><em class="icon-info-sign"></em> {{ node }}</a></li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content">
+            {% for i, node in keys %}
+                <div class="tab-pane{% if i == 0 %} active{% endif %}" id="{{ node }}">
+                    <div class="span6">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <th>Key</th>
+                                <th>Value</th>
+                            </thead>
+
+                            {% for key, val in items[node] %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td>
+                                        {% if key == 'time' %}
+                                            {{ val|date("d-m-Y H:i:s") }}
+                                        {% elseif key == 'uptime' %}
+                                            {{ '%.2f'|format(val / 3600) }} часов
+                                        {% elseif key  == 'version' %}
+                                            {{  val }}
+                                        {% else %}
+                                            {{ val|number_format(0, '.')  }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+        Информация по Мемкешу недоступна.
+    {% endif %}
 {%  endblock %}

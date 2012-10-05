@@ -18,9 +18,13 @@ class AdminGearmanController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        $dataArray = array('servers' => array());
+        $items = array();
         foreach ($this->getGearman()->getNodes() as $node) {
-            $dataArray['servers'][$node->getHost() . ":" . $node->getPort()] = array();
+            if (isset($dataArray[$node->getHost() . ":" . $node->getPort()])) {
+                return;
+            }
+
+            $dataArray[$node->getHost() . ":" . $node->getPort()] = array();
 
             if (null != $handle = fsockopen($node->getHost(), $node->getPort(), $errorNumber, $errorString, 30)) {
                 fwrite($handle,"status\n");
@@ -32,7 +36,7 @@ class AdminGearmanController extends ApplicationController {
 
                     if( preg_match("~^(.*)[ \t](\d+)[ \t](\d+)[ \t](\d+)~",$line,$matches) ){
                         $function = $matches[1];
-                        $dataArray['servers'][$node->getHost() . ":" . $node->getPort()][$function] = array(
+                        $items[$node->getHost() . ":" . $node->getPort()][$function] = array(
                             'function' => $function,
                             'total' => $matches[2],
                             'active' => $matches[3],
@@ -43,6 +47,8 @@ class AdminGearmanController extends ApplicationController {
             }
         }
 
+        $dataArray['items'] = $items;
+        $dataArray['keys'] = array_keys($items);
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
         return $this->render('EncountersBundle:templates:admin.gearman.html.twig', $dataArray);

@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
+use Mamba\EncountersBundle\Helpers\Popularity;
 use PDO;
 
 /**
@@ -32,6 +33,28 @@ class AdminUsersController extends ApplicationController {
                 'priority' => $this->getPriorityQueueObject()->getSize($userId),
             )
         );
+
+        if ($this->getRequest()->getMethod() == 'POST' && in_array($action = $this->getRequest()->request->get('action'), array('saveEnergy', 'saveBattery'))) {
+            $dataArray['action'] = array(
+                'action' => $action,
+                'result' => false,
+            );
+
+            if ($action == 'saveEnergy' && is_numeric($energy = $this->getRequest()->request->get('energy'))) {
+                $energy = intval($energy);
+                if ($energy && $energy <= max(Popularity::$levels))  {
+                    $this->getEnergyObject()->set($userId, $energy);
+                    $dataArray['action']['result'] = true;
+                }
+            } elseif ($action == 'saveBattery' && is_numeric($battery = $this->getRequest()->request->get('battery'))) {
+                $battery = intval($battery);
+                if ($battery && $battery <= 5)  {
+                    $this->getBatteryObject()->set($userId, $battery);
+                    $dataArray['action']['result'] = true;
+                }
+            }
+        }
+
         $dataArray['platform_settings'] = $platformSettings = $this->getPlatformSettingsObject()->get($userId);
         $dataArray['search_preferences'] = $searchPreferences = $this->getSearchPreferencesObject()->get($userId);
         if ($notifications = $this->getNotificationsObject()->getAll($userId)) {
@@ -58,6 +81,15 @@ class AdminUsersController extends ApplicationController {
             'level'   => $this->getPopularityObject()->getLevel($this->getEnergyObject()->get($userId)),
             'battery' => $this->getBatteryObject()->get($userId),
         );
+
+        $userInfo = $this->getMamba()->Anketa()->getInfo($userId);
+        $userInfo = array_shift($userInfo);
+
+        $dataArray['user']['info'] = $userInfo;
+        $dataArray['user']['info_dump'] = $userInfo;
+        foreach ($dataArray['user']['info_dump'] as &$var) {
+            $var = var_export($var, true);
+        }
 
         $stmt = $this->getDoctrine()->getConnection()->prepare("select * from Billing where user_id = :user_id order by changed desc");
         $stmt->bindParam('user_id', $userId);

@@ -30,28 +30,29 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Приложение <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/admin/application/decisions">Голосования</a></li>
-                            <li><a href="/admin/application/events">События</a></li>
-                            <li><a href="/admin/application/users">Пользователи</a></li>
-                            <li><a href="/admin/application/finances">Финансы</a></li>
+                            <li{% if controller == 'AdminDecisions' %} class="active"{% endif %}><a href="/admin/application/decisions">Голосования</a></li>
+                            <li{% if controller == 'AdminEvents' %} class="active"{% endif %}><a href="/admin/application/events">События</a></li>
+                            <li{% if controller == 'AdminUsers' %} class="active"{% endif %}><a href="/admin/application/users">Пользователи</a></li>
+                            <li{% if controller == 'AdminFinances' %} class="active"{% endif %}><a href="/admin/application/finances">Финансы</a></li>
                         </ul>
                     </li>
 
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Сетевые сервисы<b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/admin/services/redis">Redis</a></li>
-                            <li><a href="/admin/services/memcache">Memcache</a></li>
-                            <li><a href="/admin/services/nginx">Nginx</a></li>
-                            <li><a href="/admin/services/php-fpm">PHP-FPM</a></li>
+                            <li{% if controller == 'AdminRedis' %} class="active"{% endif %}><a href="/admin/services/redis">Redis</a></li>
+                            <li{% if controller == 'AdminMemcache' %} class="active"{% endif %}><a href="/admin/services/memcache">Memcache</a></li>
+                            <li{% if controller == 'AdminGearman' %} class="active"{% endif %}><a href="/admin/services/gearman">Gearman</a></li>
+                            <li{% if controller == 'AdminNginx' %} class="active"{% endif %}><a href="/admin/services/nginx">Nginx</a></li>
+                            <li{% if controller == 'AdminPhpFpm' %} class="active"{% endif %}><a href="/admin/services/php-fpm">PHP-FPM</a></li>
                         </ul>
                     </li>
 
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Мониторинг <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Платформа приложений</a></li>
-                            <li><a href="#">Крон-скрипты</a></li>
+                            <li{% if controller == 'AdminPlatform' %} class="active"{% endif %}><a href="/admin/monitoring/platform">Платформа приложений</a></li>
+                            <li{% if controller == 'AdminCron' %} class="active"{% endif %}><a href="/admin/monitoring/cron">Крон-скрипты</a></li>
                             <li class="divider"></li>
                             <li><a href="http://yandex.ru" target="_blank">Nagios</a></li>
                         </ul>
