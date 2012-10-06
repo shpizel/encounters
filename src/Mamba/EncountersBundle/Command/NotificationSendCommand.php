@@ -112,8 +112,9 @@ class NotificationSendCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        list($Redis, $Memcache, $DB, $Mamba, $Variables) = array(
-            $this->getRedis(),
+        $Redis = $this->getRedis();
+
+        list($Memcache, $DB, $Mamba, $Variables) = array(
             $this->getMemcache(),
             $this->getDoctrine()->getConnection(),
             $this->getMamba(),
@@ -129,7 +130,26 @@ class NotificationSendCommand extends CronScript {
             'last_notification_metrics',
         );
 
-        $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY);
+        //$appUsers = $Redis->hKeys(SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY);
+        $appUsers = array();
+        foreach ($Redis->getNodes() as $node) {
+            $nodeConnection = $Redis->getNodeConnection($node);
+            $keys = $nodeConnection->keys(
+                sprintf(
+                    str_replace("%d", "%s", SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY),
+                    "*"
+                )
+            );
+
+            $users = array_map(function($item) {
+                return (int) substr($item, strlen(str_replace("%d", "", SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY)));
+            }, $keys);
+
+            foreach ($users as $userId) {
+                $appUsers[] = $userId;
+            }
+        }
+
 //        shuffle($appUsers);
 //        $appUsers = array_slice($appUsers, 0, 1000);
 
