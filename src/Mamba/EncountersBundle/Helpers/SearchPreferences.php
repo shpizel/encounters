@@ -17,7 +17,7 @@ class SearchPreferences extends Helper {
          *
          * @var str
          */
-        REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY = "users_search_preferences"
+        REDIS_USER_SEARCH_PREFERENCES_KEY = "search_preferences_by_%d"
     ;
 
     /**
@@ -27,7 +27,7 @@ class SearchPreferences extends Helper {
      * @return mixed
      */
     public function get($userId) {
-        if (false !== $data = $this->getRedis()->hGet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId)) {
+        if (false !== $data = $this->getRedis()->get(sprintf(self::REDIS_USER_SEARCH_PREFERENCES_KEY, $userId))) {
             return json_decode($data, true);
         }
 
@@ -44,7 +44,7 @@ class SearchPreferences extends Helper {
     public function set($userId, array $data) {
         if ($data) {
             $data['changed'] = time();
-            return $this->getRedis()->hSet(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId, json_encode($data));
+            return $this->getRedis()->set(sprintf(self::REDIS_USER_SEARCH_PREFERENCES_KEY, $userId), json_encode($data));
         }
 
         throw new SearchPreferencesException("Invalid data: \n" . var_export($data, true));
@@ -57,7 +57,7 @@ class SearchPreferences extends Helper {
      * @return boolean
      */
     public function exists($userId) {
-        return $this->getRedis()->hExists(self::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY, $userId);
+        return $this->getRedis()->exists(sprintf(self::REDIS_USER_SEARCH_PREFERENCES_KEY, $userId));
     }
 }
 

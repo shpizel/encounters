@@ -129,7 +129,7 @@ class NotificationSendCommand extends CronScript {
             'last_notification_metrics',
         );
 
-        $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
+        $appUsers  = $Redis->hKeys(SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY);
 //        shuffle($appUsers);
 //        $appUsers = array_slice($appUsers, 0, 1000);
 

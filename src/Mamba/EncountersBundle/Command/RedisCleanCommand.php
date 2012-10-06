@@ -37,7 +37,7 @@ class RedisCleanCommand extends CronScript {
     protected function process() {
         $Redis = $this->getRedis();
 
-        $appUsers = $Redis->hKeys(SearchPreferences::REDIS_HASH_USERS_SEARCH_PREFERENCES_KEY);
+        $appUsers = $Redis->hKeys(SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY);
         foreach ($appUsers as &$userId) {
             $userId = (int) $userId;
         }
