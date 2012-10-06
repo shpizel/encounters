@@ -38,6 +38,51 @@ class Popularity extends Helper {
     ;
 
     /**
+     * Levels getter
+     *
+     * @return array
+     */
+    public function getLevels() {
+        return self::$levels;
+    }
+
+    /**
+     * Minimal energy getter
+     *
+     * @return int
+     */
+    public function getMinEnergy() {
+        return min(self::$levels);
+    }
+
+    /**
+     * Maximum energy getter
+     *
+     * @return int
+     */
+    public function getMaxEnergy() {
+        return max(self::$levels);
+    }
+
+    /**
+     * Minimal level getter
+     *
+     * @return int
+     */
+    public function getMinLevel() {
+        return min(array_keys(self::$levels));
+    }
+
+    /**
+     * Maximum level getter
+     *
+     * @return int
+     */
+    public function getMaxLevel() {
+        return max(array_keys(self::$levels));
+    }
+
+    /**
      * Energy -> level
      *
      * @param int $energy

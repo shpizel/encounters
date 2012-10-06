@@ -102,10 +102,11 @@ class DecisionController extends ApplicationController {
             }
 
             /** Уменьшить энергию CurrentUser'a */
-            $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
-            $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
-
             if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
+                $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
+                $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
+
+                /** мутная функция */
                 $this->getEnergyObject()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
             }
 
