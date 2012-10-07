@@ -2,30 +2,31 @@
 {% block title %}Финансы{% endblock %}
 
 {% block content %}
-<div class="span8">
+<div class="span6">
+<h3>Финансы</h3>
 {% if items %}
-<table class="table table-bordered">
-<tr bgcolor="#f1f1f1">
-    <td>Дата</td>
-    <td>На {{ "now"|date("H:i") }}</td>
-    <td colspan="2" align="center">За день</td>
-</tr>
+<table class="table table-bordered table-hover">
+<thead>
+    <th>Дата</th>
+    <th>На {{ "now"|date("H:i") }}</th>
+    <th colspan="2" align="center">За день</th>
+</thead>
 {% for item in items %}
-    <tr bgcolor="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+    <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
         <td>{{ item.date }}</td>
         <td>{{ item.current }}</td>
         <td>{{ item.daily }} &copy;</td>
-        <td>{{ item.daily*34 }} <s>P</s></td>
+        <td>{{ (item.daily*34)|number_format(2, '.') }} <s>P</s></td>
     </tr>
 {% endfor %}
     <tr class="info">
         <td align="center" colspan="2">Итого ({{ info.limit }}):</td>
         <td>{{ info.sum }} &copy;</td>
-        <td>{{ info.sum*34 }} <s>P</s></td>
+        <td>{{ (info.sum*34)|number_format(2, '.') }} <s>P</s></td>
     </tr>
 </table>
 {% else %}
-    Информация по доходам недоступна.
+    Информация по финансам недоступна.
 {% endif %}
 </div>
 {%  endblock %}

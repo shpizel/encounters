@@ -2,9 +2,21 @@
 {% block title %}Пользователи{% endblock %}
 
 {% block content %}
-    {% if user.info %}
-    <h2 style="padding-top: 0px; margin-top:0px;float:left;"><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.info.info.name }}</a>, {{ user.info.info.age }}</h2>
-    <span>energy: {{ user.energy }}, battery: {{ user.battery }}</span>
+    <h2>Пользователи</h2>
+
+    {% if user.id == 0 %}
+        {#<div class="span7">#}
+            <form method="post" {#onsubmit="return confirm('Уверены?');"#}>
+                <legend>Поиск пользователя</legend>
+                <label>Идентификатор пользователя:</label>
+                <input name="user_id" type="text" placeholder="560015854" required="required">
+                <br/>
+                <button type="submit" class="btn">Поиск</button>
+            </form>
+        {#</div>#}
+    {% elseif user.info %}
+    <div><h3 style="padding-top:0px;margin-top:0px;float:left;"><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.info.info.name }}</a>, {{ user.info.info.age }}</h3>
+    <span>energy: {{ user.energy }}, battery: {{ user.battery }}</span></div>
     <br clear="all"/>
 
     {% if action is defined %}
@@ -37,7 +49,7 @@
         <div class="tab-content">
             <div class="tab-pane active" id="info">
                 {% for key, info in user.info_dump %}
-                    <h3 style="padding-top:0px;margin-top:0px;">{{ key }}:</h3>
+                    <h4 style="padding-top:0px;margin-top:0px;">{{ key }}:</h4>
                     <pre>{{ info }}</pre>
                 {% endfor %}
             </div>

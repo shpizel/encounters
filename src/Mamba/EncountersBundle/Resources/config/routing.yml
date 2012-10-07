@@ -105,7 +105,7 @@ admin:
 
 admin.users:
     pattern: /admin/application/users/{user_id}
-    defaults: { _controller: EncountersBundle:AdminUsers:index, user_id: 560015854 }
+    defaults: { _controller: EncountersBundle:AdminUsers:index, user_id: 0 }
     requirements:
         user_id: \d+
         _method: GET|POST

@@ -38,24 +38,24 @@ redis:
                 persistent: true
                 database: 0
                 prefix: null
-        node2:
-            host: localhost
-            port: 6379
-            timeout: 2.5
-
-            options:
-                persistent: true
-                database: 2
-                prefix: node2
-        node3:
-            host: localhost
-            port: 6379
-            timeout: 2.5
-
-            options:
-                persistent: true
-                database: 3
-                prefix: node3:
+#        node2:
+#            host: localhost
+#            port: 6379
+#            timeout: 2.5
+#
+#            options:
+#                persistent: true
+#                database: 2
+#                prefix: node2
+#        node3:
+#            host: localhost
+#            port: 6379
+#            timeout: 2.5
+#
+#            options:
+#                persistent: true
+#                database: 3
+#                prefix: node3:
 
 gearman:
     nodes:

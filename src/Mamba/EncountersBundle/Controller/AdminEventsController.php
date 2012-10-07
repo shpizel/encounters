@@ -22,34 +22,31 @@ class AdminEventsController extends ApplicationController {
             'items' => array(),
             'info'  => array(
                 'limit' => $limit,
-                'no'    => 0,
-                'maybe' => 0,
-                'yes'   => 0,
-                'total' => 0,
+                'achievement' => 0,
+                'contacts' => 0,
+                'notify' => 0,
             ),
         );
 
         $Redis = $this->getRedis();
         $Redis->multi();
-        foreach (range(0, $limit) as $day) {
+        foreach (range(1, $limit) as $day) {
             $Redis->hGetAll("stats_by_" . ($date = date("dmy", strtotime("-$day day"))));
         }
 
         if ($data = $Redis->exec()) {
             foreach ($data as $key=>$item) {
-
-                if (isset($item['decision_yes']) && isset($item['decision_no']) && isset($item['decision_maybe'])) {
-                    $item['decision_total'] = intval($item['decision_yes']) + intval($item['decision_no']) + intval($item['decision_maybe']);
-                }
-
-                foreach (array('achievement', 'contacts', 'notify', 'decision_no', 'decision_yes', 'decision_maybe', 'decision_total') as $_key) {
+                foreach (array('achievement', 'contacts', 'notify') as $_key) {
                     if (!isset($item[$_key])) {
                         $item[$_key] = null;
+                    } else {
+                        $dataArray['info'][$_key] += $item[$_key];
                     }
                 }
 
                 $dataArray['items'][] = array(
                     'date' => date('Y-m-d', strtotime("-$key day")),
+                    'ts'   => strtotime("-$key day"),
                     'item' => $item,
                 );
             }

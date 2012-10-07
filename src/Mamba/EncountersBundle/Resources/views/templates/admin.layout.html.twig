@@ -11,6 +11,11 @@
 %}
 <link rel="stylesheet" href="{{ asset_url }}" />
 {% endstylesheets %}
+<style>
+    h1, h2, h3, h4, h5 {
+        margin-top:0px;
+    }
+</style>
 </head>
 <body style="margin:10px;">
 <div class="navbar">
@@ -91,7 +96,11 @@
             </div>
         </div>
 
-        <div class="span9">{% block content %}Welcome!{% endblock %}</div>
+        <div class="span9">
+            {% block content %}
+                Welcome!
+            {% endblock %}
+        </div>
     </div>
 </div>
 
