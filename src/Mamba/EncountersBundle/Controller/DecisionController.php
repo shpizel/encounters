@@ -119,7 +119,7 @@ class DecisionController extends ApplicationController {
                         );
                     }
 
-                    $points = (int) ($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel;
+                    $points = intval(($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel);
 
                     file_put_contents(
                         "/tmp/energies.data",
