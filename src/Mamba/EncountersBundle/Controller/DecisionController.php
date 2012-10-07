@@ -103,11 +103,33 @@ class DecisionController extends ApplicationController {
 
             /** Уменьшить энергию CurrentUser'a */
             if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
-                $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
-                $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
+                if (($currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId)) > 0) {
+                    $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
 
-                /** мутная функция */
-                $this->getEnergyObject()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+                    $levels = $this->getPopularityObject()->getLevels();
+                    if (isset($levels[$currentUserLevel + 1])) {
+                        $energiesInterval = array(
+                            'from' => $levels[$currentUserLevel],
+                            'to'   => $levels[$currentUserLevel + 1],
+                        );
+                    } else {
+                        $energiesInterval = array(
+                            'from' => $levels[$currentUserLevel - 1],
+                            'to'   => $levels[$currentUserLevel],
+                        );
+                    }
+
+                    $points = (int) ($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel;
+
+                    file_put_contents(
+                        "/tmp/energies.data",
+                        "l:{$currentUserLevel}, e:{$currentUserEnergy}, f:{$energiesInterval['from']} , t:{$energiesInterval['to']}, p:{$points}" . PHP_EOL,
+                        FILE_APPEND | LOCK_EX
+                    );
+
+                    /** мутная функция */
+                    $this->getEnergyObject()->decr($this->currentUserId, $points);
+                }
             }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
