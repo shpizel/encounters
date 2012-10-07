@@ -79,23 +79,69 @@ class RedisMigrationPrepareCommand extends Script {
         $keysCounter = 0;
         foreach ($this->src as $number=>$dsn) {
             $Redis = $this->getRedis()->getNodeConnection($dsn);
-            foreach ($this->getWords()/*array("a")*/ as $word) {
-                if ($keys = $Redis->keys("{$word}*")) {
+            foreach ($this->getWords() as $word) {
 
-                    if ($prefix = $dsn->getPrefix()) {
-                        foreach ($keys as $n=>$key) {
-                             $keys[$n] = substr($key, strlen($prefix));
+                /**
+                 * Нужно получить ключи из Redis'ов, да так чтобы быстро и все
+                 *
+                 * @author shpizel
+                 */
+                $keysFilename = $this->dir . DIRECTORY_SEPARATOR . "{$number}-{$word}.keydump";
+                $cmd = "redis-cli -h " . $dsn->getHost() . " -p " . $dsn->getPort() . " -n " . $dsn->getDatabase() . " keys '{$word}*' > {$keysFilename}";
+                $this->log("Executing <comment>{$cmd}</comment>..");
+                exec($cmd, $ret, $code);
+                if ($code) {
+                    $this->log("FAILED", 16);
+                    throw new \Core\ScriptBundle\ScriptException("Failed executing {$cmd}");
+                } else {
+                    $this->log("SUCCESS", 64);
+                }
+
+                $this->log("Chunking <comment>$keysFilename</comment> to <info>". self::CHUNK_SIZE. "</info>-lined chunks..");
+                if ($filePointer = fopen($keysFilename, 'r')) {
+                    $processedKeys = 0;
+                    $keys = array();
+                    $chunkNumber = 0;
+
+                    while (($key = fgets($filePointer)) !== false) {
+                        $key = trim($key);
+                        if ($prefix = $dsn->getPrefix()) {
+                            $key = substr($key, strlen($prefix));
+                        }
+
+                        if ((string) $this->getRedis()->getDSNByKey($key) != (string) $dsn) {
+                            $keys[] = $key;
+                            $processedKeys++;
+
+                            if (count($keys) >= self::CHUNK_SIZE) {
+                                file_put_contents($this->dir . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+
+                                $chunkNumber++;
+                                $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
+                                $keys = array();
+                            }
                         }
                     }
 
-                    /** Отфильтруем ключи, которые нам не нужны */
-                    $keys = array_filter($keys, function($key) use($dsn) {
-                        return (string) $this->getRedis()->getDSNByKey($key) != (string) $dsn;
-                    });
-
-                    if (!$keys) {
-                        continue;
+                    if ($keys) {
+                        file_put_contents($this->dir . DIRECTORY_SEPARATOR . basename($keysFilename, ".keydump") . "-{$chunkNumber}.keydump", implode(PHP_EOL, $keys) . PHP_EOL);
+                        $this->log("<info>" . number_format($chunkNumber + 1) . "</info> chunks generated", -1);
                     }
+                    echo "\n";
+
+                    if ($processedKeys) {
+                        $this->log("<info>SUCCESS</info> with <comment>" . number_format($processedKeys) . "</comment> key(s)");
+                    } else {
+                        $this->log("No keys was found..", 48);
+                    }
+
+                } else {
+                    $this->log("FAILED", 16);
+                    throw new \Core\ScriptBundle\ScriptException("Failed opening {$keysFilename}");
+                }
+
+                if ($chunks = glob($this->dir . DIRECTORY_SEPARATOR . "{$number}-{$word}-*.keydump")) {
+
                     /**
                      * Готовим структуру данных
                      * array(
@@ -106,8 +152,12 @@ class RedisMigrationPrepareCommand extends Script {
                      *
                      * @author shpizel
                      */
-                    $keys = array_chunk($keys, self::CHUNK_SIZE);
-                    foreach ($keys as $chunk) {
+                    foreach ($chunks as $chunk) {
+                        $chunk = file($chunk);
+                        foreach ($chunk as $ci=>$cv) {
+                            $chunk[$ci] = trim($cv);
+                        }
+
                         $_keys = array();
 
                         $Redis->multi();
@@ -131,8 +181,9 @@ class RedisMigrationPrepareCommand extends Script {
                             $_keys[$_key][$type][] = $key;
                             $keysCounter++;
 
-                            $this->log("<info>" . number_format($keysCounter) . "</info>", -1);
+                            $this->log("<info>" . number_format($keysCounter) . "</info> keys processed", -1);
                         }
+
 
                         foreach ($_keys as $_key => $chunk) {
                             foreach ($chunk as $type => $data) {
@@ -140,6 +191,8 @@ class RedisMigrationPrepareCommand extends Script {
                             }
                         }
                     }
+
+                    echo "\n";
                 }
             }
         }
@@ -164,7 +217,7 @@ class RedisMigrationPrepareCommand extends Script {
                     $key = trim($key);
                     $chunk[] = $key;
                     $keysCounter++;
-                    $this->log("<info>" . ($number + 1) . "/" . count($files) . "</info>, {$keysCounter} keys processed", -1);
+                    $this->log("<info>" . ($number + 1) . "/" . count($files) . "</info>, <comment>" . number_format($keysCounter) . "</comment> keys processed", -1);
 
                     if (count($chunk) >= self::CHUNK_SIZE) {
                         /** Получаем имя файла */
@@ -193,6 +246,7 @@ class RedisMigrationPrepareCommand extends Script {
                 throw new \Core\ScriptBundle\ScriptException("Could not open {$keysFile}");
             }
         }
+        echo "\n";
     }
 
     private function prepare() {
@@ -224,7 +278,7 @@ class RedisMigrationPrepareCommand extends Script {
         if (!$this->dst = $this->input->getOption('dst')) {
             throw new \Core\ScriptBundle\ScriptException("Please provide destination DSN");
         } else {
-            file_put_contents($this->dir . "/destination.dsn", $this->src);
+            file_put_contents($this->dir . "/destination.dsn", $this->dst);
 
             $this->dst = explode(";", $this->dst);
             foreach ($this->dst as &$node) {

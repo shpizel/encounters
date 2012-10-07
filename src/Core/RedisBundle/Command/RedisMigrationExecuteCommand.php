@@ -75,7 +75,7 @@ class RedisMigrationExecuteCommand extends Script {
             $this->files = array_filter($this->files, function($filename) {
                 $filename = basename($filename, ".keys");
                 $parts = explode("-", $filename);
-                return count($parts) == 4 && !file_exists($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed");
+                return count($parts) == 4 && !file_exists($this->dir . DIRECTORY_SEPARATOR . $filename . (($this->mode == 'migrate') ? ".completed" : ".dump"));
             });
 
             if (count($this->files) > 0) {
@@ -149,7 +149,7 @@ class RedisMigrationExecuteCommand extends Script {
         list($sourceDSNNumber, $destinationDSNNumber, $resourceType) = explode("-", $filename);
 
         $sourceConnection = $this->getRedis()->getNodeConnection($this->src[$sourceDSNNumber]);
-        $destinationConnection = $this->getRedis()->getNodeConnection($this->src[$destinationDSNNumber]);
+        $destinationConnection = $this->getRedis()->getNodeConnection($this->dst[$destinationDSNNumber]);
 
         if ($resourceType == 1 /** string */) {
             $sourceConnection->multi();
@@ -470,7 +470,7 @@ class RedisMigrationExecuteCommand extends Script {
 
     private function prepare() {
         if (!$this->dir = $this->input->getOption('dir')) {
-            throw new \Core\ScriptBundle\ScriptException("Please provide output directory");
+            throw new \Core\ScriptBundle\ScriptException("Please provide input directory");
         } else {
             if (file_exists($this->dir) && is_dir($this->dir)) {
                 $this->dir = rtrim($this->dir, DIRECTORY_SEPARATOR);

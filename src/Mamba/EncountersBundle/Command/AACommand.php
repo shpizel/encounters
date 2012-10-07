@@ -33,9 +33,11 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-        ini_set('error_log', "/home/shpizel/nastya");
-        $this->log(ini_get('log_errors'));
+        foreach (range(0, 100) as $i) {
+            $this->log($i, -1);
+            usleep(30*1000);
+        }
 
-        mysql_disconnect(1/0);
+        $this->log("ok", -2);
     }
 }

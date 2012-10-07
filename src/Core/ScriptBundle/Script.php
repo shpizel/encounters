@@ -132,18 +132,19 @@ abstract class Script extends ContainerAwareCommand {
      * Логгер
      *
      * @param string $message
-     * @param int $code (16 — error,
+     * @param int $format (16 — error, 32 - question, 48 - warning, 64 - info, [-1 - \r, -2 — \n вначале)
+     * @param int $options (-1 - "\r", -2 — without time, -3 - without message, only \n)
      * @return null
      */
-    public function log($message, $code = 0) {
-        $colorize = function($message, $code) {
-            if ($code == 64) {
+    public function log($message, $format = 0, $options = 0) {
+        $colorize = function($message, $format) {
+            if ($format == 64) {
                 return "<info>{$message}</info>";
-            } elseif ($code == 48) {
+            } elseif ($format == 48) {
                 return "<comment>{$message}</comment>";
-            } elseif ($code == 32) {
+            } elseif ($format == 32) {
                 return "<question>{$message}</question>";
-            } elseif ($code == 16) {
+            } elseif ($format == 16) {
                 return "<error>{$message}</error>";
             }
 
@@ -151,8 +152,15 @@ abstract class Script extends ContainerAwareCommand {
         };
 
         if ($this->debug) {
-            $writeFunction = ($code >= 0) ? "writeln" : "write";
-            $this->output->$writeFunction((($code < 0) ? "\r" : "") . "[" . date("d-M-Y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize(trim($message), $code));
+            $writeFunction = ($format != -1) ? "writeln" : "write";
+            $message = "[" . date("d-M-Y H:i:s") . " @ <info>" . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s</info> & <comment>" . round(memory_get_usage(true)/1024/1024, 0) . "M</comment>] " . $colorize($message, $format);
+            if ($format == -1) {
+                $message = "\r{$message}";
+            } elseif ($format == -2) {
+                $message = PHP_EOL . $message;
+            }
+
+            $this->output->$writeFunction($message);
         } else {
             $message = date("[d-M-Y H:i:s") . " @ " . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s & " . round(memory_get_usage(true)/1024/1024, 0) . "M] " . trim($message) . PHP_EOL;
             error_log($message, 3, $this->getLogFilename());
