@@ -3,4 +3,27 @@
 
 {% block content %}
     <h2>PHP-FPM</h2>
+
+    {% if items %}
+        {% for i, node in keys %}
+            <div class="span3" style="margin-left:0; margin-right:10px;">
+                <h3>{{ node }}</h3>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <th>Key</th>
+                    <th>Value</th>
+                    </thead>
+
+                    {% for key, val in items[node] %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ val }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    {% else %}
+        Информация недоступна.
+    {% endif %}
 {%  endblock %}

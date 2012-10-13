@@ -3,4 +3,27 @@
 
 {% block content %}
     <h2>Nginx</h2>
+
+    {% if items %}
+        {% for i, node in keys %}
+            <div class="span3" style="margin-left:0; margin-right:10px;">
+                <h3>{{ node }}</h3>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <th>Key</th>
+                    <th>Value</th>
+                    </thead>
+
+                    {% for item in ['active_connections', 'accepts', 'handled', 'requests', 'reading', 'writing', 'waiting'] %}
+                        <tr>
+                            <td>{{ item }}</td>
+                            <td>{{ items[node][item]|number_format(0, '.') }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    {% else %}
+        Информация недоступна.
+    {% endif %}
 {%  endblock %}

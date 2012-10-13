@@ -33,11 +33,6 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-        foreach (range(0, 100) as $i) {
-            $this->log($i, -1);
-            usleep(30*1000);
-        }
-
-        $this->log("ok", -2);
+        $this->getServers();
     }
 }

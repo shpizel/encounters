@@ -75,13 +75,27 @@ mamba:
 
 servers:
     www:
-        www1: '178.132.207.50'
-        www2: '178.132.207.203'
+        www1:
+            name: www1
+            host: {ext: 178.132.207.50, int: 10.10.10.11}
+        www2:
+            name: www2
+            host: {ext: 178.132.207.203, int: 10.10.10.12}
     memory:
-        memory1: '178.132.207.51'
-        memory2: '178.132.207.52'
+        memory1:
+            name: memory1
+            host: {ext: 178.132.207.51, int: 10.10.10.21}
+        memory2:
+            name: memory2
+            host: {ext: 178.132.207.52, int: 10.10.10.22}
     storage:
-        storage1: '178.132.207.202'
+         storage1:
+            name: storage1
+            host: {ext: 178.132.207.202, int: 10.10.10.31}
     script:
-        script1: '178.132.207.53'
-        script2: '178.132.207.54'
+        script1:
+            name: script1
+            host: {ext: 178.132.207.53, int: 10.10.10.41}
+        script2:
+            name: script2
+            host: {ext: 178.132.207.54, int: 10.10.10.42}

@@ -18,6 +18,7 @@ use Mamba\EncountersBundle\Helpers\Variables;
 
 use Core\MambaBundle\API\Mamba;
 use Core\GearmanBundle\Gearman;
+use Core\ServersBundle\Servers;
 use Core\RedisBundle\Redis;
 use Symfony\Component\HttpFoundation\Session;
 
@@ -88,6 +89,15 @@ abstract class ApplicationController extends Controller {
      */
     public function getGearman() {
         return $this->get('gearman');
+    }
+
+    /**
+     * Servers getter
+     *
+     * @return Servers
+     */
+    public function getServers() {
+        return $this->get('servers');
     }
 
     /**

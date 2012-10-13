@@ -15,7 +15,12 @@ class Servers {
          *
          * @var array
          */
-        $servers = array()
+        $servers = array(
+            'www'     => array(),
+            'memory'  => array(),
+            'storage' => array(),
+            'script'  => array(),
+        )
     ;
 
     /**
@@ -24,12 +29,33 @@ class Servers {
      * @param $servers
      */
     public function __construct($wwwServers, $memoryServers, $storageServers, $scriptServers) {
-        $this->servers = array(
-            'www'     => $wwwServers,
-            'memory'  => $memoryServers,
-            'storage' => $storageServers,
-            'script'  => $scriptServers,
-        );
+        foreach ($wwwServers as $server) {
+            $name = $server['name'];
+            $host = $server['host'];
+
+            $this->servers['www'][$name] = $host;
+        }
+
+        foreach ($memoryServers as $server) {
+            $name = $server['name'];
+            $host = $server['host'];
+
+            $this->servers['memory'][$name] = $host;
+        }
+
+        foreach ($storageServers as $server) {
+            $name = $server['name'];
+            $host = $server['host'];
+
+            $this->servers['storage'][$name] = $host;
+        }
+
+        foreach ($scriptServers as $server) {
+            $name = $server['name'];
+            $host = $server['host'];
+
+            $this->servers['script'][$name] = $host;
+        }
     }
 
     /**
@@ -71,10 +97,11 @@ class Servers {
     /**
      * Servers getter
      *
+     * @param str $serverType = {www, memory, storage, script}
      * @return array
      */
-    public function getServers($serverType) {
-        return (isset($this->servers[$serverType])) ? $this->servers[$serverType] : array();
+    public function getServers($serverType = null) {
+        return ($serverType && isset($this->servers[$serverType])) ? $this->servers[$serverType] : $this->servers;
     }
 }
 
