@@ -8,12 +8,12 @@
         <div class="tabbable tabs-right">
             <ul class="nav nav-tabs">
                 {% for i, node in keys %}
-                    <li{% if i == 0 %} class="active"{% endif %}><a href="#{{ node|replace({":": '_'}) }}" data-toggle="tab"><em class="icon-info-sign"></em> {{ node }}</a></li>
+                    <li{% if i == 0 %} class="active"{% endif %}><a href="#{{ node|replace({":": '_', ".": "_"}) }}" data-toggle="tab"><em class="icon-info-sign"></em> {{ node }}</a></li>
                 {% endfor %}
             </ul>
             <div class="tab-content">
                 {% for i, node in keys %}
-                    <div class="tab-pane{% if i == 0 %} active{% endif %}" id="{{ node|replace({":": '_'}) }}">
+                    <div class="tab-pane{% if i == 0 %} active{% endif %}" id="{{ node|replace({":": '_', ".": "_"}) }}">
                         <div class="span6">
                             <table class="table table-bordered table-hover">
                                 <thead>
