@@ -126,9 +126,6 @@ class BillingController extends ApplicationController {
         $Request  = $this->getRequest();
         $postParams = $Request->request->all();
 
-        /** logger :) */
-        file_put_contents("/tmp/extra.log", var_export($postParams, 1), FILE_APPEND);
-
         if (count(array_intersect(array_keys($postParams), $this->requiredParams)) == count($this->requiredParams)) {
             $billingParams = array();
             foreach ($this->requiredParams as $requiredParam) {
