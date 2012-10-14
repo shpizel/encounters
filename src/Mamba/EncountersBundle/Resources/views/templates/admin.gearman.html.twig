@@ -5,39 +5,28 @@
     <h2>Gearman</h2>
 
     {% if items %}
-        <div class="tabbable tabs-right">
-            <ul class="nav nav-tabs">
-                {% for i, node in keys %}
-                    <li{% if i == 0 %} class="active"{% endif %}><a href="#{{ node|replace({":": '_', ".": "_"}) }}" data-toggle="tab"><em class="icon-info-sign"></em> {{ node }}</a></li>
-                {% endfor %}
-            </ul>
-            <div class="tab-content">
-                {% for i, node in keys %}
-                    <div class="tab-pane{% if i == 0 %} active{% endif %}" id="{{ node|replace({":": '_', ".": "_"}) }}">
-                        <div class="span6">
-                            <table class="table table-bordered table-hover">
-                                <thead>
-                                    <th>Функция</th>
-                                    <th>Задач</th>
-                                    <th>Активно</th>
-                                    <th>Рабочих</th>
-                                </thead>
+        {% for i, node in keys %}
+            <div class="span5">
+                <h3>{{ node }}</h3>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <th>Функция</th>
+                    <th>Задач</th>
+                    <th>Активно</th>
+                    <th>Рабочих</th>
+                    </thead>
 
-                                {% for key, item in items[node] %}
-                                    <tr{% if item.total > item.workers %} class="warning"{% endif %}>
-                                        <td>{{ item.function }}</td>
-                                        <td>{{ item.total }}</td>
-                                        <td>{{ item.active }}</td>
-                                        <td>{{ item.workers }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </table>
-                        </div>
-                    </div>
-                {% endfor %}
+                    {% for key, item in items[node] %}
+                        <tr{% if item.total > item.workers %} class="warning"{% endif %}>
+                            <td>{{ item.function }}</td>
+                            <td>{{ item.total }}</td>
+                            <td>{{ item.active }}</td>
+                            <td>{{ item.workers }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
             </div>
-        </div>
-
+        {% endfor %}
     {% else %}
         Информация по Герману недоступна.
     {% endif %}
