@@ -30,7 +30,7 @@ class AdminEventsController extends ApplicationController {
 
         $Redis = $this->getRedis();
         $Redis->multi();
-        foreach (range(1, $limit) as $day) {
+        foreach (range(0, $limit - 1) as $day) {
             $Redis->hGetAll("stats_by_" . ($date = date("dmy", strtotime("-$day day"))));
         }
 

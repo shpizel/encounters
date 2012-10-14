@@ -47,6 +47,13 @@ class AdminGearmanController extends ApplicationController {
             }
         }
 
+        /** Отсортируем items чтобы во всех инстансах было одинаково */
+        foreach ($items as &$item) {
+            uasort($item, function($a, $b) {
+                return strcmp($a['function'], $b['function']);
+            });
+        }
+
         $dataArray['items'] = $items;
         $dataArray['keys'] = array_keys($items);
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
