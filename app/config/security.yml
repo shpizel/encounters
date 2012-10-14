@@ -28,7 +28,7 @@ security:
                 realm: "Secured area"
 
     access_control:
-        #- { path: ^/admin/?, roles: ROLE_USER }
+        - { path: ^/admin/?$, roles: ROLE_USER }
         - { path: ^/admin/application/users*, roles: ROLE_USER }
         - { path: ^/admin/application/events*, roles: ROLE_ADMIN }
         - { path: ^/admin/application/finances*, roles: ROLE_ADMIN }
