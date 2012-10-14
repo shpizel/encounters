@@ -22,7 +22,7 @@ class RedisDSN {
          *
          * @var float
          */
-        DEFAULT_TIMEOUT = 2.5,
+        DEFAULT_TIMEOUT = 0/*2.5*/,
 
         /**
          * Default persistent
@@ -207,7 +207,7 @@ class RedisDSN {
      * @throws RedisDSNException
      */
     public function setTimeout($timeout) {
-        if (is_float($timeout) || is_double($timeout)) {
+        if (is_float($timeout) || is_double($timeout) || is_int($timeout)) {
             $this->timeout = $timeout;
             return $this;
         }
