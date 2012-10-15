@@ -268,6 +268,7 @@ class RedisMigrationExecuteCommand extends Script {
                         }
 
                         $destinationConnection->multi();
+                        $opcounter = 0;
                     }
                 }
             }
@@ -331,6 +332,7 @@ class RedisMigrationExecuteCommand extends Script {
                         }
 
                         $destinationConnection->multi();
+                        $opcounter = 0;
                     }
                 }
             }
@@ -394,6 +396,7 @@ class RedisMigrationExecuteCommand extends Script {
                         }
 
                         $destinationConnection->multi();
+                        $opcounter = 0;
                     }
                 }
             }
@@ -457,6 +460,7 @@ class RedisMigrationExecuteCommand extends Script {
                         }
 
                         $destinationConnection->multi();
+                        $opcounter = 0;
                     }
                 }
             }

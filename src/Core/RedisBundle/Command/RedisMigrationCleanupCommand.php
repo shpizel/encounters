@@ -63,11 +63,15 @@ class RedisMigrationCleanupCommand extends Script {
         $this->prepare();
 
         while (true) {
-            $this->files = glob($this->dir . DIRECTORY_SEPARATOR . "*.keys");
+            $this->files = glob($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::KEYS_DIR . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::KEYS_CHUNKS_DIR . DIRECTORY_SEPARATOR . "*.keys");
             $this->files = array_filter($this->files, function($filename) {
                 $filename = basename($filename, ".keys");
                 $parts = explode("-", $filename);
-                return count($parts) == 4 && file_exists($this->dir . DIRECTORY_SEPARATOR . $filename . ".completed") && !file_exists($this->dir . DIRECTORY_SEPARATOR . $filename . ".cleanup");
+                return
+                    count($parts) == 4 &&
+                    file_exists($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::COMPLETED_DIR . DIRECTORY_SEPARATOR . $filename . ".completed") &&
+                    !file_exists($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::CLEANUP_DIR . DIRECTORY_SEPARATOR . $filename . ".cleanup")
+                ;
             });
 
             if (count($this->files) > 0) {
@@ -145,7 +149,7 @@ class RedisMigrationCleanupCommand extends Script {
             //$this->log($filename . "\t" . "{$count}/" . count($keys) , 48);
         }
 
-        file_put_contents($this->dir . DIRECTORY_SEPARATOR . "{$filename}.cleanup", time());
+        file_put_contents($this->dir . DIRECTORY_SEPARATOR . RedisMigrationPrepareCommand::CLEANUP_DIR . DIRECTORY_SEPARATOR . "{$filename}.cleanup", time());
     }
 
     private function prepare() {

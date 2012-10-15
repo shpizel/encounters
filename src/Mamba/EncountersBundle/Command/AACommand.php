@@ -33,6 +33,6 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $this->getServers();
+
     }
 }

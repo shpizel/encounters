@@ -32,21 +32,21 @@ redis:
         node1:
             host: localhost
             port: 6379
-            timeout: 2.5
+            timeout: 0
 
             options:
                 persistent: true
                 database: 0
                 prefix: null
-#        node2:
-#            host: localhost
-#            port: 6379
-#            timeout: 2.5
-#
-#            options:
-#                persistent: true
-#                database: 2
-#                prefix: node2
+        node2:
+            host: localhost
+            port: 6379
+            timeout: 0
+
+            options:
+                persistent: true
+                database: 1
+                prefix:
 #        node3:
 #            host: localhost
 #            port: 6379

@@ -23,18 +23,15 @@ redis:
                 persistent: true
                 database: 0
                 prefix: null
+        node2:
+            host: 10.10.10.22
+            port: 6379
+            timeout: 0
 
-#        enable after migration
-
-#        node2:
-#            host: 10.10.10.22
-#            port: 6379
-#            timeout: 2.5
-#
-#            options:
-#                persistent: true
-#                database: 0
-#                prefix: null
+            options:
+                persistent: true
+                database: 0
+                prefix: null
 
 gearman:
     nodes:

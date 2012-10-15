@@ -184,7 +184,7 @@ class RedisMigrationPrepareCommand extends Script {
                     echo "\n";
 
                     if ($processedKeys) {
-                        $this->log("<info>SUCCESS</info> processed <comment>" . number_format($processedKeys) . "</comment> key(s) and <comment>" . number_format($chunkNumber) . "</comment> chunks generated");
+                        $this->log("<info>SUCCESS</info> processed <info>" . number_format($processedKeys) . "</info> key(s) and <info>" . number_format($chunkNumber) . "</info> chunks generated");
                     } else {
                         $this->log("No keys was found..", 16);
                     }
@@ -342,9 +342,12 @@ class RedisMigrationPrepareCommand extends Script {
         if (!$this->src = $this->input->getOption('src')) {
             throw new \Core\ScriptBundle\ScriptException("Please provide source DSN");
         } else {
-            file_put_contents($this->dir . "/source.dsn", $this->src);
-
             $this->src = explode(";", $this->src);
+            $this->src = array_filter($this->src, function($item) {
+                return trim($item);
+            });
+            file_put_contents($this->dir . "/source.dsn", implode(";", $this->src));
+
             foreach ($this->src as &$node) {
                 $node = \Core\RedisBundle\RedisDSN::getDSNFromString($node);
             }
@@ -353,9 +356,12 @@ class RedisMigrationPrepareCommand extends Script {
         if (!$this->dst = $this->input->getOption('dst')) {
             throw new \Core\ScriptBundle\ScriptException("Please provide destination DSN");
         } else {
-            file_put_contents($this->dir . "/destination.dsn", $this->dst);
-
             $this->dst = explode(";", $this->dst);
+            $this->dst = array_filter($this->dst, function($item) {
+                return trim($item);
+            });
+
+            file_put_contents($this->dir . "/destination.dsn", implode(";", $this->dst));
             foreach ($this->dst as &$node) {
                 $node = \Core\RedisBundle\RedisDSN::getDSNFromString($node);
             }
@@ -365,8 +371,8 @@ class RedisMigrationPrepareCommand extends Script {
     private function getWords() {
         return
             array_merge(
-//                range("a", "z"),
-//                range("A", "Z"),
+                range("a", "z"),
+                range("A", "Z"),
                 range(0, 9)
             )
         ;
