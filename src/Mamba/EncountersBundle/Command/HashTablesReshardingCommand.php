@@ -65,19 +65,19 @@ class HashTablesReshardingCommand extends Script {
             $this->log(number_format($counter) . "/" . number_format(count($items)) , -1);
         }
 
-        /**
-         * 3. users_search_preferences
-         */
-        $this->log("Fetching users search preferences..");
-        $items = $Redis->hGetAll("users_search_preferences");
-        $this->log("SUCCESS", 64);
-
-        $counter = 0;
-        foreach ($items as $userId => $value) {
-            $Redis->set("search_preferences_by_" . $userId, $value);
-            $counter++;
-
-            $this->log(number_format($counter) . "/" . number_format(count($items)) , -1);
-        }
+//        /**
+//         * 3. users_search_preferences
+//         */
+//        $this->log("Fetching users search preferences..");
+//        $items = $Redis->hGetAll("users_search_preferences");
+//        $this->log("SUCCESS", 64);
+//
+//        $counter = 0;
+//        foreach ($items as $userId => $value) {
+//            $Redis->set("search_preferences_by_" . $userId, $value);
+//            $counter++;
+//
+//            $this->log(number_format($counter) . "/" . number_format(count($items)) , -1);
+//        }
     }
 }
