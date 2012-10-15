@@ -314,10 +314,10 @@ class RedisDSN {
 
                 if (isset($query['timeout'])) {
                     $timeout = (float) $query['timeout'];
-                    if ($timeout) {
+                    if ($timeout > 0) {
                         $result->setTimeout($timeout);
                     } else {
-                        throw new RedisDSNException("Invalid timeout: " . var_export($timeout, true));
+                        $result->setTimeout(0);
                     }
                 }
 
