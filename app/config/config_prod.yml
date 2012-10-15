@@ -47,8 +47,8 @@ memcache:
         node1:
             host: 10.10.10.21
             port: 11211
-            weight: 40
+            weight: 50
         node2:
             host: 10.10.10.22
             port: 11211
-            weight: 60
+            weight: 50
