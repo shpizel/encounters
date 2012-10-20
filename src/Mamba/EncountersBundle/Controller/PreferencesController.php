@@ -55,31 +55,37 @@ class PreferencesController extends ApplicationController {
             );
 
             /**
-             * Изменились ли настройки?
+             * Изменились ли настройки? Удалим из $redisSearchPreferences ключ changed и сравним массивы json_encode
              *
              * @author shpizel
              */
-            if (!$redisSearchPreferences || $diff = array_diff($redisSearchPreferences, $searchPreferences)) {
-                if (!(isset($diff['changed']) && count($diff) == 1)) {
-                    $this->cleanUserQueues();
+            $settingsChanged = false;
+            if (!$redisSearchPreferences) {
+                $settingsChanged = true;
+            } else {
+                unset($redisSearchPreferences['changed']);
+                $settingsChanged = json_encode($redisSearchPreferences) != json_encode($searchPreferences);
+            }
 
-                    $GearmanClient = $this->getGearman()->getClient();
+            if ($settingsChanged) {
+                $this->cleanUserQueues();
 
-                    $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-                        'user_id'   => $webUserId,
-                        'timestamp' => time(),
-                    )));
+                $GearmanClient = $this->getGearman()->getClient();
 
-                    $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-                        'user_id'   => $webUserId,
-                        'timestamp' => time(),
-                    )));
+                $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                    'user_id'   => $webUserId,
+                    'timestamp' => time(),
+                )));
 
-                    $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-                        'user_id'   => $webUserId,
-                        'timestamp' => time(),
-                    )));
-                }
+                $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                    'user_id'   => $webUserId,
+                    'timestamp' => time(),
+                )));
+
+                $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
+                    'user_id'   => $webUserId,
+                    'timestamp' => time(),
+                )));
             }
 
             return $this->redirect($this->generateUrl('welcome'));
