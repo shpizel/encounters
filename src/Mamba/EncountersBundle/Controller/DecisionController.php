@@ -153,7 +153,9 @@ class DecisionController extends ApplicationController {
 
             /** Ставим задачу на спам по контакт-листу */
             if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
-                $this->json['data']['is_contact'] = true;
+                if (!$this->getMemcache()->get("personal_{$this->currentUserId}_spam")) {
+                    $this->json['data']['is_contact'] = true;
+                }
             }
 
             /** Ставим задачу на установку ачивки */
