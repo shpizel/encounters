@@ -54,6 +54,13 @@ decision.set:
     requirements:
         _method: POST
 
+message.send:
+    pattern: /ajax/message.send
+    defaults: { _controller: EncountersBundle:Decision:sendMessage }
+    requirements:
+        limit: \d+
+        _method: POST
+
 # Получение ответа
 decision.get:
     pattern: /ajax/decision.get

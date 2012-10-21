@@ -188,7 +188,14 @@ $Search = {
 
                 if ($data.data['popularity']) {
                     $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
-                    var $energy = $data.data['popularity']['energy'], $next = $data.data['popularity']['next'], $prev = $data.data['popularity']['prev'], $level = $data.data['popularity']['level'], $levelUp = $data.data['popularity']['level_up'];
+
+                    var
+                        $energy = $data.data['popularity']['energy'],
+                        $next = $data.data['popularity']['next'],
+                        $prev = $data.data['popularity']['prev'],
+                        $level = $data.data['popularity']['level'],
+                        $levelUp = $data.data['popularity']['level_up']
+                    ;
 
                     $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
                     $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
@@ -199,7 +206,9 @@ $Search = {
                     }
                 }
 
-                if ($data.data['repeat_warning'] == -1) {
+                if ($data.data['is_contact']) {
+                    $Layers.showSendMessageLayer($Search.$storage['currentQueueElement']);
+                } else if ($data.data['repeat_warning'] == -1) {
                     $Layers.showRepeatableNoLayer();
                 } else if ($data.data['repeat_warning'] == 0) {
                     $Layers.showRepeatableMaybeLayer();

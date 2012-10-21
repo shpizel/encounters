@@ -79,6 +79,13 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-send-message form p a").click(function() {
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
+            $.post($Routing.getPath('message.send'), {'user_id': $("div.layer-send-message form p a").attr('user_id')});
+            return false;
+        });
+
         var $openMessengerWindowFunction = function() {
             var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
             try {
@@ -538,6 +545,28 @@ $Layers = {
 
         $("div.layer-repeatable-no .info-battery span").text($Config.get('webuser')['anketa']['info']['name']);
         $("div.layer-repeatable-no").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер предложения проспамить контакт
+     *
+     * @shows layer
+     */
+    showSendMessageLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-send-message .pic img").attr('src', $data['info']['medium_photo_url']);
+        $("div.layer-send-message .description span.name").text($data['info']['name']);
+        if ($data['info']['gender'] == 'F') {
+            $("div.layer-send-message .description span.gender").text("а");
+        } else {
+            $("div.layer-send-message .description span.gender").text("");
+        }
+
+        $("div.layer-send-message form p a").attr('user_id', $data['info']['id']);
+
+        $("div.layer-send-message").show();
         this.showLayer();
     },
 

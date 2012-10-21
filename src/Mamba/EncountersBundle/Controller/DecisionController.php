@@ -120,14 +120,6 @@ class DecisionController extends ApplicationController {
                     }
 
                     $points = intval(($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel);
-
-                    file_put_contents(
-                        "/tmp/energies.data",
-                        "l:{$currentUserLevel}, e:{$currentUserEnergy}, f:{$energiesInterval['from']} , t:{$energiesInterval['to']}, p:{$points}" . PHP_EOL,
-                        FILE_APPEND | LOCK_EX
-                    );
-
-                    /** мутная функция */
                     $this->getEnergyObject()->decr($this->currentUserId, $points);
                 }
             }
@@ -156,11 +148,13 @@ class DecisionController extends ApplicationController {
                 'time'          => time(),
             );
 
-            /** Ставим задачу на обноление базы */
+            /** Ставим задачу на обновление базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Ставим задачу на спам по контакт-листу */
-            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
+            if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
+                $this->json['data']['is_contact'] = true;
+            }
 
             /** Ставим задачу на установку ачивки */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize($dataArray));
@@ -169,7 +163,7 @@ class DecisionController extends ApplicationController {
             foreach (range(-1, 1) as $decision) {
                 if ($decision == $this->decision) {
                     if ($this->getCountersObject()->incr($this->webUserId, "noretry-($decision)") >= 25) {
-                        $repeatWarningKey = "{$this->webUserId}_repear_warning";
+                        $repeatWarningKey = "{$this->webUserId}_repeat_warning";
                         if ($this->getMemcache()->add($repeatWarningKey, 1, 3600)) {
                             $this->json['data']['repeat_warning'] = $decision;
                         }
@@ -227,6 +221,37 @@ class DecisionController extends ApplicationController {
                     'timestamp' => time(),
                 )));
             }*/
+        }
+
+        return
+            new Response(json_encode($this->json), 200, array(
+                    "content-type" => "application/json",
+                )
+            )
+        ;
+    }
+
+    /**
+     * AJAX user inviter
+     *
+     * @param int $userId
+     */
+    public function sendMessageAction() {
+        $Mamba = $this->getMamba();
+
+        if (!$Mamba->getReady()) {
+            list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
+        } elseif (!($userId = (int) $this->getRequest()->request->get('user_id'))) {
+            list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+        } else {
+            $dataArray = array(
+                'webUserId'     => (int) $Mamba->get('oid'),
+                'currentUserId' => $userId,
+                'decision'      => 1,
+                'time'          => time(),
+            );
+
+            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
         }
 
         return

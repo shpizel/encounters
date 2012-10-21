@@ -734,6 +734,33 @@
     background: url('/bundles/encounters/images/texts/female/title-not-see.gif') no-repeat center top;
 }
 
+.layer-send-message .title {
+    background: url('/bundles/encounters/images/texts/spam-da-text.png') no-repeat center top;
+    text-indent: -330em;
+    margin: 10px 0 20px 0;
+    height: 79px;
+}
+
+.layer-send-message .description {
+    text-align: center;
+    line-height: 24px;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.layer-send-message .pic {
+    text-align: center;
+    width: 420px;
+    margin: 0 auto;
+    margin-bottom: 10px;
+}
+
+.layer-send-message .pic img {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 15px;
+}
+
 div#overflow {
     position: absolute;
     top: 0px;
