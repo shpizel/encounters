@@ -7,6 +7,12 @@
 <body>
 Загрузка..
 <form method="POST"></form>
-<script>document.forms[0].submit();</script>
+<script>
+    if (document.cookie.indexOf('PHPSESSID') < 0) {
+        document.forms[0].target = "_top";
+    }
+
+    document.forms[0].submit();
+</script>
 </body>
 </html>
