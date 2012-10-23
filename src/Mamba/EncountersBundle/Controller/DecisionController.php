@@ -120,7 +120,7 @@ class DecisionController extends ApplicationController {
                     }
 
                     $points = intval(($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel);
-                    $this->getEnergyObject()->decr($this->currentUserId, $points);
+                    $this->getEnergyObject()->decr($this->currentUserId, $points*2);
                 }
             }
 
@@ -152,7 +152,7 @@ class DecisionController extends ApplicationController {
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Ставим задачу на спам по контакт-листу */
-            if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
+            if (/*($this->decision + 1 > 0) &&*/ (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
                 if (!$this->getMemcache()->get("personal_{$this->currentUserId}_spam")) {
                     $this->json['data']['is_contact'] = true;
                 }
