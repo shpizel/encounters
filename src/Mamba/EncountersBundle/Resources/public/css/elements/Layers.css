@@ -706,6 +706,81 @@
     height: 79px;
 }
 
+.layer-multi-gift .title {
+    background: url('/bundles/encounters/images/texts/send-multi-gift.png') no-repeat center top;
+    text-indent: -330em;
+    margin: 10px 0 20px 0;
+    height: 190px;
+}
+
+.layer-multi-gift .select_all {
+    text-align: center;
+    margin-top:15px;
+    margin-bottom:15px;
+}
+
+.layer-multi-gift .select_all a{
+    font-size:11px;
+    color:#999;
+    border-bottom: #999 1px dotted;
+    cursor: pointer;
+}
+
+.layer-multi-gift .photos {
+    height: 106px;
+    overflow: auto;
+}
+
+.layer-multi-gift .photos .item {
+    float: left;
+    width: 56px;
+    height: 92px;
+    text-align: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    background-color: #fff2d1;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #0066cc;
+}
+
+.layer-multi-gift .photos .item .pseudo a {
+    text-decoration: none;
+    border-bottom: 1px dotted #0066cc;
+    line-height: 19px;
+    cursor: pointer;
+}
+
+.layer-multi-gift .photos .item input[type="checkbox"] {
+    margin-top:5px;
+}
+
+.layer-multi-gift .photos .item img {
+    vertical-align: baseline;
+    margin-left:5px;
+    margin-right:5px;
+    margin-top:5px;
+    height: 62px;
+    width: 46px;
+}
+
+.layer-multi-gift .photos .item .pseudo {
+    margin-left:4px;
+    margin-right:4px;
+    margin-top:4px;
+    height: 50px;
+    width: 46px;
+    background-color: #fff;
+    padding-top:12px;
+    border: #ccc 1px solid;
+}
+
+.layer-multi-gift .photos-expanded {
+    border:#ccc 1px solid;
+    height: 186px;
+}
+
 .layer-invite .description {
     text-align: center;
     line-height: 24px;

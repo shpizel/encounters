@@ -571,6 +571,19 @@ $Layers = {
     },
 
     /**
+     * Показывает лаер мульти подарка друзьям приложения (мультиспам)
+     *
+     * @shows layer
+     */
+    showMultiGiftLayer: function($data) {
+        this.hideInners();
+//        $("div.layer-send-message form p a").attr('user_id', $data['info']['id']);
+
+        $("div.layer-multi-gift").show();
+        this.showLayer();
+    },
+
+    /**
      * Показывает обрамление слоя
      *
      * @shows overflow
