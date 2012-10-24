@@ -33,7 +33,7 @@ class MultiGiftSendMessageCommand extends CronScript {
          *
          * @var str
          */
-        PERSONAL_MESSAGE = "%s, заходи в приложение «Выбиратор»! Тут очень удобно смотреть и оценивать пользователей, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;)"
+        PERSONAL_MESSAGE = "%s, заходи в приложение «Выбиратор»! Тут очень удобно смотреть и оценивать пользователей, плюс — свои собственные фотографии тоже очень быстро получают множество просмотров и оценок ;)"
     ;
 
     /**
@@ -109,7 +109,7 @@ class MultiGiftSendMessageCommand extends CronScript {
             $this->log("<comment>Personal spam message</comment>: $message");
             if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
                 if (!$this->getMemcache()->get($lockCacheKey)) {
-                    if ($result = /*$Mamba->Contacts()->sendMessage($currentUserId, $message)*/true) {
+                    if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
                         if (isset($result['sended']) && $result['sended']) {
                             $this->log('SUCCESS', 64);
                             $this->getStatsObject()->incr('contacts');

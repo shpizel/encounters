@@ -290,6 +290,8 @@ class DecisionController extends ApplicationController {
                     ->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_MULTI_GIFT_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
 
             }
+
+            $this->getVariablesObject()->set($Mamba->get('oid'), 'last_multi_gift_accepted', time());
         }
 
         return
@@ -297,7 +299,7 @@ class DecisionController extends ApplicationController {
                     "content-type" => "application/json",
                 )
             )
-            ;
+        ;
     }
 
     /**

@@ -667,7 +667,6 @@ $Layers = {
         $("div.layer-multi-gift").show();
         this.showLayer();
 
-        console.log($Tools.round($Tools.microtime(), 0));
         $.post($Routing.getPath('variable.set'), {'key': 'last_multi_gift_shown', 'data': $Tools.round($Tools.microtime(), 0)});
     },
 
