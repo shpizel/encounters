@@ -118,6 +118,13 @@ $Search = {
         $("div.app-meet-button > a.app-menu3").removeClass("app-menu3-active");
 
         this.showNextPhoto();
+
+        if (!$Config.get('multi_gift_showed')) {
+            if ($Config.get('multi_gift_contacts')) {
+                $Layers.showMultiGiftLayer();
+                $Config.set('multi_gift_showed', true);
+            }
+        }
     },
 
     /**
@@ -428,7 +435,6 @@ $Search = {
      * @run page
      */
     run: function() {
-
         if (!$Queue.qsize()) {
             this.loadQueue(function(){
                 return $Search.unlockUI();

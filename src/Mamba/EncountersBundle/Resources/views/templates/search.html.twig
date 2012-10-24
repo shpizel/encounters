@@ -57,12 +57,18 @@
 
 {% block pagejs %}
 {% if queues.current %}
-{% autoescape false %}
+
 var $currentQueue = {{ queues.current }};
 for (var $key=0;$key<$currentQueue.length;$key++) {
     $Queue.put($currentQueue[$key]);
 }
-{% endautoescape %}
 
+{% endif %}
+{% if multi_gift_contacts is defined %}
+    {% if multi_gift_contacts %}
+{% autoescape false %}
+$Config.set('multi_gift_contacts', {{ multi_gift_contacts|json_encode()  }});
+{% endautoescape %}
+    {% endif %}
 {% endif %}
 {% endblock %}

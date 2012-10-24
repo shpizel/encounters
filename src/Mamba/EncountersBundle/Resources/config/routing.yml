@@ -58,7 +58,13 @@ message.send:
     pattern: /ajax/message.send
     defaults: { _controller: EncountersBundle:Decision:sendMessage }
     requirements:
-        limit: \d+
+        user_id: \d+
+        _method: POST
+
+multi.gift:
+    pattern: /ajax/multi.gift
+    defaults: { _controller: EncountersBundle:Decision:multiGift }
+    requirements:
         _method: POST
 
 # Получение ответа

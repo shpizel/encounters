@@ -33,6 +33,19 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
+        $Mamba = $this->getMamba();
+        $Mamba->set('oid', $webUserId = 560015854);
 
+        if ($contactsFolders = $Mamba->Contacts()->getFolderList()) {
+            foreach ($contactsFolders['folders'] as $folder) {
+                if ($contactList = $Mamba->Contacts()->getFolderContactList($folder['folder_id'])) {
+                    foreach ($contactList['contacts'] as $contact) {
+                        $contactInfo = $contact['info'];
+
+                        $this->getRedis()->sAdd("contacts_by_{$webUserId}", $contactInfo['oid']);
+                    }
+                }
+            }
+        }
     }
 }

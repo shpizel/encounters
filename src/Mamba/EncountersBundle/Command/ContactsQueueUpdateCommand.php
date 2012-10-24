@@ -171,6 +171,16 @@ class ContactsQueueUpdateCommand extends CronScript {
                 if ($contactList = $Mamba->Contacts()->getFolderContactList($folder['folder_id'])) {
                     foreach ($contactList['contacts'] as $contact) {
                         $contactInfo = $contact['info'];
+
+                        $this->getRedis()->sAdd("contacts_by_{$webUserId}", $contactInfo['oid']);
+                    }
+                }
+            }
+
+            foreach ($contactsFolders['folders'] as $folder) {
+                if ($contactList = $Mamba->Contacts()->getFolderContactList($folder['folder_id'])) {
+                    foreach ($contactList['contacts'] as $contact) {
+                        $contactInfo = $contact['info'];
                         list($currentUserId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
                         if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
                             if ($gender == $searchPreferences['gender']) {

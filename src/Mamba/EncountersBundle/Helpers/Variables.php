@@ -50,6 +50,10 @@ class Variables extends Helper {
 
             /** ачивка */
             'last_achievement_metrics'        => 0,
+
+            /** мульти приглашалка друзей */
+            'last_multi_gift_shown'           => 86400,
+            'last_multi_gift_accepted'        => 2419200,
         )
     ;
 

@@ -265,6 +265,42 @@ class DecisionController extends ApplicationController {
     }
 
     /**
+     * AJAX multi gift
+     *
+     * @param int $userId
+     */
+    public function multiGiftAction() {
+        $Mamba = $this->getMamba();
+
+        if (!$Mamba->getReady()) {
+            list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
+        } elseif (!is_array($users = $this->getRequest()->request->get('users'))) {
+            list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+        } else {
+            foreach ($users as $userId) {
+                if (!is_numeric($userId)) continue;
+
+                $dataArray = array(
+                    'webUserId'     => (int) $Mamba->get('oid'),
+                    'currentUserId' => (int) $userId,
+                    'time'          => time(),
+                );
+
+                $this->getGearman()->getClient()
+                    ->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_MULTI_GIFT_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
+
+            }
+        }
+
+        return
+            new Response(json_encode($this->json), 200, array(
+                    "content-type" => "application/json",
+                )
+            )
+            ;
+    }
+
+    /**
      * AJAX Queue get action
      *
      * @return \Symfony\Component\HttpFoundation\Response

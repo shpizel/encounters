@@ -728,7 +728,6 @@
 
 .layer-multi-gift .photos {
     height: 106px;
-    overflow: auto;
 }
 
 .layer-multi-gift .photos .item {
@@ -779,6 +778,7 @@
 .layer-multi-gift .photos-expanded {
     border:#ccc 1px solid;
     height: 186px;
+    overflow: auto;
 }
 
 .layer-invite .description {

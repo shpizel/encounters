@@ -142,6 +142,68 @@ $Layers = {
 
             return false;
         });
+
+        $("div.layer-multi-gift div.select_all a").attr("mode", 1).click(function() {
+            var $mode = $(this).attr('mode');
+            $("div.layer-multi-gift .photos .item input[type=\"checkbox\"]").attr('checked', (($mode == 1) ? false : true));
+            $(this).attr('mode', (($mode == 1) ? 0 : 1));
+
+            return false;
+        });
+
+        $("div.layer-multi-gift form p a").click(function() {
+            var $ids = [];
+            $("div.layer-multi-gift .photos input[type=\"checkbox\"]:checked").each(function($index, $element) {
+                var $userId = $($element).attr('user_id');
+                if ($userId) {
+                    $ids.push($userId);
+                }
+            });
+
+            if ($ids.length > 0) {
+                if ($ids.in_array('others')) {
+                    for ($i=0;$i<$ids.length;$i++) {
+                        if ($ids[$i] == 'others') {
+                            delete $ids[$i];
+                        }
+                    }
+
+                    $contacts = $Config.get('multi_gift_contacts');
+                    if ($contacts.length > 5) {
+                        for ($i=4;$i<$contacts.length;$i++) {
+                            if (!$ids.in_array($contacts[$i]['oid'])) {
+                                $ids.push($contacts[$i]['oid']);
+                            }
+                        }
+                    }
+                }
+
+                $("div#overflow").hide();
+                $("div.app-layer").hide();
+
+                $.post($Routing.getPath('multi.gift'), {'users': $ids});
+            }
+
+            return false;
+        });
+
+        $(document).on('click', "div.layer-multi-gift .photos .item .pseudo a", function() {
+            $("div.layer-multi-gift .photos").addClass("photos-expanded");
+
+            var $photoItem = "<div class=\"item\"><img/><input type=\"checkbox\"></div>";
+
+            $("div.layer-multi-gift .photos").html("");
+            var $contacts = $Config.get('multi_gift_contacts'), $photos = $("div.layer-multi-gift .photos");
+            for (var $key=0;$key<$contacts.length;$key++) {
+                var $contact = $contacts[$key];
+                var $item = jQuery($photoItem);
+
+                $("img", $item).attr('src', $contact['small_photo_url']);
+                $("input[type=\"checkbox\"]", $item).attr({"user_id": $contact['oid'], 'checked': 'checked'});
+
+                $item.appendTo($photos);
+            }
+        });
     },
 
     /**
@@ -577,10 +639,36 @@ $Layers = {
      */
     showMultiGiftLayer: function($data) {
         this.hideInners();
-//        $("div.layer-send-message form p a").attr('user_id', $data['info']['id']);
+
+        var $photoItem = "<div class=\"item\"><img/><input type=\"checkbox\"></div>";
+        var $pseudoItem = "<div class=\"item\"><div class=\"pseudo\"><a></a></div><input type=\"checkbox\"></div>";
+
+        var $contacts = $Config.get('multi_gift_contacts'), $photos = $("div.layer-multi-gift .photos");
+        for (var $key=0;$key<(($contacts.length <= 5) ? $contacts.length : 5);$key++) {
+            var $contact = $contacts[$key];
+            var $item = jQuery($photoItem);
+
+            $("img", $item).attr('src', $contact['small_photo_url']);
+            $("input[type=\"checkbox\"]", $item).attr({"user_id": $contact['oid'], 'checked': 'checked'});
+
+            $item.appendTo($photos);
+        }
+
+        if ($contacts.length > 5) {
+            var $more = $contacts.length - 5;
+            var $item = jQuery($pseudoItem);
+
+            $("a", $item).html("Еще<br>" + $more);
+            $("input[type=\"checkbox\"]", $item).attr({"user_id": 'others', 'checked': 'checked'});
+
+            $item.appendTo($photos);
+        }
 
         $("div.layer-multi-gift").show();
         this.showLayer();
+
+        console.log($Tools.round($Tools.microtime(), 0));
+        $.post($Routing.getPath('variable.set'), {'key': 'last_multi_gift_shown', 'data': $Tools.round($Tools.microtime(), 0)});
     },
 
     /**

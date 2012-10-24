@@ -48,6 +48,13 @@ class EncountersBundle extends Bundle {
         GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME = 'contacts:sendmessage',
 
         /**
+         * Имя функции рассылки спама по контактам для мультигифта
+         *
+         * @var str
+         */
+        GEARMAN_CONTACTS_MULTI_GIFT_SEND_MESSAGE_FUNCTION_NAME = 'contacts:multigift:sendmessage',
+
+        /**
          * Имя функции установки ачивок
          *
          * @var str
