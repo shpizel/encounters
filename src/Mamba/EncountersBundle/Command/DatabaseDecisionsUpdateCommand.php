@@ -120,6 +120,14 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
             );
 
             $this->getStatsObject()->incr($decisions[$decision]);
+
+            /**
+             * Веб-юзер проголосовал за карента, значит каренту нужно чтобы у него в Purchased не было веб-юзера
+             *
+             * @author shpizel
+             */
+            $this->getPurchasedObject()->remove($webUserId, $currentUserId);
+
         } else {
             throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
         }

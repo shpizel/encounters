@@ -102,7 +102,7 @@ class DecisionController extends ApplicationController {
             }
 
             /** Уменьшить энергию CurrentUser'a */
-            if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
+            /*if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
                 if (($currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId)) > 0) {
                     $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
 
@@ -122,6 +122,16 @@ class DecisionController extends ApplicationController {
                     $points = intval(($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel);
                     $this->getEnergyObject()->decr($this->currentUserId, $points*2);
                 }
+            }*/
+
+            /** откатились на старую версию */
+            /** Уменьшить энергию CurrentUser'a */
+            if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
+                $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
+                $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
+
+                /** мутная функция */
+                $this->getEnergyObject()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
             }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */

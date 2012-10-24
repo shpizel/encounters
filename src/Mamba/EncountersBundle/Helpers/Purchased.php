@@ -55,6 +55,24 @@ class Purchased extends Helper {
 
         return $this->getRedis()->sAdd(sprintf(self::REDIS_SET_USER_PURCHASED_KEY, $webUserId), $currentUserId);
     }
+
+    /**
+     * Удаляет веб-юзера из покупок карента
+     *
+     * @param int $webUserId
+     * @param int $currentUserId
+     */
+    public function remove($webUserId, $currentUserId) {
+        if (!is_int($webUserId)) {
+            throw new PurchasedException("Invalid web user id: \n" . var_export($webUserId, true));
+        }
+
+        if (!is_int($currentUserId)) {
+            throw new PurchasedException("Invalid current user id: \n" . var_export($currentUserId, true));
+        }
+
+        return $this->getRedis()->sRem(sprintf(self::REDIS_SET_USER_PURCHASED_KEY, $currentUserId), $webUserId);
+    }
 }
 
 /**
