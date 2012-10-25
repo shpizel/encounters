@@ -49,6 +49,8 @@
         </div>
 
         {#<div class="app-info-user"><a href="#"></a>  <i class="ico"></i> <span></span></div>#}
+
+        <div class="share{% if sharing_enabled == 1 %} opacity-50{% endif %}"><label><input type="checkbox" id="share"{% if sharing_enabled == 1 %} checked="checked"{% endif %}>Сообщить об оценке</label></div>
     </div>
 </div>
 {% include 'EncountersBundle:layers:layers.html.twig' %}
@@ -64,6 +66,7 @@ for (var $key=0;$key<$currentQueue.length;$key++) {
 }
 
 {% endif %}
+$Config.set('sharing_reminder', {{ sharing_reminder }});
 {% if multi_gift_contacts is defined %}
     {% if multi_gift_contacts %}
 {% autoescape false %}

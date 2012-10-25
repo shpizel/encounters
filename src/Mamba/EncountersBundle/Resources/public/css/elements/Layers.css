@@ -432,7 +432,8 @@
 .layer-no .info-battery,
 .layer-yes .info-battery,
 .layer-maybe .info-battery,
-.layer-not-see-yet .info-battery
+.layer-not-see-yet .info-battery,
+.layer-sharing-reminder .info-battery
 {
     background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
@@ -451,6 +452,11 @@
 
 .layer-level .info-battery {
     margin-top: 30px;
+}
+
+.layer-sharing-reminder .info-battery {
+    margin-top: 20px;
+    margin-bottom:20px;
 }
 
 .layer-no .info-battery,
@@ -478,7 +484,8 @@
 .layer-no .info-battery .arrow,
 .layer-yes .info-battery .arrow,
 .layer-maybe .info-battery .arrow,
-.layer-not-see-yet .info-battery .arrow
+.layer-not-see-yet .info-battery .arrow,
+.layer-sharing-reminder .info-battery .arrow
 {
     background: none;
     position: absolute;
@@ -814,6 +821,13 @@
     text-indent: -330em;
     margin: 10px 0 20px 0;
     height: 79px;
+}
+
+.layer-sharing-reminder .title {
+    background: url('/bundles/encounters/images/texts/let-mutual-know-faster.png') no-repeat center top;
+    text-indent: -330em;
+    margin: 10px 0 20px 0;
+    height: 180px;
 }
 
 .layer-send-message .description {

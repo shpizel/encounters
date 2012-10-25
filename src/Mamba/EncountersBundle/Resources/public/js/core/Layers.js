@@ -79,6 +79,14 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-sharing-reminder form p a").click(function() {
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
+            $("div.share input[type=\"checkbox\"]").attr('checked', 'checked').addClass('opacity-50');
+
+            return false;
+        });
+
         $("div.layer-send-message form p a").click(function() {
             $("div#overflow").hide();
             $("div.app-layer").hide();
@@ -668,6 +676,18 @@ $Layers = {
         this.showLayer();
 
         $.post($Routing.getPath('variable.set'), {'key': 'last_multi_gift_shown', 'data': $Tools.round($Tools.microtime(), 0)});
+    },
+
+    /**
+     * Показывает лаер напоминалки о необходимости простановки галочки
+     *
+     * @shows layer
+     */
+    showSharingReminderLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-sharing-reminder").show();
+        this.showLayer();
     },
 
     /**

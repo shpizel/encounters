@@ -65,6 +65,9 @@ class SearchController extends ApplicationController {
             }
         }
 
+        $initialData['sharing_enabled'] = (int) $this->getVariablesObject()->get($webUserId, 'sharing_enabled');
+        $initialData['sharing_reminder'] = (int) $this->getVariablesObject()->get($webUserId, 'sharing_reminder');
+
         $Response = $this->render("EncountersBundle:templates:search.html.twig", $initialData);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;

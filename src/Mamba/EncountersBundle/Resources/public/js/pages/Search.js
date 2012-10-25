@@ -63,6 +63,17 @@ $Search = {
 
         $("p.app-see-block a").click($showLayerFunction);
         $("div.app-image-member div.name-container div.content a").click($showLayerFunction);
+        $("div.share input[type=\"checkbox\"]").change(function() {
+            if ($(this).attr('checked')) {
+                $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 1});
+                $("div.share").removeClass("opacity-50").addClass("opacity-50");
+            } else {
+                if (confirm('a u sure')) {
+                    $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 0});
+                    $("div.share").removeClass("opacity-50");
+                }
+            }
+        });
 
 //        $("div.app-image-member div.name-container div.content a").click(function() {
 //            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
@@ -98,6 +109,7 @@ $Search = {
     lockUI: function() {
         $("div.app-meet-button").fadeTo('fast', 0.6);
         $("div.app-lenta-img").hide();
+        $("div.share").hide();
         $("div.name-container").hide();
         $("p.app-see-block").fadeTo('fast', 0.6);
         $("div.app-image-member img.app-image").hide();
@@ -168,6 +180,16 @@ $Search = {
     makeDecision: function($decision) {
         if ($Search.$storage['locked'] || !$Search.$storage['currentQueueElement']) {
             return;
+        }
+
+        if ($decision >= 0) {
+            if (!$(".share input[type=\"checkbox\"]").attr('checked') && !$Config.get('sharing_reminder')) {
+                $.post($Routing.getPath('variable.set'), {'key': 'sharing_reminder', 'data': $Tools.round($Tools.microtime(), 0)});
+                $Config.set('sharing_reminder', 1);
+
+                $Layers.showSharingReminderLayer();
+                return;
+            }
         }
 
         if ($decision == 0) {
@@ -292,6 +314,7 @@ $Search = {
 
             $("div.app-meet-button").fadeTo('normal', 1);
             $("div.app-lenta-img").show();
+            $("div.share").show();
             $("div.app-image-member div.name-container").show();
             $("p.app-see-block").fadeTo('normal', 1);
 

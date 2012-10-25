@@ -162,7 +162,7 @@ class DecisionController extends ApplicationController {
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             /** Ставим задачу на спам по контакт-листу */
-            if (/*($this->decision + 1 > 0) &&*/ (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
+            if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
                 if (!$this->getMemcache()->get("personal_{$this->currentUserId}_spam")) {
                     $this->json['data']['is_contact'] = true;
                 }
@@ -200,6 +200,8 @@ class DecisionController extends ApplicationController {
 
                     $this->getCountersObject()->incr($this->currentUserId, 'mutual_unread');
                 }
+            } else {
+                $this->getPurchasedObject()->remove(intval($this->webUserId), intval($this->currentUserId));
             }
 
             /** Удалим currentUser'a из текущей очереди webUser'a */
@@ -225,14 +227,6 @@ class DecisionController extends ApplicationController {
                 $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($this->webUserId)),
                 array('level_up' => $levelUp)
             );
-
-            /*if ($this->getCurrentQueueObject()->getSize($this->webUserId) < (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT) / 1.25) {
-                $this->get('gearman')->getClient()
-                    ->doHighBackground(EncountersBundle::GEARMAN_CURRENT_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-                    'user_id'   => $this->webUserId,
-                    'timestamp' => time(),
-                )));
-            }*/
         }
 
         return

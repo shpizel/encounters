@@ -54,6 +54,10 @@ class Variables extends Helper {
             /** мульти приглашалка друзей */
             'last_multi_gift_shown'           => 86400,
             'last_multi_gift_accepted'        => 2419200,
+
+            /** share */
+            'sharing_enabled'                 => 0,
+            'sharing_reminder'                => 86400,
         )
     ;
 
