@@ -686,6 +686,12 @@ $Layers = {
     showSharingReminderLayer: function($data) {
         this.hideInners();
 
+        if ($data['info']['gender'] == 'F') {
+            $("div.layer-sharing-reminder span.gender").text("а");
+        } else {
+            $("div.layer-sharing-reminder span.gender").text("");
+        }
+
         $("div.layer-sharing-reminder").show();
         this.showLayer();
     },

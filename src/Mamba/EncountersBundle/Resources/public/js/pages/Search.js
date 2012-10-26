@@ -68,10 +68,8 @@ $Search = {
                 $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 1});
                 $("div.share").removeClass("opacity-50").addClass("opacity-50");
             } else {
-                if (confirm('a u sure')) {
-                    $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 0});
-                    $("div.share").removeClass("opacity-50");
-                }
+                $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 0});
+                $("div.share").removeClass("opacity-50");
             }
         });
 
@@ -187,7 +185,7 @@ $Search = {
                 $.post($Routing.getPath('variable.set'), {'key': 'sharing_reminder', 'data': $Tools.round($Tools.microtime(), 0)});
                 $Config.set('sharing_reminder', 1);
 
-                $Layers.showSharingReminderLayer();
+                $Layers.showSharingReminderLayer($Search.$storage['currentQueueElement']);
                 return;
             }
         }

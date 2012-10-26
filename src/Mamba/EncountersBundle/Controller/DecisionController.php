@@ -161,11 +161,14 @@ class DecisionController extends ApplicationController {
             /** Ставим задачу на обновление базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
-            /** Ставим задачу на спам по контакт-листу */
-            if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
-                if (!$this->getMemcache()->get("personal_{$this->currentUserId}_spam")) {
-                    $this->json['data']['is_contact'] = true;
+            if (!intval($this->getVariablesObject()->get((int)$this->webUserId, 'sharing_enabled'))) {
+                if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
+                    if (!$this->getMemcache()->get("personal_{$this->currentUserId}_spam")) {
+                        $this->json['data']['is_contact'] = true;
+                    }
                 }
+            } else {
+                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
             }
 
             /** Ставим задачу на установку ачивки */

@@ -66,7 +66,9 @@ for (var $key=0;$key<$currentQueue.length;$key++) {
 }
 
 {% endif %}
-$Config.set('sharing_reminder', {{ sharing_reminder }});
+{% autoescape false %}
+$Config.set('sharing_reminder', {{ sharing_reminder|json_encode() }});
+{% endautoescape %}
 {% if multi_gift_contacts is defined %}
     {% if multi_gift_contacts %}
 {% autoescape false %}
