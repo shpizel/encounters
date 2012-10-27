@@ -70,6 +70,8 @@ $Search = {
             } else {
                 $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 0});
                 $("div.share").removeClass("opacity-50");
+
+                $Layers.showSharingConfirmLayer();
             }
         });
 

@@ -433,7 +433,8 @@
 .layer-yes .info-battery,
 .layer-maybe .info-battery,
 .layer-not-see-yet .info-battery,
-.layer-sharing-reminder .info-battery
+.layer-sharing-reminder .info-battery,
+.layer-sharing-confirm .info-battery
 {
     background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
@@ -454,7 +455,8 @@
     margin-top: 30px;
 }
 
-.layer-sharing-reminder .info-battery {
+.layer-sharing-reminder .info-battery,
+.layer-sharing-confirm .info-battery{
     margin-top: 20px;
     margin-bottom:20px;
 }
@@ -485,7 +487,8 @@
 .layer-yes .info-battery .arrow,
 .layer-maybe .info-battery .arrow,
 .layer-not-see-yet .info-battery .arrow,
-.layer-sharing-reminder .info-battery .arrow
+.layer-sharing-reminder .info-battery .arrow,
+.layer-sharing-confirm .info-battery .arrow
 {
     background: none;
     position: absolute;
@@ -828,6 +831,12 @@
     text-indent: -330em;
     margin: 10px 0 20px 0;
     height: 180px;
+}
+.layer-sharing-confirm .title {
+    background: url('/bundles/encounters/images/texts/share-confirm.png') no-repeat center top;
+    text-indent: -330em;
+    margin: 10px 0 20px 0;
+    height: 190px;
 }
 
 .layer-send-message .description {

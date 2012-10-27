@@ -159,6 +159,12 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-sharing-confirm form p a").click(function() {
+            $("div.share input[type=\"checkbox\"]").attr('checked', 'checked').change();
+            $("div#overflow").hide();
+            $("div.app-layer").hide();
+        });
+
         $("div.layer-multi-gift form p a").click(function() {
             var $ids = [];
             $("div.layer-multi-gift .photos input[type=\"checkbox\"]:checked").each(function($index, $element) {
@@ -693,6 +699,18 @@ $Layers = {
         }
 
         $("div.layer-sharing-reminder").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер просьбы вернуть галочку
+     *
+     * @shows layer
+     */
+    showSharingConfirmLayer: function($data) {
+        this.hideInners();
+
+        $("div.layer-sharing-confirm").show();
         this.showLayer();
     },
 
