@@ -102,18 +102,15 @@ class ContactsSendMessageCommand extends CronScript {
             throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
-        $lockCacheKey = "personal_{$currentUserId}_spam";
-        $lockCacheKeyExpire = 7*24*3600;
-
         if ($message = $this->getPersonalMessage($webUserId, $currentUserId)) {
             $this->log("<comment>Personal spam message</comment>: $message");
             if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
-                if (!$this->getMemcache()->get($lockCacheKey)) {
+                if (!$this->getVariablesObject()->get($currentUserId, 'last_message_sent')) {
                     if ($result = $Mamba->Contacts()->sendMessage($currentUserId, $message)) {
                         if (isset($result['sended']) && $result['sended']) {
                             $this->log('SUCCESS', 64);
                             $this->getStatsObject()->incr('contacts');
-                            $this->getMemcache()->add($lockCacheKey, time(), $lockCacheKeyExpire);
+                            $this->getVariablesObject()->set($currentUserId, 'last_message_sent', time());
                         } else {
                             throw new \Core\ScriptBundle\CronScriptException("Failed to send message");
                         }

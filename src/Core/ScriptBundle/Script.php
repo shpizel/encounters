@@ -162,7 +162,7 @@ abstract class Script extends ContainerAwareCommand {
 
             $this->output->$writeFunction($message);
         } else {
-            $message = date("[d-M-Y H:i:s") . " @ " . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s & " . round(memory_get_usage(true)/1024/1024, 0) . "M] " . trim($message) . PHP_EOL;
+            $message = date("[d-M-Y H:i:s") . " @ " . (time() - (isset($this->started) ? $this->started : $this->started = time())) . "s & " . round(memory_get_usage(true)/1024/1024, 0) . "M] " . trim(strip_tags($message)) . PHP_EOL;
             error_log($message, 3, $this->getLogFilename());
         }
 

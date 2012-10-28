@@ -183,7 +183,7 @@ class ContactsQueueUpdateCommand extends CronScript {
                         $contactInfo = $contact['info'];
                         list($currentUserId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
                         if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
-                            if ($gender == $searchPreferences['gender']) {
+                            if ($gender == $searchPreferences['gender'] && $age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to']) {
                                 if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
                                     if ($this->getContactsQueueObject()->put($webUserId, $currentUserId)) {
 

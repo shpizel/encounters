@@ -142,8 +142,14 @@ class DecisionController extends ApplicationController {
                  *
                  * @author shpizel
                  */
-                if (($currentUserSearchPreferences = $this->getSearchPreferencesObject()->get($this->currentUserId)) && ($info = $Mamba->Anketa()->getInfo($this->webUserId, array()))) {
-                    if ($info[0]['info']['gender'] == $currentUserSearchPreferences['gender']) {
+                if (($currentUserSearchPreferences = $this->getSearchPreferencesObject()->get($this->currentUserId)) && ($webUserInfo = $Mamba->Anketa()->getInfo($this->webUserId, array()))) {
+                    $webUserInfo = array_shift($webUserInfo);
+                    $webUserInfo = $webUserInfo['info'];
+
+                    if ($webUserInfo['gender'] == $currentUserSearchPreferences['gender'] &&
+                        $webUserInfo['age'] >= $currentUserSearchPreferences['age_from'] &&
+                        $webUserInfo['age'] <= $currentUserSearchPreferences['age_to']
+                    ) {
                         if (!$this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId)) {
                             $this->getPriorityQueueObject()->put($this->currentUserId, $this->webUserId);
                         }
@@ -163,7 +169,8 @@ class DecisionController extends ApplicationController {
 
             if (!intval($this->getVariablesObject()->get((int)$this->webUserId, 'sharing_enabled'))) {
                 if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
-                    if (!$this->getMemcache()->get("personal_{$this->currentUserId}_spam")) {
+                    $lastMessageSent = $this->getVariablesObject()->get($this->webUserId, 'last_message_sent');
+                    if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
                         $this->json['data']['is_contact'] = true;
                     }
                 }
@@ -297,8 +304,6 @@ class DecisionController extends ApplicationController {
                     ->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_MULTI_GIFT_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
 
             }
-
-            $this->getVariablesObject()->set($Mamba->get('oid'), 'last_multi_gift_accepted', time());
         }
 
         return

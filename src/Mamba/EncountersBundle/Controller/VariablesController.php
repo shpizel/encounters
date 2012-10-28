@@ -36,11 +36,20 @@ class VariablesController extends ApplicationController {
      */
     public function setVariableAction() {
         if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $key  = $this->getRequest()->request->get('key');
-            $data = $this->getRequest()->request->get('data');
+            $key  = (string) $this->getRequest()->request->get('key');
+            $data = (string) $this->getRequest()->request->get('data');
 
-            if (!$this->getVariablesObject()->set($webUserId, $key, $data)) {
-                list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+            $Variables = $this->getVariablesObject();
+            if ($Variables->isExternal($key)) {
+                try {
+                    if (!$this->getVariablesObject()->set($webUserId, $key, $data)) {
+                        list($this->json['status'], $this->json['message']) = array(2, "Could not set variable");
+                    }
+                } catch (\Exception $e) {
+                    list($this->json['status'], $this->json['message']) = array(2, $e->getMessage());
+                }
+            } else {
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid key");
             }
         } else {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
