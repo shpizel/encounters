@@ -297,11 +297,12 @@ class DecisionController extends ApplicationController {
                 $dataArray = array(
                     'webUserId'     => (int) $Mamba->get('oid'),
                     'currentUserId' => (int) $userId,
+                    'decision'      => 1, /** tmp */
                     'time'          => time(),
                 );
 
                 $this->getGearman()->getClient()
-                    ->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_MULTI_GIFT_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
+                    ->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME/*GEARMAN_CONTACTS_MULTI_GIFT_SEND_MESSAGE_FUNCTION_NAME*/, serialize($dataArray));
 
             }
         }
