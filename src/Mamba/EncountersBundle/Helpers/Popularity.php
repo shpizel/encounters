@@ -34,6 +34,7 @@ class Popularity extends Helper {
             14 => 270000,
             15 => 340000,
             16 => 425000,
+            17 => 525000,
         )
     ;
 

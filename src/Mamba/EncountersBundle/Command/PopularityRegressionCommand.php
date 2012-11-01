@@ -41,18 +41,13 @@ class PopularityRegressionCommand extends Script {
         while ($energy > 0) {
             $currentLevel = $Popularity->getLevel($energy);
 
-            $prevLevel = $currentLevel - 1;
-            $points = ($Popularity->getLevels()[$currentLevel] - (($prevLevel < $currentLevel) ? $Popularity->getLevels()[$prevLevel] : 0)) / $currentLevel;
-
-            $this->log($currentLevel . "\t" . $prevLevel . "\t" . $points, 16);
-
-            $energy-= $points;
+            $energy -= 100*5*(($currentLevel < 3) ? 3 : $currentLevel);
 
             $level = $Popularity->getLevel($energy);
             $counter++;
 
             if ($currentLevel > $level) {
-                $this->log("{$level} : {$counter}");
+                echo("{$currentLevel}: {$counter}" . PHP_EOL);
                 $counter = 0;
             }
         }

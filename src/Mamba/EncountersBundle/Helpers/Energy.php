@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Helpers;
 
 use Mamba\EncountersBundle\EncountersBundle;
+use Mamba\EncountersBundle\Helpers\Popularity;
 
 /**
  * Energy
@@ -25,13 +26,6 @@ class Energy extends Helper {
          * @var int
          */
         MINIMUM_ENERGY = 0,
-
-        /**
-         * Максимальная энергия
-         *
-         * @var int
-         */
-        MAXIMUM_ENERGY = 425000,
 
         /**
          * Ключ для хранения энергии
@@ -82,7 +76,7 @@ class Energy extends Helper {
             throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= self::MAXIMUM_ENERGY) {
+        if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= max(Popularity::$levels) - 1 /** нахуя тут минус 1 неясно но хуй с ним */) {
             $result = $this->getRedis()->set(sprintf(self::REDIS_USER_ENERGY_KEY, $userId), $energy);
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) &&  $this->getGearman()->getClient()->doHighBackground(
@@ -131,8 +125,8 @@ class Energy extends Helper {
             );
 
             return $result;
-        } elseif ($incrementResult > self::MAXIMUM_ENERGY) {
-            $result = $this->set($userId, $incrementResult = self::MAXIMUM_ENERGY);
+        } elseif ($incrementResult > ($max = max(Popularity::$levels) - 1)) {
+            $result = $this->set($userId, $incrementResult = $max);
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) && $this->getGearman()->getClient()->doHighBackground(
                 EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,

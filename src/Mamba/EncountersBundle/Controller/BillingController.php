@@ -169,10 +169,10 @@ class BillingController extends ApplicationController {
                             $this->getNotificationsObject()->add($webUserId, "Ура! Услуга успешно оплачена!");
                         }
                     } elseif ($serviceId == 3) {
-                        $this->getEnergyObject()->set($webUserId, 60000);
+                        $this->getEnergyObject()->set($webUserId, Popularity::$levels[11]);
                         $billed = true;
 
-                        $this->getNotificationsObject()->add($webUserId, "Ура! Теперь вы получите 100 внеочередных показов!");
+                        $this->getNotificationsObject()->add($webUserId, "Ура! Теперь вы получите 50 эксклюзивных показов!");
 
                     } elseif ($serviceId == 4) {
                         $energy = $this->getEnergyObject()->get($webUserId);
