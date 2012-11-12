@@ -94,13 +94,14 @@ class MyChoiceController extends ApplicationController {
                             'name'             => $anketa['info']['name'],
                             'gender'           => $anketa['info']['gender'],
                             'age'              => $anketa['info']['age'],
+                            'sign'             => $anketa['info']['sign'],
                             'small_photo_url'  => $anketa['info']['small_photo_url'],
                             'medium_photo_url' => $anketa['info']['medium_photo_url'],
                             'is_app_user'      => $anketa['info']['is_app_user'],
                             'location'         => $anketa['location'],
                             'flags'            => $anketa['flags'],
                             'familiarity'      => $anketa['familiarity'],
-                            'other'            => $anketa['other'],
+//                            'other'            => $anketa['other'],
                         ),
                     );
 

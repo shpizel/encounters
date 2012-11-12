@@ -265,7 +265,7 @@ $Layers = {
         }
 
         $("div.layer-maybe div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
-        $("div.layer-maybe div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-maybe div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-maybe div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-maybe").show();
@@ -306,7 +306,7 @@ $Layers = {
         }
 
         $("div.layer-yes div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
-        $("div.layer-yes div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-yes div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-yes div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-yes").show();
@@ -345,7 +345,7 @@ $Layers = {
         }
 
         $("div.layer-no div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
-        $("div.layer-no div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-no div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-no div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-no").show();
@@ -415,7 +415,7 @@ $Layers = {
         }
 
         $("div.layer-not-see-yet div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
-        $("div.layer-not-see-yet div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-not-see-yet div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-not-see-yet div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-not-see-yet").show();
@@ -498,7 +498,7 @@ $Layers = {
         }
 
         $("div.layer-user-info div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
-        $("div.layer-user-info div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']['other']['sign']) : '&nbsp;'));
+        $("div.layer-user-info div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-user-info div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 
         $("div.layer-user-info").show();
