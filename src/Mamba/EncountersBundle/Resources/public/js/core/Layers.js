@@ -82,7 +82,7 @@ $Layers = {
         $("div.layer-sharing-reminder form p a").click(function() {
             $("div#overflow").hide();
             $("div.app-layer").hide();
-            $("div.share input[type=\"checkbox\"]").attr('checked', 'checked').addClass('opacity-50');
+            $("div.share input[type=\"checkbox\"]").attr('checked', 'checked').addClass('opacity-50').change();
 
             return false;
         });
