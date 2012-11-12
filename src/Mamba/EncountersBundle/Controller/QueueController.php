@@ -57,7 +57,7 @@ class QueueController extends ApplicationController {
             foreach ($anketaInfoArray as $chunk) {
                 foreach ($chunk as $dataArray) {
 
-                    if (!(isset($dataArray['location']) && isset($dataArray['flags']) && isset($dataArray['familiarity']) && isset($dataArray['other']))) {
+                    if (!(isset($dataArray['location']) && isset($dataArray['flags']) && isset($dataArray['familiarity']))) {
                         $currentUserId = $dataArray['info']['oid'];
 
                         $this->getCurrentQueueObject()->remove($webUserId, (int)$currentUserId);
@@ -78,7 +78,6 @@ class QueueController extends ApplicationController {
                             'location'         => $dataArray['location'],
                             'flags'            => $dataArray['flags'],
                             'familiarity'      => $dataArray['familiarity'],
-                            'other'            => $dataArray['other'],
                         ),
                     );
                 }
