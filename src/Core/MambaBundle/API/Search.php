@@ -15,11 +15,11 @@ class Search {
      * @param string $lookingFor Кого ищу? (M, F, MM, FF, MF, N)
      * @param int $ageFrom Возраст от
      * @param int $ageTo Возраст до
-     * @param string $target Цель знакомства -> ("friendship", "love", "marriage", "sex", "other")
+//     * @param string $target Цель знакомства -> ("friendship", "love", "marriage", "sex", "other")
      * @param bool $onlyWithPhoto Только с фото
      * @param bool $onlyReal Только реал
      * @param bool $onlyWithWebCam Только с вебкой
-     * @param bool $noIntim Шлюхи отдыхают
+//     * @param bool $noIntim Шлюхи отдыхают
      * @param int $countryId Страна
      * @param int $regionId Регион
      * @param int $cityId Город
@@ -35,11 +35,11 @@ class Search {
         $lookingFor     = null,
         $ageFrom        = null,
         $ageTo          = null,
-        $target         = null,
+//        $target         = null,
         $onlyWithPhoto  = false,
         $onlyReal       = false,
         $onlyWithWebCam = false,
-        $noIntim        = false,
+//        $noIntim        = false,
         $countryId      = null,
         $regionId       = null,
         $cityId         = null,
@@ -81,13 +81,13 @@ class Search {
             $arguments['age_to'] = $ageTo;
         }
 
-        if ($target) {
-            $target = strtolower($target);
-            if (!in_array($target, array("friendship", "love", "marriage", "sex", "other"))) {
-                throw new SearchException("Invalid target: " . $target);
-            }
-            $arguments['target'] = $target;
-        }
+//        if ($target) {
+//            $target = strtolower($target);
+//            if (!in_array($target, array("friendship", "love", "marriage", "sex", "other"))) {
+//                throw new SearchException("Invalid target: " . $target);
+//            }
+//            $arguments['target'] = $target;
+//        }
 
         $onlyWithPhoto &&
             $arguments['with_photo'] = 1;
@@ -98,8 +98,8 @@ class Search {
         $onlyWithWebCam &&
             $arguments['with_web_camera'] = 1;
 
-        $noIntim &&
-            $arguments['no_intim'] = 1;
+//        $noIntim &&
+//            $arguments['no_intim'] = 1;
 
         if ($countryId) {
 

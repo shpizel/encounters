@@ -36,7 +36,7 @@ class DatabaseDecisionsCleanCommand extends CronScript {
             DELETE FROM
                 `Decisions`
             WHERE
-                `changed` <= date_format(DATE_SUB(NOW(), INTERVAL 30 DAY), '%Y-%m-%d 00:00:00')
+                `changed` <= date_format(DATE_SUB(NOW(), INTERVAL 100 DAY), '%Y-%m-%d 00:00:00')
         "
     ;
 

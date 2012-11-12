@@ -34,6 +34,6 @@ class AACommand extends CronScript {
      */
     protected function process() {
         $Mamba = $this->getMamba();
-        $Mamba->set('oid', $webUserId = 560015854);
+//        print_r($Mamba->Search()->get());
     }
 }

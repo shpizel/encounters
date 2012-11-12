@@ -85,29 +85,6 @@ class Anketa {
     }
 
     /**
-     * Получение интересов
-     *
-     * @param int|str $oid anketa_id
-     * @throws AnketaException, MambaException
-     * @return array
-     */
-    public function getInterests($oid) {
-        if (!is_int($oid)) {
-            if (is_string($oid) && is_numeric($oid)) {
-                $oid = (int) $oid;
-            } else {
-                throw new AnketaException('Invalid oid');
-            }
-        }
-
-        $arguments = array(
-            'oid' => $oid,
-        );
-
-        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
-    }
-
-    /**
      * Получение объявлений из попутчиков
      *
      * @param int $oid anketa_id
