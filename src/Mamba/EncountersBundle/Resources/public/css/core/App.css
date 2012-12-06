@@ -735,14 +735,6 @@ div.app-block-no-popular a.close {
     top: 7px;
 }
 
-.share {
-    width:300px;
-    margin:0 auto;
-    text-align: center;
-    font-size: 13px;
-    color: #666666;
-}
-
 .opacity-50 {
     filter: progid:DXImageTransform.Microsoft.Alpha(opacity = 50); /* IE 5.5+*/
     -moz-opacity: 0.5; /* Mozilla 1.6 и ниже */

@@ -47,10 +47,6 @@
             <a href="#" class="rt arr"></a>
             <a href="#" class="rarr"><img height="31" width="31" src="/bundles/encounters/images/strelki-tuda_1.png"></a>
         </div>
-
-        {#<div class="app-info-user"><a href="#"></a>  <i class="ico"></i> <span></span></div>#}
-
-        <div class="share{% if sharing_enabled == 1 %} opacity-50{% endif %}"><label><input type="checkbox" id="share"{% if sharing_enabled == 1 %} checked="checked"{% endif %}>Сообщить об оценке</label></div>
     </div>
 </div>
 {% include 'EncountersBundle:layers:layers.html.twig' %}
@@ -66,13 +62,10 @@ for (var $key=0;$key<$currentQueue.length;$key++) {
 }
 
 {% endif %}
+{% if non_app_users_contacts is defined %}
+    {% if non_app_users_contacts %}
 {% autoescape false %}
-$Config.set('sharing_reminder', {{ sharing_reminder|json_encode() }});
-{% endautoescape %}
-{% if multi_gift_contacts is defined %}
-    {% if multi_gift_contacts %}
-{% autoescape false %}
-$Config.set('multi_gift_contacts', {{ multi_gift_contacts|json_encode()  }});
+$Config.set('non_app_users_contacts', {{ non_app_users_contacts|json_encode() }});
 {% endautoescape %}
     {% endif %}
 {% endif %}

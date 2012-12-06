@@ -143,32 +143,6 @@ class Variables extends Helper {
                     return true;
                 },
             ),
-
-            /** мульти приглашалка друзей */
-            'last_multi_gift_shown' => array(
-                'type' => self::VARIABLE_EXTERNAL_TYPE,
-                'ttl'  => 86400,
-                'validator' => function($variable) {
-                    return true;
-                },
-            ),
-
-            /** share */
-            'sharing_enabled' => array(
-                'type' => self::VARIABLE_EXTERNAL_TYPE,
-                'ttl'  => 0,
-                'validator' => function($variable) {
-                    return true;
-                },
-            ),
-
-            'sharing_reminder'=> array(
-                'type' => self::VARIABLE_EXTERNAL_TYPE,
-                'ttl'  => 86400,
-                'validator' => function($variable) {
-                    return true;
-                },
-            ),
         );
     }
 

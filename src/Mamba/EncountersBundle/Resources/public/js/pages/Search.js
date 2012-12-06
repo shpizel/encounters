@@ -63,17 +63,6 @@ $Search = {
 
         $("p.app-see-block a").click($showLayerFunction);
         $("div.app-image-member div.name-container div.content a").click($showLayerFunction);
-        $("div.share input[type=\"checkbox\"]").change(function() {
-            if ($(this).attr('checked')) {
-                $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 1});
-                $("div.share").removeClass("opacity-50").addClass("opacity-50");
-            } else {
-                $.post($Routing.getPath('variable.set'), {'key': 'sharing_enabled', 'data': 0});
-                $("div.share").removeClass("opacity-50");
-
-                $Layers.showSharingConfirmLayer();
-            }
-        });
 
 //        $("div.app-image-member div.name-container div.content a").click(function() {
 //            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
@@ -109,7 +98,6 @@ $Search = {
     lockUI: function() {
         $("div.app-meet-button").fadeTo('fast', 0.6);
         $("div.app-lenta-img").hide();
-        $("div.share").hide();
         $("div.name-container").hide();
         $("p.app-see-block").fadeTo('fast', 0.6);
         $("div.app-image-member img.app-image").hide();
@@ -130,13 +118,6 @@ $Search = {
         $("div.app-meet-button > a.app-menu3").removeClass("app-menu3-active");
 
         this.showNextPhoto();
-
-        if (!$Config.get('multi_gift_showed')) {
-            if ($Config.get('multi_gift_contacts')) {
-                $Layers.showMultiGiftLayer();
-                $Config.set('multi_gift_showed', true);
-            }
-        }
     },
 
     /**
@@ -182,16 +163,6 @@ $Search = {
             return;
         }
 
-        if ($decision >= 0) {
-            if (!$(".share input[type=\"checkbox\"]").attr('checked') && !$Config.get('sharing_reminder')) {
-                $.post($Routing.getPath('variable.set'), {'key': 'sharing_reminder', 'data': $Tools.round($Tools.microtime(), 0)});
-                $Config.set('sharing_reminder', 1);
-
-                $Layers.showSharingReminderLayer($Search.$storage['currentQueueElement']);
-                return;
-            }
-        }
-
         if ($decision == 0) {
             $("div.app-meet-button > a.app-menu2").addClass("app-menu2-active");
         } else if ($decision == 1) {
@@ -203,13 +174,6 @@ $Search = {
         $Search.$storage['locked'] = true;
 
         $.post($Routing.getPath('decision.set'), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
-            /*if ($decision >= 0 && !$Search.$storage['currentQueueElement']['info']['is_app_user']) {
-                $inviteQueue.put($Search.$storage['currentQueueElement']);
-                if ($inviteQueue.qsize() >= 10) {
-                    $Layers.showInviteLayer();
-                }
-            }*/
-
             if ($data.status == 0 && $data.message == "") {
                 if ($data.data['mutual']) {
                     $Layers.showMutualLayer();
@@ -236,7 +200,8 @@ $Search = {
                 }
 
                 if ($data.data['is_contact']) {
-                    $Layers.showSendMessageLayer($Search.$storage['currentQueueElement']);
+                    mamba.method('message', 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)', '', $Search.$storage['currentQueueElement']['info']['id']);
+
                 } else if ($data.data['repeat_warning'] == -1) {
                     $Layers.showRepeatableNoLayer();
                 } else if ($data.data['repeat_warning'] == 0) {
@@ -314,7 +279,6 @@ $Search = {
 
             $("div.app-meet-button").fadeTo('normal', 1);
             $("div.app-lenta-img").show();
-            $("div.share").show();
             $("div.app-image-member div.name-container").show();
             $("p.app-see-block").fadeTo('normal', 1);
 

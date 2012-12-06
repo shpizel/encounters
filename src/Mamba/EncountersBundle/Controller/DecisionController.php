@@ -167,15 +167,11 @@ class DecisionController extends ApplicationController {
             /** Ставим задачу на обновление базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
-            if (!intval($this->getVariablesObject()->get((int)$this->webUserId, 'sharing_enabled'))) {
-                if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
-                    $lastMessageSent = $this->getVariablesObject()->get($this->webUserId, 'last_message_sent');
-                    if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
-                        $this->json['data']['is_contact'] = true;
-                    }
+            if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
+                $lastMessageSent = $this->getVariablesObject()->get($this->webUserId, 'last_message_sent');
+                if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
+                    $this->json['data']['is_contact'] = true;
                 }
-            } else {
-                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_CONTACTS_SEND_MESSAGE_FUNCTION_NAME, serialize($dataArray));
             }
 
             /** Ставим задачу на установку ачивки */

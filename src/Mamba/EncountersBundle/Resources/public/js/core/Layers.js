@@ -52,7 +52,7 @@ $Layers = {
             var $extra = {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}};
             $.post($Routing.getPath('service.add'), $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 1, $.toJSON($extra));
+                    mamba.method('pay', 5, $.toJSON($extra));
                     location.href = $Routing.getPath("billing");
                 }
             });
@@ -69,28 +69,6 @@ $Layers = {
                 }
             });
 
-            return false;
-        });
-
-        $("div.layer-invite form p a").click(function() {
-            $("div#overflow").hide();
-            $("div.app-layer").hide();
-            mamba.method('message', 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)', '', $(this).attr('ids'));
-            return false;
-        });
-
-        $("div.layer-sharing-reminder form p a").click(function() {
-            $("div#overflow").hide();
-            $("div.app-layer").hide();
-            $("div.share input[type=\"checkbox\"]").attr('checked', 'checked').addClass('opacity-50').change();
-
-            return false;
-        });
-
-        $("div.layer-send-message form p a").click(function() {
-            $("div#overflow").hide();
-            $("div.app-layer").hide();
-            $.post($Routing.getPath('message.send'), {'user_id': $("div.layer-send-message form p a").attr('user_id')});
             return false;
         });
 
@@ -114,10 +92,8 @@ $Layers = {
         $("div.layer-not-see-yet a.ui-btn").click($openMessengerWindowFunction);
 
         $("div.layer-level-achievement div._tell a.see").click(function() {
-            if ($Config.get('webuser')['contacts']['not_app_users'].length) {
-                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['not_app_users']);
-            } else {
-                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['all']);
+            if ($Config.get('non_app_users_contacts').length) {
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('non_app_users_contacts'));
             }
             $("div#overflow").hide();
             $("div.app-layer").hide();
@@ -126,10 +102,8 @@ $Layers = {
         });
 
         $("div.layer-level div._tell a.see").click(function() {
-            if ($Config.get('webuser')['contacts']['not_app_users'].length) {
-                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['not_app_users']);
-            } else {
-                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('webuser')['contacts']['all']);
+            if ($Config.get('non_app_users_contacts').length) {
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('non_app_users_contacts'));
             }
 
             $("div#overflow").hide();
@@ -149,74 +123,6 @@ $Layers = {
             });
 
             return false;
-        });
-
-        $("div.layer-multi-gift div.select_all a").attr("mode", 1).click(function() {
-            var $mode = $(this).attr('mode');
-            $("div.layer-multi-gift .photos .item input[type=\"checkbox\"]").attr('checked', (($mode == 1) ? false : true));
-            $(this).attr('mode', (($mode == 1) ? 0 : 1));
-
-            return false;
-        });
-
-        $("div.layer-sharing-confirm form p a").click(function() {
-            $("div.share input[type=\"checkbox\"]").attr('checked', 'checked').change();
-            $("div#overflow").hide();
-            $("div.app-layer").hide();
-        });
-
-        $("div.layer-multi-gift form p a").click(function() {
-            var $ids = [];
-            $("div.layer-multi-gift .photos input[type=\"checkbox\"]:checked").each(function($index, $element) {
-                var $userId = $($element).attr('user_id');
-                if ($userId) {
-                    $ids.push($userId);
-                }
-            });
-
-            if ($ids.length > 0) {
-                if ($ids.in_array('others')) {
-                    for ($i=0;$i<$ids.length;$i++) {
-                        if ($ids[$i] == 'others') {
-                            delete $ids[$i];
-                        }
-                    }
-
-                    $contacts = $Config.get('multi_gift_contacts');
-                    if ($contacts.length > 5) {
-                        for ($i=4;$i<$contacts.length;$i++) {
-                            if (!$ids.in_array($contacts[$i]['oid'])) {
-                                $ids.push($contacts[$i]['oid']);
-                            }
-                        }
-                    }
-                }
-
-                $("div#overflow").hide();
-                $("div.app-layer").hide();
-
-                $.post($Routing.getPath('multi.gift'), {'users': $ids});
-            }
-
-            return false;
-        });
-
-        $(document).on('click', "div.layer-multi-gift .photos .item .pseudo a", function() {
-            $("div.layer-multi-gift .photos").addClass("photos-expanded");
-
-            var $photoItem = "<div class=\"item\"><img/><input type=\"checkbox\"></div>";
-
-            $("div.layer-multi-gift .photos").html("");
-            var $contacts = $Config.get('multi_gift_contacts'), $photos = $("div.layer-multi-gift .photos");
-            for (var $key=0;$key<$contacts.length;$key++) {
-                var $contact = $contacts[$key];
-                var $item = jQuery($photoItem);
-
-                $("img", $item).attr('src', $contact['small_photo_url']);
-                $("input[type=\"checkbox\"]", $item).attr({"user_id": $contact['oid'], 'checked': 'checked'});
-
-                $item.appendTo($photos);
-            }
         });
     },
 
@@ -506,30 +412,6 @@ $Layers = {
     },
 
     /**
-     * Показывает лаер приглашения людей извне приложения
-     *
-     * @shows layer
-     */
-    showInviteLayer: function($data) {
-        this.hideInners();
-
-        $("div.layer-invite div.pics").html('');
-        var $item, $ids = [];
-        while (true) {
-            if ($item = $inviteQueue.get()) {
-                $("div.layer-invite div.pics").append("<img src='" + $item['info']['small_photo_url'] + "'>");
-                $ids.push($item['info']['id']);
-            } else {
-                break;
-            }
-        }
-
-        $("div.layer-invite form p a").attr('ids', $ids.join(','));
-        $("div.layer-invite").show();
-        this.showLayer();
-    },
-
-    /**
      * Показывает лаер достижения уровня
      *
      * @shows layer
@@ -621,96 +503,6 @@ $Layers = {
 
         $("div.layer-repeatable-no .info-battery span").text($Config.get('webuser')['anketa']['info']['name']);
         $("div.layer-repeatable-no").show();
-        this.showLayer();
-    },
-
-    /**
-     * Показывает лаер предложения проспамить контакт
-     *
-     * @shows layer
-     */
-    showSendMessageLayer: function($data) {
-        this.hideInners();
-
-        $("div.layer-send-message .pic img").attr('src', $data['info']['medium_photo_url']);
-        $("div.layer-send-message .description span.name").text($data['info']['name']);
-        if ($data['info']['gender'] == 'F') {
-            $("div.layer-send-message .description span.gender").text("а");
-        } else {
-            $("div.layer-send-message .description span.gender").text("");
-        }
-
-        $("div.layer-send-message form p a").attr('user_id', $data['info']['id']);
-
-        $("div.layer-send-message").show();
-        this.showLayer();
-    },
-
-    /**
-     * Показывает лаер мульти подарка друзьям приложения (мультиспам)
-     *
-     * @shows layer
-     */
-    showMultiGiftLayer: function($data) {
-        this.hideInners();
-
-        var $photoItem = "<div class=\"item\"><img/><input type=\"checkbox\"></div>";
-        var $pseudoItem = "<div class=\"item\"><div class=\"pseudo\"><a></a></div><input type=\"checkbox\"></div>";
-
-        var $contacts = $Config.get('multi_gift_contacts'), $photos = $("div.layer-multi-gift .photos");
-        for (var $key=0;$key<(($contacts.length <= 5) ? $contacts.length : 5);$key++) {
-            var $contact = $contacts[$key];
-            var $item = jQuery($photoItem);
-
-            $("img", $item).attr('src', $contact['small_photo_url']);
-            $("input[type=\"checkbox\"]", $item).attr({"user_id": $contact['oid'], 'checked': 'checked'});
-
-            $item.appendTo($photos);
-        }
-
-        if ($contacts.length > 5) {
-            var $more = $contacts.length - 5;
-            var $item = jQuery($pseudoItem);
-
-            $("a", $item).html("Еще<br>" + $more);
-            $("input[type=\"checkbox\"]", $item).attr({"user_id": 'others', 'checked': 'checked'});
-
-            $item.appendTo($photos);
-        }
-
-        $("div.layer-multi-gift").show();
-        this.showLayer();
-
-        $.post($Routing.getPath('variable.set'), {'key': 'last_multi_gift_shown', 'data': $Tools.round($Tools.microtime(), 0)});
-    },
-
-    /**
-     * Показывает лаер напоминалки о необходимости простановки галочки
-     *
-     * @shows layer
-     */
-    showSharingReminderLayer: function($data) {
-        this.hideInners();
-
-        if ($data['info']['gender'] == 'F') {
-            $("div.layer-sharing-reminder span.gender").text("а");
-        } else {
-            $("div.layer-sharing-reminder span.gender").text("");
-        }
-
-        $("div.layer-sharing-reminder").show();
-        this.showLayer();
-    },
-
-    /**
-     * Показывает лаер просьбы вернуть галочку
-     *
-     * @shows layer
-     */
-    showSharingConfirmLayer: function($data) {
-        this.hideInners();
-
-        $("div.layer-sharing-confirm").show();
         this.showLayer();
     },
 

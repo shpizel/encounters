@@ -432,9 +432,7 @@
 .layer-no .info-battery,
 .layer-yes .info-battery,
 .layer-maybe .info-battery,
-.layer-not-see-yet .info-battery,
-.layer-sharing-reminder .info-battery,
-.layer-sharing-confirm .info-battery
+.layer-not-see-yet .info-battery
 {
     background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
@@ -453,12 +451,6 @@
 
 .layer-level .info-battery {
     margin-top: 30px;
-}
-
-.layer-sharing-reminder .info-battery,
-.layer-sharing-confirm .info-battery{
-    margin-top: 20px;
-    margin-bottom:20px;
 }
 
 .layer-no .info-battery,
@@ -486,9 +478,7 @@
 .layer-no .info-battery .arrow,
 .layer-yes .info-battery .arrow,
 .layer-maybe .info-battery .arrow,
-.layer-not-see-yet .info-battery .arrow,
-.layer-sharing-reminder .info-battery .arrow,
-.layer-sharing-confirm .info-battery .arrow
+.layer-not-see-yet .info-battery .arrow
 {
     background: none;
     position: absolute;
@@ -709,154 +699,12 @@
     height: 37px;
 }
 
-.layer-invite .title {
-    background: url('/bundles/encounters/images/texts/spam-da-text.png') no-repeat center top;
-    text-indent: -330em;
-    margin: 10px 0 20px 0;
-    height: 79px;
-}
-
-.layer-multi-gift .title {
-    background: url('/bundles/encounters/images/texts/send-multi-gift.png') no-repeat center top;
-    text-indent: -330em;
-    margin: 10px 0 20px 0;
-    height: 190px;
-}
-
-.layer-multi-gift .select_all {
-    text-align: center;
-    margin-top:15px;
-    margin-bottom:15px;
-}
-
-.layer-multi-gift .select_all a{
-    font-size:11px;
-    color:#999;
-    border-bottom: #999 1px dotted;
-    cursor: pointer;
-}
-
-.layer-multi-gift .photos {
-    height: 106px;
-}
-
-.layer-multi-gift .photos .item {
-    float: left;
-    width: 56px;
-    height: 92px;
-    text-align: center;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 10px;
-    background-color: #fff2d1;
-    margin-bottom: 10px;
-    font-size: 13px;
-    color: #0066cc;
-}
-
-.layer-multi-gift .photos .item .pseudo a {
-    text-decoration: none;
-    border-bottom: 1px dotted #0066cc;
-    line-height: 19px;
-    cursor: pointer;
-}
-
-.layer-multi-gift .photos .item input[type="checkbox"] {
-    margin-top:5px;
-}
-
-.layer-multi-gift .photos .item img {
-    vertical-align: baseline;
-    margin-left:5px;
-    margin-right:5px;
-    margin-top:5px;
-    height: 62px;
-    width: 46px;
-}
-
-.layer-multi-gift .photos .item .pseudo {
-    margin-left:4px;
-    margin-right:4px;
-    margin-top:4px;
-    height: 50px;
-    width: 46px;
-    background-color: #fff;
-    padding-top:12px;
-    border: #ccc 1px solid;
-}
-
-.layer-multi-gift .photos-expanded {
-    border:#ccc 1px solid;
-    height: 186px;
-    overflow: auto;
-}
-
-.layer-invite .description {
-    text-align: center;
-    line-height: 24px;
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.layer-invite .pics {
-    text-align: center;
-    width: 420px;
-    margin: 0 auto;
-    margin-bottom: 10px;
-}
-
-.layer-invite .pics img {
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-bottom: 15px;
-}
-
 .layer-not-see-yet div.male {
     background: url('/bundles/encounters/images/texts/male/title-not-see.gif') no-repeat center top;
 }
 
 .layer-not-see-yet div.female {
     background: url('/bundles/encounters/images/texts/female/title-not-see.gif') no-repeat center top;
-}
-
-.layer-send-message .title {
-    background: url('/bundles/encounters/images/texts/spam-da-text.png') no-repeat center top;
-    text-indent: -330em;
-    margin: 10px 0 20px 0;
-    height: 79px;
-}
-
-.layer-sharing-reminder .title {
-    background: url('/bundles/encounters/images/texts/let-mutual-know-faster.png') no-repeat center top;
-    text-indent: -330em;
-    margin: 10px 0 20px 0;
-    height: 180px;
-}
-.layer-sharing-confirm .title {
-    background: url('/bundles/encounters/images/texts/share-confirm.png') no-repeat center top;
-    text-indent: -330em;
-    margin: 10px 0 20px 0;
-    height: 190px;
-}
-
-.layer-send-message .description {
-    text-align: center;
-    line-height: 24px;
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.layer-send-message .pic {
-    text-align: center;
-    width: 420px;
-    margin: 0 auto;
-    margin-bottom: 10px;
-}
-
-.layer-send-message .pic img {
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-bottom: 15px;
 }
 
 div#overflow {

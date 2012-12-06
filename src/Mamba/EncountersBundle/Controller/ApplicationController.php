@@ -350,13 +350,6 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['webuser'] = array(
             'anketa'      => $webUser[0],
-            'contacts'    => array(
-                'all'           => $contactListIds,
-                'not_app_users' => array_filter($contactListIds, function($item) use ($searchPreferencesObject) {
-                    return true; /** костыль */
-                    return !$searchPreferencesObject->exists($item);
-                }),
-            ),
             'popularity'  => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
             'battery'     => $this->getBatteryObject()->get($webUserId),
             'preferences' => $searchPreferences,
