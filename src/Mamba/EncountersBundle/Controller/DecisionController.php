@@ -168,7 +168,7 @@ class DecisionController extends ApplicationController {
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
             if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
-                $lastMessageSent = $this->getVariablesObject()->get($this->webUserId, 'last_message_sent');
+                $lastMessageSent = $this->getVariablesObject()->get($this->currentUserId, 'last_message_sent');
                 if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
                     $this->json['data']['is_contact'] = true;
                 }
