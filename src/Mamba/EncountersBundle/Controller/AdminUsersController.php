@@ -39,7 +39,7 @@ class AdminUsersController extends ApplicationController {
                 )
             );
 
-            if ($this->getRequest()->getMethod() == 'POST' && in_array($action = $this->getRequest()->request->get('action'), array('saveEnergy', 'saveBattery'))) {
+            if ($this->getRequest()->getMethod() == 'POST' && in_array($action = $this->getRequest()->request->get('action'), array('saveEnergy', 'saveBattery', 'saveAccount'))) {
                 $dataArray['action'] = array(
                     'action' => $action,
                     'result' => false,
@@ -47,14 +47,20 @@ class AdminUsersController extends ApplicationController {
 
                 if ($action == 'saveEnergy' && is_numeric($energy = $this->getRequest()->request->get('energy'))) {
                     $energy = intval($energy);
-                    if ($energy && $energy <= max(Popularity::$levels))  {
+                    if ($energy >= 0 && $energy <= max(Popularity::$levels))  {
                         $this->getEnergyObject()->set($userId, $energy);
                         $dataArray['action']['result'] = true;
                     }
                 } elseif ($action == 'saveBattery' && is_numeric($battery = $this->getRequest()->request->get('battery'))) {
                     $battery = intval($battery);
-                    if ($battery && $battery <= 5)  {
+                    if ($battery >= 0 && $battery <= 5)  {
                         $this->getBatteryObject()->set($userId, $battery);
+                        $dataArray['action']['result'] = true;
+                    }
+                } elseif ($action == 'saveAccount' && is_numeric($account = $this->getRequest()->request->get('account'))) {
+                    $account = intval($account);
+                    if ($account >= 0)  {
+                        $this->getAccountObject()->set($userId, $account);
                         $dataArray['action']['result'] = true;
                     }
                 }
@@ -85,6 +91,7 @@ class AdminUsersController extends ApplicationController {
                 'energy'  => $this->getEnergyObject()->get($userId),
                 'level'   => $this->getPopularityObject()->getLevel($this->getEnergyObject()->get($userId)),
                 'battery' => $this->getBatteryObject()->get($userId),
+                'account' => $this->getAccountObject()->get($userId),
             );
 
             $userInfo = $this->getMamba()->Anketa()->getInfo($userId);

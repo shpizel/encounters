@@ -16,7 +16,7 @@
         {#</div>#}
     {% elseif user.info %}
     <div><h3 style="padding-top:0px;margin-top:0px;float:left;"><a target="_blank" href="http://mamba.ru/anketa.phtml?oid={{ user.id }}">{{ user.info.info.name }}</a>, {{ user.info.info.age }}</h3>
-    <span>energy: {{ user.energy }}, battery: {{ user.battery }}</span></div>
+    <span>energy: {{ user.energy }}, battery: {{ user.battery }}, account: {{ user.account }}</span></div>
     <br clear="all"/>
 
     {% if action is defined %}
@@ -45,6 +45,7 @@
 
             <li><a href="#energy" data-toggle="tab"><em class="icon-wrench"></em> Энергия</a></li>
             <li><a href="#battery" data-toggle="tab"><em class="icon-wrench"></em> Батарейка</a></li>
+            <li><a href="#account" data-toggle="tab"><em class="icon-wrench"></em> Сердечки</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane active" id="info">
@@ -243,6 +244,17 @@
                     <label>Заряд (0—5):</label>
                     <input name="battery" type="text" placeholder="{{ user.battery }}" required="required">
                     <input type="hidden" name="action" value="saveBattery">
+                    <br/>
+                    <button type="submit" class="btn">Сохранить</button>
+                </form>
+            </div>
+
+            <div class="tab-pane" id="account">
+                <form method="post" {#onsubmit="return confirm('Уверены?');"#}>
+                    <legend>Редактирование количества сердечек на счету</legend>
+                    <label>Сердечек:</label>
+                    <input name="account" type="text" placeholder="{{ user.account }}" required="required">
+                    <input type="hidden" name="action" value="saveAccount">
                     <br/>
                     <button type="submit" class="btn">Сохранить</button>
                 </form>
