@@ -58,24 +58,30 @@ $Visitors = {
      * @init buttons
      */
     initButtons: function() {
-        $("div.content div.info a.ui-btn").click(function() {
-            var $extra = {service: {id: 3}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
-                if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 3, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
-                }
-            });
-
-            return false;
-        });
-
         $("div.visitors div.pictures div.title a.ui-btn").click(function() {
-            var $extra = {service: {id: 3}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            $.post($Routing.getPath('popularity.get'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 3, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
+                    var
+                        $energy = $data.data['popularity']['energy'],
+                        $next = $data.data['popularity']['next'],
+                        $prev = $data.data['popularity']['prev'],
+                        $level = $data.data['popularity']['level']
+                        ;
+
+                    $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
+
+                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+
+                    $Account.setAccount($data.data['account']);
+
+                    $("div.app-block-no-popular").hide();
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 

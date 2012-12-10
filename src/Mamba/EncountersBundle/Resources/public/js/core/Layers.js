@@ -402,7 +402,7 @@ $Layers = {
         if ($charge == 0) {
             $("div.layer-battery div.battery-big").attr('class', 'battery-big empty');
             $("div.layer-battery .title").attr('class', 'title');
-            $("div.layer-battery p.center a.ui-btn").html("Купить 100% энергии за " + (5 - $Battery.getCharge())*2 + "<i class=\"account-heart\"></i>");
+            $("div.layer-battery p.center a.ui-btn").html("Получить 100% энергии за " + (5 - $Battery.getCharge())*2 + "<i class=\"account-heart\"></i>");
             $("div.layer-battery p.center a.close").hide();
             $("div.layer-battery p.center a.ui-btn").show();
         } else if ($charge >= 0 && $charge < 5 ) {
