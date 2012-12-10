@@ -110,6 +110,7 @@ class QueueController extends ApplicationController {
                             'name'             => $dataArray['info']['name'],
                             'gender'           => $dataArray['info']['gender'],
                             'age'              => $dataArray['info']['age'],
+                            'sign'             => $dataArray['info']['sign'],
                             'small_photo_url'  => $dataArray['info']['small_photo_url'],
                             'medium_photo_url' => $dataArray['info']['medium_photo_url'],
                             'is_app_user'      => $dataArray['info']['is_app_user'],
