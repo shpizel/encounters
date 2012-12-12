@@ -25,11 +25,15 @@ $Layers = {
         });
 
         $("div.layer-energy form p a").click(function() {
-            var $extra = {service: {id: 1}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            $.post($Routing.getPath('battery.charge'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 1, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
+                    $Battery.setCharge(5);
+                    $Account.setAccount($data.data['account']);
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 
@@ -37,11 +41,15 @@ $Layers = {
         });
 
         $("div.layer-battery form p a.ui-btn").click(function() {
-            var $extra = {service: {id: 1}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            $.post($Routing.getPath('battery.charge'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 1, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
+                    $Battery.setCharge(5);
+                    $Account.setAccount($data.data['account']);
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 
@@ -49,28 +57,45 @@ $Layers = {
         });
 
         $("div.layer-not-see-yet div.content-center a.first").click(function() {
-            var $extra = {service: {id: 2, user_id: ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'))}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            var $userId = ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'));
+            $.post($Routing.getPath('queue.add'), {'user_id': $userId}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 5, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
+                    $Account.setAccount($data.data['account']);
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+
+                    alert('Операция прошла успешно!');
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 
             return false;
         });
 
-        $("div.layer-pop-up form p a").click(function() {
-            var $extra = {service: {id: 3}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
-                if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 3, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
-                }
-            });
+        $("div.layer-account div.row div.coins a.ui-btn").click(function() {
+            var
+                $hearts = $(this).attr('hearts'),
+                $coins = $(this).attr('coins')
+            ;
 
-            return false;
+            var $extra = {service: {id: 4, coins: $coins, hearts: $hearts}};
+            mamba.method('pay', $coins, $.toJSON($extra));
+            location.href = $Routing.getPath("billing");
         });
+
+//        $("div.layer-pop-up form p a").click(function() {
+//            var $extra = {service: {id: 3}};
+//            $.post($Routing.getPath('service.add'), $extra, function($data) {
+//                if ($data.status == 0 && $data.message == "") {
+//                    mamba.method('pay', 3, $.toJSON($extra));
+//                    location.href = $Routing.getPath("billing");
+//                }
+//            });
+//
+//            return false;
+//        });
 
         var $openMessengerWindowFunction = function() {
             var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
@@ -113,12 +138,27 @@ $Layers = {
         });
 
         $("div.layer-level p a.ui-btn").click(function() {
-            var $cost = $(this).attr('cost'), $level = $(this).attr('level');
-            var $extra = {service: {id: 4, level: $level}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            $.post($Routing.getPath('level.up'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', $cost, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
+                    var
+                        $energy = $data.data['popularity']['energy'],
+                        $next = $data.data['popularity']['next'],
+                        $prev = $data.data['popularity']['prev'],
+                        $level = $data.data['popularity']['level']
+                    ;
+
+                    $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
+
+                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+
+                    $Account.setAccount($data.data['account']);
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 
@@ -362,13 +402,13 @@ $Layers = {
         if ($charge == 0) {
             $("div.layer-battery div.battery-big").attr('class', 'battery-big empty');
             $("div.layer-battery .title").attr('class', 'title');
-            $("div.layer-battery p.center a.ui-btn").html("Купить 100% энергии за 1<i class=\"coint\"></i>");
+            $("div.layer-battery p.center a.ui-btn").html("Купить 100% энергии за " + (5 - $Battery.getCharge())*2 + "<i class=\"account-heart\"></i>");
             $("div.layer-battery p.center a.close").hide();
             $("div.layer-battery p.center a.ui-btn").show();
         } else if ($charge >= 0 && $charge < 5 ) {
             $("div.layer-battery div.battery-big").attr('class', 'battery-big middle');
             $("div.layer-battery .title").attr('class', 'title');
-            $("div.layer-battery p.center a.ui-btn").html("Пополнить до 100% за 1<i class=\"coint\"></i>");
+            $("div.layer-battery p.center a.ui-btn").html("Пополнить до 100% за " + (5 - $Battery.getCharge())*2 + "<i class=\"account-heart\"></i>");
             $("div.layer-battery p.center a.close").hide();
             $("div.layer-battery p.center a.ui-btn").show();
         } else {
@@ -453,8 +493,8 @@ $Layers = {
         $("div.layer-level div.speedo").css('width', parseInt(($popularity['energy'] - $popularity['prev'])*100/($popularity['next'] - $popularity['prev'])*1.99)+'px');
 
         if ($popularity['level'] < 16 && $popularity['level'] >= 4) {
-            $("div.layer-level p a.ui-btn").html("Перейти на " + ($popularity['level']+1) + "-й уровень за " + ($popularity['level'] + 1 - 4) +"<i class=\"coint\"></i>");
-            $("div.layer-level p a.ui-btn").attr('cost',  $popularity['level'] + 1 - 4);
+            $("div.layer-level p a.ui-btn").html("Перейти на " + ($popularity['level']+1) + "-й уровень за " + 10*($popularity['level'] + 1 - 4) +"<i class=\"account-heart\"></i>");
+            $("div.layer-level p a.ui-btn").attr('cost',  ($popularity['level'] + 1 - 4)*10);
             $("div.layer-level p a.ui-btn").attr('level',  $popularity['level'] + 1);
             $("div.layer-level p._buy").show();
             $("div.layer-level div._tell").hide();
@@ -464,6 +504,24 @@ $Layers = {
         }
 
         $("div.layer-level").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер счета
+     *
+     * @shows layer
+     */
+    showAccountLayer: function($data) {
+        this.hideInners();
+
+        if ($data && $data['status'] == 3) {
+            $("div.layer-account div.title").addClass("not-enough");
+        } else {
+            $("div.layer-account div.title").removeClass("not-enough");
+        }
+
+        $("div.layer-account").show();
         this.showLayer();
     },
 

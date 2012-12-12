@@ -15,6 +15,7 @@ use Mamba\EncountersBundle\Helpers\Services;
 use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
+use Mamba\EncountersBundle\Helpers\Account;
 
 use Core\MambaBundle\API\Mamba;
 use Core\GearmanBundle\Gearman;
@@ -309,6 +310,19 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
+     * Account object getter
+     *
+     * @return Account
+     */
+    public function getAccountObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Account($this->container);
+    }
+
+    /**
      * Popularity object getter
      *
      * @return Popularity
@@ -352,6 +366,7 @@ abstract class ApplicationController extends Controller {
             'anketa'      => $webUser[0],
             'popularity'  => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
             'battery'     => $this->getBatteryObject()->get($webUserId),
+            'account'     => $this->getAccountObject()->get($webUserId),
             'preferences' => $searchPreferences,
             'stats'       => array(
                 'mychoice'        => $this->getCountersObject()->get($webUserId, 'mychoice'),

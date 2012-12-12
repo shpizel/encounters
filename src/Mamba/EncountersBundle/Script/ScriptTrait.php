@@ -25,6 +25,7 @@ use Mamba\EncountersBundle\Helpers\Services;
 use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
+use Mamba\EncountersBundle\Helpers\Account;
 
 /**
  * ScriptTrait
@@ -94,6 +95,19 @@ trait ScriptTrait {
         }
 
         return self::$Instances[__FUNCTION__] = new Variables($this->getContainer());
+    }
+
+    /**
+     * Account object getter
+     *
+     * @return Account
+     */
+    public function getAccountObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Account($this->getContainer());
     }
 
     /**

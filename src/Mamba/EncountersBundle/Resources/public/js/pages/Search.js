@@ -64,23 +64,6 @@ $Search = {
         $("p.app-see-block a").click($showLayerFunction);
         $("div.app-image-member div.name-container div.content a").click($showLayerFunction);
 
-//        $("div.app-image-member div.name-container div.content a").click(function() {
-//            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
-//                if ($data.status == 0 && $data.message == "") {
-//                    $data = $data.data;
-//                    if ($data.hasOwnProperty('charge')) {
-//                        $Battery.setCharge($data.charge);
-//                    }
-//
-//                    $Layers.showUserInfoLayer();
-//                } else if ($data.status == 3) {
-//                    $Layers.showEnergyLayer();
-//                }
-//            });
-//
-//            return false;
-//        });
-
         $("div.app-block-no-popular a.close").click(function() {
             $.post($Routing.getPath('variable.set'), { key: 'search_no_popular_block_hidden', data: 1}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
@@ -141,11 +124,29 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-            var $extra = {service: {id: 3}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            $.post($Routing.getPath('popularity.get'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    mamba.method('pay', 3, $.toJSON($extra));
-                    location.href = $Routing.getPath("billing");
+                    var
+                        $energy = $data.data['popularity']['energy'],
+                        $next = $data.data['popularity']['next'],
+                        $prev = $data.data['popularity']['prev'],
+                        $level = $data.data['popularity']['level']
+                    ;
+
+                    $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
+
+                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+
+                    $Account.setAccount($data.data['account']);
+
+                    $("div.app-block-no-popular").hide();
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 

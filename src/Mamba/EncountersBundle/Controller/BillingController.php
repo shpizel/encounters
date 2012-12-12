@@ -68,6 +68,22 @@ class BillingController extends ApplicationController {
         )
     ;
 
+    protected static
+
+        /**
+         * Рейты
+         *
+         * @var array
+         */
+        $rates = array(
+            1  => 10,
+            2  => 20,
+            5  => 50,
+            10 => 125,
+            25 => 300,
+        )
+    ;
+
     /**
      * Index action
      *
@@ -126,9 +142,6 @@ class BillingController extends ApplicationController {
         $Request  = $this->getRequest();
         $postParams = $Request->request->all();
 
-        /** logger :) */
-        file_put_contents("/tmp/extra.log", var_export($postParams, 1), FILE_APPEND);
-
         if (count(array_intersect(array_keys($postParams), $this->requiredParams)) == count($this->requiredParams)) {
             $billingParams = array();
             foreach ($this->requiredParams as $requiredParam) {
@@ -147,44 +160,9 @@ class BillingController extends ApplicationController {
                     false
                 );
 
-                /** Костыль */
-                $extra = isset($postParams['extra']) ? $postParams['extra'] : null;
-
-                if (($extra && ($service = json_decode($extra, true))) || ($service = $this->getServicesObject()->get($webUserId))) {
-                    if (isset($service['service'])) {
-                        $service = $service['service'];
-                    }
-
-                    $serviceId = (int) $service['id'];
-                    if ($serviceId == 1) {
-                        $this->getBatteryObject()->set($webUserId, 5);
-                        $billed = true;
-
-                        $this->getNotificationsObject()->add($webUserId, "Ура! Ваша батарейка заряжена на 100%!");
-                    } elseif ($serviceId == 2) {
-                        if (isset($service['user_id']) && ($currentUserId = (int) $service['user_id'])) {
-                            $this->getPriorityQueueObject()->put($currentUserId, $webUserId);
-                            $billed = true;
-
-                            $this->getNotificationsObject()->add($webUserId, "Ура! Услуга успешно оплачена!");
-                        }
-                    } elseif ($serviceId == 3) {
-                        $this->getEnergyObject()->set($webUserId, Popularity::$levels[11]);
-                        $billed = true;
-
-                        $this->getNotificationsObject()->add($webUserId, "Ура! Теперь вы получите 50 эксклюзивных показов!");
-
-                    } elseif ($serviceId == 4) {
-                        $energy = $this->getEnergyObject()->get($webUserId);
-                        $level = $this->getPopularityObject()->getLevel($energy);
-                        if ($level < 16) {
-                            $level = $level + 1;
-                            $this->getEnergyObject()->set($webUserId, Popularity::$levels[$level]);
-                            $billed = true;
-
-                            $this->getNotificationsObject()->add($webUserId, "Ура! Вы перешли на новый уровень популярности!");
-                        }
-                    }
+                if (array_key_exists((int) $amount, self::$rates)) {
+                    $this->getAccountObject()->incr($webUserId, self::$rates[(int) $amount]);
+                    $billed = true;
                 }
 
                 $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::BILLING_ADD_ITEM_SQL);

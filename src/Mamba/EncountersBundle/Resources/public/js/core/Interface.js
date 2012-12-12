@@ -70,6 +70,7 @@ $Interface = {
         if ($route != 'welcome') {
             $Battery.initUI();
             $Speedo.initUI();
+            $Account.initUI();
         }
 
         this['init' + $Tools.ucfirst($route) + 'UI']();

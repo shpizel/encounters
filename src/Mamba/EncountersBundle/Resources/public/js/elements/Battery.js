@@ -24,7 +24,7 @@ $Battery = {
      */
     setCharge: function($charge) {
         $("b.battery b").css({'width': $charge*15 + "%"});
-        $("li.item-energy i").html($charge*20 + "%");
+        //$("li.item-energy i").html($charge*20 + "%");
 
         var $webUser = $Config.get('webuser');
         if ($webUser && $webUser.hasOwnProperty('battery')) {

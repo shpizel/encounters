@@ -31,6 +31,44 @@ class QueueController extends ApplicationController {
     ;
 
     /**
+     * Queue adder
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function addAction() {
+        $cost = 10;
+
+        if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
+            if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
+                $Account = $this->getAccountObject();
+                $account = $Account->get($webUserId);
+
+                if ($account >= $cost) {
+                    $account = $Account->decr($webUserId, $cost);
+                    $this->getPriorityQueueObject()->put($currentUserId, $webUserId);
+
+                    $this->json['data'] = array(
+                        'account' => $account,
+                    );
+                } else {
+                    list($this->json['status'], $this->json['message']) = array(3, "Account is not enough for level up");
+                }
+            } else {
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+            }
+        } else {
+            list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
+        }
+
+        return
+            new Response(json_encode($this->json), 200, array(
+                    "content-type" => "application/json",
+                )
+            )
+        ;
+    }
+
+    /**
      * Queue getter action
      *
      * @return \Symfony\Component\HttpFoundation\Response
