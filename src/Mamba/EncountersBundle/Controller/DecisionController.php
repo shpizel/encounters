@@ -262,7 +262,17 @@ class DecisionController extends ApplicationController {
                     $this->json['data'] = array(
                         'decision' => $decision,
                     );
-                } elseif ($charge = (int) $this->getBatteryObject()->get($webUserId)) {
+                } elseif (($charge = (int) $this->getBatteryObject()->get($webUserId)) || (2 <= $account = $this->getAccountObject()->get($webUserId))) {
+                    if (!$charge) {
+                        $multiply = intval($account / 2);
+                        if ($multiply > 5) {
+                            $multiply = 5;
+                        }
+
+                        $account = $this->getAccountObject()->decr($webUserId, $multiply*2);
+                        $this->getBatteryObject()->incr($webUserId, $multiply);
+                    }
+
                     if ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId)) {
                         $decision = $decision['decision'];
                     } else {
@@ -272,6 +282,7 @@ class DecisionController extends ApplicationController {
                     $this->json['data'] = array(
                         'decision' => $decision,
                         'charge'   => $this->getBatteryObject()->decr($webUserId),
+                        'account'  => $this->getAccountObject()->get($webUserId),
                     );
 
                     $this->getPurchasedObject()->add($webUserId, $currentUserId);

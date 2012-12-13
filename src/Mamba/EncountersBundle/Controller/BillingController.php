@@ -161,7 +161,8 @@ class BillingController extends ApplicationController {
                 );
 
                 if (array_key_exists((int) $amount, self::$rates)) {
-                    $this->getAccountObject()->incr($webUserId, self::$rates[(int) $amount]);
+                    $this->getAccountObject()->incr($webUserId, $incr = self::$rates[(int) $amount]);
+                    $this->getNotificationsObject()->add($webUserId, "Ура! Ваш счет пополнен на {$incr} сердечек!");
                     $billed = true;
                 }
 

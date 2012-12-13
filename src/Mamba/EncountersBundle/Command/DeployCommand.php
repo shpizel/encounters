@@ -54,7 +54,6 @@ class DeployCommand extends Script {
             'memory' => array(
                 'memory1',
                 'memory2',
-                //'monitoring' — сервер идет нах
             ),
 
             /**

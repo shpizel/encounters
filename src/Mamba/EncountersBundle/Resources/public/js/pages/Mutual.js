@@ -30,6 +30,11 @@ $Mutual = {
                         $Battery.setCharge($data.charge);
                     }
 
+                    if ($data.hasOwnProperty('account')) {
+                        $Account.setAccount($data.account);
+                    }
+
+
                     if ($data.decision === false) {
                         $Layers.showAnswerNotSeeYetLayer($dataArray);
                     } else if ($data.decision == -1) {

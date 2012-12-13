@@ -44,6 +44,10 @@ $Search = {
                         $Battery.setCharge($data.charge);
                     }
 
+                    if ($data.hasOwnProperty('account')) {
+                        $Account.setAccount($data.account);
+                    }
+
                     if ($data.decision === false) {
                         $Layers.showAnswerNotSeeYetLayer();
                     } else if ($data.decision == -1) {
