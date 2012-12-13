@@ -17,7 +17,7 @@ class Account extends Helper {
          *
          * @var int
          */
-        DEFAULT_ACCOUNT = 10,
+        DEFAULT_ACCOUNT = 0,
 
         /**
          * Минимальный баланс
