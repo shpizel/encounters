@@ -35,7 +35,7 @@ $Tools = {
     shuffle: function($array) {
         var l = $array.length, t, r;
         while(--l > 0) {
-            r = Tools.rand(0, l);
+            r = $Tools.rand(0, l);
             if(r != l) {
                 t = $array[l];
                 $array[l] = $array[r];

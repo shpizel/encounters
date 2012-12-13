@@ -118,7 +118,11 @@ $Layers = {
 
         $("div.layer-level-achievement div._tell a.see").click(function() {
             if ($Config.get('non_app_users_contacts').length) {
-                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('non_app_users_contacts'));
+                var $ids = $Config.get('non_app_users_contacts');
+                $ids = $Tools.shuffle($ids);
+                $ids = $ids.slice(0, 9);
+
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $ids);
             }
             $("div#overflow").hide();
             $("div.app-layer").hide();
@@ -128,7 +132,11 @@ $Layers = {
 
         $("div.layer-level div._tell a.see").click(function() {
             if ($Config.get('non_app_users_contacts').length) {
-                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $Config.get('non_app_users_contacts'));
+                var $ids = $Config.get('non_app_users_contacts');
+                $ids = $Tools.shuffle($ids);
+                $ids = $ids.slice(0, 9);
+
+                mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $ids);
             }
 
             $("div#overflow").hide();

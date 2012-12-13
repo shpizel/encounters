@@ -390,6 +390,43 @@ abstract class ApplicationController extends Controller {
             'notification_hidden' => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
         );
 
+        if ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {
+            $contacts = $this->getRedis()->sMembers($redisContactsKey);
+            foreach ($contacts as $key => $userId) {
+                $userId = (int) $userId;
+                $contacts[$key] = $userId;
+
+                if ($this->getVariablesObject()->get($userId, 'last_message_sent')) {
+                    unset($contacts[$key]);
+                }
+            }
+
+            $contacts = array_chunk($contacts, 100);
+            $Mamba->multi();
+            foreach ($contacts as $chunk) {
+                $Mamba->Anketa()->getInfo($chunk, array());
+            }
+
+            if ($result = $Mamba->exec()) {
+                $contacts = array();
+                foreach ($result as $chunk) {
+                    foreach ($chunk as $item) {
+                        if ($item['info']['is_app_user'] == 0) {
+                            $contacts[] = $item['info']['oid'];
+                        }
+                    }
+                }
+
+                if ($contacts) {
+//                    shuffle($contacts);
+//                    $contacts = array_chunk($contacts, 10);
+//                    $contacts = array_shift($contacts);
+
+                    $dataArray['non_app_users_contacts'] = $contacts;
+                }
+            }
+        }
+
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         return $dataArray;
     }

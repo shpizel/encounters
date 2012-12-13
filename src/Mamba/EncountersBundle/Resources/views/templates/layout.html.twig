@@ -117,6 +117,15 @@ $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 $Config.set('webuser', {{ webuser.json }});
 $Routing.setRoutes({{ routes }});
 {% endautoescape %}
+
+{% if non_app_users_contacts is defined %}
+{% if non_app_users_contacts %}
+{% autoescape false %}
+$Config.set('non_app_users_contacts', {{ non_app_users_contacts|json_encode() }});
+{% endautoescape %}
+{% endif %}
+{% endif %}
+
 {% block pagejs %}{% endblock %}
 $(document).ready(function(){
     jQuery.error = function (message) {
