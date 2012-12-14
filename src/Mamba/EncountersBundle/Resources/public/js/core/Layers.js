@@ -563,7 +563,10 @@ $Layers = {
         this.hideInners();
         $.post($Routing.getPath('variable.set'), {'key': 'last_everyday_gift_layer_shown', 'data': $Tools.microtime()});
 
-        var $day = $Config.get('variables')['last_everyday_gift_accepted_counter'];
+        var $day = $Config.get('variables')['last_everyday_gift_accepted_counter'] + 1;
+        if ($day > 5) {
+            $day = 5;
+        }
         $("div.layer-everyday-gift div.bonus").addClass('bonus-' + $day);
 
         $("div.layer-everyday-gift").show();

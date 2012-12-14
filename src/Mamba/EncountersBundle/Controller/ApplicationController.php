@@ -387,10 +387,12 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['variables'] = array(
             'search_no_popular_block_hidden'      => $this->getVariablesObject()->get($webUserId, 'search_no_popular_block_hidden'),
+            'notification_hidden'                 => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
+
+            /** Ежедневный гифт */
             'last_everyday_gift_layer_shown'      => (int) $this->getVariablesObject()->get($webUserId, 'last_everyday_gift_layer_shown'),
             'last_everyday_gift_accepted'         => (int) $this->getVariablesObject()->get($webUserId, 'last_everyday_gift_accepted'),
             'last_everyday_gift_accepted_counter' => (int) $this->getVariablesObject()->get($webUserId, 'last_everyday_gift_accepted_counter'),
-            'notification_hidden'                 => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
         );
 
         if ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {

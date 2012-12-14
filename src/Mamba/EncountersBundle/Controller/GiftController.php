@@ -54,7 +54,7 @@ class GiftController extends ApplicationController {
                 $Variables->set($webUserId, 'last_everyday_gift_accepted_counter', $last_everyday_gift_accepted_counter);
             }
 
-            if ((time() > $last_everyday_gift_accepted) && (date("d") != date("d", $last_everyday_gift_accepted))) {
+            if ((time() > $last_everyday_gift_accepted) && ($last_outgoing_decision > $last_everyday_gift_accepted) && (date("d") != date("d", $last_everyday_gift_accepted))) {
                 $last_everyday_gift_accepted_counter++;
                 if ($last_everyday_gift_accepted_counter > 5) {
                     $last_everyday_gift_accepted_counter = 5;
