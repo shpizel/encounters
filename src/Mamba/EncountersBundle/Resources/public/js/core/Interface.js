@@ -42,13 +42,13 @@ $Interface = {
                     mamba.on('scroll', $dimensionsSetterFunction);
                     mamba.on('dimensions', $dimensionsSetterFunction);
 
-                    /*mamba.on('messageComplete', function($data) {
-                        alert('message complete');
+                    mamba.on('messageComplete', function($data) {
+                        alert('Классно :)');
                     });
 
                     mamba.on('messageCancel', function($data) {
-                        alert('message cancel');
-                    });*/
+                        alert('Ой :(');
+                    });
 
                 }, function() {
                     top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];

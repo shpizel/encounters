@@ -143,6 +143,33 @@ class Variables extends Helper {
                     return true;
                 },
             ),
+
+            /** когда последний раз показывался лаер ежедневного подарка сердечек */
+            'last_everyday_gift_layer_shown' => array(
+                'type' => self::VARIABLE_EXTERNAL_TYPE,
+                'ttl'  => 0,
+                'validator' => function($variable) {
+                    return true;
+                },
+            ),
+
+            /** когда последний раз был активирован ежедневный подарок */
+            'last_everyday_gift_accepted' => array(
+                'type' => self::VARIABLE_INTERNAL_TYPE,
+                'ttl'  => 0,
+                'validator' => function($variable) {
+                    return true;
+                },
+            ),
+
+            /** сколько раз подряд получался ежедневный подарок */
+            'last_everyday_gift_accepted_counter' => array(
+                'type' => self::VARIABLE_INTERNAL_TYPE,
+                'ttl'  => 0,
+                'validator' => function($variable) {
+                    return true;
+                },
+            ),
         );
     }
 

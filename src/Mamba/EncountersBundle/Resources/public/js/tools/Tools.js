@@ -21,9 +21,13 @@ $Tools = {
      *
      * @return float
      */
-    microtime: function() {
-        var now = new Date().getTime() / 1000, s = parseInt(now, 10), get_as_float = true;
-        return (get_as_float) ? now : (Math.round((now - s) * 1000) / 1000) + ' ' + s;
+    microtime: function($float) {
+        var
+            now = new Date().getTime() / 1000,
+            s = parseInt(now, 10)
+        ;
+
+        return ($float) ? now : /*(Math.round((now - s) * 1000) / 1000) + ' ' + s*/ $Tools.round(now, 0);
     },
 
     /**

@@ -374,6 +374,13 @@
     height: 37px;
 }
 
+.layer-everyday-gift .title {
+    background: url('/bundles/encounters/images/texts/everyday-gift.png') no-repeat center top;
+    text-indent: -330em;
+    margin: 30px 0;
+    height: 37px;
+}
+
 .layer-battery .charged {
     background: url('/bundles/encounters/images/battery-charged.png') no-repeat center top;
 }
@@ -433,7 +440,8 @@
 .layer-yes .info-battery,
 .layer-maybe .info-battery,
 .layer-not-see-yet .info-battery,
-.layer-account .info-battery
+.layer-account .info-battery,
+.layer-everyday-gift .info-battery
 {
     background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
@@ -528,7 +536,8 @@
 .layer-yes .info-battery .arrow,
 .layer-maybe .info-battery .arrow,
 .layer-not-see-yet .info-battery .arrow,
-.layer-account .info-battery .arrow
+.layer-account .info-battery .arrow,
+.layer-everyday-gift .info-battery .arrow
 {
     background: none;
     position: absolute;

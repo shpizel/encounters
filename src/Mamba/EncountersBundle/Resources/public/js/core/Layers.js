@@ -56,6 +56,19 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-everyday-gift p a.ui-btn").click(function() {
+            $.post($Routing.getPath('everyday.getGift'), function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $Account.setAccount($data.data['account']);
+                }
+
+                $("div#overflow").hide();
+                $("div.app-layer").hide();
+            });
+
+            return false;
+        });
+
         $("div.layer-not-see-yet div.content-center a.first").click(function() {
             var $userId = ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'));
             $.post($Routing.getPath('queue.add'), {'user_id': $userId}, function($data) {
@@ -530,6 +543,19 @@ $Layers = {
         }
 
         $("div.layer-account").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер ежедневного подарка
+     *
+     * @shows layer
+     */
+    showEverydayGiftLayer: function($data) {
+        this.hideInners();
+        $.post($Routing.getPath('variable.set'), {'key': 'last_everyday_gift_layer_shown', 'data': $Tools.microtime()});
+
+        $("div.layer-everyday-gift").show();
         this.showLayer();
     },
 

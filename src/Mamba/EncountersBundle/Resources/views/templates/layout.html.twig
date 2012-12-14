@@ -115,6 +115,7 @@ $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% if settings.platform %}$Config.set('platform', {{settings.platform}});{% endif %}
 {% if settings.search %}$Config.set('search', {{settings.search}});{% endif %}
 $Config.set('webuser', {{ webuser.json }});
+$Config.set('variables', {{ variables|json_encode() }});
 $Routing.setRoutes({{ routes }});
 {% endautoescape %}
 

@@ -61,6 +61,13 @@ level.up:
     requirements:
         _method: POST
 
+# Получение ежедневного гифта
+everyday.getGift:
+    pattern: /ajax/everyday-gift.get
+    defaults: { _controller: EncountersBundle:Gift:getEveryDayGift }
+    requirements:
+        _method: POST
+
 # Надрочить популярность до 4го уровня
 popularity.get:
     pattern: /ajax/popularity.get
