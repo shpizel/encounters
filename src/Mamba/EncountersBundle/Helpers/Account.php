@@ -88,6 +88,13 @@ class Account extends Helper {
             throw new AccountException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
+        $Stats = new Stats($this->Container);
+        if ($rate < 0) {
+            $Stats->incr("account-decr", abs($rate));
+        } else {
+            $Stats->incr("account-incr", abs($rate));
+        }
+
         $incrementResult = $this->getRedis()->incrBy(sprintf(self::REDIS_USER_ACCOUNT_KEY, $userId), $rate);
         if ($incrementResult < self::MINIMUM_ACCOUNT) {
             $result =  $this->set($userId, $incrementResult = self::MINIMUM_ACCOUNT);

@@ -2,36 +2,147 @@
 {% block title %}События{% endblock %}
 
 {% block content %}
-<div class="span6">
-<h3>События</h3>
-{% if items %}
-<table class="table table-bordered table-hover">
-    <thead>
-        <th>Дата</th>
-        <th>Достижений</th>
-        <th>Сообщений</th>
-        <th>Нотификаций</th>
-    </thead>
+<div class="row">
+    <div class="span3">
+    <h3>Common</h3>
+    {% if common.items %}
+    <table class="table table-bordered table-hover">
+        <thead>
+            <th>Дата</th>
+            <th>Достижений</th>
+            <th>Нотификаций</th>
+        </thead>
 
-    {% for item in items %}
-        {% if item.item|keys|length > 0 %}
-            <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
-                <td>{{ item.date }}</td>
-                <td>{% if item.item.achievement != null %}{{item.item.achievement|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
-                <td>{% if item.item.contacts != null %}{{item.item.contacts|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
-                <td>{% if item.item.notify != null %}{{item.item.notify|number_format(0, '.')}}{% else %}&mdash;{% endif %}</td>
-            </tr>
-        {% endif %}
-    {% endfor %}
-    <tr class="info">
-        <td>Итого:</td>
-        <td>{{ info.achievement|number_format(0, '.') }}</td>
-        <td>{{ info.contacts|number_format(0, '.') }}</td>
-        <td>{{ info.notify|number_format(0, '.') }}</td>
-    </tr>
-</table>
-{% else %}
-    Информация недоступна.
-{% endif %}
+        {% for item in common.items %}
+            {% if item.item|keys|length > 0 %}
+                <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                    <td>{{ item.date }}</td>
+                    <td>{% if item.item.achievement != null %}{{item.item.achievement|number_format(0, '.')}}{% else %}0{% endif %}</td>
+                    <td>{% if item.item.notify != null %}{{item.item.notify|number_format(0, '.')}}{% else %}0{% endif %}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        <tr class="info">
+            <td>Итого:</td>
+            <td>{{ common.info.achievement|number_format(0, '.') }}</td>
+            <td>{{ common.info.notify|number_format(0, '.') }}</td>
+        </tr>
+    </table>
+    {% else %}
+        Информация недоступна.
+    {% endif %}
+    </div>
 </div>
+
+<div class="row">
+    <div class="span7">
+        <h3>Decision get</h3>
+        {% if decision_get.items %}
+            <table class="table table-bordered table-hover">
+                <thead>
+                <th>Дата</th>
+                {% set tkeys = decision_get.items[0].item|keys %}
+
+                {% for key in tkeys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+                </thead>
+
+                {% for item in decision_get.items %}
+                    {% if item.item|keys|length > 0 %}
+                        <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                            <td>{{ item.date }}</td>
+                            {% for key in tkeys %}
+                                <td>{% if item.item[key] != null %}{{ item.item[key] }}{% else %}0{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="info">
+                    <td>Итого:</td>
+                    {% for key in tkeys %}
+                        <td>{{ decision_get.info[key] }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% else %}
+            Информация недоступна.
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="span3">
+        <h3>Battery</h3>
+        {% if battery.items %}
+            <table class="table table-bordered table-hover">
+                <thead>
+                <th>Дата</th>
+                {% set tkeys = battery.items[0].item|keys %}
+
+                {% for key in tkeys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+                </thead>
+
+                {% for item in battery.items %}
+                    {% if item.item|keys|length > 0 %}
+                        <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                            <td>{{ item.date }}</td>
+                            {% for key in tkeys %}
+                                <td>{% if item.item[key] != null %}{{ item.item[key] }}{% else %}0{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="info">
+                    <td>Итого:</td>
+                    {% for key in tkeys %}
+                        <td>{{ battery.info[key] }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% else %}
+            Информация недоступна.
+        {% endif %}
+    </div>
+{#</div>#}
+
+{#<div class="row">#}
+    <div class="span3">
+        <h3>Account</h3>
+        {% if account.items %}
+            <table class="table table-bordered table-hover">
+                <thead>
+                <th>Дата</th>
+                {% set tkeys = account.items[0].item|keys %}
+
+                {% for key in tkeys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+                </thead>
+
+                {% for item in account.items %}
+                    {% if item.item|keys|length > 0 %}
+                        <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                            <td>{{ item.date }}</td>
+                            {% for key in tkeys %}
+                                <td>{% if item.item[key] != null %}{{ item.item[key] }}{% else %}0{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="info">
+                    <td>Итого:</td>
+                    {% for key in tkeys %}
+                        <td>{{ account.info[key] }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% else %}
+            Информация недоступна.
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}
