@@ -37,11 +37,19 @@ class GiftController extends ApplicationController {
     public function getEveryDayGiftAction() {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
             $Variables = $this->getVariablesObject();
-            $last_everyday_gift_accepted = $Variables->get($webUserId, 'last_everyday_gift_accepted');
-            $last_everyday_gift_accepted_counter = $Variables->get($webUserId, 'last_everyday_gift_accepted_counter');
 
+            $last_everyday_gift_accepted         = (int) $Variables->get($webUserId, 'last_everyday_gift_accepted');
+            $last_everyday_gift_accepted_counter = (int) $Variables->get($webUserId, 'last_everyday_gift_accepted_counter');
+            $last_outgoing_decision              = (int) $Variables->get($webUserId, 'last_outgoing_decision');
+
+            /** Кейс, когда пользователь больше суток не получал подарка */
             if (time() - $last_everyday_gift_accepted > 24*3600) {
-                // чувак пропустил целые сутки
+                $last_everyday_gift_accepted_counter = 0;
+                $Variables->set($webUserId, 'last_everyday_gift_accepted_counter', $last_everyday_gift_accepted_counter);
+            }
+
+            /** Кейс, когда пользователь больше суток ни за кого не голосовал */
+            if (time() - $last_outgoing_decision > 24*3600) {
                 $last_everyday_gift_accepted_counter = 0;
                 $Variables->set($webUserId, 'last_everyday_gift_accepted_counter', $last_everyday_gift_accepted_counter);
             }
@@ -58,7 +66,7 @@ class GiftController extends ApplicationController {
 
                 $this->json['data'] = array('account' => $account);
             } else {
-                list($this->json['status'], $this->json['message']) = array(2, "Cheat attempt detected  ");
+                list($this->json['status'], $this->json['message']) = array(2, "Cheat attempt detected");
             }
         } else {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");

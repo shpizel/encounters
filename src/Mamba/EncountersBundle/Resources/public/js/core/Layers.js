@@ -62,6 +62,14 @@ $Layers = {
                     $Account.setAccount($data.data['account']);
                 }
 
+                if ($Config.get('non_app_users_contacts').length) {
+                    var $ids = $Config.get('non_app_users_contacts');
+                    $ids = $Tools.shuffle($ids);
+                    $ids = $ids.slice(0, 9);
+
+                    mamba.method('message', "Привет! Установи приложение «Выбиратор», в нем очень удобно смотреть анкеты, плюс — твои фотографии тоже очень быстро получат множество просмотров и оценок ;-)", '', $ids);
+                }
+
                 $("div#overflow").hide();
                 $("div.app-layer").hide();
             });
@@ -554,6 +562,9 @@ $Layers = {
     showEverydayGiftLayer: function($data) {
         this.hideInners();
         $.post($Routing.getPath('variable.set'), {'key': 'last_everyday_gift_layer_shown', 'data': $Tools.microtime()});
+
+        var $day = $Config.get('variables')['last_everyday_gift_accepted_counter'];
+        $("div.layer-everyday-gift div.bonus").addClass('bonus-' + $day);
 
         $("div.layer-everyday-gift").show();
         this.showLayer();
