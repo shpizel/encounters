@@ -93,6 +93,13 @@ class Battery extends Helper {
             throw new BatteryException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
+        $Stats = new Stats($this->Container);
+        if ($rate < 0) {
+            $Stats->incr("battery-decr", abs($rate));
+        } else {
+            $Stats->incr("battery-incr", abs($rate));
+        }
+
         $incrementResult = $this->getRedis()->incrBy(sprintf(self::REDIS_USER_BATTERY_KEY, $userId), $rate);
         if ($incrementResult < self::MINIMUM_CHARGE) {
             $this->set($userId, $incrementResult = self::MINIMUM_CHARGE);

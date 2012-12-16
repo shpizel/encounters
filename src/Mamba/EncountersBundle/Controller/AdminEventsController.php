@@ -39,6 +39,26 @@ class AdminEventsController extends ApplicationController {
 
                     'limit' => $limit,
                 ),
+            ),
+
+            'battery' => array(
+                'items' => array(),
+                'info'  => array(
+                    'battery-decr' => 0,
+                    'battery-incr' => 0,
+
+                    'limit' => $limit,
+                ),
+            ),
+
+            'account' => array(
+                'items' => array(),
+                'info'  => array(
+                    'account-decr' => 0,
+                    'account-incr' => 0,
+
+                    'limit' => $limit,
+                ),
             )
         );
 
@@ -73,37 +93,98 @@ class AdminEventsController extends ApplicationController {
             }
         }
 
-        $Redis->multi();
-        foreach (range(0, $limit - 1) as $day) {
-            $Redis->hGetAll("stats_by_" . ($date = date("dmy", strtotime("-$day day"))));
+        /**
+         * Decision get metrics
+         *
+         * @author shpizel
+         */
+
+        foreach ($data as $key=>$item) {
+            foreach (
+                $requiredKeys = array(
+                    'decision.get-battery.notrequired',
+                    'decision.get-battery.charge',
+                    'decision.get-battery.decr',
+                    'decision.get-battery.empty'
+                ) as $_key
+            ) {
+                if (!isset($item[$_key])) {
+                    $item[$_key] = null;
+                } else {
+                    $dataArray['decision_get']['info'][$_key] += $item[$_key];
+                }
+            }
+
+            /** фильтруем item */
+            foreach ($item as $ikey=>$val) {
+                if (!in_array($ikey, $requiredKeys)) {
+                    unset($item[$ikey]);
+                }
+            }
+
+            $dataArray['decision_get']['items'][] = array(
+                'date' => date('Y-m-d', strtotime("-$key day")),
+                'ts'   => strtotime("-$key day"),
+                'item' => $item,
+            );
         }
 
-        if ($data = $Redis->exec()) {
-            foreach ($data as $key=>$item) {
-                foreach ($requiredKeys = array('decision.get-battery.notrequired',
-                             'decision.get-battery.charge',
-                             'decision.get-battery.decr',
-                             'decision.get-battery.empty') as $_key) {
-                    if (!isset($item[$_key])) {
-                        $item[$_key] = null;
-                    } else {
-                        $dataArray['decision_get']['info'][$_key] += $item[$_key];
-                    }
-                }
+        /**
+         * Account metrics
+         *
+         * @author shpizel
+         */
 
-                /** фильтруем item */
-                foreach ($item as $ikey=>$val) {
-                    if (!in_array($ikey, $requiredKeys)) {
-                        unset($item[$ikey]);
-                    }
+        foreach ($data as $key=>$item) {
+            foreach ($requiredKeys = array('account-decr','account-incr') as $_key) {
+                if (!isset($item[$_key])) {
+                    $item[$_key] = null;
+                } else {
+                    $dataArray['account']['info'][$_key] += $item[$_key];
                 }
-
-                $dataArray['decision_get']['items'][] = array(
-                    'date' => date('Y-m-d', strtotime("-$key day")),
-                    'ts'   => strtotime("-$key day"),
-                    'item' => $item,
-                );
             }
+
+            /** фильтруем item */
+            foreach ($item as $ikey=>$val) {
+                if (!in_array($ikey, $requiredKeys)) {
+                    unset($item[$ikey]);
+                }
+            }
+
+            $dataArray['account']['items'][] = array(
+                'date' => date('Y-m-d', strtotime("-$key day")),
+                'ts'   => strtotime("-$key day"),
+                'item' => $item,
+            );
+        }
+
+        /**
+         * Battery metrics
+         *
+         * @author shpizel
+         */
+
+        foreach ($data as $key=>$item) {
+            foreach ($requiredKeys = array('battery-decr','battery-incr') as $_key) {
+                if (!isset($item[$_key])) {
+                    $item[$_key] = null;
+                } else {
+                    $dataArray['battery']['info'][$_key] += $item[$_key];
+                }
+            }
+
+            /** фильтруем item */
+            foreach ($item as $ikey=>$val) {
+                if (!in_array($ikey, $requiredKeys)) {
+                    unset($item[$ikey]);
+                }
+            }
+
+            $dataArray['battery']['items'][] = array(
+                'date' => date('Y-m-d', strtotime("-$key day")),
+                'ts'   => strtotime("-$key day"),
+                'item' => $item,
+            );
         }
 
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
