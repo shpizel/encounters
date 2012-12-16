@@ -262,6 +262,8 @@ class DecisionController extends ApplicationController {
                     $this->json['data'] = array(
                         'decision' => $decision,
                     );
+
+                    $this->getStatsObject()->incr('decision.get-battery.notrequired');
                 } elseif (($charge = (int) $this->getBatteryObject()->get($webUserId)) || (2 <= $account = $this->getAccountObject()->get($webUserId))) {
                     if (!$charge) {
                         $multiply = intval($account / 2);
@@ -271,6 +273,8 @@ class DecisionController extends ApplicationController {
 
                         $account = $this->getAccountObject()->decr($webUserId, $multiply*2);
                         $this->getBatteryObject()->incr($webUserId, $multiply);
+
+                        $this->getStatsObject()->incr('decision.get-battery.charge');
                     }
 
                     if ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId)) {
@@ -286,7 +290,9 @@ class DecisionController extends ApplicationController {
                     );
 
                     $this->getPurchasedObject()->add($webUserId, $currentUserId);
+                    $this->getStatsObject()->incr('decision.get-battery.decr');
                 } else {
+                    $this->getStatsObject()->incr('decision.get-battery.empty');
                     list($this->json['status'], $this->json['message']) = array(3, "Battery charge is empty");
                 }
             } else {
