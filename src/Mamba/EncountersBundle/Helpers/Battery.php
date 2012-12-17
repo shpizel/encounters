@@ -31,7 +31,7 @@ class Battery extends Helper {
          *
          * @var int
          */
-        DEFAULT_CHARGE = 1,
+        DEFAULT_CHARGE = 0,
 
         /**
          * Ключ для хранения зарядки батарейки
