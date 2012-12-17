@@ -106,9 +106,7 @@
             Информация недоступна.
         {% endif %}
     </div>
-{#</div>#}
 
-{#<div class="row">#}
     <div class="span4">
         <h3>Account</h3>
         {% if account.items %}
@@ -136,6 +134,43 @@
                     <td>Итого:</td>
                     {% for key in tkeys %}
                         <td>{{ account.info[key] }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% else %}
+            Информация недоступна.
+        {% endif %}
+    </div>
+
+    </div>
+    <div class="row">
+    <div class="span8">
+        <h3>Everyday gift</h3>
+        {% if account.items %}
+            <table class="table table-bordered table-hover">
+                <thead>
+                <th>Дата</th>
+                {% set tkeys = everyday_gift.items[0].item|keys %}
+
+                {% for key in tkeys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+                </thead>
+
+                {% for item in everyday_gift.items %}
+                    {% if item.item|keys|length > 0 %}
+                        <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                            <td>{{ item.date }}</td>
+                            {% for key in tkeys %}
+                                <td>{% if item.item[key] != null %}{{ item.item[key] }}{% else %}0{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="info">
+                    <td>Итого:</td>
+                    {% for key in tkeys %}
+                        <td>{{ everyday_gift.info[key] }}</td>
                     {% endfor %}
                 </tr>
             </table>

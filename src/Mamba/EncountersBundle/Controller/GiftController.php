@@ -49,24 +49,28 @@ class GiftController extends ApplicationController {
             }
 
             /** Кейс, когда пользователь больше суток ни за кого не голосовал */
-            if (time() - $last_outgoing_decision > 24*3600) {
+            if ($last_outgoing_decision && (time() - $last_outgoing_decision > 24*3600)) {
                 $last_everyday_gift_accepted_counter = 0;
                 $Variables->set($webUserId, 'last_everyday_gift_accepted_counter', $last_everyday_gift_accepted_counter);
             }
 
-            if ((time() > $last_everyday_gift_accepted) && ($last_outgoing_decision > $last_everyday_gift_accepted) && (date("d") != date("d", $last_everyday_gift_accepted))) {
+            if ((time() > $last_everyday_gift_accepted) && (!$last_outgoing_decision || ($last_outgoing_decision > $last_everyday_gift_accepted)) && (date("d") != date("d", $last_everyday_gift_accepted))) {
                 $last_everyday_gift_accepted_counter++;
                 if ($last_everyday_gift_accepted_counter > 5) {
                     $last_everyday_gift_accepted_counter = 5;
                 }
 
                 $account = $this->getAccountObject()->incr($webUserId, $last_everyday_gift_accepted_counter);
+
+                $this->getStatsObject()->incr('everyday-gift-account-' . $last_everyday_gift_accepted_counter);
+
                 $Variables->set($webUserId, 'last_everyday_gift_accepted_counter', $last_everyday_gift_accepted_counter);
                 $Variables->set($webUserId, 'last_everyday_gift_accepted', time());
 
                 $this->json['data'] = array('account' => $account);
             } else {
                 list($this->json['status'], $this->json['message']) = array(2, "Cheat attempt detected");
+                $this->getStatsObject()->incr('everyday-gift-cheat');
             }
         } else {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
