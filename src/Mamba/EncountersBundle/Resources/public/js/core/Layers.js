@@ -61,6 +61,8 @@ $Layers = {
             $.post($Routing.getPath('everyday.getGift'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data['account']);
+
+                    $Layers.showPhotolinePurchaseLayer();
                 }
 
                 if ($Config.get('non_app_users_contacts').length) {
