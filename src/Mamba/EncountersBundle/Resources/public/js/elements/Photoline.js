@@ -15,8 +15,9 @@ $Photoline = {
             $.post($Routing.getPath('photoline.purchase'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data['account']);
+                    $Photoline.update();
                 } else if ($data.status == 3) {
-                    $Layers.showAccountLayer({'status':$data.status});
+                    $Layers.showAccountLayer({'status': $data.status});
                 }
             });
 

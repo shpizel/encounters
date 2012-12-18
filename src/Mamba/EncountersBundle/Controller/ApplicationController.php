@@ -391,7 +391,7 @@ abstract class ApplicationController extends Controller {
             ),
         );
 
-        if ($photolineItems = $this->getPhotolineObject()->get()) {
+        if ($photolineItems = $this->getPhotolineObject()->get((int) $webUser[0]['location']['region_id'])) {
             $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
                 return (int) $item['user_id'];
             }, $photolineItems), array('location'));

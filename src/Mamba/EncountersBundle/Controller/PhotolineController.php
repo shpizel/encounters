@@ -38,7 +38,9 @@ class PhotolineController extends ApplicationController {
         $Mamba = $this->getMamba();
 
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            if ($photolineItems = $this->getPhotolineObject()->get()) {
+            $webUser = $Mamba->Anketa()->getInfo($webUserId);
+
+            if ($photolineItems = $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])) {
                 $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
                     return (int) $item['user_id'];
                 }, $photolineItems), array('location'));
@@ -91,10 +93,12 @@ class PhotolineController extends ApplicationController {
             $Account = $this->getAccountObject();
             $account = $Account->get($webUserId);
 
-            $cost = 2;
+            $webUser = $this->getMamba()->Anketa()->getInfo($webUserId);
+
+            $cost = 1;
             if ($account >= $cost) {
                 $account = $Account->decr($webUserId, $cost);
-                $this->getPhotolineObject()->add($webUserId);
+                $this->getPhotolineObject()->add($webUser[0]['location']['region_id'], $webUserId);
 
                 $this->json['data'] = array(
                     'account' => $account
