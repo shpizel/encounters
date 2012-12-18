@@ -80,8 +80,13 @@
             </ul>
         </div>
     </div>
-</div>
 
+    <div class="photoline">
+        <div class="l-rounder"></div>
+        <div class="r-rounder"></div>
+        <div class="lenta"><a class="add" title="Добавить себя за 1 сердечко"><img src="/bundles/encounters/images/photoline-add.png"></a></div>
+    </div>
+</div>
 {% if notification.message %}
     {% if variables.notification_hidden != 1 %}
         <div class="notification">
@@ -116,6 +121,7 @@ $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% if settings.search %}$Config.set('search', {{settings.search}});{% endif %}
 $Config.set('webuser', {{ webuser.json }});
 $Config.set('variables', {{ variables|json_encode() }});
+$Config.set('photoline', {{ photoline|json_encode() }});
 $Config.set('time', {{ time }});
 $Routing.setRoutes({{ routes }});
 {% endautoescape %}

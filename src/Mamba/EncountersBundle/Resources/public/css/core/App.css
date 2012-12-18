@@ -11,7 +11,7 @@
 
 .app-layout .app-menu-bar {
     background: url('/bundles/encounters/images/bar-bg.png') repeat-x 0 -46px;
-    margin: 0 12px 12px 7px;
+    margin: 0 12px 0px 7px;
     position: relative;
     height: 46px;
     /*width: 95%;	*/

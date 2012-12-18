@@ -73,6 +73,8 @@ $Interface = {
             $Account.initUI();
         }
 
+        $Photoline.initUI();
+
         this['init' + $Tools.ucfirst($route) + 'UI']();
         $Layers.initUI();
         return this;

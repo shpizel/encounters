@@ -282,6 +282,21 @@ $Search = {
      */
     showNextPhoto: function() {
 
+        var $activeId = $Config.get('active_id');
+        if ($activeId) {
+            var $__storage__ = [];
+            for (var i=0;i<$Queue.$storage.length;i++) {
+                if ($Queue.$storage[i].info.id == $activeId) {
+                    $__storage__.push($Queue.$storage[i]);
+                } else {
+                    $__storage__.unshift($Queue.$storage[i]);
+                }
+            }
+            $Queue.$storage = $__storage__;
+
+            $Config.set('active_id', false)
+        }
+
         var $currentQueueElement;
 
         if (this.$storage['currentQueueElement'] = $currentQueueElement = $Queue.get()) {

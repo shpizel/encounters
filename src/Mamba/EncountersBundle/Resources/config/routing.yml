@@ -68,6 +68,27 @@ everyday.getGift:
     requirements:
         _method: POST
 
+# Photoline getter
+photoline.get:
+    pattern: /ajax/photoline.get
+    defaults: { _controller: EncountersBundle:Photoline:get }
+    requirements:
+        _method: POST
+
+# Photoline purchaser
+photoline.purchase:
+    pattern: /ajax/photoline.purchase
+    defaults: { _controller: EncountersBundle:Photoline:purchase }
+    requirements:
+        _method: POST
+
+# Photoline purchaser
+photoline.choose:
+    pattern: /ajax/photoline.choose
+    defaults: { _controller: EncountersBundle:Photoline:choose }
+    requirements:
+        _method: POST
+
 # Надрочить популярность до 4го уровня
 popularity.get:
     pattern: /ajax/popularity.get

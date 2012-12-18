@@ -29,6 +29,11 @@ class SearchController extends ApplicationController {
         $initialData = $this->getInitialData();
         $initialData['queues'] = array('current' => null);
 
+        if ($activeId = $this->getSession()->get('active_id')) {
+            $initialData['active_id'] = $activeId;
+            $this->getSession()->remove('active_id');
+        }
+
         $Response = $this->render("EncountersBundle:templates:search.html.twig", $initialData);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;

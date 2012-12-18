@@ -16,6 +16,7 @@ use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
 use Mamba\EncountersBundle\Helpers\Account;
+use Mamba\EncountersBundle\Helpers\Photoline;
 
 use Core\MambaBundle\API\Mamba;
 use Core\GearmanBundle\Gearman;
@@ -112,6 +113,19 @@ abstract class ApplicationController extends Controller {
         }
 
         return self::$Instances[__FUNCTION__] = new Battery($this->container);
+    }
+
+    /**
+     * Photoline getter
+     *
+     * @return Photoline
+     */
+    public function getPhotolineObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Photoline($this->container);
     }
 
     /**
@@ -376,6 +390,32 @@ abstract class ApplicationController extends Controller {
                 'mutual_unread'   => $this->getCountersObject()->get($webUserId, 'mutual_unread'),
             ),
         );
+
+        $photolineItems = $this->getPhotolineObject()->get();
+        $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
+            return (int) $item['user_id'];
+        }, $photolineItems), array('location'));
+
+        $photoline = array();
+        foreach ($photolineIds as $userId) {
+            foreach ($photoLinePhotos as $photoLinePhotosItem) {
+                if ($photoLinePhotosItem['info']['oid'] == $userId) {
+                    if ($photoLinePhotosItem['info']['square_photo_url']) {
+                        $photoline[] = array(
+                            'user_id'   => $userId,
+
+                            'name'      => $photoLinePhotosItem['info']['name'],
+                            'age'       => $photoLinePhotosItem['info']['age'],
+                            'city'      => $photoLinePhotosItem['location']['city'],
+
+                            'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
+                        );
+                    }
+                }
+            }
+        }
+
+        $dataArray['photoline'] = $photoline;
 
 
         $dataArray['webuser']['json'] = json_encode($dataArray['webuser']);

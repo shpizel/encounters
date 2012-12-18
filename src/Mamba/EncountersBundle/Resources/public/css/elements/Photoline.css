@@ -1,0 +1,85 @@
+/**
+ * Photoline element CSS
+ *
+ * @author shpizel
+ */
+
+div.photoline {
+    height: 72px;
+    overflow:hidden;
+
+    background: url('/bundles/encounters/images/bar-bg-photoline.png') repeat-x 0 -72px;
+    margin: 0px 12px 0px 5px;
+}
+
+div.photoline div.l-rounder {
+    position: absolute;
+    background: #ccc;
+    top: 46px;
+    height: 72px;
+    width: 8px;
+    left: -1px;
+
+    background: url('/bundles/encounters/images/bar-bg-photoline.png') no-repeat -0 0;
+}
+
+div.photoline div.r-rounder {
+    position: absolute;
+    background: #ccc;
+    top: 46px;
+    height: 72px;
+    width: 8px;
+    right:4px;
+
+    background: url('/bundles/encounters/images/bar-bg-photoline.png') repeat-x 0 -144px;
+}
+
+div.photoline div.lenta {
+    width: 120%;
+    overflow:hidden;
+    height: 68px;
+}
+
+div.photoline div.lenta a {
+    /*display:block;*/
+    width: 62px;
+    height: 62px;
+
+    margin: 0px 3px 6px 3px;
+    /*float:left;*/
+    display: inline-block;
+}
+
+div.photoline div.lenta a.add {
+    cursor: pointer;
+}
+
+div.photoline div.lenta a.add img {
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity = 100); /* IE 5.5+*/
+    -moz-opacity: 1; /* Mozilla 1.6 и ниже */
+    -khtml-opacity: 1; /* Konqueror 3.1, Safari 1.1 */
+    opacity: 1; /* CSS3 - Mozilla 1.7b +, Firefox 0.9 */
+}
+
+div.photoline div.lenta a img {
+    width: 62px;
+    height: 62px;
+
+    border-radius: 4px;
+
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity = 60); /* IE 5.5+*/
+    -moz-opacity: 0.6; /* Mozilla 1.6 и ниже */
+    -khtml-opacity: 0.6; /* Konqueror 3.1, Safari 1.1 */
+    opacity: 0.6; /* CSS3 - Mozilla 1.7b +, Firefox 0.9 */
+}
+
+div.photoline div.lenta a:hover {
+    cursor: pointer;
+}
+
+div.photoline div.lenta a:hover img {
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity = 100); /* IE 5.5+*/
+    -moz-opacity: 1; /* Mozilla 1.6 и ниже */
+    -khtml-opacity: 1; /* Konqueror 3.1, Safari 1.1 */
+    opacity: 1; /* CSS3 - Mozilla 1.7b +, Firefox 0.9 */
+}

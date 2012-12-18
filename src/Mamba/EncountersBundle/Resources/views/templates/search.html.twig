@@ -62,4 +62,8 @@ for (var $key=0;$key<$currentQueue.length;$key++) {
 }
 
 {% endif %}
+
+{% if active_id is defined %}
+    $Config.set('active_id', {{ active_id }});
+{% endif %}
 {% endblock %}

@@ -56,6 +56,10 @@ class WelcomeController extends ApplicationController {
             $Session->start();
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
 
+            if (isset($getParams['extra']) && is_numeric($getParams['extra'])) {
+                $Session->set('active_id', intval($getParams['extra']));
+            }
+
             $lastAccessTime = $this->getVariablesObject()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
                 $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
@@ -87,13 +91,14 @@ class WelcomeController extends ApplicationController {
                 return $Response;
             }
 
-            /*if (isset($getParams['extra']) && ($extra = $getParams['extra'])) {
-
-            }*/
-
             /** В общем случае кидаем на поиск */
             $Response = $this->redirect($this->generateUrl('search'));
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+
+            if ($this->getMemcache()->add("mordolenta-free-{$webUserId}")) {
+                $this->getPhotolineObject()->add($webUserId);
+            }
+
             return $Response;
         }
     }

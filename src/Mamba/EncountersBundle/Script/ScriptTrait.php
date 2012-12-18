@@ -26,6 +26,7 @@ use Mamba\EncountersBundle\Helpers\Purchased;
 use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
 use Mamba\EncountersBundle\Helpers\Account;
+use Mamba\EncountersBundle\Helpers\Photoline;
 
 /**
  * ScriptTrait
@@ -147,6 +148,19 @@ trait ScriptTrait {
         }
 
         return self::$Instances[__FUNCTION__] = new Battery($this->getContainer());
+    }
+
+    /**
+     * Photoline getter
+     *
+     * @return Photoline
+     */
+    public function getPhotolineObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Photoline($this->getContainer());
     }
 
     /**
