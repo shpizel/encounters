@@ -81,6 +81,7 @@ $Layers = {
         $("div.layer-photoline-purchase p a.ui-btn").click(function() {
             var $comment = $("div.layer-photoline-purchase textarea");
             if ($comment.css('color') != 'rgb(153, 153, 153)') {
+                $comment = $comment.val();
                 if ($comment == 'Приветствие или комментарий'){
                     $comment = '';
                 }
