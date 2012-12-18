@@ -62,9 +62,10 @@ class Photoline extends Helper {
      *
      * @param int $regionId
      * @param int $userId
+     * @param str $comment
      * @return mixed
      */
-    public function add($regionId, $userId) {
+    public function add($regionId, $userId, $comment = null) {
         if (!is_int($userId)) {
             throw new PhotolineException("Invalid user id: \n" . var_export($userId, true));
         }
@@ -72,6 +73,7 @@ class Photoline extends Helper {
         $return = $this->getRedis()->zAdd(sprintf(self::REDIS_PHOTOLINE_KEY, $regionId), -1*time(), json_encode(
             array(
                 'user_id'   => $userId,
+                'comment'   => $comment,
                 'microtime' => microtime(true),
             )
         ));

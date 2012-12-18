@@ -46,6 +46,7 @@ class PhotolineController extends ApplicationController {
                 }, $photolineItems), array('location'));
 
                 $photoline = array();
+                $n = 0;
                 foreach ($photolineIds as $userId) {
                     foreach ($photoLinePhotos as $photoLinePhotosItem) {
                         if ($photoLinePhotosItem['info']['oid'] == $userId) {
@@ -58,10 +59,15 @@ class PhotolineController extends ApplicationController {
                                     'city'      => $photoLinePhotosItem['location']['city'],
 
                                     'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
+                                    'comment'   => isset($photolineItems[$n]['comment']) ? $photolineItems[$n]['comment'] : null,
                                 );
                             }
+
+                            break;
                         }
                     }
+
+                    $n++;
                 }
             } else {
                 $photoline = array();
@@ -98,7 +104,8 @@ class PhotolineController extends ApplicationController {
             $cost = 1;
             if ($account >= $cost) {
                 $account = $Account->decr($webUserId, $cost);
-                $this->getPhotolineObject()->add($webUser[0]['location']['region_id'], $webUserId);
+
+                $this->getPhotolineObject()->add($webUser[0]['location']['region_id'], $webUserId, $this->getRequest()->request->get('comment'));
 
                 $this->json['data'] = array(
                     'account' => $account

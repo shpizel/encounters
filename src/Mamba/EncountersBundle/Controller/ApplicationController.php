@@ -391,12 +391,13 @@ abstract class ApplicationController extends Controller {
             ),
         );
 
-        if ($photolineItems = $this->getPhotolineObject()->get((int) $webUser[0]['location']['region_id'])) {
+        if ($photolineItems = $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])) {
             $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
                 return (int) $item['user_id'];
             }, $photolineItems), array('location'));
 
             $photoline = array();
+            $n = 0;
             foreach ($photolineIds as $userId) {
                 foreach ($photoLinePhotos as $photoLinePhotosItem) {
                     if ($photoLinePhotosItem['info']['oid'] == $userId) {
@@ -409,10 +410,15 @@ abstract class ApplicationController extends Controller {
                                 'city'      => $photoLinePhotosItem['location']['city'],
 
                                 'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
+                                'comment'   => isset($photolineItems[$n]['comment']) ? $photolineItems[$n]['comment'] : null,
                             );
                         }
+
+                        break;
                     }
                 }
+
+                $n++;
             }
         } else {
             $photoline = array();

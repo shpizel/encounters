@@ -352,6 +352,33 @@
     height: 130px;
 }
 
+.layer-photoline-purchase .title {
+    background: url('/bundles/encounters/images/photoline-layer-crown.png') no-repeat center top;
+    text-indent: -330em;
+    margin: 10px 0 0px 0;
+    height: 200px;
+    position: relative;
+}
+
+.layer-photoline-purchase textarea {
+    width: 460px;
+    height: 50px;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+.layer-photoline-purchase .title img {
+    position: absolute;
+    border:#999 1px solid;
+
+    top: 52px;
+    left:194px;
+
+    height:100px;
+    width:100px;
+    border-radius: 8px;
+}
+
 .layer-everyday-gift .bonus {
     text-indent: -330em;
     margin-top: 20px;
@@ -468,7 +495,8 @@
 .layer-maybe .info-battery,
 .layer-not-see-yet .info-battery,
 .layer-account .info-battery,
-.layer-everyday-gift .info-battery
+.layer-everyday-gift .info-battery,
+.layer-photoline-purchase .info-battery
 {
     background-color: #fff1d2;
     border-radius: 5px 5px 5px 5px;
@@ -552,6 +580,10 @@
     padding: 8px !important;
 }
 
+.layer-photoline-purchase .info-battery {
+    margin-top:20px;
+}
+
 .layer-energy .info-battery .arrow,
 .layer-battery .info-battery .arrow,
 .layer-level-achievement .info-battery .arrow,
@@ -564,7 +596,8 @@
 .layer-maybe .info-battery .arrow,
 .layer-not-see-yet .info-battery .arrow,
 .layer-account .info-battery .arrow,
-.layer-everyday-gift .info-battery .arrow
+.layer-everyday-gift .info-battery .arrow,
+.layer-photoline-purchase .info-battery .arrow
 {
     background: none;
     position: absolute;

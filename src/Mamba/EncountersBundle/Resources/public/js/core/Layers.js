@@ -78,6 +78,44 @@ $Layers = {
             return false;
         });
 
+        $("div.layer-photoline-purchase p a.ui-btn").click(function() {
+            var $comment = $("div.layer-photoline-purchase textarea");
+            if ($comment.css('color') != 'rgb(153, 153, 153)') {
+                if ($comment == 'Приветствие или комментарий'){
+                    $comment = '';
+                }
+
+                if ($comment.length > 80) {
+                    $comment = $comment.substr(0, 79);
+                }
+            } else {
+                $comment = '';
+            }
+
+            $.post($Routing.getPath('photoline.purchase'), {'comment': $comment}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $Account.setAccount($data.data['account']);
+
+                    $("div#overflow").hide();
+                    $("div.app-layer").hide();
+
+                    $Photoline.update();
+                } else if ($data.status == 3) {
+                    $Layers.showAccountLayer({'status': $data.status});
+                }
+            });
+
+            return false;
+        });
+
+        $("div.layer-photoline-purchase textarea").focus(function() {
+            var $this = $(this);
+            if ($this.css('color') == 'rgb(153, 153, 153)') {
+                $this.html('').css('color', '#000');
+            }
+        });
+
+
         $("div.layer-not-see-yet div.content-center a.first").click(function() {
             var $userId = ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'));
             $.post($Routing.getPath('queue.add'), {'user_id': $userId}, function($data) {
@@ -571,6 +609,20 @@ $Layers = {
         $("div.layer-everyday-gift div.bonus").addClass('bonus-' + $day);
 
         $("div.layer-everyday-gift").show();
+        this.showLayer();
+    },
+
+    /**
+     * Показывает лаер заказа мордоленты
+     *
+     * @shows layer
+     */
+    showPhotolinePurchaseLayer: function($data) {
+        this.hideInners();
+
+        $(".layer-photoline-purchase .title img").attr('src', $Config.get('webuser')['anketa']['info']['square_photo_url']);
+        $(".layer-photoline-purchase textarea").html("Приветствие или комментарий").css('color', '#999');
+        $("div.layer-photoline-purchase").show();
         this.showLayer();
     },
 
