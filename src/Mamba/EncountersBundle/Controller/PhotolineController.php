@@ -125,6 +125,9 @@ class PhotolineController extends ApplicationController {
      */
     public function chooseAction() {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
+
+            $this->getStatsObject()->incr('photoline-click');
+
             if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
                 if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
                     if ($webUserId != $currentUserId) {

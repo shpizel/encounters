@@ -73,7 +73,17 @@ class AdminEventsController extends ApplicationController {
 
                     'limit' => $limit,
                 ),
-            )
+            ),
+
+            'photoline' => array(
+                'items' => array(),
+                'info'  => array(
+                    'photoline-add'   => 0,
+                    'photoline-click' => 0,
+
+                    'limit' => $limit,
+                ),
+            ),
         );
 
         $Redis = $this->getRedis();
@@ -230,6 +240,37 @@ class AdminEventsController extends ApplicationController {
             }
 
             $dataArray['everyday_gift']['items'][] = array(
+                'date' => date('Y-m-d', strtotime("-$key day")),
+                'ts'   => strtotime("-$key day"),
+                'item' => $item,
+            );
+        }
+
+        /**
+         * Photoline metrics
+         *
+         * @author shpizel
+         */
+
+        foreach ($data as $key=>$item) {
+            foreach ($requiredKeys = array(
+                'photoline-add',
+                'photoline-click') as $_key) {
+                if (!isset($item[$_key])) {
+                    $item[$_key] = null;
+                } else {
+                    $dataArray['photoline']['info'][$_key] += $item[$_key];
+                }
+            }
+
+            /** фильтруем item */
+            foreach ($item as $ikey=>$val) {
+                if (!in_array($ikey, $requiredKeys)) {
+                    unset($item[$ikey]);
+                }
+            }
+
+            $dataArray['photoline']['items'][] = array(
                 'date' => date('Y-m-d', strtotime("-$key day")),
                 'ts'   => strtotime("-$key day"),
                 'item' => $item,

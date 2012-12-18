@@ -69,12 +69,17 @@ class Photoline extends Helper {
             throw new PhotolineException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->zAdd(sprintf(self::REDIS_PHOTOLINE_KEY, $regionId), -1*time(), json_encode(
+        $return = $this->getRedis()->zAdd(sprintf(self::REDIS_PHOTOLINE_KEY, $regionId), -1*time(), json_encode(
             array(
                 'user_id'   => $userId,
                 'microtime' => microtime(true),
             )
         ));
+
+        $Stats = new Stats($this->Container);
+        $Stats->incr('photoline-add');
+
+        return $return;
     }
 }
 

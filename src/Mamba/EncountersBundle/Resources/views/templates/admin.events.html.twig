@@ -142,8 +142,9 @@
         {% endif %}
     </div>
 
-    </div>
-    <div class="row">
+</div>
+
+<div class="row">
     <div class="span8">
         <h3>Everyday gift</h3>
         {% if account.items %}
@@ -179,5 +180,42 @@
         {% endif %}
     </div>
 </div>
+
+    <div class="row">
+        <div class="span6">
+            <h3>Photoline </h3>
+            {% if photoline.items %}
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <th>Дата</th>
+                    {% set tkeys = photoline.items[0].item|keys %}
+
+                    {% for key in tkeys %}
+                        <th>{{ key }}</th>
+                    {% endfor %}
+                    </thead>
+
+                    {% for item in photoline.items %}
+                        {% if item.item|keys|length > 0 %}
+                            <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                                <td>{{ item.date }}</td>
+                                {% for key in tkeys %}
+                                    <td>{% if item.item[key] != null %}{{ item.item[key] }}{% else %}0{% endif %}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    <tr class="info">
+                        <td>Итого:</td>
+                        {% for key in tkeys %}
+                            <td>{{ photoline.info[key] }}</td>
+                        {% endfor %}
+                    </tr>
+                </table>
+            {% else %}
+                Информация недоступна.
+            {% endif %}
+        </div>
+    </div>
 
 {% endblock %}
