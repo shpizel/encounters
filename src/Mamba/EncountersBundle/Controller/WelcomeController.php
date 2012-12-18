@@ -95,7 +95,7 @@ class WelcomeController extends ApplicationController {
             $Response = $this->redirect($this->generateUrl('search'));
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
 
-            if ($this->getMemcache()->add("mordolenta-free-{$webUserId}", time())) {
+            if ($this->getMemcache()->add("mordolenta-free-{$webUserId}", time(), 24*3600)) {
                 $this->getPhotolineObject()->add($webUserId);
             }
 
