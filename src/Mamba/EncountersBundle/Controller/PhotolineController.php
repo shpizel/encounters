@@ -59,7 +59,7 @@ class PhotolineController extends ApplicationController {
                                     'city'      => $photoLinePhotosItem['location']['city'],
 
                                     'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
-                                    'comment'   => isset($photolineItems[$n]['comment']) ? $photolineItems[$n]['comment'] : null,
+                                    'comment'   => isset($photolineItems[$n]['comment']) ? htmlspecialchars($photolineItems[$n]['comment']) : null,
                                 );
                             }
 
