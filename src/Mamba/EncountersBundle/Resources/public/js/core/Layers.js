@@ -12,6 +12,7 @@ $Layers = {
      */
     initUI: function() {
         $("body").append("<div id='overflow'></div>");
+
         $("div#overflow").click(function() {
             $(this).hide();
             $("div.app-layer").hide();

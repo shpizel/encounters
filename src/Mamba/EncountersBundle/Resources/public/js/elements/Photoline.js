@@ -11,6 +11,8 @@ $Photoline = {
      * @init UI
      */
     initUI: function($route) {
+        $("body").append("<div id='photoline-info-layer'></div>");
+
         $("div.photoline div.lenta a.add").click(function() {
             $.post($Routing.getPath('photoline.purchase'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
@@ -35,6 +37,24 @@ $Photoline = {
                     alert('Вы не можете голосовать за себя');
                 }
             });
+        });
+
+        $("div.photoline div.lenta").on('mouseenter', "a:not(.add)", function($event) {
+            var $this = $(this);
+
+            var $html = $this.attr('name') + ", ";
+            var $age = $this.attr('age');
+            if ($age) {
+                $html+= $age + ", ";
+            }
+            $html+= $this.attr('city');
+
+            var $photoPosition = $this.position();
+            $("div#photoline-info-layer").html($html).css({'top': ($photoPosition.top + 62) +'px', 'left': $photoPosition.left +'px'}).show();
+        });
+
+        $("div.photoline div.lenta").on('mouseleave', "a:not(.add)", function($event) {
+            $("div#photoline-info-layer").hide();
         });
 
         $Photoline.render();
