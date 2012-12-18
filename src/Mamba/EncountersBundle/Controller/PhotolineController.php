@@ -38,28 +38,31 @@ class PhotolineController extends ApplicationController {
         $Mamba = $this->getMamba();
 
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $photolineItems = $this->getPhotolineObject()->get();
-            $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
-                return (int) $item['user_id'];
-            }, $photolineItems), array('location'));
+            if ($photolineItems = $this->getPhotolineObject()->get()) {
+                $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
+                    return (int) $item['user_id'];
+                }, $photolineItems), array('location'));
 
-            $photoline = array();
-            foreach ($photolineIds as $userId) {
-                foreach ($photoLinePhotos as $photoLinePhotosItem) {
-                    if ($photoLinePhotosItem['info']['oid'] == $userId) {
-                        if ($photoLinePhotosItem['info']['square_photo_url']) {
-                            $photoline[] = array(
-                                'user_id'   => $userId,
+                $photoline = array();
+                foreach ($photolineIds as $userId) {
+                    foreach ($photoLinePhotos as $photoLinePhotosItem) {
+                        if ($photoLinePhotosItem['info']['oid'] == $userId) {
+                            if ($photoLinePhotosItem['info']['square_photo_url']) {
+                                $photoline[] = array(
+                                    'user_id'   => $userId,
 
-                                'name'      => $photoLinePhotosItem['info']['name'],
-                                'age'       => $photoLinePhotosItem['info']['age'],
-                                'city'      => $photoLinePhotosItem['location']['city'],
+                                    'name'      => $photoLinePhotosItem['info']['name'],
+                                    'age'       => $photoLinePhotosItem['info']['age'],
+                                    'city'      => $photoLinePhotosItem['location']['city'],
 
-                                'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
-                            );
+                                    'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
+                                );
+                            }
                         }
                     }
                 }
+            } else {
+                $photoline = array();
             }
 
             $this->json['data'] = array(

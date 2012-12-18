@@ -4,17 +4,17 @@
 {% block body %}
 <div class="app-main">
     <div class="app-page">
-        <div class="app-block-no-popular" style="display: {% if webuser.popularity.level < 4 %}{% if variables.search_no_popular_block_hidden == 1 %}none{% else %}block{% endif %}{% else %}none{%endif%};">
-            <a class="close"></a>
-            {#<i class="arrow"></i>#}
-            <div class="info-block">
-                <div class="photo">{% if webuser.anketa.info.small_photo_url %}<img src="{{ webuser.anketa.info.small_photo_url }}">{%else%}<img src="/bundles/encounters/images/photo_little_na.gif">{% endif %}</div>
-                <div class="message">
-                    <div class="message-alert">У вас очень низкая популярность</div>
-                    <div class="message-help">Станьте популярней &mdash; <a id="getmore" href="#">получите 50 дополнительных показов за 30 <i class="account-red-small-heart"></i></a></div>
-                </div>
-            </div>
-        </div>
+        {#<div class="app-block-no-popular" style="display: {% if webuser.popularity.level < 4 %}{% if variables.search_no_popular_block_hidden == 1 %}none{% else %}block{% endif %}{% else %}none{%endif%};">#}
+            {#<a class="close"></a>#}
+            {#&#123;&#35;<i class="arrow"></i>&#35;&#125;#}
+            {#<div class="info-block">#}
+                {#<div class="photo">{% if webuser.anketa.info.small_photo_url %}<img src="{{ webuser.anketa.info.small_photo_url }}">{%else%}<img src="/bundles/encounters/images/photo_little_na.gif">{% endif %}</div>#}
+                {#<div class="message">#}
+                    {#<div class="message-alert">У вас очень низкая популярность</div>#}
+                    {#<div class="message-help">Станьте популярней &mdash; <a id="getmore" href="#">получите 50 дополнительных показов за 30 <i class="account-red-small-heart"></i></a></div>#}
+                {#</div>#}
+            {#</div>#}
+        {#</div>#}
 
         <div class="app-title">Вы бы встретились с {% if webuser.preferences.gender == 'F' %}ней{% else %}ним{% endif %}?</div>
         <div class="app-meet-button">
