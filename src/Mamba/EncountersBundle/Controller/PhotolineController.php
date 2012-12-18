@@ -91,7 +91,7 @@ class PhotolineController extends ApplicationController {
             $Account = $this->getAccountObject();
             $account = $Account->get($webUserId);
 
-            $cost = 1;
+            $cost = 2;
             if ($account >= $cost) {
                 $account = $Account->decr($webUserId, $cost);
                 $this->getPhotolineObject()->add($webUserId);

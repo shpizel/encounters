@@ -77,7 +77,7 @@ $Photoline = {
                 'age'  : $photolineItem['age'],
                 'city' : $photolineItem['city'],
                 'title': $photolineItem['name'] + ", " + $photolineItem['age'] + ", " + $photolineItem['city']
-            });
+            }).addClass('item');
             $("div.photoline div.lenta").append($html);
         }
     }
