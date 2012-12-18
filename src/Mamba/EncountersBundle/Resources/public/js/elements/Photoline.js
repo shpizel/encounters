@@ -14,7 +14,7 @@ $Photoline = {
         $("div.photoline div.lenta a.add").click(function() {
             $.post($Routing.getPath('photoline.purchase'), function($data) {
                 if ($data.status == 0 && $data.message == "") {
-                    $Photoline.fetch();
+                    $Photoline.update();
                     $Account.setAccount($data.data['account']);
                 } else if ($data.status == 3) {
                     $Layers.showAccountLayer({'status':$data.status});
