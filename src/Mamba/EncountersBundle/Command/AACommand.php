@@ -34,6 +34,6 @@ class AACommand extends CronScript {
      */
     protected function process() {
         $Mamba = $this->getMamba();
-//        print_r($Mamba->Search()->get());
+        print_r($Mamba->Photos()->get(560015854));
     }
 }
