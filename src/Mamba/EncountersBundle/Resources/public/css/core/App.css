@@ -144,14 +144,6 @@
     margin: 0;
 }
 
-.info-meet li.item-setting a {
-    background: url('/bundles/encounters/images/bg-setting.png') no-repeat left top;
-    display: block;
-    width: 46px;
-    height: 35px;
-    padding: 0;
-}
-
 .info-meet li.item-setting a.active {
     background-position: left bottom;
 }
@@ -351,8 +343,9 @@
 
 .app-meet-button {
     height: 42px;
-    width: 392px;
+    width: 440px;
     margin: 0 auto 15px auto;
+    padding-left:60px;
 }
 
 .app-meet-button a {

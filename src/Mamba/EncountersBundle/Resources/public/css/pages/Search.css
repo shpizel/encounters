@@ -3,3 +3,13 @@
  *
  * @author shpizel
  */
+
+.app-meet-button a.preferences {
+    background: url('/bundles/encounters/images/bg-setting.png') no-repeat left top;
+    display: block;
+    width: 46px;
+    height: 35px;
+    padding: 0;
+    float: left;
+    margin-top:3px;
+}

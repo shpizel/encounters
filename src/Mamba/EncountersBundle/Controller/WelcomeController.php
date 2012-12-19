@@ -21,7 +21,7 @@ class WelcomeController extends ApplicationController {
      */
     public function indexAction() {
         /** Debug 500 page */
-        #return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
+//        return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
 
         $Request  = $this->getRequest();
         $Session  = $this->getSession();

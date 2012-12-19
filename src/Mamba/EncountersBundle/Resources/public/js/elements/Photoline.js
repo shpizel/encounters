@@ -46,7 +46,10 @@ $Photoline = {
      * @init UI
      */
     initUI: function($route) {
-        $Photoline.$lastUpdated = $Config.get('microtime');
+        var $microtime = $Config.get('microtime');
+        if ($microtime) {
+            $Photoline.$lastUpdated = $microtime;
+        }
 
         $("body").append("<div id='photoline-info-layer'></div>");
 
@@ -159,23 +162,25 @@ $Photoline = {
         }, 0.5 * 1000));
 
         var $defaultPhotolineItems = $Config.get('photoline');
-        $("div.photoline div.lenta a.pusher").css({'width': '0px'});
+        if ($defaultPhotolineItems) {
+            $("div.photoline div.lenta a.pusher").css({'width': '62px'});
 
-        for (var $i=$defaultPhotolineItems.length - 1;$i>=0; $i--) {
-            var $photolineItem = $defaultPhotolineItems[$i];
-            var $html = $("<a><img src=\"" + $photolineItem['photo_url'] + "\"></a>").attr({
-                'user_id': $photolineItem['user_id'],
-                'name' : $photolineItem['name'],
-                'age'  : $photolineItem['age'],
-                'city' : $photolineItem['city'],
-                'comment' : $photolineItem['comment'],
-                'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-                'target': 'top'
-            }).addClass('item');
+            for (var $i=$defaultPhotolineItems.length - 1;$i>=0; $i--) {
+                var $photolineItem = $defaultPhotolineItems[$i];
+                var $html = $("<a><img src=\"" + $photolineItem['photo_url'] + "\"></a>").attr({
+                    'user_id': $photolineItem['user_id'],
+                    'name' : $photolineItem['name'],
+                    'age'  : $photolineItem['age'],
+                    'city' : $photolineItem['city'],
+                    'comment' : $photolineItem['comment'],
+                    'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+                    'target': 'top'
+                }).addClass('item');
 
-            $html.insertAfter($("div.photoline div.lenta a.pusher"));
+                $html.insertAfter($("div.photoline div.lenta a.pusher"));
+            }
+
+//            $("div.photoline div.lenta a.pusher").animate({'width': '+=62'}, 1000);
         }
-
-        $("div.photoline div.lenta a.pusher").animate({'width': '+=62'}, 1000);
     }
 }

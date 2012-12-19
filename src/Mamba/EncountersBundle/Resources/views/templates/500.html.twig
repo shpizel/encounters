@@ -34,8 +34,11 @@
                             <div class="speedo" style="width:0px;"></div>
                         </div>
                     </li>
-                    <li class="item-setting"><a href="/preferences"></a></li>
-                    <li class="item-energy"><b class="battery"><b style="width:{{ 1*15 }}%"></b></b> <i>{{ 1*20 }}%</i></li>
+                    {#<li class="item-setting"><a href="/preferences"></a></li>#}
+                    <li class="item-account">
+                        <div class="bar"><div class="account"><span>0<i></i></span></div></div>
+                    </li>
+                    <li class="item-energy"><b class="battery"><b style="width:{{ 1*15 }}%"></b></b>{# <i>{{ webuser.battery*20 }}%</i>#}</li>
                 </ul>
                 <ul class="info-meet">
                     <li class="item-game"><a href="/search"><b>Поиск</b></a></li>

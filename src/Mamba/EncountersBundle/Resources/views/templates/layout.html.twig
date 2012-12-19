@@ -51,7 +51,7 @@
                         <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
                     </div>
                 </li>
-                <li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>
+                {#<li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>#}
                 <li class="item-account">
                     <div class="bar"><div class="account"><span>{{ webuser.account }}<i></i></span></div></div>
                 </li>
