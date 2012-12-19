@@ -78,7 +78,7 @@ class PhotolineUpdateCommand extends CronScript {
      *
      * @param $job
      */
-    public function sendNotifications($job) {
+    public function updatePhotoline($job) {
         $Mamba = $this->getMamba();
         $Redis = $this->getRedis();
 
