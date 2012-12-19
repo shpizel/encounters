@@ -76,7 +76,7 @@ class DecisionController extends ApplicationController {
                 );
 
                 /** Ставим задачу на добавление в мордоленту */
-                $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_PHOTOLINE_UPDATE_FUNCTION_NAME, serialize($photolineDataArray));
+                //$this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_PHOTOLINE_UPDATE_FUNCTION_NAME, serialize($photolineDataArray));
             }
 
             /** Обновляем переменные */
