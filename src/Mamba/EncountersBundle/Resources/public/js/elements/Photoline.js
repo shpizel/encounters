@@ -144,7 +144,7 @@ $Photoline = {
         var $defaultPhotolineItems = $Config.get('photoline');
         $("div.photoline div.lenta a.pusher").css({'width': '0px'});
 
-        for (var $i=0;$i<$defaultPhotolineItems.length;$i++) {
+        for (var $i=$defaultPhotolineItems.length - 1;$i>=0; $i--) {
             var $photolineItem = $defaultPhotolineItems[$i];
             var $html = $("<a><img src=\"" + $photolineItem['photo_url'] + "\"></a>").attr({
                 'user_id': $photolineItem['user_id'],
