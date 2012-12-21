@@ -93,8 +93,6 @@ $Layers = {
 
                     $("div#overflow").hide();
                     $("div.app-layer").hide();
-
-                    $Photoline.update();
                 } else if ($data.status == 3) {
                     $Layers.showAccountLayer({'status': $data.status});
                 }

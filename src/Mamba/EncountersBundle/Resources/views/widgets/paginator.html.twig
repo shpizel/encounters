@@ -1,0 +1,47 @@
+{% if paginator.last > 1 %}
+
+    <div class="paginator">
+
+        {% if paginator.last <= paginator.current + paginator.max // 2 %}
+
+            {% if paginator.current - paginator.max > 1 %}
+            <a href="?page={{ paginator.current - paginator.max // 2 - 1 }}">..</a>
+            {% endif %}
+
+            {% for i in paginator.current - paginator.max..paginator.last %}
+                {% if i >= 1 %} {% if i <= paginator.last %}
+                    <a {% if i == paginator.current %}class="selected"{% endif %} href="?page={{ i }}">{{ i }}</a>
+                {% endif %} {% endif %}
+            {% endfor %}
+
+        {% elseif paginator.current <= paginator.max // 2   %}
+
+            {% for i in 1..paginator.max %}
+                {% if i >= 1 %} {% if i <= paginator.last %}
+                    <a {% if i == paginator.current %}class="selected"{% endif %} href="?page={{ i }}">{{ i }}</a>
+                {% endif %} {% endif %}
+            {% endfor %}
+
+        {% else %}
+
+            {% if paginator.current - paginator.max // 2 > 1 %}
+                <a href="?page={{ paginator.current - paginator.max // 2 - 1 }}">..</a>
+            {% else %}
+                <a href="?page=1">..</a>
+            {% endif %}
+
+            {% for i in paginator.current - paginator.max // 2..paginator.current + paginator.max // 2 %}
+                {% if i > 1 %} {% if i <= paginator.last %}
+                    <a {% if i == paginator.current %}class="selected"{% endif %} href="?page={{ i }}">{{ i }}</a>
+                {% endif %} {% endif %}
+            {% endfor %}
+
+            {% if paginator.current + paginator.max // 2 <= paginator.last %}
+                <a href="?page={{ paginator.current + paginator.max // 2 + 1 }}">...</a>
+            {% endif %}
+
+        {% endif %}
+
+    </div>
+
+{% endif %}

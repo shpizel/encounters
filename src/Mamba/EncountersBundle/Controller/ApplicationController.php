@@ -482,6 +482,7 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         $dataArray['time'] = time();
+        $dataArray['microtime'] = microtime(true);
 
         return $dataArray;
     }

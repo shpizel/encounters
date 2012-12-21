@@ -43,11 +43,12 @@ class Photoline extends Helper {
      *
      * @param int $regionId
      * @param int $from
+     * @param int $to
      * @param int $limit = 25
      * @return mixed
      */
-    public function getbyRange($regionId, $from, $limit = 25) {
-        $items = $this->getRedis()->zRangeByScore(sprintf(self::REDIS_PHOTOLINE_KEY, $regionId), -1*$from, '-inf', array('withscores' => TRUE, 'limit' => array(0, $limit)));
+    public function getbyRange($regionId, $from, $to, $limit = 25) {
+        $items = $this->getRedis()->zRangeByScore(sprintf(self::REDIS_PHOTOLINE_KEY, $regionId), -1*$from, -1*$to, array('withscores' => TRUE, 'limit' => array(0, $limit)));
 
         $items = array_keys($items);
         foreach ($items as &$item) {

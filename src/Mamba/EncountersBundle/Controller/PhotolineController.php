@@ -40,7 +40,23 @@ class PhotolineController extends ApplicationController {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
             $webUser = $Mamba->Anketa()->getInfo($webUserId);
 
-            if ($photolineItems = $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])) {
+            $from = null;
+            if ($_from = $this->getRequest()->request->get('from')) {
+                if ($_from = (float) $_from) {
+                    $from = $_from;
+                }
+
+            }
+
+            if
+            (
+                $photolineItems =
+                    (
+                        (!$from)
+                            ? $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])
+                            : $this->getPhotolineObject()->getbyRange($webUser[0]['location']['region_id'], microtime(true), $from)
+                    )
+            ) {
                 $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
                     return (int) $item['user_id'];
                 }, $photolineItems), array('location'));
@@ -75,6 +91,7 @@ class PhotolineController extends ApplicationController {
 
             $this->json['data'] = array(
                 'items' => $photoline,
+                'microtime' => microtime(true),
             );
 
         } else {

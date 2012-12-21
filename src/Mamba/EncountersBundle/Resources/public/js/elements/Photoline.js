@@ -6,16 +6,52 @@
 $Photoline = {
 
     /**
+     * Очередь показа фотоленты
+     *
+     * @var array
+     */
+    $Queue: [],
+
+    /**
+     * Microtime последнего обновления фотоленты
+     *
+     * @var float
+     */
+    $lastUpdated: 0,
+
+    /**
+     * Server update timer name
+     *
+     * @var str
+     */
+    $serverUpdateTimerName: 'photoline-server-update-timer',
+
+    /**
+     * Queue update timer name
+     *
+     * @var str
+     */
+    $queueUpdateTimerName: 'photoline-queue-update-timer',
+
+    /**
+     * Блокировка
+     *
+     * @var bool
+     */
+    $locked: false,
+
+    /**
      * Инициализация интерфейса
      *
      * @init UI
      */
     initUI: function($route) {
+        $Photoline.$lastUpdated = $Config.get('microtime');
+
         $("body").append("<div id='photoline-info-layer'></div>");
 
-        $("div.photoline div.lenta a.add").click(function() {
+        $("div.photoline a.add").click(function() {
             $Layers.showPhotolinePurchaseLayer();
-
             return false;
         });
 
@@ -55,41 +91,61 @@ $Photoline = {
             $("div#photoline-info-layer").hide();
         });
 
-        $Photoline.render();
+        $Config.set($Photoline.$serverUpdateTimerName, window.setInterval(function() {
+            if (!$Photoline.$locked) {
+                $Photoline.$locked = true;
 
-        $Config.set('photoline-timer', window.setInterval(function() {
-            $Photoline.update();
-        }, 5000));
-    },
+                $.post($Routing.getPath('photoline.get'), {'from': $Photoline.$lastUpdated}, function($data) {
+                    if ($data.status == 0 && $data.message == "") {
+                        var $items = $data.data['items'];
+                        if ($items.length > 0) {
+                            for (var $i=0;$i<$items.length;$i++) {
+                                $Photoline.$Queue.push($items[$i]);
+                            }
 
-    /**
-     * Получение новых игроков
-     *
-     *
-     */
-    update: function() {
-        $.post($Routing.getPath('photoline.get'), function($data) {
-            if ($data.status == 0 && $data.message == "") {
-                $Config.set('photoline', $data.data['items']);
-                $Photoline.render();
-            } else {
-                window.clearInterval($Config.get('photoline-timer'));
+                            $Photoline.$lastUpdated = $data.data['microtime'];
+                        }
+                    }
+
+                    $Photoline.$locked = false;
+                }).onerror(function() {
+                    window.clearInterval($Config.get($Photoline.$serverUpdateTimerName));
+                });
             }
-        }).onerror(function() {
-            window.clearInterval($Config.get('photoline-timer'));
-        });
-    },
+        }, 3 * 1000));
 
-    /**
-     * Перерисовать мордоленту
-     *
-     */
-    render: function() {
-        $("div.photoline div.lenta a:not(.add)").remove();
-        var $photoline = $Config.get('photoline');
+        $Config.set($Photoline.$queueUpdateTimerName, window.setInterval(function() {
+            if (!$Photoline.$locked) {
+                $Photoline.$locked = true;
+                do {
+                    var $photolineItem = $Photoline.$Queue.pop();
+                    if ($photolineItem) {
+                        var $html = $("<a><img src=\"" + $photolineItem['photo_url'] + "\"></a>").attr({
+                            'user_id': $photolineItem['user_id'],
+                            'name' : $photolineItem['name'],
+                            'age'  : $photolineItem['age'],
+                            'city' : $photolineItem['city'],
+                            'comment' : $photolineItem['comment']
+                        }).addClass('item');
 
-        for (var i=0;i<$photoline.length;i++) {
-            var $photolineItem = $photoline[i];
+                        $("div.photoline div.lenta a.pusher").css({'width': '0px'});
+                        $html.insertAfter($("div.photoline div.lenta a.pusher"));
+
+                        $("div.photoline div.lenta a.pusher").animate({'width': '+=62'}, 1000, function() {
+                            $Photoline.$locked = false;
+                        });
+                    } else {
+                        $Photoline.$locked = false;
+                    }
+                } while (false);
+            }
+        }, 0.5 * 1000));
+
+        var $defaultPhotolineItems = $Config.get('photoline');
+        $("div.photoline div.lenta a.pusher").css({'width': '0px'});
+
+        for (var $i=0;$i<$defaultPhotolineItems.length;$i++) {
+            var $photolineItem = $defaultPhotolineItems[$i];
             var $html = $("<a><img src=\"" + $photolineItem['photo_url'] + "\"></a>").attr({
                 'user_id': $photolineItem['user_id'],
                 'name' : $photolineItem['name'],
@@ -97,7 +153,10 @@ $Photoline = {
                 'city' : $photolineItem['city'],
                 'comment' : $photolineItem['comment']
             }).addClass('item');
-            $("div.photoline div.lenta").append($html);
+
+            $html.insertAfter($("div.photoline div.lenta a.pusher"));
         }
+
+        $("div.photoline div.lenta a.pusher").animate({'width': '+=62'}, 1000);
     }
 }
