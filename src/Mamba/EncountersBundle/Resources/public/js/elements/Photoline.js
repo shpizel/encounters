@@ -73,7 +73,7 @@ $Photoline = {
 
             var $html = "<b>" + $this.attr('name') + "</b>, ";
             var $age = $this.attr('age');
-            if ($age) {
+            if (parseInt($age) > 0) {
                 $html+= $age + ", ";
             }
             $html+= "<font color='#666'>" + $this.attr('city') + "</font>";
