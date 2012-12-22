@@ -131,7 +131,7 @@ $Photoline = {
                         $("div.photoline div.lenta a.pusher").css({'width': '0px'});
                         $html.insertAfter($("div.photoline div.lenta a.pusher"));
 
-                        $("div.photoline div.lenta a.pusher").animate({'width': '+=62'}, 1000, function() {
+                        $("div.photoline div.lenta a.pusher").animate({'width': '+=22'}, 1000, function() {
                             $Photoline.$locked = false;
                         });
                     } else {
