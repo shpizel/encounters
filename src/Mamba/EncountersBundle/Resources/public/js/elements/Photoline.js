@@ -66,6 +66,8 @@ $Photoline = {
                     alert('Вы не можете голосовать за себя');
                 }
             });
+
+            return false;
         });
 
         $("div.photoline div.lenta").on('mouseenter', "a:not(.add)", function($event) {
@@ -84,7 +86,20 @@ $Photoline = {
             }
 
             var $photoPosition = $this.position();
-            $("div#photoline-info-layer").html($html).css({'top': ($photoPosition.top + 62 + 9) +'px', 'left': $photoPosition.left +'px'}).show();
+            var $photolineInfoLayer = $("div#photoline-info-layer");
+            $photolineInfoLayer.html($html).css({'top': ($photoPosition.top + 62 + 9) +'px'});
+
+            var $photolineContainer = $("div.photoline");
+            var $photolineWidth = $photolineContainer.width();
+            var $photolineInfoLayerWidth = $photolineInfoLayer.width();
+
+
+            if ($photoPosition.left + $photolineInfoLayerWidth > $photolineWidth) {
+                $photolineInfoLayer.css({left: $photolineWidth - $photolineInfoLayerWidth - 10 + 'px'});
+            } else {
+                $photolineInfoLayer.css({left: $photoPosition.left + 2 + 'px'});
+            }
+            $photolineInfoLayer.show();
         });
 
         $("div.photoline div.lenta").on('mouseleave', "a:not(.add)", function($event) {
@@ -125,7 +140,9 @@ $Photoline = {
                             'name' : $photolineItem['name'],
                             'age'  : $photolineItem['age'],
                             'city' : $photolineItem['city'],
-                            'comment' : $photolineItem['comment']
+                            'comment' : $photolineItem['comment'],
+                            'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+                            'target': 'top'
                         }).addClass('item');
 
                         $("div.photoline div.lenta a.pusher").css({'width': '0px'});
@@ -151,7 +168,9 @@ $Photoline = {
                 'name' : $photolineItem['name'],
                 'age'  : $photolineItem['age'],
                 'city' : $photolineItem['city'],
-                'comment' : $photolineItem['comment']
+                'comment' : $photolineItem['comment'],
+                'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+                'target': 'top'
             }).addClass('item');
 
             $html.insertAfter($("div.photoline div.lenta a.pusher"));
