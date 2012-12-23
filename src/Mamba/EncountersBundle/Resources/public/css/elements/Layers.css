@@ -345,13 +345,6 @@
     height: 37px;
 }
 
-.layer-everyday-gift .title {
-    background: url('/bundles/encounters/images/texts/everyday-gift.png') no-repeat center top;
-    text-indent: -330em;
-    margin: 10px 0 0px 0;
-    height: 130px;
-}
-
 .layer-photoline-purchase .title {
     background: url('/bundles/encounters/images/photoline-layer-crown.png') no-repeat center top;
     text-indent: -330em;
@@ -377,33 +370,6 @@
     height:100px;
     width:100px;
     border-radius: 8px;
-}
-
-.layer-everyday-gift .bonus {
-    text-indent: -330em;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    height: 120px;
-}
-
-.layer-everyday-gift .bonus-1 {
-    background: url('/bundles/encounters/images/everyday-gift-bonus-1.png') no-repeat center top;
-}
-
-.layer-everyday-gift .bonus-2 {
-    background: url('/bundles/encounters/images/everyday-gift-bonus-2.png') no-repeat center top;
-}
-
-.layer-everyday-gift .bonus-3 {
-    background: url('/bundles/encounters/images/everyday-gift-bonus-3.png') no-repeat center top;
-}
-
-.layer-everyday-gift .bonus-4 {
-    background: url('/bundles/encounters/images/everyday-gift-bonus-4.png') no-repeat center top;
-}
-
-.layer-everyday-gift .bonus-5 {
-    background: url('/bundles/encounters/images/everyday-gift-bonus-5.png') no-repeat center top;
 }
 
 .layer-repeatable-yes .title {
@@ -495,7 +461,6 @@
 .layer-maybe .info-battery,
 .layer-not-see-yet .info-battery,
 .layer-account .info-battery,
-.layer-everyday-gift .info-battery,
 .layer-photoline-purchase .info-battery
 {
     background-color: #fff1d2;
@@ -596,7 +561,6 @@
 .layer-maybe .info-battery .arrow,
 .layer-not-see-yet .info-battery .arrow,
 .layer-account .info-battery .arrow,
-.layer-everyday-gift .info-battery .arrow,
 .layer-photoline-purchase .info-battery .arrow
 {
     background: none;

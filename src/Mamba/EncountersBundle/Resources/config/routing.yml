@@ -61,13 +61,6 @@ level.up:
     requirements:
         _method: POST
 
-# Получение ежедневного гифта
-everyday.getGift:
-    pattern: /ajax/everyday-gift.get
-    defaults: { _controller: EncountersBundle:Gift:getEveryDayGift }
-    requirements:
-        _method: POST
-
 # Photoline getter
 photoline.get:
     pattern: /ajax/photoline.get

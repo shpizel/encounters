@@ -61,20 +61,6 @@ class AdminEventsController extends ApplicationController {
                 ),
             ),
 
-            'everyday_gift' => array(
-                'items' => array(),
-                'info'  => array(
-                    'everyday-gift-cheat'     => 0,
-                    'everyday-gift-account-1' => 0,
-                    'everyday-gift-account-2' => 0,
-                    'everyday-gift-account-3' => 0,
-                    'everyday-gift-account-4' => 0,
-                    'everyday-gift-account-5' => 0,
-
-                    'limit' => $limit,
-                ),
-            ),
-
             'photoline' => array(
                 'items' => array(),
                 'info'  => array(
@@ -205,41 +191,6 @@ class AdminEventsController extends ApplicationController {
             }
 
             $dataArray['battery']['items'][] = array(
-                'date' => date('Y-m-d', strtotime("-$key day")),
-                'ts'   => strtotime("-$key day"),
-                'item' => $item,
-            );
-        }
-
-        /**
-         * Everyday gift metrics
-         *
-         * @author shpizel
-         */
-
-        foreach ($data as $key=>$item) {
-            foreach ($requiredKeys = array(
-                'everyday-gift-cheat',
-                'everyday-gift-account-1',
-                'everyday-gift-account-2',
-                'everyday-gift-account-3',
-                'everyday-gift-account-4',
-                'everyday-gift-account-5') as $_key) {
-                if (!isset($item[$_key])) {
-                    $item[$_key] = null;
-                } else {
-                    $dataArray['everyday_gift']['info'][$_key] += $item[$_key];
-                }
-            }
-
-            /** фильтруем item */
-            foreach ($item as $ikey=>$val) {
-                if (!in_array($ikey, $requiredKeys)) {
-                    unset($item[$ikey]);
-                }
-            }
-
-            $dataArray['everyday_gift']['items'][] = array(
                 'date' => date('Y-m-d', strtotime("-$key day")),
                 'ts'   => strtotime("-$key day"),
                 'item' => $item,

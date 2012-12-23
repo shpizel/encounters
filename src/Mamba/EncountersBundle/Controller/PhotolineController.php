@@ -118,7 +118,7 @@ class PhotolineController extends ApplicationController {
 
             $webUser = $this->getMamba()->Anketa()->getInfo($webUserId);
 
-            $cost = 10;
+            $cost = 1;
             if ($account >= $cost) {
                 $account = $Account->decr($webUserId, $cost);
 

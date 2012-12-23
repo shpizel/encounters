@@ -236,29 +236,6 @@ $Search = {
                 $("div.app-meet-button > a.app-menu1").removeClass("app-menu1-active");
                 $("div.app-meet-button > a.app-menu2").removeClass("app-menu2-active");
                 $("div.app-meet-button > a.app-menu3").removeClass("app-menu3-active");
-
-                /**
-                 * Показ лаера ежедневных подарков
-                 *
-                 * @author shpizel
-                 */
-                var $variables = $Config.get('variables');
-
-                var
-                    $last_everyday_gift_layer_shown      = $variables['last_everyday_gift_layer_shown'],
-                    $last_everyday_gift_accepted         = $variables['last_everyday_gift_accepted'],
-                    $last_everyday_gift_accepted_counter = $variables['last_everyday_gift_accepted_counter'],
-                    $time                                = $Config.get('time')
-                ;
-
-                /** Показываем лаер ежедневного подарка если подарок сегодня не был подарен и если лаер показывался последний раз более 1 часа назад */
-                if ((new Date($time * 1000)).getDate() != (new Date($last_everyday_gift_accepted * 1000)).getDate()) {
-                    if ($time - $last_everyday_gift_layer_shown > 3600) {
-                        $Layers.showEverydayGiftLayer();
-                        $Config.get('variables')['last_everyday_gift_layer_shown'] = $Tools.microtime();
-                    }
-                }
-
             } else {
                 $status = $data.status;
                 $message = $data.message;
