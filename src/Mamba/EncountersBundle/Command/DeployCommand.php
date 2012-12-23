@@ -142,7 +142,7 @@ class DeployCommand extends Script {
                     $commands[] = array(
                         'description' => "Copying code to $server server",
                         'command'     => array(
-                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters",
+                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null",
                         ),
                     );
 
