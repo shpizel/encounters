@@ -98,7 +98,7 @@ class AchievementSetCommand extends CronScript {
 
         if ($message = $this->getAchievement($webUserId)) {
             $this->log("<comment>Achievement spam message</comment>: $message");
-            if ($result = $Mamba->Achievement()->set($message)) {
+            if ($result = $Mamba->Achievement()->set($message, $extra = 'ref-achievement')) {
                 if (isset($result['update']) && $result['update']) {
                     $this->log('Achievement was set successfully', 64);
                     $this->getStatsObject()->incr('achievement');

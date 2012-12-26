@@ -354,7 +354,7 @@ class NotificationSendCommand extends CronScript {
 
         if ($task['visitors_unread'] && ($currentNotificationMetrics != $lastNotificationMetrics || (time() - $task['last_notification_sent'] >= 7*86400))) {
             if ($message = $this->getNotifyMessage($task['user_id'], $task['visitors_unread'], $task['mutual_unread'])) {
-                if ($result = $this->getMamba()->Notify()->sendMessage($task['user_id'], $message)) {
+                if ($result = $this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')) {
                     if (isset($result['count']) && $result['count']) {
                         $this->log($message, 64);
                         $this->getStatsObject()->incr('notify');
