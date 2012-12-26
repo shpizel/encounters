@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Helpers;
 
 use Core\RedisBundle\Redis;
 use Core\MemcacheBundle\Memcache;
+use Core\GearmanBundle\Gearman;
 
 /**
  * Helper

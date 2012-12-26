@@ -61,22 +61,6 @@ class DecisionController extends ApplicationController {
             /** Инкрементируем счетчик выбора у webUser'a */
             if ($this->decision + 1 > 0) {
                 $this->getCountersObject()->incr($this->webUserId, 'mychoice');
-
-                /**
-                 * Веб-юзер проголосовал положительно за карент-юзера
-                 * Мы должны отложенно добавить карента в мордоленту
-                 *
-                 * @author shpizel
-                 */
-                $photolineDelay = 40;//s
-                $photolineDataArray = array(
-                    'user_id' => $this->currentUserId,
-                    'time'    => time(),
-                    'delay'   => $photolineDelay,
-                );
-
-                /** Ставим задачу на добавление в мордоленту */
-                //$this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_PHOTOLINE_UPDATE_FUNCTION_NAME, serialize($photolineDataArray));
             }
 
             /** Обновляем переменные */

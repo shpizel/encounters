@@ -4,14 +4,13 @@ namespace Mamba\EncountersBundle\Command;
 use Mamba\EncountersBundle\Script\CronScript;
 
 use Mamba\EncountersBundle\EncountersBundle;
-use Mamba\EncountersBundle\Helpers\Declensions;
 
 /**
- * PhotolineUpdateCommand
+ * DatabaseVariablesUpdateCommand
  *
  * @package EncountersBundle
  */
-class PhotolineUpdateCommand extends CronScript {
+class DatabaseVariablesUpdateCommand extends CronScript {
 
     const
 
@@ -20,14 +19,30 @@ class PhotolineUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Photoline updater",
+        SCRIPT_DESCRIPTION = "Sync variables with database",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:photoline:update"
+        SCRIPT_NAME = "cron:database:variables:update",
+
+        /**
+         * SQL-запрос для добавления переменной в базу
+         *
+         * @var str
+         */
+        SQL_UPDATE_VARIABLE = "
+            INSERT INTO
+                Encounters.Variables
+            SET
+                `user_id` = :user_id,
+                `key` = :key,
+                `value` = :value
+            ON DUPLICATE KEY UPDATE
+                `value` = :value
+        "
     ;
 
     /**
@@ -39,13 +54,8 @@ class PhotolineUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_PHOTOLINE_UPDATE_FUNCTION_NAME, function($job) use($class) {
-            try {
-                return $class->updatePhotoline($job);
-            } catch (\Exception $e) {
-                $class->log("Error: " . static::SCRIPT_NAME . ":" . $e->getCode() . " " . $e->getMessage(), 16);
-                return;
-            }
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_VARIABLES_UPDATE_FUNCTION_NAME, function($job) use($class) {
+            return $class->processVariable($job);
         });
 
         $iterations = $this->iterations;
@@ -74,29 +84,23 @@ class PhotolineUpdateCommand extends CronScript {
     }
 
     /**
-     * Обновляет фотолинейку
+     * Обновляет базу данных
      *
      * @param $job
      */
-    public function updatePhotoline($job) {
-        $Mamba = $this->getMamba();
-        $Redis = $this->getRedis();
+    public function processVariable($job) {
+        list($userId, $key, $value) = array_values(unserialize($job->workload()));
 
-        list($currentUserId, $time, $delay) = array_values(unserialize($job->workload()));
+        $this->log("Got task for <info>user_id</info> = {$userId}, <info>key</info> = {$key}, <info>value</info> = {$value}");
 
-        $this->log("Got task for <info>current_user_id</info> = {$currentUserId}, <info>time</info> = {$time}, <info>delay</info> = {$delay}");
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_UPDATE_VARIABLE);
+        $stmt->bindParam('user_id', $userId);
+        $stmt->bindParam('key', $key);
+        $stmt->bindParam('value', $value);
 
-        $currentTimestamp = time();
-        $photolineTimestamp = $time + $delay;
-
-        if ($currentTimestamp < $photolineTimestamp) {
-            $sleep = $photolineTimestamp - $currentTimestamp;
-            $this->log("Sleeping for {$sleep}");
-            sleep($sleep);
+        $result = $stmt->execute();
+        if (!$result) {
+            throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
         }
-
-        $currentUser = $this->getMamba()->Anketa()->getInfo($currentUserId);
-
-        $this->getPhotolineObject()->add($currentUser[0]['location']['region_id'], $currentUserId);
     }
 }

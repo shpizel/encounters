@@ -83,10 +83,10 @@ class EncountersBundle extends Bundle {
         GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME = 'database:user:update',
 
         /**
-         * Имя функции для обновления мордоленты из числа выбранных на ДА или ВОЗМОЖНО
+         * Имя функции для целочисленных переменных в базе данных
          *
          * @var str
          */
-        GEARMAN_PHOTOLINE_UPDATE_FUNCTION_NAME = 'photoline:update'
+        GEARMAN_DATABASE_VARIABLES_UPDATE_FUNCTION_NAME = 'database:variables:update'
     ;
 }
