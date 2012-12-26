@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Script\CronScript;
 use Mamba\EncountersBundle\Helpers\Photoline;
+use PDO;
 
 /**
  * PhotolineIcebreakerCommand
@@ -32,7 +33,25 @@ class PhotolineIcebreakerCommand extends CronScript {
          *
          * @var int
          */
-        PHOTOLINE_ICEBREAKER_TIMEOUT = 180
+        PHOTOLINE_ICEBREAKER_TIMEOUT = 180,
+
+        SQL = "
+            SELECT
+                u.user_id as user_id
+            FROM
+                `User` u
+            INNER JOIN
+                Energy e
+            ON
+                u.user_id = e.user_id AND
+                u.region_id = :region_id AND
+                e.energy = 0 AND
+                u.orientation = 1
+            ORDER BY
+                rand()
+            LIMIT
+                1
+        "
     ;
 
     /**
@@ -69,9 +88,25 @@ class PhotolineIcebreakerCommand extends CronScript {
                                  *
                                  * @author shpizel
                                  */
-                                $this->log("Our client", 64);
+                                $this->log("Fetching user for icebreak", 64);
+
+                                $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL);
+                                $stmt->bindParam('region_id', $regionId);
+
+                                if ($result = $stmt->execute()) {
+                                    $this->log("SQL query OK", 64);
+
+                                    while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        $userId = (int) $item['user_id'];
+                                        $this->getPhotolineObject()->add($regionId, $userId);
 
 
+                                        $this->log($userId . " was added to {$regionId} photoline", 64);
+                                        break;
+                                    }
+                                } else {
+                                    $this->log("SQL query failed", 16);
+                                }
                             } else {
                                 $this->log("Photoline was updated at least than " . self::PHOTOLINE_ICEBREAKER_TIMEOUT . "s", 16);
                             }
@@ -83,8 +118,6 @@ class PhotolineIcebreakerCommand extends CronScript {
             } else {
                 $this->log("No photoline keys was found", 16);
             }
-
-
         }
     }
 }

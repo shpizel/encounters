@@ -217,7 +217,7 @@ class Variables extends Helper {
                 throw new VariablesException("Invalid data for key {$key}:". PHP_EOL . "==data start==" . PHP_EOL . var_export($data, true) . PHP_EOL . "==data end==");
             }
 
-            $redisResult = $this->getRedis()->hSet(
+            return false !== $this->getRedis()->hSet(
                 sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId),
                 $key,
                 json_encode(
@@ -227,26 +227,6 @@ class Variables extends Helper {
                     )
                 )
             );
-
-            /**
-             * Если значение переменной целочисленное и протуханию не подлежит - сохраним в базе
-             *
-             * @author shpizel
-             */
-            if (!$ttl && is_numeric($data)) {
-                $this->getGearman()->getClient()->doHighBackground(
-                    EncountersBundle::GEARMAN_DATABASE_VARIABLES_UPDATE_FUNCTION_NAME,
-                    serialize(
-                        array(
-                            'user_id' => $userId,
-                            'key'     => $key,
-                            'value'   => (int) $data,
-                        )
-                    )
-                );
-            }
-
-            return false !== $redisResult;
         }
     }
 

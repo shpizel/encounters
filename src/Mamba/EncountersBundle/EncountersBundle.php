@@ -80,13 +80,6 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME = 'database:user:update',
-
-        /**
-         * Имя функции для целочисленных переменных в базе данных
-         *
-         * @var str
-         */
-        GEARMAN_DATABASE_VARIABLES_UPDATE_FUNCTION_NAME = 'database:variables:update'
+        GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME = 'database:user:update'
     ;
 }
