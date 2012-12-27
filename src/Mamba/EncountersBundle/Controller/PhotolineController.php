@@ -155,7 +155,16 @@ class PhotolineController extends ApplicationController {
             if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
                 if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
                     if ($webUserId != $currentUserId) {
-                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
+
+                        $_data = $this->getMamba()->Anketa()->getInfo($webUserId);
+                        $_searchPreferences = $this->getSearchPreferencesObject()->get($currentUserId);
+
+                        if ($_data[0]['info']['gender'] == $_searchPreferences['gender']) {
+                            $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
+                        } else {
+                            list($this->json['status'], $this->json['message']) = array(5, "Gender error");
+                        }
+
                     } else {
                         list($this->json['status'], $this->json['message']) = array(4, "Its me");
                     }

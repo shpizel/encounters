@@ -69,6 +69,7 @@ class PhotolineIcebreakerCommand extends CronScript {
             if ($photolineKeys = $nodeConnection->keys(str_replace("%d", "*", Photoline::REDIS_PHOTOLINE_KEY))) {
                 $this->log(count($photolineKeys) . " photoline keys was found", 48);
 
+                shuffle($photolineKeys);
                 foreach ($photolineKeys as $photolineKey) {
                     list(, $regionId) = explode("_", $photolineKey);
 
