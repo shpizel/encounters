@@ -50,7 +50,7 @@ class PhotolineIcebreakerCommand extends CronScript {
             ORDER BY
                 rand()
             LIMIT
-                1
+                10
         "
     ;
 
@@ -99,11 +99,13 @@ class PhotolineIcebreakerCommand extends CronScript {
 
                                     while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                         $userId = (int) $item['user_id'];
-                                        $this->getPhotolineObject()->add($regionId, $userId);
 
+                                        if ($mambaUserInfo = $this->getMamba()->Anketa()->getInfo($userId)) {
+                                            $this->getPhotolineObject()->add($regionId, $userId);
 
-                                        $this->log($userId . " was added to {$regionId} photoline", 64);
-                                        break;
+                                            $this->log($userId . " was added to {$regionId} photoline", 64);
+                                            break;
+                                        }
                                     }
                                 } else {
                                     $this->log("SQL query failed", 16);
