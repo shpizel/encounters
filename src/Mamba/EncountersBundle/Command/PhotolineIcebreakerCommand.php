@@ -114,7 +114,32 @@ class PhotolineIcebreakerCommand extends CronScript {
                                 $this->log("Photoline was updated at least than " . self::PHOTOLINE_ICEBREAKER_TIMEOUT . "s", 16);
                             }
                         } else {
-                            $this->log("No items was found");
+                            /**
+                             * Нужно найти пользователей которых неплохо бы открутить в мордоленте
+                             *
+                             * @author shpizel
+                             */
+                            $this->log("Fetching user for icebreak", 64);
+
+                            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL);
+                            $stmt->bindParam('region_id', $regionId);
+
+                            if ($result = $stmt->execute()) {
+                                $this->log("SQL query OK", 64);
+
+                                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    $userId = (int) $item['user_id'];
+
+                                    if ($mambaUserInfo = $this->getMamba()->Anketa()->getInfo($userId)) {
+                                        $this->getPhotolineObject()->add($regionId, $userId);
+
+                                        $this->log($userId . " was added to {$regionId} photoline", 64);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                $this->log("SQL query failed", 16);
+                            }
                         }
                     }
                 }
