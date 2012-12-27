@@ -64,9 +64,10 @@ class Photoline extends Helper {
      * @param int $regionId
      * @param int $userId
      * @param str $comment
+     * @param bool $fake
      * @return mixed
      */
-    public function add($regionId, $userId, $comment = null) {
+    public function add($regionId, $userId, $comment = null, $fake = false) {
         if (!is_int($userId)) {
             throw new PhotolineException("Invalid user id: \n" . var_export($userId, true));
         }
@@ -79,8 +80,10 @@ class Photoline extends Helper {
             )
         ));
 
-        $Stats = new Stats($this->Container);
-        $Stats->incr('photoline-add');
+        if (!$fake) {
+            $Stats = new Stats($this->Container);
+            $Stats->incr('photoline-add');
+        }
 
         return $return;
     }

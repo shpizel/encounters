@@ -101,10 +101,12 @@ class PhotolineIcebreakerCommand extends CronScript {
                                         $userId = (int) $item['user_id'];
 
                                         if ($mambaUserInfo = $this->getMamba()->Anketa()->getInfo($userId)) {
-                                            $this->getPhotolineObject()->add($regionId, $userId);
+                                            if ($mambaUserInfo[0]['info']['is_app_user']) {
+                                                $this->getPhotolineObject()->add($regionId, $userId, null, true);
 
-                                            $this->log($userId . " was added to {$regionId} photoline", 64);
-                                            break;
+                                                $this->log($userId . " was added to {$regionId} photoline", 64);
+                                                break;
+                                            }
                                         }
                                     }
                                 } else {

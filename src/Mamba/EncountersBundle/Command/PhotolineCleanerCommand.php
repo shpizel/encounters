@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Command;
 
 use Core\RedisBundle\Redis;
 use Mamba\EncountersBundle\Script\CronScript;
+use Mamba\EncountersBundle\Helpers\Photoline;
 
 /**
  * PhotolineCleanerCommand
