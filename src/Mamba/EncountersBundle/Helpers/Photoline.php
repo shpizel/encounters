@@ -85,6 +85,8 @@ class Photoline extends Helper {
             $Stats->incr('photoline-add');
         }
 
+        $this->getMemcache()->set("photoline_{$regionId}_updated", microtime());
+
         return $return;
     }
 }

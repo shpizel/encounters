@@ -112,12 +112,13 @@ class PhotolineIcebreakerCommand extends CronScript {
                     $lastmod = 0;
                     if ($regionId = intval($regionId)) {
                         $this->log("Checking {$photolineKey}..");
-                        if ($items = $nodeConnection->zRange($photolineKey, 0, 0)) {
-                            $item = array_shift($items);
-                            $item = json_decode($item, true);
-
-                            $lastmod = $item['microtime'];
-                        }
+//                        if ($items = $nodeConnection->zRange($photolineKey, 0, 0)) {
+//                            $item = array_shift($items);
+//                            $item = json_decode($item, true);
+//
+//                            $lastmod = $item['microtime'];
+//                        }
+                        $lastmod = (int) $this->getMemcache()->get("photoline_{$regionId}_updated");
 
                         $this->log("Last modified at " . date("Y-m-d H:i:s", (int) $lastmod));
                         if (time() - $lastmod > self::PHOTOLINE_ICEBREAKER_TIMEOUT) {
