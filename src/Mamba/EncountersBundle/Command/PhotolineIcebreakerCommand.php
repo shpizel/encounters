@@ -62,7 +62,13 @@ class PhotolineIcebreakerCommand extends CronScript {
             $this->log("Fetching \"" . $node . "\"..", 32);
 
             $nodeConnection = $Redis->getNodeConnection($node);
-            if ($photolineKeys = $nodeConnection->keys(str_replace("%d", "*", Photoline::REDIS_PHOTOLINE_KEY))) {
+
+            if (!($photolineKeys = $this->getMemcache()->get('photoline-keys'))) {
+                $photolineKeys = $nodeConnection->keys(str_replace("%d", "*", Photoline::REDIS_PHOTOLINE_KEY));
+                $this->getMemcache()->set('photoline-keys', $photolineKeys, 3600);
+            }
+
+            if ($photolineKeys) {
                 $this->log(count($photolineKeys) . " photoline keys was found", 48);
 
                 shuffle($photolineKeys);
