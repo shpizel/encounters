@@ -33,7 +33,7 @@ class PhotolineIcebreakerCommand extends CronScript {
          *
          * @var int
          */
-        PHOTOLINE_ICEBREAKER_TIMEOUT = 180,
+        PHOTOLINE_ICEBREAKER_TIMEOUT = 5,
 
         SQL = "
             SELECT
@@ -41,16 +41,12 @@ class PhotolineIcebreakerCommand extends CronScript {
             FROM
                 `User` u
             INNER JOIN
-                Energy e
+                `Energy` e
             ON
                 u.user_id = e.user_id AND
                 u.region_id = :region_id AND
                 e.energy = 0 AND
                 u.orientation = 1
-            ORDER BY
-                rand()
-            LIMIT
-                10
         "
     ;
 
@@ -73,55 +69,10 @@ class PhotolineIcebreakerCommand extends CronScript {
                 foreach ($photolineKeys as $photolineKey) {
                     list(, $regionId) = explode("_", $photolineKey);
 
-                    if ($regionId = intval($regionId)) {
-                        $this->log("Checking {$photolineKey}..");
-                        if ($items = $nodeConnection->zRange($photolineKey, 0, 0)) {
-                            $item = array_shift($items);
-                            $item = json_decode($item, true);
-
-                            $lastmod = $item['microtime'];
-                            $this->log("Last modified at " . date("Y-m-d H:i:s", (int) $lastmod));
-
-                            if (time() - $lastmod > self::PHOTOLINE_ICEBREAKER_TIMEOUT) {
-
-                                /**
-                                 * Нужно найти пользователей которых неплохо бы открутить в мордоленте
-                                 *
-                                 * @author shpizel
-                                 */
-                                $this->log("Fetching user for icebreak", 64);
-
-                                $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL);
-                                $stmt->bindParam('region_id', $regionId);
-
-                                if ($result = $stmt->execute()) {
-                                    $this->log("SQL query OK", 64);
-
-                                    while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                        $userId = (int) $item['user_id'];
-
-                                        if ($mambaUserInfo = $this->getMamba()->Anketa()->getInfo($userId)) {
-                                            if ($mambaUserInfo[0]['info']['is_app_user']) {
-                                                $this->getPhotolineObject()->add($regionId, $userId, null, true);
-
-                                                $this->log($userId . " was added to {$regionId} photoline", 64);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    $this->log("SQL query failed", 16);
-                                }
-                            } else {
-                                $this->log("Photoline was updated at least than " . self::PHOTOLINE_ICEBREAKER_TIMEOUT . "s", 16);
-                            }
-                        } else {
-                            /**
-                             * Нужно найти пользователей которых неплохо бы открутить в мордоленте
-                             *
-                             * @author shpizel
-                             */
-                            $this->log("Fetching user for icebreak", 64);
+                    if ($this->getMemcache()->add("photoline-icebreaker-parser-{$regionId}", 1, 5*60)) {
+                        if (!$Redis->lLen($this->getUsersCacheKey($regionId))) {
+                            //список пустой, нужно его заполнить
+                            $this->log("Empty cache at regionId = {$regionId}, regenerating..", 64);
 
                             $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL);
                             $stmt->bindParam('region_id', $regionId);
@@ -129,19 +80,56 @@ class PhotolineIcebreakerCommand extends CronScript {
                             if ($result = $stmt->execute()) {
                                 $this->log("SQL query OK", 64);
 
+                                $counter = 0;
+                                $users = array();
                                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                    $userId = (int) $item['user_id'];
+                                    $users[] = (int) $item['user_id'];
+                                }
 
-                                    if ($mambaUserInfo = $this->getMamba()->Anketa()->getInfo($userId)) {
-                                        $this->getPhotolineObject()->add($regionId, $userId);
-
-                                        $this->log($userId . " was added to {$regionId} photoline", 64);
-                                        break;
+                                $users = array_chunk($users, 100);
+                                foreach ($users as $chunk) {
+                                    if ($data = $this->getMamba()->Anketa()->getInfo($chunk)) {
+                                        foreach ($data as $dataChunk) {
+                                            if ($dataChunk['info']['is_app_user']) {
+                                                $Redis->lPush($this->getUsersCacheKey($regionId), (int) $dataChunk['info']['oid']);
+                                                $counter++;
+                                            }
+                                        }
                                     }
                                 }
+
+                                $this->log("{$counter} users added");
                             } else {
                                 $this->log("SQL query failed", 16);
                             }
+                        }
+
+                        $this->getMemcache()->delete("photoline-icebreaker-parser-{$regionId}");
+                    } else {
+                        $this->log("Locked");
+                    }
+
+                    $lastmod = 0;
+                    if ($regionId = intval($regionId)) {
+                        $this->log("Checking {$photolineKey}..");
+                        if ($items = $nodeConnection->zRange($photolineKey, 0, 0)) {
+                            $item = array_shift($items);
+                            $item = json_decode($item, true);
+
+                            $lastmod = $item['microtime'];
+                        }
+
+                        $this->log("Last modified at " . date("Y-m-d H:i:s", (int) $lastmod));
+                        if (time() - $lastmod > self::PHOTOLINE_ICEBREAKER_TIMEOUT) {
+
+                            if ($userId = (int) $Redis->lPop($this->getUsersCacheKey($regionId))) {
+                                $this->getPhotolineObject()->add($regionId, $userId, null, true);
+                                $this->log($userId . " was added to {$regionId} photoline", 64);
+                            } else {
+                                $this->log("Users was not found :(");
+                            }
+                        } else {
+                            $this->log("Photoline was updated at least than " . self::PHOTOLINE_ICEBREAKER_TIMEOUT . "s", 16);
                         }
                     }
                 }
@@ -149,5 +137,9 @@ class PhotolineIcebreakerCommand extends CronScript {
                 $this->log("No photoline keys was found", 16);
             }
         }
+    }
+
+    private function getUsersCacheKey($regionId) {
+        return "photoline-icebreaker-{$regionId}";
     }
 }

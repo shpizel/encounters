@@ -33,7 +33,6 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $Mamba = $this->getMamba();
-        print_r($Mamba->Anketa()->getInfo(560015854));
+
     }
 }
