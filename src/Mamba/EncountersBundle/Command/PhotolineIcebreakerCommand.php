@@ -95,11 +95,13 @@ class PhotolineIcebreakerCommand extends CronScript {
                                         $users[] = (int) $item['user_id'];
                                     }
 
+                                    shuffle($users);
+
                                     $users = array_chunk($users, 100);
                                     foreach ($users as $chunk) {
                                         if ($data = $this->getMamba()->Anketa()->getInfo($chunk)) {
                                             foreach ($data as $dataChunk) {
-                                                if ($dataChunk['info']['is_app_user']) {
+                                                if ($dataChunk['info']['is_app_user'] && $dataChunk['about']) {
                                                     $Redis->lPush($this->getUsersCacheKey($regionId), (int) $dataChunk['info']['oid']);
                                                     $counter++;
                                                 }
@@ -131,9 +133,16 @@ class PhotolineIcebreakerCommand extends CronScript {
 
                             $this->log("Last modified at " . date("Y-m-d H:i:s", (int) $lastmod));
                             if (time() - $lastmod > self::PHOTOLINE_ICEBREAKER_TIMEOUT) {
-
                                 if ($userId = (int) $Redis->lPop($this->getUsersCacheKey($regionId))) {
-                                    $this->getPhotolineObject()->add($regionId, $userId, null, true);
+
+                                    /**
+                                     * Получим about..
+                                     *
+                                     * @author shpizel
+                                     */
+                                    $about = $this->getMamba()->Anketa()->getInfo($userId);
+                                    $about = array_shift($about);
+                                    $this->getPhotolineObject()->add($regionId, $userId, $about['about'], true);
                                     $this->log($userId . " was added to {$regionId} photoline", 64);
                                 } else {
                                     $this->log("Users was not found :(");

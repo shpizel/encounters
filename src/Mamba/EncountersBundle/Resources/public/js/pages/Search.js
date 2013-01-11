@@ -111,7 +111,7 @@ $Search = {
          *
          * @author shpizel
          */
-        if (!$Tools.getCookie('photoline-purchase-layer-auto-show')) {
+        if (($Config.get('webuser')['account'] > 0) && (!$Tools.getCookie('photoline-purchase-layer-auto-show'))) {
             $Layers.showPhotolinePurchaseLayer();
             $Tools.setCookie('photoline-purchase-layer-auto-show', true, {expires: new Date((new Date()).getTime() + (8 * 60 * 60 * 1000))});
         }
