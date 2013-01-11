@@ -105,6 +105,16 @@ $Search = {
         $("div.app-meet-button > a.app-menu3").removeClass("app-menu3-active");
 
         this.showNextPhoto();
+
+        /**
+         * Реклама мордоленты
+         *
+         * @author shpizel
+         */
+        if (!$Tools.getCookie('photoline-purchase-layer-auto-show')) {
+            $Layers.showPhotolinePurchaseLayer();
+            $Tools.setCookie('photoline-purchase-layer-auto-show', true, {expires: new Date((new Date()).getTime() + (8 * 60 * 60 * 1000))});
+        }
     },
 
     /**
