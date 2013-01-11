@@ -102,8 +102,18 @@ class PhotolineIcebreakerCommand extends CronScript {
                                         if ($data = $this->getMamba()->Anketa()->getInfo($chunk)) {
                                             foreach ($data as $dataChunk) {
                                                 if ($dataChunk['info']['is_app_user'] && $dataChunk['about']) {
-                                                    $Redis->lPush($this->getUsersCacheKey($regionId), (int) $dataChunk['info']['oid']);
-                                                    $counter++;
+
+                                                    /**
+                                                     * Проверим есть ли у чувака есть фотки епт
+                                                     *
+                                                     * @author shpizel
+                                                     */
+
+                                                    $photos = $this->getMamba()->Photos()->get($dataChunk['info']['oid']);
+                                                    if (isset($photos['photos']) && count($photos['photos'])) {
+                                                        $Redis->lPush($this->getUsersCacheKey($regionId), (int) $dataChunk['info']['oid']);
+                                                        $counter++;
+                                                    }
                                                 }
                                             }
                                         }
