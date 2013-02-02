@@ -186,16 +186,6 @@ class ContactsQueueUpdateCommand extends CronScript {
                             if ($gender == $searchPreferences['gender'] && $age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to']) {
                                 if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
                                     if ($this->getContactsQueueObject()->put($webUserId, $currentUserId)) {
-
-                                        /** Ключ ставим только в случае, если приложение у юзера не стоит */
-                                        if (($appUser = $Mamba->Anketa()->isAppUser($currentUserId)) && (!$appUser[0]['is_app_user'])) {
-                                            $this->getMemcache()->add(
-                                                "contacts_queue_{$webUserId}_{$currentUserId}",
-                                                time(),
-                                                30 * 24 * 3600
-                                            );
-                                        }
-
                                         $usersAddedCount++;
                                     }
 

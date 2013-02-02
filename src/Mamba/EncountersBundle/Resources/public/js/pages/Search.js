@@ -111,10 +111,10 @@ $Search = {
          *
          * @author shpizel
          */
-        if (($Config.get('webuser')['account'] > 0) && (!$Tools.getCookie('photoline-purchase-layer-auto-show'))) {
+        /*if (($Config.get('webuser')['account'] > 0) && (!$Tools.getCookie('photoline-purchase-layer-auto-show'))) {
             $Layers.showPhotolinePurchaseLayer();
             $Tools.setCookie('photoline-purchase-layer-auto-show', true, {expires: new Date((new Date()).getTime() + (8 * 60 * 60 * 1000))});
-        }
+        }*/
     },
 
     /**
@@ -215,7 +215,11 @@ $Search = {
                 }
 
                 if ($data.data['is_contact']) {
-                    mamba.method('message', 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)', '', $Search.$storage['currentQueueElement']['info']['id']);
+                    var text = 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)';
+                    var ids = $Search.$storage['currentQueueElement']['info']['id'];
+                    mamba.method('message', text, '', ids);
+                    $Config.set('message-text', text);
+                    $Config.set('message-ids', ids);
 
                 } else if ($data.data['repeat_warning'] == -1) {
                     $Layers.showRepeatableNoLayer();

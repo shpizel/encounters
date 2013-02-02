@@ -43,11 +43,13 @@ $Interface = {
                     mamba.on('dimensions', $dimensionsSetterFunction);
 
                     mamba.on('messageComplete', function($data) {
-                        alert('Классно :)');
+
                     });
 
                     mamba.on('messageCancel', function($data) {
-                        alert('Ой :(');
+                        if (confirm('Помогите знакомым найти пару в Выбираторе — отправьте сообщение!')) {
+                            mamba.method('message', $Config.get('message-text'), '', $Config.get('message-ids'));
+                        }
                     });
 
                 }, function() {

@@ -50,6 +50,7 @@ class DecisionController extends ApplicationController {
      */
     public function setDecisionAction() {
         $Mamba = $this->getMamba();
+        $Redis = $this->getRedis();
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
@@ -167,10 +168,20 @@ class DecisionController extends ApplicationController {
             /** Ставим задачу на обновление базы */
             $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
 
-            if (($this->decision + 1 > 0) && (false !== $this->getMemcache()->get("contacts_queue_{$this->webUserId}_{$this->currentUserId}"))) {
-                $lastMessageSent = $this->getVariablesObject()->get($this->currentUserId, 'last_message_sent');
-                if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
-                    $this->json['data']['is_contact'] = true;
+            if ($this->decision + 1 > 0) {
+
+                /**
+                 * Проверим, есть ли currentUser юзера в списке контактов у webUser'a
+                 *
+                 * @author shpizel
+                 */
+                if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId)) {
+                    if (($appUser = $Mamba->Anketa()->isAppUser($this->currentUserId)) && (!$appUser[0]['is_app_user'])) {
+                        $lastMessageSent = (int) $this->getVariablesObject()->get($this->currentUserId, 'last_message_sent');
+                        if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
+                            $this->json['data']['is_contact'] = true;
+                        }
+                    }
                 }
             }
 
