@@ -1,0 +1,59 @@
+/**
+ * Mutual layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-mutual {
+    display: none;
+}
+
+.layer-mutual .title {
+    background: url('/bundles/encounters/images/texts/title-ura.gif') no-repeat center top;
+    text-indent: -330em;
+    margin: 10px 0 30px 0;
+    height: 37px;
+}
+
+.layer-mutual div.photo {
+    height: 171px;
+    width: 251px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+}
+
+.layer-mutual div.z {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 300;
+    background: url('/bundles/encounters/images/mutual-ramka.png') no-repeat center top;
+}
+
+.layer-mutual div.photo div.current {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 10;
+    height: 150px;
+    width: 110px;
+
+}
+
+.layer-mutual div.photo div.web {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    z-index: 10;
+    height: 150px;
+    width: 110px;
+
+}
+
+.layer-mutual .center .close {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}

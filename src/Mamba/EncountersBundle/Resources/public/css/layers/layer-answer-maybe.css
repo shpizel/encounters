@@ -1,0 +1,91 @@
+/**
+ * Answer maybe layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-maybe .title {
+    text-indent: -330em;
+    margin: 10px 0 30px 0;
+    height: 37px;
+}
+
+.layer-maybe div.male {
+    background: url('/bundles/encounters/images/texts/male/title-say-maybe.gif') no-repeat center top;
+}
+
+.layer-maybe div.female {
+    background: url('/bundles/encounters/images/texts/female/title-say-maybe.gif') no-repeat center top;
+}
+
+.layer-maybe .center .close {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+.layer-maybe .photo {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.layer-no .photo {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.layer-maybe div.info div.lookingfor {
+    margin-top: 10px;
+}
+
+.layer-maybe div.info  div.age {
+    margin-top: 4px;
+}
+
+.layer-maybe .info {
+    padding: 8px !important;
+}
+
+.layer-maybe .info-battery {
+    text-align: left;
+    margin-bottom: 17px;
+}
+
+.layer-maybe .info-battery .arrow {
+    background: none;
+    position: absolute;
+    left: 49%;
+    top: -18px;
+    margin-left: -9px;
+    border: 9px solid transparent;
+    border-bottom: 9px solid #fff1d2;
+    height: 0;
+    width: 0;
+}
+
+.layer-maybe div.info {
+    font-size: 13px;
+    padding: 20px;
+    padding-bottom: 30px;
+}
+
+.layer-maybe div.info div.face {
+    float: left;
+    margin-right: 15px;
+}
+
+.layer-maybe div.info div.face img {
+    box-shadow: 0 0 2px #666;
+    padding: 4px;
+    width: 110px;
+    height: 150px;
+}
+
+.layer-maybe div.info div.location {
+    color: #666;
+}
+
+.layer-maybe div.info div.name {
+    font-size: 24px;
+    margin-bottom: 3px;
+}

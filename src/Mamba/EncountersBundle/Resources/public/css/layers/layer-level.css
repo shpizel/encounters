@@ -1,0 +1,230 @@
+/**
+ * Level layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-level .level {
+    height: 98px;
+
+    width: 280px;
+    margin: 0 auto;
+}
+
+.layer-level .l1 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_01.png');
+}
+
+.layer-level .l2 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_02.png');
+}
+
+.layer-level .l3 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_03.png');
+}
+
+.layer-level .l4 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_04.png');
+}
+
+.layer-level .l5 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_05.png');
+}
+
+.layer-level .l6 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_06.png');
+}
+
+.layer-level .l7 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_07.png');
+}
+
+.layer-level .l8 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_08.png');
+}
+
+.layer-level .l9 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_09.png');
+}
+
+.layer-level .l10 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_10.png');
+}
+
+.layer-level .l11 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_11.png');
+}
+
+.layer-level .l12 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_12.png');
+}
+
+.layer-level .l13 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_13.png');
+}
+
+.layer-level .l14 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_14.png');
+}
+
+.layer-level .l15 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_15.png');
+}
+
+.layer-level .l16 {
+    background: url('/bundles/encounters/images/levels/layers/layer_now_l_16.png');
+}
+
+.layer-level .bar .current-background, .layer-level .bar .current, .layer-level .bar .next-background, .layer-level .bar .next {
+    position: absolute;
+    top: 0px;
+    width: 42px;
+    height: 40px;
+}
+
+.layer-level .bar .current-background, .layer-level .bar .current {
+    left: 0px;
+}
+
+.layer-level .bar .next-background, .layer-level .bar .next {
+    right: 0px;
+}
+
+.layer-level .bar .current-background {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big_bg1.png') no-repeat;
+}
+
+.layer-level .bar .next-background {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big_bg2.png') no-repeat;
+}
+
+.layer-level .bar .next {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big.png') no-repeat;
+    z-index: 555;
+}
+
+.layer-level .bar .current {
+    background: url('/bundles/encounters/images/levels/layers/numbers-big.png') no-repeat;
+    z-index: 555;
+}
+
+.layer-level .bar .l1 {
+    background-position: 0 0;
+}
+
+.layer-level .bar .l2 {
+    background-position: 0 -40px;
+}
+
+.layer-level .bar .l3 {
+    background-position: 0 -80px;
+}
+
+.layer-level .bar .l4 {
+    background-position: 0 -120px;
+}
+
+.layer-level .bar .l5 {
+    background-position: 0 -160px;
+}
+
+.layer-level .bar .l6 {
+    background-position: 0 -200px;
+}
+
+.layer-level .bar .l7 {
+    background-position: 0 -240px;
+}
+
+.layer-level .bar .l8 {
+    background-position: 0 -280px;
+}
+
+.layer-level .bar .l9 {
+    background-position: 0 -320px;
+}
+
+.layer-level .bar .l10 {
+    background-position: 0 -360px;
+}
+
+.layer-level .bar .l11 {
+    background-position: 0 -400px;
+}
+
+.layer-level .bar .l12 {
+    background-position: 0 -440px;
+}
+
+.layer-level .bar .l13 {
+    background-position: 0 -480px;
+}
+
+.layer-level .bar .l14 {
+    background-position: 0 -520px;
+}
+
+.layer-level .bar .l15 {
+    background-position: 0 -560px;
+}
+
+.layer-level .bar .l16 {
+    background-position: 0 -600px;
+}
+
+.layer-level .bar .speedo-background, .layer-level .bar .speedo {
+    top: 0px;
+    position: absolute;
+
+    left: 52px;
+    height: 40px;
+}
+
+.layer-level .bar .speedo-background {
+    background: url('/bundles/encounters/images/levels/layers/bar-big2.png') no-repeat;
+    width: 199px;
+}
+
+.layer-level .bar .speedo {
+    background: url('/bundles/encounters/images/levels/layers/bar-big1.png') no-repeat;
+    width: 20px;
+}
+
+.layer-level .bar {
+    width: 303px;
+    height: 40px;
+    margin: 0 auto;
+    margin-top: 30px;
+    position: relative;
+}
+
+.layer-level .info-battery {
+    margin-top: 30px;
+}
+
+.layer-level .info-battery {
+    background-color: #fff1d2;
+    border-radius: 5px 5px 5px 5px;
+    display: block;
+    margin: 20px auto 5px;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    font-size: 15px;
+    line-height: 20px;
+    width: 96%;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.layer-level .info-battery .arrow {
+    background: none;
+    position: absolute;
+    left: 49%;
+    top: -18px;
+    margin-left: -9px;
+    border: 9px solid transparent;
+    border-bottom: 9px solid #fff1d2;
+    height: 0;
+    width: 0;
+}

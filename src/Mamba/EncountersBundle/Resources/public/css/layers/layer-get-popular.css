@@ -1,0 +1,28 @@
+/**
+ * Get popularity layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-pop-up {
+    background: url('/bundles/encounters/images/speed.jpg') no-repeat center 40px;
+    padding: 43px 0 20px 0;
+}
+
+.layer-pop-up .title {
+    background: url('/bundles/encounters/images/title-popular.gif') no-repeat center top;
+    text-indent: -330em;
+    margin: 80px 0 30px 0;
+    height: 36px;
+}
+
+.layer-pop-up p {
+    font-size: 18px;
+    text-align: center;
+    margin: 0 0 25px 0;
+}
+
+.layer-pop-up .center {
+    text-align: center;
+    margin: 0;
+}

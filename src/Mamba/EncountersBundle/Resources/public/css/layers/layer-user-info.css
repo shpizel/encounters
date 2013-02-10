@@ -1,0 +1,40 @@
+/**
+ * User info layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-user-info div.info div.lookingfor {
+    margin-top: 10px;
+}
+
+.layer-user-info div.info div.age {
+    margin-top: 4px;
+}
+
+.layer-user-info div.info {
+    font-size: 13px;
+    padding: 20px;
+    padding-bottom: 30px;
+}
+
+.layer-user-info div.info div.face {
+    float: left;
+    margin-right: 15px;
+}
+
+.layer-user-info div.info div.face img {
+    box-shadow: 0 0 2px #666;
+    padding: 4px;
+    width: 110px;
+    height: 150px;
+}
+
+.layer-user-info div.info div.location {
+    color: #666;
+}
+
+.layer-user-info div.info div.name {
+    font-size: 24px;
+    margin-bottom: 3px;
+}

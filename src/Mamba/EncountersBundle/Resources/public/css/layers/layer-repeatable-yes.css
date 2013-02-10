@@ -1,0 +1,40 @@
+/**
+ * Repeatable yes layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-repeatable-yes .title {
+    background: url('/bundles/encounters/images/texts/repeatable-yes.png') no-repeat center top;
+    height: 79px;
+    width: 381px;
+    text-indent: -330em;
+    margin: 10px auto 30px auto;
+}
+
+.layer-repeatable-yes .info-battery {
+    background-color: #fff1d2;
+    border-radius: 5px 5px 5px 5px;
+    display: block;
+    margin: 20px auto 5px;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    font-size: 15px;
+    line-height: 20px;
+    width: 96%;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.layer-repeatable-yes .info-battery .arrow {
+    background: none;
+    position: absolute;
+    left: 49%;
+    top: -18px;
+    margin-left: -9px;
+    border: 9px solid transparent;
+    border-bottom: 9px solid #fff1d2;
+    height: 0;
+    width: 0;
+}

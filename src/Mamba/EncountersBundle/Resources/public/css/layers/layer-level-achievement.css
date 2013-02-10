@@ -1,0 +1,117 @@
+/**
+ * Level achievements layer styles
+ *
+ * @author shpizel
+ */
+
+.layer-level-achievement .level {
+    height: 171px;
+
+    width: 499px;
+    margin: 0 auto;
+}
+
+.layer-level-achievement .l2 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_02.png');
+}
+
+.layer-level-achievement .l3 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_03.png');
+}
+
+.layer-level-achievement .l4 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_04.png');
+}
+
+.layer-level-achievement .l5 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_05.png');
+}
+
+.layer-level-achievement .l6 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_06.png');
+}
+
+.layer-level-achievement .l7 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_07.png');
+}
+
+.layer-level-achievement .l8 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_08.png');
+}
+
+.layer-level-achievement .l9 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_09.png');
+}
+
+.layer-level-achievement .l10 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_10.png');
+}
+
+.layer-level-achievement .l11 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_11.png');
+}
+
+.layer-level-achievement .l12 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_12.png');
+}
+
+.layer-level-achievement .l13 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_13.png');
+}
+
+.layer-level-achievement .l14 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_14.png');
+}
+
+.layer-level-achievement .l15 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_15.png');
+}
+
+.layer-level-achievement .l16 {
+    background: url('/bundles/encounters/images/levels/layers/layer_l_16.png');
+}
+
+.layer-level-achievement .message {
+    background: url('/bundles/encounters/images/levels/layers/text-vi-pereshli.png') no-repeat;
+    height: 36px;
+
+    width: 456px;
+    margin: 0 auto;
+    margin-top: 10px;
+}
+
+.layer-level-achievement .battery {
+    background: url('/bundles/encounters/images/levels/layers/bat.png') no-repeat;
+    padding-left: 43px;
+    color: #ff6600;
+    font-size: 15px;
+    font-weight: bold;
+    margin: 0 auto;
+}
+
+.layer-level-achievement .info-battery {
+    background-color: #fff1d2;
+    border-radius: 5px 5px 5px 5px;
+    display: block;
+    margin: 20px auto 5px;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    font-size: 15px;
+    line-height: 20px;
+    width: 96%;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.layer-level-achievement .info-battery .arrow {
+    background: none;
+    position: absolute;
+    left: 49%;
+    top: -18px;
+    margin-left: -9px;
+    border: 9px solid transparent;
+    border-bottom: 9px solid #fff1d2;
+    height: 0;
+    width: 0;
+}

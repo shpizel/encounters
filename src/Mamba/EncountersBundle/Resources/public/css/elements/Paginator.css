@@ -21,6 +21,7 @@ div.paginator a {
 
 div.paginator a:hover {
     background: #E1E1E1;
+    color: #ccc;
 }
 
 div.paginator a.selected {
