@@ -201,12 +201,6 @@
     height: 11px;
     margin-left:3px;
 }
-/*
-.info-meet li.item-energy i {
-    font-size: 11px;
-    color: #ff6600;
-}
-*/
 
 .info-meet li.item-energy b.battery {
     background: url('/bundles/encounters/images/battery-small.gif') no-repeat left top;
@@ -804,11 +798,4 @@ div.app-block-no-popular a.close {
     position: absolute;
     right: 7px;
     top: 7px;
-}
-
-.opacity-50 {
-    filter: progid:DXImageTransform.Microsoft.Alpha(opacity = 50); /* IE 5.5+*/
-    -moz-opacity: 0.5; /* Mozilla 1.6 и ниже */
-    -khtml-opacity: 0.5; /* Konqueror 3.1, Safari 1.1 */
-    opacity: 0.5; /* CSS3 - Mozilla 1.7b +, Firefox 0.9 */
 }

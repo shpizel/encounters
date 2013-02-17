@@ -52,30 +52,3 @@
     text-align: center;
     margin: 0;
 }
-
-.layer-energy .info-battery {
-    background-color: #fff1d2;
-    border-radius: 5px 5px 5px 5px;
-    display: block;
-    margin: 20px auto 5px;
-    padding: 10px;
-    position: relative;
-    text-align: center;
-    font-size: 15px;
-    line-height: 20px;
-    width: 96%;
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
-
-.layer-energy .info-battery .arrow {
-    background: none;
-    position: absolute;
-    left: 49%;
-    top: -18px;
-    margin-left: -9px;
-    border: 9px solid transparent;
-    border-bottom: 9px solid #fff1d2;
-    height: 0;
-    width: 0;
-}

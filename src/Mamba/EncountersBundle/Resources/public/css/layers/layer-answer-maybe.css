@@ -46,21 +46,9 @@
     padding: 8px !important;
 }
 
-.layer-maybe .info-battery {
+.layer-maybe .info-block {
     text-align: left;
     margin-bottom: 17px;
-}
-
-.layer-maybe .info-battery .arrow {
-    background: none;
-    position: absolute;
-    left: 49%;
-    top: -18px;
-    margin-left: -9px;
-    border: 9px solid transparent;
-    border-bottom: 9px solid #fff1d2;
-    height: 0;
-    width: 0;
 }
 
 .layer-maybe div.info {

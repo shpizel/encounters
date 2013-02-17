@@ -83,15 +83,6 @@ div.content div.pictures div.photoListItem:hover a.close {
     background: url('/bundles/encounters/images/button-delete-decision.png');
 }
 
-/*div.ramka {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 131px;
-    height: 191px;
-    background: url('/bundles/encounters/images/hitlist-ramka-2.png') no-repeat;
-}*/
-
 div.content div.pictures div.photoListItem img {
     padding-bottom: 9px;
     height: 150px;
@@ -206,14 +197,6 @@ div.pictures div.closed div.background {
     width: 142px;
     height: 222px;
 }
-
-/*div.pictures div:hover div.answer {*/
-    /*display: none;*/
-/*}*/
-
-/*div.pictures div.closed:hover div.link {*/
-    /*display: block;*/
-/*}*/
 
 div.content div.pictures div.no div.link a.ln:hover {
     background: url('/bundles/encounters/images/button-start-meeting-gray.png') no-repeat;

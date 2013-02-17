@@ -41,21 +41,9 @@
     padding: 8px !important;
 }
 
-.layer-yes .info-battery {
+.layer-yes .info-block {
     text-align: left;
     margin-bottom: 17px;
-}
-
-.layer-yes .info-battery .arrow {
-    background: none;
-    position: absolute;
-    left: 49%;
-    top: -18px;
-    margin-left: -9px;
-    border: 9px solid transparent;
-    border-bottom: 9px solid #fff1d2;
-    height: 0;
-    width: 0;
 }
 
 .layer-yes div.info {

@@ -1,0 +1,19 @@
+/**
+ * Mutual CSS
+ *
+ * @author shpizel
+ */
+
+div.mutual div.pictures div.photoListItem div.background {
+    background: url('/bundles/encounters/images/background-orange.png') no-repeat;
+
+    position: absolute;
+    top: -4px;
+    left: -6px;
+    width: 142px;
+    height: 222px;
+}
+
+div.mutual div.pictures div.photoListItem div.link a.ln {
+    background: url('/bundles/encounters/images/button-start-meeting-orange.png') no-repeat;
+}

@@ -102,9 +102,11 @@
 </div>
     {% block javascripts %}{% endblock %}
 {% javascripts
+    '@EncountersBundle/Resources/public/js/core/jQuery/*'
     '@EncountersBundle/Resources/public/js/core/*'
     '@EncountersBundle/Resources/public/js/tools/*'
     '@EncountersBundle/Resources/public/js/pages/*'
+    '@EncountersBundle/Resources/public/js/layers/*'
     '@EncountersBundle/Resources/public/js/elements/*'
     output="js/compiled/core.js"
     filter="?yui_js"

@@ -42,23 +42,11 @@
     height: 150px;
 }
 
-.layer-no .info-battery .arrow {
-    background: none;
-    position: absolute;
-    left: 49%;
-    top: -18px;
-    margin-left: -9px;
-    border: 9px solid transparent;
-    border-bottom: 9px solid #fff1d2;
-    height: 0;
-    width: 0;
-}
-
 .layer-no .info {
     padding: 8px !important;
 }
 
-.layer-no .info-battery {
+.layer-no .info-block {
     text-align: left;
     margin-bottom: 17px;
 }
