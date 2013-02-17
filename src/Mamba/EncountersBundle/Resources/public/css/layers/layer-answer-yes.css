@@ -39,6 +39,7 @@
 
 .layer-yes .info {
     padding: 8px !important;
+    text-align: left;
 }
 
 .layer-yes .info-block {

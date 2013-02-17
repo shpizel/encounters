@@ -44,6 +44,7 @@
 
 .layer-maybe .info {
     padding: 8px !important;
+    text-align: left;
 }
 
 .layer-maybe .info-block {
