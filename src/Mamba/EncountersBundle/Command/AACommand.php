@@ -3,6 +3,7 @@ namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Script\CronScript;
 
+
 /**
  * AACommand
  *
@@ -33,6 +34,9 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
+        $x = new HTML_CSS();
+        print_r($x);
+        exit();
 
         $css = trim($css = '');
 

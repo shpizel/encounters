@@ -12,11 +12,11 @@ class Anketa {
      * Получение всех полей анкеты
      *
      * @param array|int|str|string_array $ids (anketa ids) max 100
-     * @param array blocks = ("about", "location", "flags", "familiarity", "type", "favour", "other")
+     * @param array blocks = ("about", "location", "flags", "familiarity", "type", "favour", "interests", "other")
      * @throws AnketaException, MambaException
      * @return array
      */
-    public function getInfo($ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "other")) {
+    public function getInfo($ids, array $blocks = array("about", "location", "flags", "familiarity", "type", "favour", "interests", "other")) {
         if (!is_array($ids)) {
             if (is_string($ids)) {
                 $ids = str_replace(" ", "", $ids);
@@ -65,7 +65,7 @@ class Anketa {
             }
         }
 
-        $availableBlocks = array("about", "location", "flags", "familiarity", "type", "favour", "other");
+        $availableBlocks = array("about", "location", "flags", "familiarity", "type", "favour", "interests", "other");
         foreach ($blocks as &$block) {
             $block = strtolower($block);
             if (!in_array($block, $availableBlocks)) {

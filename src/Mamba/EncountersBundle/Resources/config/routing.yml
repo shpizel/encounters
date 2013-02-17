@@ -40,6 +40,11 @@ mychoice:
     requirements:
         _method: GET
 
+# Страница профиля
+profile:
+    pattern: /profile
+    defaults: { _controller: EncountersBundle:Profile:index }
+
 # Страница постоплаты
 billing:
     pattern: /billing
