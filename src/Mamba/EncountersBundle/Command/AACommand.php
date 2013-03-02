@@ -34,10 +34,8 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $x = new HTML_CSS();
-        print_r($x);
+               print_r($this->getMamba()->Anketa()->getInfo('mb679864030'));
         exit();
-
         $css = trim($css = '');
 
         $s = array();

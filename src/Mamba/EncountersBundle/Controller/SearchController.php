@@ -21,6 +21,15 @@ class SearchController extends ApplicationController {
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
         }
+//        header('Content-type: text/html; charset=utf8;');
+//
+//        foreach ([510083129, 751072037, 982056170, 690787903, 961113057,
+//                  961113057, 708214512, 159206311, 691674014, 728011279,
+//                     651399849, 475411587, 607620132, 679678280] as $userId) {
+//            $this->getSearchPreferences($userId);
+//            echo "<hr>";
+//        }
+//        exit();
 
         if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -37,5 +46,85 @@ class SearchController extends ApplicationController {
         $Response = $this->render("EncountersBundle:templates:search.html.twig", $initialData);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;
+    }
+
+    private function getSearchPreferences($userId) {
+        $Mamba = $this->getMamba();
+
+        if ($result = $Mamba->Anketa()->getInfo($userId)) {
+            $userInfo = array_shift($result);
+
+            /**
+             * Нас интересуют location, familiarity, interests
+             *
+             * @author shpizel
+             */
+            list($location, $familiarity, $interests) = [$userInfo['location'], $userInfo['familiarity'], $userInfo['interests']];
+
+            if (preg_match("!или!iu", $familiarity['lookfor'], $result)) {
+                $lookingFor = ['M', 'F'];
+            } else if (preg_match("!парнем!iu", $familiarity['lookfor'], $result)) {
+                $lookingFor = ['M'];
+            } else if (preg_match("!девушкой!iu", $familiarity['lookfor'], $result)) {
+                $lookingFor = ['F'];
+            }
+
+            if (preg_match("!возрасте\s(\d+)-(\d+)!", $familiarity['lookfor'], $result)) {
+                $lookingFor[] = [$result[1], $result[2]];
+            }
+
+            var_dump($familiarity);
+            var_dump($lookingFor);
+        }
+    }
+
+    private function detector() {
+        $Mamba = $this->getMamba();
+
+        $contacts = $this->getMamba()->Contacts()->getContactList(100, false, [])['contacts'];
+        usort($contacts, function($a, $b) {
+                $a = $a['message_count'];
+                $b = $b['message_count'];
+
+                if ($a == $b) {
+                    return 0;
+                }
+                return ($a < $b) ? -1 : 1;
+        });
+
+        foreach ($contacts as $k=>$contact) {
+            if ($contact['info']['gender'] != 'F') {
+                unset($contacts[$k]);
+            }
+        }
+
+        $contacts = array_reverse($contacts);
+        $max = $contacts[0]['message_count'];
+
+        foreach ($contacts as $k=>$contact) {
+            if ($max/($contact['message_count'] ?: 1) > 10) {
+                unset($contacts[$k]);
+            }
+        }
+
+        $ids = [];
+        foreach ($contacts as $contact) {
+            $ids[] = $contact['info']['oid'];
+        }
+
+        $info = $Mamba->Anketa()->getInfo($ids);
+
+        foreach ($info as $anketa) {
+            var_dump($anketa["info"]); echo "<br>";
+        }
+        exit();
+
+        /**
+         * Вообще говоря нужно отсеять из контактов контакты пола который я не ищу в своей анкете как бы..
+         *
+         *
+         */
+
+        var_dump($contacts);
     }
 }

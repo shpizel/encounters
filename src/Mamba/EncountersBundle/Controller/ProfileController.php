@@ -34,10 +34,20 @@ class ProfileController extends ApplicationController {
             $currentUserId = (int) $webUserId;
         }
 
-        $dataArray['profile'] = array(
-            'anketa' => $Mamba->nocache()->Anketa()->getInfo($currentUserId)[0],
-            'photos' => $Mamba->Photos()->get($currentUserId),
-        );
+        if (!($profile = $Mamba->Anketa()->getInfo($currentUserId))) {
+            return $this->redirect($this->generateUrl('welcome'));
+        }
+
+        $dataArray['profile'] = $profile[0];
+        if (!($dataArray['profile']['myself'] = $currentUserId == $webUserId)) {
+            $dataArray['profile']['rated'] = $this->getViewedQueueObject()->exists($webUserId, $currentUserId);
+        }
+        $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
+
+        /** перемешаем интересы */
+        if (isset($dataArray['profile']['interests'])) {
+            shuffle($dataArray['profile']['interests']);
+        }
 
         $Response = $this->render("EncountersBundle:templates:profile.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');

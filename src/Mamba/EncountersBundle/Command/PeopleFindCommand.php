@@ -33,10 +33,34 @@ class PeopleFindCommand extends CronScript {
         SCRIPT_NAME = "people:find"
     ;
 
-    protected function configure() {
-        parent::configure();
+    private function sendMessage($userId, $message, $cookies) {
+        $cmd = "curl -v 'http://mamba.ru/my/message.phtml?oid={$userId}' -b '{$cookies}'";
+        exec($cmd, $ret);
+        $ret = implode(PHP_EOL, $ret);
 
-        $this->addOption('whoami', null, InputOption::VALUE_OPTIONAL, 'Who am i', null);
+        /** нужно получить s_post */
+        if (preg_match("!name='s_post'\s*value='([^']+)!is", $ret, $sPost)) {
+            $sPost = array_pop($sPost);
+
+            if (strpos($ret, 'id="iceBreak"') !== false) {
+                $cmd = "curl -v 'http://mamba.ru/my/message.phtml' -d '" . http_build_query(array(
+                    'send' => 1,
+                    'uid'  => $userId,
+                    'action' => 'post',
+                    'message' => $message,
+                    's_post' => $sPost,
+                )) . "' -b '{$cookies}'";
+
+                exec($cmd, $ret);
+
+                $this->log($userId . " {$message}");
+                return true;
+            } else {
+                $this->log($userId . " already spammed");
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -46,7 +70,6 @@ class PeopleFindCommand extends CronScript {
      */
     protected function process() {
         $Mamba = $this->getMamba();
-
 
         $offset = -10;
         $ids = array();
@@ -86,8 +109,8 @@ class PeopleFindCommand extends CronScript {
 
                 $this->log(count($ids), -1);
             }
-        }
-        while (end($results)['users']);
+        } while (end($results)['users']);
+
         $ids = array_unique($ids);
         echo "\n";
 
@@ -183,8 +206,29 @@ class PeopleFindCommand extends CronScript {
             $flagged[] = $anketa;
         }
 
+        $ids = array();
         foreach ($flagged as $anketa) {
-            echo "http://mamba.ru/" . $anketa['info']['login'] . PHP_EOL;
+            $ids[] = $anketa['info']['oid'];
+        }
+
+
+        $this->log("Found " . count($ids) . " profiles");
+
+        $messages = array(
+            //'Кажется, я знаю твой маленький секрет :)',
+            //'Завтра встречаемся, во сколько свободна?',
+            'Привет! У тебя очаровательная улыбка! Познакомимся?',
+            'Привет! Ты мне очень понравилась! Познакомимся?',
+            'Мёд это такой предмет — если он есть, то его сразу нет. Меня, кстати, Игорем зовут) Было бы очень приятно и здорово познакомиться!',
+            //'Какая легкость и грация — я под впечатлением..',
+        );
+
+        foreach ($ids as $id) {
+            $this->sendMessage(
+                $id,
+                $messages[array_rand($messages)],
+                "real_promo_995454500=show; prtmmbsid=1fd26dfc637dc3f96994d45c2a450550; redirectUrlAfterLogin=%2F; real_promo_1036866134=show; real_promo_1043865432=show; real_promo_=show; real_promo_1045879346=show; real_promo_1055804186=show; real_promo_1058812233=show; real_promo_1060208927=show; real_promo_1062005571=show; link_id=9884; mmadv=560015854; registered_once=1; real_promo_1078493976=show; unauth_lang=2; from=fb_like; bar=AShwjUz54RmYnfClOdlMYSwk4aypMQ0QLHycLan1EAEg%2FNGsFQjJ%2BLmZnLWkNVwFCXktnXjE4RxE%2BKTEXbiF1P2xObQpBP0VMED0Bex4xPyRCGQpzXlo%3D; promo_photoline=1361434494; common_friends_ts=eyJmYWNlYm9vayI6MTM2MjIwODI3NH0%3D; staff_s=3aa15a670b13bec20ace9579e10d821c; corpmmbsid=9557fa15591f3041de711eafef59f08f; LOGIN=mb1078493976; mmbsid=f5d87c982e65d4221a8e4fd97fd61401; social_last_provider=facebook; promo_app=1362477184; __utma=36878524.1722773282.1346329680.1362470559.1362473906.723; __utmb=36878524.33.10.1362473906; __utmc=36878524; __utmz=36878524.1362427719.720.50.utmcsr=social.lovesupport.ru|utmccn=(referral)|utmcmd=referral|utmcct=/login.phtml; _ym_visorc=w; force_web=1; stat=mamba.ru|cr|mamba2:/my/message.phtml|97|169|259|0"
+            ) && sleep(rand(4, 12));
         }
     }
 }
