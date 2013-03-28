@@ -34,6 +34,14 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
+        $LevelDB = $this->getLeveldb();
+        $Request = $LevelDB->set(
+            array('a'=>3),
+            false
+        );
 
+        $Request = $LevelDB->get(array('a'));
+        $LevelDB->execute();
+        print_r($Request);
     }
 }

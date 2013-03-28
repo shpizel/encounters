@@ -101,10 +101,12 @@ class Leveldb {
      * @throws LeveldbException
      */
     private function sendRequest($connection, $Request) {
-        $data = array('jsonrpc' => '2.0', 'method' => $Request->getMethod(), 'params' => $Request->getData());
-        if ($id = $Request->getId()) {
-            $data['id'] = $id;
-        }
+        $data = array(
+            'jsonrpc' => '2.0',
+            'method'  => $Request->getMethod(),
+            'params'  => $Request->getData(),
+            'id'      => $Request->getId(),
+        );
 
         if (!fwrite($connection, json_encode($data) . "\r\n")) {
             throw new LeveldbException("fwrite failed");
@@ -263,17 +265,15 @@ class Leveldb {
      * @param bool $return
      * @return LeveldbRequest
      */
-    public function set(array $data, $return = true) {
+    public function set(array $data) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
             ->setData($data)
+            ->setId($requestId = $this->getRequestId())
         ;
 
-        if ($return) {
-            $Request->setId($requestId = $this->getRequestId());
-            $this->queue[$requestId] = $Request;
-        }
+        $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
         return $Request;
@@ -286,17 +286,15 @@ class Leveldb {
      * @param bool $return
      * @return LeveldbRequest
      */
-    public function del(array $data, $return = true) {
+    public function del(array $data) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
             ->setData($data)
+            ->setId($requestId = $this->getRequestId())
         ;
 
-        if ($return) {
-            $Request->setId($requestId = $this->getRequestId());
-            $this->queue[$requestId] = $Request;
-        }
+        $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
         return $Request;
@@ -306,20 +304,17 @@ class Leveldb {
      * Leveldb incrementer
      *
      * @param array $data
-     * @param bool $return
      * @return LeveldbRequest
      */
-    public function inc(array $data, $return = true) {
+    public function inc(array $data) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
             ->setData($data)
+            ->setId($requestId = $this->getRequestId())
         ;
 
-        if ($return) {
-            $Request->setId($requestId = $this->getRequestId());
-            $this->queue[$requestId] = $Request;
-        }
+        $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
         return $Request;
@@ -330,10 +325,9 @@ class Leveldb {
      *
      * @param array $incrementList
      * @param array $defaultList
-     * @param bool $return
      * @return LeveldbRequest
      */
-    public function inc_add(array $incrementList, array $defaultList, $return = true) {
+    public function inc_add(array $incrementList, array $defaultList) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -341,12 +335,10 @@ class Leveldb {
                 'inc' => $incrementList,
                 'def' => $defaultList,
             ))
+            ->setId($requestId = $this->getRequestId())
         ;
 
-        if ($return) {
-            $Request->setId($requestId = $this->getRequestId());
-            $this->queue[$requestId] = $Request;
-        }
+        $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
         return $Request;
@@ -359,15 +351,13 @@ class Leveldb {
      * @param array $incrementList ассоциативный массив ключ => целое значение для инкремента полей структуры
      * @param array $setList ассоциативный массив ключ => значение для установки полей структуры
      * @param array $defaultList ассоциативный массив ключ => целое значение. Эти значения используются в качестве базовых для операции инкремента полей.
-     * @param bool $return
      * @return LeveldbRequest
      */
     public function update_packed(
         $key,
         array $incrementList = array(),
         array $setList = array(),
-        array $defaultList = array(),
-        $return = true
+        array $defaultList = array()
     ) {
         $Request = new LeveldbRequest();
         $Request
@@ -378,12 +368,10 @@ class Leveldb {
                 'set' => $setList,
                 'def' => $defaultList,
             ))
+            ->setId($requestId = $this->getRequestId())
         ;
 
-        if ($return) {
-            $Request->setId($requestId = $this->getRequestId());
-            $this->queue[$requestId] = $Request;
-        }
+        $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
         return $Request;

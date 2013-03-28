@@ -61,16 +61,14 @@ class RedisToLeveldbMigrationCommand extends CronScript {
                     $data = $nodeConnection->mget($keys);
 
                     foreach ($keys as $kn => $key) {
-//                        echo "$key " . $data[$kn] . PHP_EOL;
                         if (preg_match("!battery_by_(\d+)!", $key, $userId)) {
                             $userId = (int) array_pop($userId);
                             $battery = (int) $data[$kn];
 
                             $ldb->set(
                                 array(
-                                    "encounters:battery:{$userId}" => $battery
-                                ),
-                                false
+                                    "encounters:battery:{$userId}" => $battery,
+                                )
                             );
 
                             $counter++;
@@ -82,5 +80,7 @@ class RedisToLeveldbMigrationCommand extends CronScript {
                 }
             }
         }
+
+        $ldb->execute();
     }
 }
