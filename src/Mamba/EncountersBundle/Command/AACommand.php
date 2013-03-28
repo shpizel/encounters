@@ -34,6 +34,13 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
+        system("sleep 3 &", $code);
+        $this->log($code);
+        system("sleep 3  &", $code);
+        $this->log($code);
+        system('wait', $code);
+        $this->log($code);
+        exit();
         $leveldb = $this->getLeveldb();
 
         $start = microtime(true);
