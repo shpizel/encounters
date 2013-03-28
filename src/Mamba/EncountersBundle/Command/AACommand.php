@@ -40,6 +40,6 @@ class AACommand extends CronScript {
 //        var_dump($Request->getResult());
 
         $b = $this->getBatteryObject();
-        var_dump($b->incr(1, 2));
+        var_dump($b->decr(1));
     }
 }
