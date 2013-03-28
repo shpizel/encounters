@@ -25,7 +25,7 @@ class LeveldbGetRangeCommand extends Script {
          *
          * @var str
          */
-        SCRIPT_NAME = "leveldb:get:range"
+        SCRIPT_NAME = "leveldb:get_range"
     ;
 
     /**
@@ -37,47 +37,12 @@ class LeveldbGetRangeCommand extends Script {
         $LevelDb = $this->getLeveldb();
 
         /**
-         * Multi set
-         *
-         * @author shpizel
-         */
-        $Request = $LevelDb->set($data = array(
-            "set:example:1" => time(),
-            "set:example:2" => time() + mt_rand(1000, 1000000),
-            "set:example:3" => time() + mt_rand(1000, 1000000),
-        ));
-
-        $this->log("Setting " . var_export($data, true));
-
-        $LevelDb->execute();
-
-        $this->log("Result: " . var_export($Request->getResult(), true));
-
-        $this->log("Getting keys: " . var_export($keys = array_keys($data), true));
-        $Request = $LevelDb->get($keys);
-        $LevelDb->execute();
-
-        $this->log("Result: " . var_export($Request->getResult(), true));
-
-        /**
          * Getting range
          *
          * @author shpizel
          */
-        $Request = $LevelDb->get_range('example', null, 10);
+        $Request = $LevelDb->get_range(null, null, 100);
 
-        $this->log("Getting range example*");
-
-        $LevelDb->execute();
-
-        $this->log("Result: " . var_export($Request->getResult(), true));
-
-        /**
-         * Removing keys
-         *
-         * @author shpizel
-         */
-        $Request = $LevelDb->del($keys);
         $LevelDb->execute();
 
         $this->log("Result: " . var_export($Request->getResult(), true));

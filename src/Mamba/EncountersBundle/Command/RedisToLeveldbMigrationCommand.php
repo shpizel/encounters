@@ -43,6 +43,7 @@ class RedisToLeveldbMigrationCommand extends CronScript {
         $redisNodes = $this->getRedis()->getNodes();
         $ldb = $this->getLeveldb();
         foreach ($redisNodes as $redisNode) {
+            $this->log((string) $redisNode, 64);
             $host = $redisNode->getHost();
             $port = $redisNode->getPort();
             $database = $redisNode->getDatabase();
@@ -60,27 +61,26 @@ class RedisToLeveldbMigrationCommand extends CronScript {
                 foreach ($batteryKeys as $keys) {
                     $data = $nodeConnection->mget($keys);
 
+                    $ldata = array();
                     foreach ($keys as $kn => $key) {
                         if (preg_match("!battery_by_(\d+)!", $key, $userId)) {
                             $userId = (int) array_pop($userId);
                             $battery = (int) $data[$kn];
 
-                            $ldb->set(
-                                array(
-                                    "encounters:battery:{$userId}" => $battery,
-                                )
-                            );
-
+                            $ldata["encounters:battery:{$userId}"] = $battery;
                             $counter++;
-
-                            $this->log($counter, -1);
                         }
+                    }
 
+                    if ($ldata) {
+                        $ldb->set($ldata);
+                        $ldata = array();
+                        
+                        $ldb->execute();
+
+                        $this->log($counter, -1);
                     }
                 }
-
-                $ldb->execute();
-
             }
         }
     }
