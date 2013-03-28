@@ -1,11 +1,3 @@
-LeveldbBundle:
-    resource: "@LeveldbBundle/Resources/config/routing.yml"
-    prefix:   /
-
-LevelDBBundle:
-    resource: "@LevelDBBundle/Resources/config/routing.yml"
-    prefix:   /
-
 # Приложение «Выбиратор»
 MambaEncountersBundle:
     resource: "@EncountersBundle/Resources/config/routing.yml"
