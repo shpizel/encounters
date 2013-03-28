@@ -1,0 +1,7 @@
+parameters:
+    leveldb.class: Core\LeveldbBundle\Leveldb
+
+services:
+    leveldb:
+        class: %leveldb.class%
+        arguments: [%leveldb.master%, %leveldb.slave%]

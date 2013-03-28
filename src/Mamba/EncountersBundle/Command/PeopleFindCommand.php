@@ -217,8 +217,8 @@ class PeopleFindCommand extends CronScript {
         $messages = array(
             //'Кажется, я знаю твой маленький секрет :)',
             //'Завтра встречаемся, во сколько свободна?',
-            'Привет! У тебя очаровательная улыбка! Познакомимся?',
-            'Привет! Ты мне очень понравилась! Познакомимся?',
+            //'Привет! У тебя очаровательная улыбка! Познакомимся?',
+            //'Привет! Ты мне очень понравилась! Познакомимся?',
             'Мёд это такой предмет — если он есть, то его сразу нет. Меня, кстати, Игорем зовут) Было бы очень приятно и здорово познакомиться!',
             //'Какая легкость и грация — я под впечатлением..',
         );
@@ -227,7 +227,7 @@ class PeopleFindCommand extends CronScript {
             $this->sendMessage(
                 $id,
                 $messages[array_rand($messages)],
-                "real_promo_995454500=show; prtmmbsid=1fd26dfc637dc3f96994d45c2a450550; redirectUrlAfterLogin=%2F; real_promo_1036866134=show; real_promo_1043865432=show; real_promo_=show; real_promo_1045879346=show; real_promo_1055804186=show; real_promo_1058812233=show; real_promo_1060208927=show; real_promo_1062005571=show; link_id=9884; mmadv=560015854; registered_once=1; real_promo_1078493976=show; unauth_lang=2; from=fb_like; bar=AShwjUz54RmYnfClOdlMYSwk4aypMQ0QLHycLan1EAEg%2FNGsFQjJ%2BLmZnLWkNVwFCXktnXjE4RxE%2BKTEXbiF1P2xObQpBP0VMED0Bex4xPyRCGQpzXlo%3D; promo_photoline=1361434494; common_friends_ts=eyJmYWNlYm9vayI6MTM2MjIwODI3NH0%3D; staff_s=3aa15a670b13bec20ace9579e10d821c; corpmmbsid=9557fa15591f3041de711eafef59f08f; LOGIN=mb1078493976; mmbsid=f5d87c982e65d4221a8e4fd97fd61401; social_last_provider=facebook; promo_app=1362477184; __utma=36878524.1722773282.1346329680.1362470559.1362473906.723; __utmb=36878524.33.10.1362473906; __utmc=36878524; __utmz=36878524.1362427719.720.50.utmcsr=social.lovesupport.ru|utmccn=(referral)|utmcmd=referral|utmcct=/login.phtml; _ym_visorc=w; force_web=1; stat=mamba.ru|cr|mamba2:/my/message.phtml|97|169|259|0"
+                "real_promo_995454500=show; prtmmbsid=1fd26dfc637dc3f96994d45c2a450550; redirectUrlAfterLogin=%2F; real_promo_1036866134=show; real_promo_1043865432=show; real_promo_=show; real_promo_1045879346=show; real_promo_1055804186=show; real_promo_1058812233=show; real_promo_1060208927=show; real_promo_1062005571=show; link_id=9884; real_promo_1078493976=show; bar=AShwjUz54RmYnfClOdlMYSwk4aypMQ0QLHycLan1EAEg%2FNGsFQjJ%2BLmZnLWkNVwFCXktnXjE4RxE%2BKTEXbiF1P2xObQpBP0VMED0Bex4xPyRCGQpzXlo%3D; real_promo_1092888222=show; unauth_lang=2; registered_once=1; real_promo_1101851589=show; common_friends_ts=eyJmYWNlYm9vayI6MTM2NDM5NzI5Nn0%3D; staff_s=e37a0e2d146db6d87362f0c19dbce180; from=landing; social_last_provider=facebook; UID=560015854; SECRET=w6990QZqHCCkJReP; LEVEL=Low; promo_app=1364479928; mmbsid=bc51df56a73cd5540ac23581d52e671f; LOGIN=shpizel; __utma=36878524.1722773282.1346329680.1364484382.1364540395.807; __utmb=36878524.18.10.1364540395; __utmc=36878524; __utmz=36878524.1364477978.805.55.utmcsr=yandex|utmccn=(organic)|utmcmd=organic; _ym_visorc=w; force_web=1; stat=www.mamba.ru|cr|mamba2:/my/message.phtml|118|174|246|0vу"
             ) && sleep(rand(4, 12));
         }
     }

@@ -34,24 +34,31 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-               print_r($this->getMamba()->Anketa()->getInfo('mb679864030'));
-        exit();
-        $css = trim($css = '');
+        $leveldb = $this->getLeveldb();
 
-        $s = array();
-        if (preg_match_all("!(?P<rule>[\,.-\w\s]+)\s*?{\s*?(?P<css>[^}]+)\s*?}!is", $css, $parsed)) {
-            foreach ($parsed['rule'] as $index=>$rule) {
-                $rule = trim($rule);
-                $css = trim($parsed['css'][$index]);
-                $s[$rule] = $css;
+        $start = microtime(true);
+        $c = 0;
+        while (true) {
+        $leveldb->update_packed(
+            array(
+                'key' => $key = 'structure' . mt_rand(0, 10000000),
+                'inc' => array('k1' => 2, 'k4' => -1),
+                'set' => array('k3' => 'Hello world '.time()),
+            )
+        );
 
+        $s = $leveldb->get(array($key));
+        $leveldb->execute();
+
+            //print_r($s->getResult());
+
+            $c++;
+            if (microtime(true) - $start >= 5) {
+                break;
             }
         }
 
-        ksort($s);
-        foreach ($s as $rule=>$css) {
-            echo "{$rule} {\n    {$css}\n}\n\n";
-        }
+$this->log($c/5);
 
     }
 }

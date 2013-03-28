@@ -208,9 +208,6 @@ class DeployCommand extends Script {
             }
         }
 
-        print_r($commands);
-        exit();
-
         $hostname = $this->getCurrentHostName();
         foreach ($commands as $item) {
             $this->log($item['description'] . "..", 48);

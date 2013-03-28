@@ -57,6 +57,18 @@ redis:
 #                database: 3
 #                prefix: node3:
 
+leveldb:
+    master:
+        dev:
+            host: 192.168.180.131
+            port: 22510
+            timeout: -1
+    slave:
+        dev:
+            host: 192.168.180.131
+            port: 22510
+            timeout: -1
+
 gearman:
     nodes:
         node1:

@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Core\GearmanBundle\Gearman;
 use Core\RedisBundle\Redis;
+use Core\LeveldbBundle\Leveldb;
 use Core\MemcacheBundle\Memcache;
 use Core\MambaBundle\API\Mamba;
 
@@ -187,6 +188,15 @@ abstract class Script extends ContainerAwareCommand {
      */
     public function getRedis() {
         return $this->getContainer()->get('redis');
+    }
+
+    /**
+     * Leveldb getter
+     *
+     * @return Leveldb
+     */
+    public function getLeveldb() {
+        return $this->getContainer()->get('leveldb');
     }
 
     /**

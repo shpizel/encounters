@@ -26,6 +26,7 @@ class AppKernel extends Kernel
             new Core\VKBundle\VKBundle(),
             new Core\FBBundle\FBBundle(),
             new Core\MambaBundle\MambaBundle(),
+            new Core\LeveldbBundle\LeveldbBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
