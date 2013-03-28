@@ -231,14 +231,22 @@ class Leveldb {
     /**
      * Leveldb get_range
      *
-     * @param array $data
+     * @param string $from ключ или префикс ключа, с которого начинается диапазон
+     * @param string|null $to ключ или префикс ключа, которым заканчивается диапазон. Если пуст, значит выборка продолжается до конца базы
+     * @param int $limit количество ключей для выборки
+     * @param int $skip Количество ключей, которые необходимо пропустить от начала выборки.
      * @return LeveldbRequest
      */
-    public function get_range(array $data) {
+    public function get_range($from, $to, $limit, $skip = 0) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
-            ->setData(array())
+            ->setData(array(
+                'from'  => $from,
+                'to'    => $to,
+                'limit' => $limit,
+                'skip'  => $skip,
+            ))
             ->setId($requestId = $this->getRequestId())
         ;
 
@@ -320,15 +328,19 @@ class Leveldb {
     /**
      * Leveldb incrementer with add
      *
-     * @param array $data
+     * @param array $incrementList
+     * @param array $defaultList
      * @param bool $return
      * @return LeveldbRequest
      */
-    public function inc_add(array $data, $return = true) {
+    public function inc_add(array $incrementList, array $defaultList, $return = true) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
-            ->setData($data)
+            ->setData(array(
+                'inc' => $incrementList,
+                'def' => $defaultList,
+            ))
         ;
 
         if ($return) {
@@ -343,15 +355,29 @@ class Leveldb {
     /**
      * Leveldb update_packed
      *
-     * @param array $data
+     * @param $key ключ обновляемой структуры
+     * @param array $incrementList ассоциативный массив ключ => целое значение для инкремента полей структуры
+     * @param array $setList ассоциативный массив ключ => значение для установки полей структуры
+     * @param array $defaultList ассоциативный массив ключ => целое значение. Эти значения используются в качестве базовых для операции инкремента полей.
      * @param bool $return
      * @return LeveldbRequest
      */
-    public function update_packed(array $data, $return = true) {
+    public function update_packed(
+        $key,
+        array $incrementList = array(),
+        array $setList = array(),
+        array $defaultList = array(),
+        $return = true
+    ) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
-            ->setData($data)
+            ->setData(array(
+                'key' => $key,
+                'inc' => $incrementList,
+                'set' => $setList,
+                'def' => $defaultList,
+            ))
         ;
 
         if ($return) {
