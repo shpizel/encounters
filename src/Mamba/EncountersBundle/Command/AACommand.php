@@ -34,6 +34,18 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
+        $commands = array(
+            "sleep 3 > /dev/null &",
+            "sleep 2 > /dev/null &",
+            "wait"
+        );
+
+        foreach ($commands as $cmd) {
+        //    $this->log(system($cmd));
+        }
+
+        $this->log((implode(";", $commands)));
+        exit();
         system("sleep 3 &", $code);
         $this->log($code);
         system("sleep 3  &", $code);

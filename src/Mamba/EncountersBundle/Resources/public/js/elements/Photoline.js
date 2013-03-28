@@ -148,7 +148,8 @@ $Photoline = {
                             'comment' : $photolineItem['comment'],
                             'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
 //                            'href': "/profile?id=" + $photolineItem['user_id'],
-                            'target': '_self'
+                            'target': '_blank'
+                            //'target': '_self'
                         }).addClass('item');
 
                         $("div.photoline div.lenta a.pusher").css({'width': '0px'});
@@ -178,7 +179,8 @@ $Photoline = {
                     'comment' : $photolineItem['comment'],
                     'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
 //                    'href': "/profile?id=" + $photolineItem['user_id'],
-                    'target': '_self'
+                    'target': '_blank'
+                    //'target': '_self'
                 }).addClass('item');
 
                 $html.insertAfter($("div.photoline div.lenta a.pusher"));
