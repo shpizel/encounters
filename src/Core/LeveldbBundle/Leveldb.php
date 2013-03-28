@@ -194,14 +194,18 @@ class Leveldb {
     /**
      * Leveldb getter
      *
-     * @param array $keys
+     * @param array|string $keys
      * @return LeveldbRequest
      */
-    public function get(array $data) {
+    public function get($keys) {
+        if (is_string($keys)) {
+            $keys = array($keys);
+        }
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
-            ->setData($data)
+            ->setData($keys)
             ->setId($requestId = $this->getRequestId())
         ;
 

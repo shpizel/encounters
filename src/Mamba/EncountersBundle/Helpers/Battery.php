@@ -1,8 +1,6 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers;
 
-use Core\RedisBundle\Redis;
-
 /**
  * Battery
  *
@@ -38,7 +36,7 @@ class Battery extends Helper {
          *
          * @var str
          */
-        REDIS_USER_BATTERY_KEY = "battery_by_%d"
+        LEVELDB_USER_BATTERY_KEY = "encounters:battery:%d"
     ;
 
     /**
@@ -52,10 +50,22 @@ class Battery extends Helper {
             throw new BatteryException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $charge = $this->getRedis()->get(sprintf(self::REDIS_USER_BATTERY_KEY, $userId));
-        if (false === $charge) {
+        $Leveldb = $this->getLeveldb();
+
+        $Request = $Leveldb->get($key = sprintf(self::LEVELDB_USER_BATTERY_KEY, $userId));
+        $Leveldb->execute();
+
+        $result = $Request->getResult();
+        $charge = false;
+
+        if (isset($result[$key])) {
+            $charge = (int) $result[$key];
+        }
+
+        if (false == $charge) {
             $this->set($userId, $charge = self::DEFAULT_CHARGE);
         }
+
         return (int) $charge;
     }
 
@@ -72,7 +82,14 @@ class Battery extends Helper {
         }
 
         if (is_int($charge) && $charge >= self::MINIMUM_CHARGE && $charge <= self::MAXIMUM_CHARGE) {
-            return $this->getRedis()->set(sprintf(self::REDIS_USER_BATTERY_KEY, $userId), $charge);
+             $Leveldb = $this->getLeveldb();
+            $Request = $Leveldb->set(array(
+                $key = sprintf(self::LEVELDB_USER_BATTERY_KEY, $userId) => $charge
+            ));
+
+            $Leveldb->execute();
+
+            return $Request->getResult();
         }
 
         throw new BatteryException("Invalid charge: \n" . var_export($charge, true));
@@ -93,14 +110,28 @@ class Battery extends Helper {
             throw new BatteryException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $Stats = new Stats($this->Container);
-        if ($rate < 0) {
-            $Stats->incr("battery-decr", abs($rate));
-        } else {
-            $Stats->incr("battery-incr", abs($rate));
+        //todo
+
+//        $Stats = new Stats($this->Container);
+//        if ($rate < 0) {
+//            $Stats->incr("battery-decr", abs($rate));
+//        } else {
+//            $Stats->incr("battery-incr", abs($rate));
+//        }
+
+        $Leveldb = $this->getLeveldb();
+        $Request = $Leveldb->inc(array(
+            $key = sprintf(self::LEVELDB_USER_BATTERY_KEY, $userId) => $rate,
+        ));
+
+        $Leveldb->execute();
+
+        $result = $Request->getResult();
+        $incrementResult = 0;
+        if (isset($result[$key])) {
+            $incrementResult = (int) $result[$key];
         }
 
-        $incrementResult = $this->getRedis()->incrBy(sprintf(self::REDIS_USER_BATTERY_KEY, $userId), $rate);
         if ($incrementResult < self::MINIMUM_CHARGE) {
             $this->set($userId, $incrementResult = self::MINIMUM_CHARGE);
         } elseif ($incrementResult > self::MAXIMUM_CHARGE) {

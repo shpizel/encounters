@@ -2,6 +2,8 @@
 
 namespace Core\LeveldbBundle;
 
+use Core\LeveldbBundle\LeveldbRequest;
+
 /**
  * Class LeveldbRequest
  *
@@ -30,7 +32,14 @@ class LeveldbRequest {
          *
          * @var int
          */
-        $id
+        $id,
+
+        /**
+         * Result
+         *
+         * @var mixed
+         */
+        $result
     ;
 
     /**

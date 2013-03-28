@@ -75,7 +75,7 @@ class RedisToLeveldbMigrationCommand extends CronScript {
                     if ($ldata) {
                         $ldb->set($ldata);
                         $ldata = array();
-                        
+
                         $ldb->execute();
 
                         $this->log($counter, -1);

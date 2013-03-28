@@ -4,6 +4,7 @@ namespace Mamba\EncountersBundle\Helpers;
 use Core\RedisBundle\Redis;
 use Core\MemcacheBundle\Memcache;
 use Core\GearmanBundle\Gearman;
+use Core\LeveldbBundle\Leveldb;
 
 /**
  * Helper
@@ -56,6 +57,15 @@ abstract class Helper {
      */
     public function getMemcache() {
         return $this->Container->get('memcache');
+    }
+
+    /**
+     * Leveldb getter
+     *
+     * @return Leveldb
+     */
+    public function getLeveldb() {
+        return $this->Container->get('leveldb');
     }
 
     /**
