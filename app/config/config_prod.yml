@@ -40,14 +40,14 @@ leveldb:
             port: 22510
             timeout: 0
 
-    # ./leveldb.json --db=/monamour/leveldb2.json --log_file=/logs/leveldb2.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=40960 --port=22510
+    # /release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=40960 --port=22510
     slave:
         memory2:
             host: 10.10.10.22
             port: 22510
             timeout: 0
 
-    #./leveldb.json --db=/monamour/leveldb.json --log_file=/logs/leveldb.log --daemonize=1 --threads_tcp=3 --threads_udp=3 --memory=24576 --buffer=128 --replication.host=cdaemon17 --replication.id=cdaemon16
+    # ./release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=0 --threads_tcp=3 --threads_udp=3 --memory=24576 --buffer=128 --replication.host=memory1 --replication.id=memory1 --port=22510
 
 gearman:
     nodes:

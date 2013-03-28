@@ -114,7 +114,7 @@ class Leveldb {
     }
 
     private function isMasterRequest($method) {
-        if (in_array($method, array('set', 'del', 'inc', 'inc_add', 'update_packed'))) {
+        if (in_array($method, array('set', 'del', 'inc', 'inc_add', 'update_packed', 'rep_status'))) {
             return true;
         }
 
@@ -224,7 +224,7 @@ class Leveldb {
 
         $this->queue[$requestId] = $Request;
 
-        $this->sendRequest($this->getSlaveConnection(), $Request);
+        $this->sendRequest($this->getMasterConnection(), $Request);
         return $Request;
     }
 
