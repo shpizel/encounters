@@ -34,9 +34,12 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $LevelDB = $this->getLeveldb();
-        $Request = $LevelDB->get('shpizel');
-        $LevelDB->execute();
-        var_dump($Request->getResult());
+//        $LevelDB = $this->getLeveldb();
+//        $Request = $LevelDB->get('shpizel');
+//        $LevelDB->execute();
+//        var_dump($Request->getResult());
+
+        $b = $this->getBatteryObject();
+        var_dump($b->incr(1, 2));
     }
 }

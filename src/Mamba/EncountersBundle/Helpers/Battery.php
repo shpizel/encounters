@@ -110,14 +110,12 @@ class Battery extends Helper {
             throw new BatteryException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        //todo
-
-//        $Stats = new Stats($this->Container);
-//        if ($rate < 0) {
-//            $Stats->incr("battery-decr", abs($rate));
-//        } else {
-//            $Stats->incr("battery-incr", abs($rate));
-//        }
+        $Stats = new Stats($this->Container);
+        if ($rate < 0) {
+            $Stats->incr("battery-decr", abs($rate));
+        } else {
+            $Stats->incr("battery-incr", abs($rate));
+        }
 
         $Leveldb = $this->getLeveldb();
         $Request = $Leveldb->inc(array(
