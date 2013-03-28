@@ -51,18 +51,12 @@ $Visitors = {
             return false;
         };
 
-        $(".closed a.ln").click(function() {
-            return $showLayerFunction();
-        });
-
-        $(".content div.photoListItem div.info a").click(function() {
-            return $showLayerFunction();
-        });
-
-//        $(".content div.photoListItem div.link a").click(function() {
-//            alert(3);
+//        $(".closed a.ln").click(function() {
 //            return $showLayerFunction();
 //        });
+
+        $(".content div.photoListItem div.info a").click($showLayerFunction);
+        $(".content div.photoListItem div.link a").click($showLayerFunction);
     },
 
     /**
