@@ -134,12 +134,14 @@ class DeployCommand extends Script {
          */
         foreach (self::$servers as $role => $servers) {
             foreach ($servers as $server) {
-                $commands[] = array(
-                    'description' => "Copying code to $server server",
-                    'command'     => array(
-                        "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null",
-                    ),
-                );
+                if ($server !== 'www1') {
+                    $commands[] = array(
+                        'description' => "Copying code to $server server",
+                        'command'     => array(
+                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null",
+                        ),
+                    );
+                }
             }
         }
 
