@@ -170,9 +170,9 @@ class DeployCommand extends Script {
             foreach ($servers as $server) {
                 $serverCommands[$server] = array(
                     'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*',
-                    'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/',
-                    '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug',
-                    '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug',
+                    'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/ > /dev/null',
+                    '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug > /dev/null',
+                    '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug > /dev/null',
                     'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs',
                 );
 
@@ -204,7 +204,7 @@ class DeployCommand extends Script {
                     if ($code) {
                         throw new \Core\ScriptBundle\ScriptException("Operation failed");
                     } else {
-                        $this->log("$cmd completed", 64);
+                        //$this->log("$cmd completed", 64);
                     }
                 }
 
