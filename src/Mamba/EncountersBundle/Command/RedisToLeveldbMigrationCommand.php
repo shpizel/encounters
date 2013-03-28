@@ -78,9 +78,10 @@ class RedisToLeveldbMigrationCommand extends CronScript {
 
                     }
                 }
+
+                $ldb->execute();
+
             }
         }
-
-        $ldb->execute();
     }
 }
