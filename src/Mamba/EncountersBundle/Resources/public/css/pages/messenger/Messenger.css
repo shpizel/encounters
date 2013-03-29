@@ -995,7 +995,7 @@ textarea.input_i {
 }
 
 .ui-tabs_content {
-    height: 207px;
+    /*height: 207px;*/
     margin: 0 0 10px 0;
     overflow-y: scroll;
     overflow-x: auto;
@@ -1026,21 +1026,27 @@ textarea.input_i {
 }
 
 .list-present .list-present_item .list-present_cost {
-    display: block;
+    visibility: hidden;
     color: #000;
+    display: block;
 }
 
 .list-present .list-present_item .list-present_cost:after {
     display: inline-block;
     height: 11px;
     width: 11px;
-    background-image: url('../i/i-heart.png');
+    background-image: url('/bundles/encounters/images/account-red-small-heart.png');
     content: '';
     vertical-align: -1px;
 }
 
 .list-present .list-present_item:hover {
     border: 1px solid #d5d5d5;
+}
+
+.list-present .list-present_item:hover .list-present_cost,
+.list-present .list-present_item.list-present_item-selected .list-present_cost {
+    visibility: visible;
 }
 
 .list-present .list-present_item:active,

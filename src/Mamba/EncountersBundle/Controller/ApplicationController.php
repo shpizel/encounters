@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
+use Mamba\EncountersBundle\Helpers\Gifts\Gifts;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
@@ -8,6 +9,7 @@ use Mamba\EncountersBundle\Helpers\Battery;
 use Mamba\EncountersBundle\Helpers\Energy;
 use Mamba\EncountersBundle\Helpers\Counters;
 use Core\MambaBundle\Helpers\PlatformSettings;
+
 
 use Mamba\EncountersBundle\Helpers\Popularity;
 use Mamba\EncountersBundle\Helpers\Notifications;
@@ -437,6 +439,10 @@ abstract class ApplicationController extends Controller {
             'search_no_popular_block_hidden'      => $this->getVariablesObject()->get($webUserId, 'search_no_popular_block_hidden'),
             'notification_hidden'                 => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
         );
+
+        $dataArray['gifts'] = Gifts::getInstance()->toArray();
+//        var_dump($dataArray['gifts']);
+//        exit();
 
         if ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {
             $contacts = $this->getRedis()->sMembers($redisContactsKey);

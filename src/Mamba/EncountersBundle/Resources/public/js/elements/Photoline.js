@@ -58,23 +58,6 @@ $Photoline = {
             return false;
         });
 
-//        $("div.photoline div.lenta").on('click', "a:not(.add)", function($event) {
-//            var $this = $(this);
-//            $.post($Routing.getPath('photoline.choose'), {'user_id': $this.attr('user_id')}, function($data) {
-//                if ($data.status == 0 && $data.message == "") {
-//                    top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + "&extra=" + $this.attr('user_id');
-//                } else if ($data.status == 3) {
-//                    alert('Вы уже голосовали за этого пользователя');
-//                } else if ($data.status == 4) {
-//                    alert('Вы не можете голосовать за себя');
-//                } else if ($data.status == 5) {
-//                    alert('Вы не можете голосовать за этого пользователя, потому что он ожидает оценки от пользователей другого пола');
-//                }
-//            });
-//
-//            return false;
-//        });
-
         $("div.photoline div.lenta").on('mouseenter', "a:not(.add)", function($event) {
             var $this = $(this);
 
@@ -146,10 +129,10 @@ $Photoline = {
                             'age'  : $photolineItem['age'],
                             'city' : $photolineItem['city'],
                             'comment' : $photolineItem['comment'],
-                            'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-//                            'href': "/profile?id=" + $photolineItem['user_id'],
-                            'target': '_blank'
-                            //'target': '_self'
+//                            'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+                            'href': "/profile?id=" + $photolineItem['user_id'],
+//                            'target': '_blank'
+                            'target': '_self'
                         }).addClass('item');
 
                         $("div.photoline div.lenta a.pusher").css({'width': '0px'});
@@ -177,10 +160,10 @@ $Photoline = {
                     'age'  : $photolineItem['age'],
                     'city' : $photolineItem['city'],
                     'comment' : $photolineItem['comment'],
-                    'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-//                    'href': "/profile?id=" + $photolineItem['user_id'],
-                    'target': '_blank'
-                    //'target': '_self'
+//                    'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+                    'href': "/profile?id=" + $photolineItem['user_id'],
+//                    'target': '_blank'
+                    'target': '_self'
                 }).addClass('item');
 
                 $html.insertAfter($("div.photoline div.lenta a.pusher"));

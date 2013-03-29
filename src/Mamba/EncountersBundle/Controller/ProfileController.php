@@ -49,6 +49,8 @@ class ProfileController extends ApplicationController {
             shuffle($dataArray['profile']['interests']);
         }
 
+        $dataArray['profile']['gifts'] = array();
+
         $Response = $this->render("EncountersBundle:templates:profile.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;

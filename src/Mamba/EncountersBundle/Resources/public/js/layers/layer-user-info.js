@@ -24,7 +24,7 @@ $Layers.$UserInfoLayer = {
         var currentQueueElement = ($data) ? $data : $Search.$storage['currentQueueElement'];
         $("div.layer-user-info div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
         $("div.layer-user-info a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
-        $("div.layer-user-info div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+        $("div.layer-user-info div.info div.name a").attr('href', /*$Config.get('platform').partner_url + "anketa.phtml?oid="*/ "/profile?id=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
 
         if (currentQueueElement['info']['gender'] == 'F') {
             $("div.layer-user-info div.info div.name i").removeClass('male');

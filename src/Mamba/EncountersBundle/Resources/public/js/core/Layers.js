@@ -6,6 +6,13 @@
 $Layers = {
 
     /**
+     * Opened layers
+     *
+     * @var array
+     */
+    $openedLayers: [],
+
+    /**
      * Init UI
      *
      * @init UI
@@ -16,16 +23,44 @@ $Layers = {
         $("div#overflow").click(function() {
             $(this).hide();
             $("div.app-layer").hide();
+
+            for (var $i=0;$i<$Layers.$openedLayers.length;$i++) {
+                $Layer = $Layers.$openedLayers[$i];
+                console.log($Layer);
+
+                if ($Layer.hasOwnProperty("onClose")) {
+                    $Layer.onClose();
+                }
+            }
+
+            $Layers.$openedLayers = [];
+
+            return false;
         });
 
         $("div.app-layer a.close").click(function() {
             $("div#overflow").hide();
             $("div.app-layer").hide();
 
+            for (var $i=0;$i<$Layers.$openedLayers.length;$i++) {
+                $Layer = $Layers.$openedLayers[$i];
+                console.log($Layer);
+
+                if ($Layer.hasOwnProperty("onClose")) {
+                    $Layer.onClose();
+                }
+            }
+
+            $Layers.$openedLayers = [];
+
             return false;
         });
 
-
+        /**
+         * Layer list for initUI
+         *
+         * @type {Array}
+         */
         var $layersList = [
             this.$AccountLayer,
             this.$AnswerMaybeLayer,
@@ -41,7 +76,9 @@ $Layers = {
             this.$RepeatableMaybeLayer,
             this.$RepeatableNoLayer,
             this.$RepeatableYesLayer,
-            this.$UserInfoLayer
+            this.$UserInfoLayer,
+            this.$SendGiftLayer,
+            this.$ProfilePhotosLayer
         ];
 
         for (var i=0;i<$layersList.length;i++) {
@@ -49,11 +86,16 @@ $Layers = {
         }
     },
 
-    openMessengerWindowFunction: function() {
+    openMessengerWindowFunction: function($userId) {
         var e = screen.availHeight<800 ? screen.availHeight - 150 : 620;
         try {
             $Config.get('messenger.popup') && $Config.get('messenger.popup').close();
-            $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $(this).attr('user_id') ,"Messenger","width=750,height=" + e + ",resizable=1,scrollbars=1"));
+
+            if (!$userId) {
+                $userId = $(this).attr('user_id');
+            }
+
+            $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $userId ,"Messenger","width=750,height=" + e + ",resizable=1,scrollbars=1"));
             $Config.get('messenger.popup').focus();
         } catch (e) {}
 
@@ -107,7 +149,7 @@ $Layers = {
      * @shows layer
      */
     showAccountLayer: function($data) {
-        this.showLayer(this.$AccountLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$AccountLayer), $data);
     },
 
     /**
@@ -116,7 +158,7 @@ $Layers = {
      * @shows layer
      */
     showAnswerMaybeLayer: function($data) {
-        this.showLayer(this.$AnswerMaybeLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$AnswerMaybeLayer), $data);
     },
 
     /**
@@ -125,7 +167,7 @@ $Layers = {
      * @shows layer
      */
     showAnswerNoLayer: function($data) {
-        this.showLayer(this.$AnswerNoLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$AnswerNoLayer), $data);
     },
 
     /**
@@ -134,7 +176,7 @@ $Layers = {
      * @shows layer
      */
     showAnswerYesLayer: function($data) {
-        this.showLayer(this.$AnswerYesLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$AnswerYesLayer), $data);
     },
 
     /**
@@ -143,7 +185,7 @@ $Layers = {
      * @shows layer
      */
     showBatteryLayer: function($data) {
-        this.showLayer(this.$BatteryLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$BatteryLayer), $data);
     },
 
     /**
@@ -152,7 +194,7 @@ $Layers = {
      * @shows layer
      */
     showEnergyLayer: function($data) {
-        this.showLayer(this.$EnergyLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$EnergyLayer), $data);
     },
 
     /**
@@ -161,7 +203,7 @@ $Layers = {
      * @shows layer
      */
     showLevelAchievementLayer: function($data) {
-        this.showLayer(this.$LevelAchievementLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$LevelAchievementLayer), $data);
     },
 
     /**
@@ -170,7 +212,7 @@ $Layers = {
      * @shows layer
      */
     showLevelLayer: function($data) {
-        this.showLayer(this.$LevelLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$LevelLayer), $data);
     },
 
     /**
@@ -179,7 +221,7 @@ $Layers = {
      * @shows layer
      */
     showMutualLayer: function($data) {
-        this.showLayer(this.$MutualLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$MutualLayer), $data);
     },
 
     /**
@@ -188,7 +230,7 @@ $Layers = {
      * @shows layer
      */
     showAnswerNotSeeYetLayer: function($data) {
-        this.showLayer(this.$AnswerNotSeeYetLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$AnswerNotSeeYetLayer), $data);
     },
 
     /**
@@ -197,7 +239,7 @@ $Layers = {
      * @shows layer
      */
     showPhotolinePurchaseLayer: function($data) {
-        this.showLayer(this.$PhotolinePurchaseLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$PhotolinePurchaseLayer), $data);
     },
 
     /**
@@ -206,7 +248,7 @@ $Layers = {
      * @shows layer
      */
     showRepeatableMaybeLayer: function($data) {
-        this.showLayer(this.$RepeatableMaybeLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$RepeatableMaybeLayer), $data);
     },
 
     /**
@@ -215,7 +257,7 @@ $Layers = {
      * @shows layer
      */
     showRepeatableNoLayer: function($data) {
-        this.showLayer(this.$RepeatableNoLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$RepeatableNoLayer), $data);
     },
 
     /**
@@ -224,7 +266,7 @@ $Layers = {
      * @shows layer
      */
     showRepeatableYesLayer: function($data) {
-        this.showLayer(this.$RepeatableYesLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$RepeatableYesLayer), $data);
     },
 
     /**
@@ -233,6 +275,35 @@ $Layers = {
      * @shows layer
      */
     showUserInfoLayer: function($data) {
-        this.showLayer(this.$UserInfoLayer, $data);
+        this.showLayer(this.registerOpenedLayer(this.$UserInfoLayer), $data);
+    },
+
+    /**
+     * Показывает лаер дарения подарка
+     *
+     * @shows layer
+     */
+    showSendGiftLayer: function($data) {
+        this.showLayer(this.registerOpenedLayer(this.$SendGiftLayer), $data);
+    },
+
+    /**
+     * Показывает лаер фотографий профиля
+     *
+     * @shows layer
+     */
+    showProfilePhotosLayer: function($data) {
+        this.showLayer(this.registerOpenedLayer(this.$ProfilePhotosLayer), $data);
+    },
+
+    /**
+     * Register opened layer
+     *
+     * @param $Layer
+     * @returns {*}
+     */
+    registerOpenedLayer: function($Layer) {
+        this.$openedLayers.push($Layer);
+        return $Layer;
     }
 }

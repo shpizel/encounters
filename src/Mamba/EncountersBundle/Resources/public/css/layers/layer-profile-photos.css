@@ -1,0 +1,54 @@
+/**
+ * Profile photos layer
+
+ * @author shpizel
+ */
+
+.layer-profile-photos {
+    width: 655px;
+    padding-bottom: 30px
+}
+
+.layer-profile-photos .photo-col {
+    margin: -5px 0 0 0;
+    padding: 0 0 10px 0;
+    text-align: center
+}
+
+.layer-profile-photos .photo-image {
+    position: relative;
+    width: 595px;
+    height: 410px;
+    overflow: hidden;
+    font-size: 0
+}
+
+.layer-profile-photos .photo-image .photo-image_arrow {
+    position: absolute;
+    height: 100%;
+    width: 50%;
+    top: 0;
+    background-repeat: no-repeat
+}
+
+.layer-profile-photos .photo-image .arrow-left {
+    left: 0;
+    background-position: 5% 50%
+}
+
+.layer-profile-photos .photo-image .arrow-right {
+    right: 0;
+    background-position: 95% 50%
+}
+
+.layer-profile-photos .photo-image .arrow-left:hover {
+    background-image: url('../i/arrow-left.png')
+}
+
+.layer-profile-photos .photo-image .arrow-right:hover {
+    background-image: url('../i/arrow-right.png')
+}
+
+.layer-profile-photos .photo-image .photo-image_in {
+    white-space: nowrap
+}

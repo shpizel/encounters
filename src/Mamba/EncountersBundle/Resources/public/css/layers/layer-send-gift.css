@@ -4,3 +4,17 @@
  * @author shpizel
  */
 
+/**
+ * стиль под вопросом
+ */
+.layer-send-gift {
+    width: 470px
+}
+
+.layer-send-gift .title-present {
+    height: 52px;
+    text-indent: -300em;
+    background-image: url('/bundles/encounters/images/texts/title-send-gift.png');
+    background-position: 0 0;
+    background-repeat: no-repeat
+}

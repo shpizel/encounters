@@ -53,7 +53,7 @@ $Layers.$AnswerNotSeeYetLayer = {
         var currentQueueElement = ($data) ? $Config.get('users')[$Config.get('current_user_id')] : $Search.$storage['currentQueueElement'];
         $("div.layer-not-see-yet div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
         $("div.layer-not-see-yet a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
-        $("div.layer-not-see-yet div.info div.name a").attr('href', $Config.get('platform').partner_url + "anketa.phtml?oid=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+        $("div.layer-not-see-yet div.info div.name a").attr('href', /*$Config.get('platform').partner_url + "anketa.phtml?oid="*/ "/profile?id=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
 
         if (currentQueueElement['info']['gender'] == 'F') {
             $("div.layer-not-see-yet div.info div.name i").removeClass('male');

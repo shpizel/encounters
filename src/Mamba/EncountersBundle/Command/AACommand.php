@@ -1,15 +1,15 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
-use Mamba\EncountersBundle\Script\CronScript;
-
+use Mamba\EncountersBundle\Script\Script;
+use Mamba\EncountersBundle\Helpers\Gifts\Gifts;
 
 /**
  * AACommand
  *
  * @package EncountersBundle
  */
-class AACommand extends CronScript {
+class AACommand extends Script {
 
     const
 
@@ -34,12 +34,7 @@ class AACommand extends CronScript {
      * @return null
      */
     protected function process() {
-//        $LevelDB = $this->getLeveldb();
-//        $Request = $LevelDB->get('shpizel');
-//        $LevelDB->execute();
-//        var_dump($Request->getResult());
-
-        $b = $this->getBatteryObject();
-        var_dump($b->decr(1));
+        $Gifts = Gifts::getInstance();
+        print_r($Gifts->getCollections());
     }
 }

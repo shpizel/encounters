@@ -31,11 +31,15 @@ $Profile = {
         });
 
         $(".profile-picture").click(function() {
-            alert('avatar click');
+            $Layers.showProfilePhotosLayer();
         });
 
         $(".button-present").click(function() {
-            alert('send gift click');
+            $Layers.showSendGiftLayer();
+        });
+
+        $(".orange-menu .message").click(function() {
+            $Layers.openMessengerWindowFunction();
         });
     },
 
