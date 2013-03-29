@@ -61,7 +61,7 @@ $Photoline = {
         $("div.photoline div.lenta").on('mouseenter', "a:not(.add)", function($event) {
             var $this = $(this);
 
-            var $html = "<b>" + $this.attr('name') + "</b>, ";
+            var $html = "<strong>" + $this.attr('name') + "</strong>, ";
             var $age = $this.attr('age');
             if (parseInt($age) > 0) {
                 $html+= $age + ", ";

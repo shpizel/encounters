@@ -3,6 +3,8 @@ namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
 use Core\MambaBundle\API\Mamba;
+use Mamba\EncountersBundle\Helpers\Gifts;
+use Mamba\EncountersBundle\Helpers\Photoline;
 
 /**
  * ProfileController
@@ -34,7 +36,7 @@ class ProfileController extends ApplicationController {
             $currentUserId = (int) $webUserId;
         }
 
-        if (!($profile = $Mamba->nocache()->Anketa()->getInfo($currentUserId))) {
+        if (!($profile = $Mamba->Anketa()->getInfo($currentUserId))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
@@ -49,10 +51,31 @@ class ProfileController extends ApplicationController {
             shuffle($dataArray['profile']['interests']);
         }
 
-        $dataArray['profile']['gifts'] = array();
+        if ($dataArray['profile']['gifts'] = $this->getGiftsObject()->get($currentUserId)) {
+            $userData = array();
+            foreach ($this->getMamba()->Anketa()->getInfo(array_unique(array_map(function($item) {
+                return (int) $item['web_user_id'];
+            }, $dataArray['profile']['gifts']))) as $userInfo) {
+                $userData[$userInfo['info']['oid']] = $userInfo;
+            }
+
+            foreach ($dataArray['profile']['gifts'] as $giftKey=>$giftData) {
+                $dataArray['profile']['gifts'][$giftKey]['gift'] = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->toArray();
+                $dataArray['profile']['gifts'][$giftKey]['sender'] = array(
+                    'name' => $userData[$giftData['web_user_id']]['info']['name'],
+                    'age' => $userData[$giftData['web_user_id']]['info']['age'],
+                    'city' => $userData[$giftData['web_user_id']]['location']['city'],
+                );
+            }
+        }
+
+        $dataArray['current_user_id'] = $currentUserId;
 
         $Response = $this->render("EncountersBundle:templates:profile.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+
+        $this->getStatsObject()->incr('profile-hits');
+
         return $Response;
     }
 }

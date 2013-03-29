@@ -27,6 +27,7 @@ use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
 use Mamba\EncountersBundle\Helpers\Account;
 use Mamba\EncountersBundle\Helpers\Photoline;
+use Mamba\EncountersBundle\Helpers\Gifts;
 
 /**
  * ScriptTrait
@@ -187,6 +188,19 @@ trait ScriptTrait {
         }
 
         return self::$Instances[__FUNCTION__] = new SearchPreferences($this->getContainer());
+    }
+
+    /**
+     * Gifts helper getter
+     *
+     * @return Gifts
+     */
+    public function getGiftsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Gifts($this->getContainer());
     }
 
     /**

@@ -1,7 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
-use Mamba\EncountersBundle\Helpers\Gifts\Gifts;
+use Mamba\EncountersBundle\Helpers\Gifts;
+use Mamba\EncountersBundle\Tools\Gifts\Gift;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
@@ -128,6 +129,19 @@ abstract class ApplicationController extends Controller {
         }
 
         return self::$Instances[__FUNCTION__] = new Photoline($this->container);
+    }
+
+    /**
+     * Gifts helper getter
+     *
+     * @return Gifts
+     */
+    public function getGiftsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Gifts($this->container);
     }
 
     /**
@@ -440,9 +454,7 @@ abstract class ApplicationController extends Controller {
             'notification_hidden'                 => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
         );
 
-        $dataArray['gifts'] = Gifts::getInstance()->toArray();
-//        var_dump($dataArray['gifts']);
-//        exit();
+        $dataArray['gifts'] = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->toArray();
 
         if ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {
             $contacts = $this->getRedis()->sMembers($redisContactsKey);

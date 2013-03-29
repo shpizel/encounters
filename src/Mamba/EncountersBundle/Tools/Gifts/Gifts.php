@@ -1,8 +1,8 @@
 <?php
-namespace Mamba\EncountersBundle\Helpers\Gifts;
+namespace Mamba\EncountersBundle\Tools\Gifts;
 
-use Mamba\EncountersBundle\Helpers\Gifts\Collection;
-use Mamba\EncountersBundle\Helpers\Gifts\Gift;
+use Mamba\EncountersBundle\Tools\Gifts\Collection;
+use Mamba\EncountersBundle\Tools\Gifts\Gift;
 
 /**
  * Gifts
@@ -163,6 +163,26 @@ class Gifts {
         }
 
         return $ret;
+    }
+
+    /**
+     * Gift getter
+     *
+     * @param int $giftId
+     * @return array|null
+     */
+    public function getGiftById($giftId) {
+        if (!is_int($giftId)) {
+            throw new GiftsException("Invalid gift id type: ". gettype($giftId));
+        }
+
+        foreach ($this->getCollections() as $Collection) {
+            foreach ($Collection->getGifts() as $Gift) {
+                if ($Gift->getId() == $giftId) {
+                    return $Gift;
+                }
+            }
+        }
     }
 
     /**

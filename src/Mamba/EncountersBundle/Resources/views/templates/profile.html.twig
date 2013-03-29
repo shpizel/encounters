@@ -21,47 +21,38 @@
             <div class="anketa-content_user">
                 <span class="big">{{ profile.info.name }}</span> {% if profile.info.age > 0 %}<b>{{ profile.info.age }}</b>,{% endif %} <span class="small">{{ profile.location.city }}</span>
             </div>
-            <div class="anketa-content_user-present{% if profile.gifts|length == 0 %} no-present{% endif %}">
-                <div class="button-present">Отправить подарок</div>
-                <div class="empty-block">Сообщение с подарком произведет <br /> впечатление и будет более заментым!</div>
-                <div class="list-present_user">
-                    {% for gift in profile.gifts %}
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"><a style="width:55px;height:55px">123</a></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    <span class="list-present_user-item"></span>
-                    {% endfor %}
-                </div>
-            </div>
 
-            {#{% if not profile.myself %}#}
-            <ul class="orange-menu">
-                <li class="item"><span>Написать</span></li>
-                <li class="item"><span>Встретиться</span></li>
-                <li class="item item-arrow"><span>или</span>
-                    <div class="drop-down">
-                        <ul class="list">
-                            <li class="item"><a href="#" class="item-link">Узнать, кто ей нравится</a></li>
-                            <li class="item"><a href="#" class="item-link">В черный список</a></li>
-                            <li class="item"><a href="#" class="item-link">Закрыть</a></li>
-                        </ul>
+            {%  if not profile.myself or profile.gifts|length > 0 %}
+                <div class="anketa-content_user-present{% if profile.gifts|length == 0 %} no-present{% endif %}">
+                    {% if not profile.myself %}
+                        <div class="button-present">Отправить подарок</div>
+                    {% endif %}
+                    <div class="empty-block">Сообщение с подарком произведет <br /> впечатление и будет более заментым!</div>
+                    <div class="list-present_user">
+                        {% for gift in profile.gifts %}
+                            <a user_id="{{ gift.web_user_id }}" name="{{ gift.sender.name }}" age="{{ gift.sender.age }}" city="{{ gift.sender.city }}" comment="{{ gift.comment }}" href="#" target="_self" class="list-present_user-item">
+                                <img src="{{ gift.gift.url }}">
+                            </a>
+                        {% endfor %}
                     </div>
-                </li>
-            </ul>
-            {#{% endif %}#}
+                </div>
+            {% endif %}
+
+            {% if not profile.myself %}
+                <ul class="orange-menu">
+                    <li class="item message"><span>Написать</span></li>
+                    <li class="item meet"><span>Встретиться</span></li>
+                    {#<li class="item item-arrow"><span>или</span>#}
+                        {#<div class="drop-down">#}
+                            {#<ul class="list">#}
+                                {#<li class="item"><a href="#" class="item-link">Узнать, кто ей нравится</a></li>#}
+                                {#<li class="item"><a href="#" class="item-link">В черный список</a></li>#}
+                                {#<li class="item"><a href="#" class="item-link">Закрыть</a></li>#}
+                            {#</ul>#}
+                        {#</div>#}
+                    {#</li>#}
+                </ul>
+            {% endif %}
 
             {% if profile.interests|length > 0 %}
                 <div class="anketa-content_user-interes">
@@ -151,4 +142,7 @@
 
     {% include 'EncountersBundle:layers:layers.html.twig' %}
 
+{% endblock %}
+{% block pagejs %}
+$Config.set('current_user_id', {{ current_user_id }});
 {% endblock %}

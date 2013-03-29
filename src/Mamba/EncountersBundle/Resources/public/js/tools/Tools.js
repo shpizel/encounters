@@ -123,5 +123,18 @@ $Tools = {
      */
     deleteCookie:function($name) {
         setCookie($name, null, { expires: -1 })
+    },
+
+    /**
+     * Logger
+     *
+     * @param $data
+     */
+    log: function($data) {
+        if ($Config.get('debug')) {
+            if (window.console && window.console.log) {
+                console.log($data);
+            }
+        }
     }
 }

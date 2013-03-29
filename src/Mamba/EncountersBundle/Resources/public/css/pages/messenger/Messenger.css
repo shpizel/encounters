@@ -792,7 +792,7 @@ textarea.input_i {
 }
 
 .window-user_info .tags-list_item:after {
-    background-image: url('../i/tag_user-info.png');
+    background-image: url('/bundles/encounters/images/interests-courner-right.png');
 }
 
 .tags-list {
@@ -831,7 +831,7 @@ textarea.input_i {
     height: 100%;
     margin: 0 0 -2px 0;
     padding: 0 0 2px 0;
-    background: url('../i/tag.png') 100% 50% no-repeat;
+    background: url('/bundles/encounters/images/interests-courner-right.png') 100% 50% no-repeat;
     content: '';
 }
 

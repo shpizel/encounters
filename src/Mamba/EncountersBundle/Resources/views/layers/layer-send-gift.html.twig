@@ -18,7 +18,7 @@
             <ul class="list-present">
                 {% for id, collection in gifts %}
                     {% for id, gift in collection.gifts %}
-                        <li class="list-present_item">
+                        <li class="list-present_item" gift_id="{{ gift.id }}">
                             <span class="list-present_content">
                                 <img src="{{ gift.url }}" class="list-present_img">
                                 <span class="list-present_cost">{{ gift.cost }} </span>
@@ -36,7 +36,7 @@
         <form action="#" method="post">
             <input type="hidden" id="preset_id" value="" />
             <div class="input">
-                <textarea class="input_i" placeholder="Напишите комплимент, например: «Ты почти что шикарная женщина»"></textarea>
+                <textarea class="input_i" placeholder="Напишите комплимент"></textarea>
             </div>
             <input type="submit" value="Отправить" class="button">
             <span class="form_label">Enter</span>

@@ -1,12 +1,12 @@
 <?php
-namespace Mamba\EncountersBundle\Helpers\Gifts;
+namespace Mamba\EncountersBundle\Tools\Gifts;
 
-use Mamba\EncountersBundle\Helpers\Gifts\Gift;
+use Mamba\EncountersBundle\Tools\Gifts\Gift;
 
 /**
  * Class Collection
  *
- * @package Mamba\EncountersBundle\Helpers
+ * @package Mamba\EncountersBundle\Tools\Gifts
  */
 class Collection {
 
@@ -183,7 +183,7 @@ class Collection {
 /**
  * Class CollectionException
  *
- * @package Mamba\EncountersBundle\Helpers
+ * @package Mamba\EncountersBundle\Tools\Gifts
  */
 class CollectionException extends \Exception {
 

@@ -53,7 +53,11 @@ $Interface = {
                     });
 
                 }, function() {
-                    top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
+                    if (!$Config.get('debug')) {
+                        top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
+                    } else {
+                        $Tools.log('Mamba JS API disabled');
+                    }
                 });
             }
         }

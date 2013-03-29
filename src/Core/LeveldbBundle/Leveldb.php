@@ -243,7 +243,7 @@ class Leveldb {
      * @param int $skip Количество ключей, которые необходимо пропустить от начала выборки.
      * @return LeveldbRequest
      */
-    public function get_range($from, $to, $limit, $skip = 0) {
+    public function get_range($from, $to = null, $limit = 100, $skip = 0) {
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)

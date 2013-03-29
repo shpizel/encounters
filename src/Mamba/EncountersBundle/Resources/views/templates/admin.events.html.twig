@@ -141,7 +141,43 @@
             Информация недоступна.
         {% endif %}
     </div>
+</div>
 
+<div class="row">
+    <div class="span6">
+        <h3>Profile </h3>
+        {% if profile.items %}
+            <table class="table table-bordered table-hover">
+                <thead>
+                <th>Дата</th>
+                {% set tkeys = profile.items[0].item|keys %}
+
+                {% for key in tkeys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+                </thead>
+
+                {% for item in profile.items %}
+                    {% if item.item|keys|length > 0 %}
+                        <tr class="{% if item.ts|date("N") < 6 %}{% else %}warning{% endif %}">
+                            <td>{{ item.date }}</td>
+                            {% for key in tkeys %}
+                                <td>{% if item.item[key] != null %}{{ item.item[key] }}{% else %}0{% endif %}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr class="info">
+                    <td>Итого:</td>
+                    {% for key in tkeys %}
+                        <td>{{ profile.info[key] }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% else %}
+            Информация недоступна.
+        {% endif %}
+    </div>
 </div>
 
 <div class="row">
@@ -180,5 +216,4 @@
         {% endif %}
     </div>
 </div>
-
 {% endblock %}

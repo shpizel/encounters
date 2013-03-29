@@ -87,6 +87,13 @@ photoline.choose:
     requirements:
         _method: POST
 
+# Gift purchaser
+gift.purchase:
+    pattern: /ajax/gift.purchase
+    defaults: { _controller: EncountersBundle:Gifts:purchase }
+    requirements:
+        _method: POST
+
 # Надрочить популярность до 4го уровня
 popularity.get:
     pattern: /ajax/popularity.get

@@ -2,7 +2,7 @@
 namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Script\Script;
-use Mamba\EncountersBundle\Helpers\Gifts\Gifts;
+use Mamba\EncountersBundle\Tools\Gifts\Gifts;
 
 /**
  * AACommand
@@ -34,7 +34,12 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $Gifts = Gifts::getInstance();
-        print_r($Gifts->getCollections());
+        //$Gifts = $this->getGiftsObject();
+        //var_dump($Gifts->add(560015854, 1043369945, 1, 'третий гифт'));
+        //print_r($Gifts->get(1043369945));
+
+        print_r(Gifts::getInstance()->getGiftById(1));
+
+
     }
 }

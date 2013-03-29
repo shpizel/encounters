@@ -1,10 +1,10 @@
 <?php
-namespace Mamba\EncountersBundle\Helpers\Gifts;
+namespace Mamba\EncountersBundle\Tools\Gifts;
 
 /**
  * Class Gift
  *
- * @package Mamba\EncountersBundle\Helpers
+ * @package Mamba\EncountersBundle\Tools\Gifts
  */
 class Gift {
 
@@ -170,12 +170,26 @@ class Gift {
         $this->order = $order;
         return $this;
     }
+
+    /**
+     *
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'id' => $this->getId(),
+            'url' => $this->getUrl(),
+            'enabled' => $this->getEnabled(),
+            'cost' => $this->getCost(),
+            'order' => $this->getOrder(),
+        );
+    }
 }
 
 /**
  * Class GiftException
  *
- * @package Mamba\EncountersBundle\Helpers
+ * @package Mamba\EncountersBundle\Tools\Gifts
  */
 class GiftException extends \Exception {
 
