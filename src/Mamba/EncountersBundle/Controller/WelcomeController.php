@@ -57,6 +57,17 @@ class WelcomeController extends ApplicationController {
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
 
             if (isset($getParams['extra']) && is_numeric($getParams['extra'])) {
+                /**
+                 * Нужно добавить айдишник в очередь
+                 *
+                 * @author shpizel
+                 */
+                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $getParams['extra'])) {
+                    if ($webUserId != $currentUserId && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
+                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
+                    }
+                }
+
                 $Session->set('active_id', intval($getParams['extra']));
             }
 
@@ -94,11 +105,6 @@ class WelcomeController extends ApplicationController {
             /** В общем случае кидаем на поиск */
             $Response = $this->redirect($this->generateUrl('search'));
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-
-//            if ($this->getMemcache()->add("mordolenta-free-{$webUserId}", time(), 24*3600)) {
-//                $webUser = $this->getMamba()->Anketa()->getInfo((int) $webUserId);
-//                $this->getPhotolineObject()->add($webUser[0]['location']['region_id'],$webUserId);
-//            }
 
             return $Response;
         }
