@@ -34,6 +34,21 @@ redis:
                 prefix: null
 
 leveldb:
+
+    # sudo do-release-upgrage -d
+    # sudo apt-get install libsnappy1 libtbb2 libtbb-dev make cmake g++
+    # wget http://launchpadlibrarian.net/129161181/libleveldb1_1.9.0-1_amd64.deb
+    # sudo dpkg -i
+    # wget http://launchpadlibrarian.net/129161182/libleveldb-dev_1.9.0-1_amd64.deb
+    # sudo dpkg -i
+    # sudo apt-get install libboost1.46-dev
+    # sudo apt-get install  libboost-thread1.48-dev
+    # sudo apt-get install libboost-program-options1.48-dev
+    # git clone git://github.com/mambaru/leveldb-daemon.git
+    # cd leveldb-daemon
+    # make all
+    # ./release/leveldb.json --help
+
     master:
         memory1:
             host: 10.10.10.21
@@ -41,6 +56,7 @@ leveldb:
             timeout: -1
 
     # /release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=40960 --port=22510
+
     slave:
         memory2:
             host: 10.10.10.22

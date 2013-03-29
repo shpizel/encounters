@@ -60,12 +60,12 @@ redis:
 leveldb:
     master:
         dev:
-            host: 192.168.180.131
+            host: localhost
             port: 22510
             timeout: -1
     slave:
         dev:
-            host: 192.168.180.131
+            host: localhost
             port: 22510
             timeout: -1
 
