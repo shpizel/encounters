@@ -138,7 +138,7 @@ class DeployCommand extends Script {
                     $commands[] = array(
                         'description' => "Copying code to $server server",
                         'command'     => array(
-                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null",
+                            "rsync -vrlgoD --exclude=.git --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null",
                         ),
                     );
                 }
@@ -211,6 +211,8 @@ class DeployCommand extends Script {
                 exit(0);
             }
         }
+
+        $this->log("Awaiting " . count($pids) . " forks..", -1);
 
         while(count($pids) > 0){
             $finishedPid = pcntl_waitpid(-1, $status, WNOHANG);
