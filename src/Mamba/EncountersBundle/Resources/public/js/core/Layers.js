@@ -95,8 +95,8 @@ $Layers = {
                 $userId = $(this).attr('user_id');
             }
 
-            //$Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $userId ,"Messenger","width=750,height=" + e + ",resizable=1,scrollbars=1"));
-            $Config.set('messenger.popup', window.open('/messenger?id=' +  $userId, "Messenger", "width=860,height=" + e + ",resizable=1,scrollbars=1"));
+            $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $userId ,"Messenger","width=750,height=" + e + ",resizable=1,scrollbars=1"));
+            //$Config.set('messenger.popup', window.open('/messenger?id=' +  $userId, "Messenger", "width=860,height=" + e + ",resizable=1,scrollbars=1"));
             $Config.get('messenger.popup').focus();
         } catch (e) {}
 

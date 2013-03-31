@@ -34,11 +34,12 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        //$Gifts = $this->getGiftsObject();
-        //var_dump($Gifts->add(560015854, 1043369945, 1, 'третий гифт'));
-        //print_r($Gifts->get(1043369945));
+        $Energy = $this->getEnergyObject();
+        var_dump($Energy->get(1));
+        var_dump($Energy->set(1, 2));
+        var_dump($Energy->incr(1));
+        var_dump($Energy->decr(1));
 
-        print_r(Gifts::getInstance()->getGiftById(1));
 
 
     }

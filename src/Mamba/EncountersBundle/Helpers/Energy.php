@@ -32,7 +32,7 @@ class Energy extends Helper {
          *
          * @var str
          */
-        REDIS_USER_ENERGY_KEY = "energy_by_%d"
+        LEVELDB_USER_ENERGY_KEY = "encounters:user:%d:energy"
     ;
 
     /**
@@ -46,7 +46,18 @@ class Energy extends Helper {
             throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $energy = $this->getRedis()->get(sprintf(self::REDIS_USER_ENERGY_KEY, $userId));
+        $Leveldb = $this->getLeveldb();
+
+        $Request = $Leveldb->get($key = sprintf(self::LEVELDB_USER_ENERGY_KEY, $userId));
+        $Leveldb->execute();
+
+        $result = $Request->getResult();
+        $energy = false;
+
+        if (isset($result[$key])) {
+            $energy = (int) $result[$key];
+        }
+
         if (false === $energy) {
             $this->set($userId, $energy = self::DEFAULT_ENERGY);
 
@@ -61,7 +72,7 @@ class Energy extends Helper {
             );
         }
 
-        return (int) $energy;
+        return $energy;
     }
 
     /**
@@ -76,8 +87,18 @@ class Energy extends Helper {
             throw new EnergyException("Invalid user id: \n" . var_export($userId, true));
         }
 
+        $Leveldb = $this->getLeveldb();
+
         if (is_int($energy) && $energy >= self::MINIMUM_ENERGY && $energy <= max(Popularity::$levels) - 1 /** нахуя тут минус 1 неясно но хуй с ним */) {
-            $result = $this->getRedis()->set(sprintf(self::REDIS_USER_ENERGY_KEY, $userId), $energy);
+            $Request = $Leveldb->set(
+                array(
+                    $key = sprintf(self::LEVELDB_USER_ENERGY_KEY, $userId) => $energy
+                )
+            );
+
+            $Leveldb->execute();
+
+            $result = $Request->getResult();
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) &&  $this->getGearman()->getClient()->doHighBackground(
                 EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
@@ -89,7 +110,11 @@ class Energy extends Helper {
                 )
             );
 
-            return $result;
+            if ($result === true) {
+                return $energy;
+            } else {
+                throw new EnergyException("Could not set energy {$userId}=>{$energy}");
+            }
         }
 
         throw new EnergyException("Invalid energy: \n" . var_export($energy, true));
@@ -110,7 +135,19 @@ class Energy extends Helper {
             throw new EnergyException("Invalid increment rate: \n" . var_export($rate, true));
         }
 
-        $incrementResult = $this->getRedis()->incrBy(sprintf(self::REDIS_USER_ENERGY_KEY, $userId), $rate);
+        $Leveldb = $this->getLeveldb();
+        $Request = $Leveldb->inc(array(
+            $key = sprintf(self::LEVELDB_USER_ENERGY_KEY, $userId) => $rate,
+        ));
+
+        $Leveldb->execute();
+
+        $result = $Request->getResult();
+        $incrementResult = 0;
+        if (isset($result[$key])) {
+            $incrementResult = (int) $result[$key];
+        }
+
         if ($incrementResult < self::MINIMUM_ENERGY) {
             $result =  $this->set($userId, $incrementResult = self::MINIMUM_ENERGY);
 

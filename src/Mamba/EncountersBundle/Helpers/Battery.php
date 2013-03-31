@@ -89,7 +89,12 @@ class Battery extends Helper {
 
             $Leveldb->execute();
 
-            return $Request->getResult();
+            $result = $Request->getResult();
+            if ($result === true) {
+                return $charge;
+            } else {
+                throw new BatteryException("Could not set energy {$userId}=>{$charge}");
+            }
         }
 
         throw new BatteryException("Invalid charge: \n" . var_export($charge, true));
