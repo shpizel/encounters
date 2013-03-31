@@ -18,7 +18,8 @@ class Variables extends Helper {
          *
          * @var str
          */
-        REDIS_HASH_USER_VARIABLES_KEY = "variables_by_%d",
+        LEVELDB_USER_VARIABLE_KEY = 'encounters:variables:%d:%s',
+    
 
         /**
          * Внутренний тип переменной (только для внутреннего использования)
@@ -160,7 +161,13 @@ class Variables extends Helper {
         }
 
         if (array_key_exists($key, self::$options)) {
-            if ($result = $this->getRedis()->hGet(sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId), $key)) {
+            $LevelDb = $this->getLeveldb();
+            $Request = $LevelDb->get($leveldbKey = sprintf(self::LEVELDB_USER_VARIABLE_KEY, $userId, $key));
+            $LevelDb->execute();
+            
+            if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
+                $result = $result[$leveldbKey];
+
                 $result = json_decode($result, true);
                 if ($result['expires'] > time() || !$result['expires']) {
                     return $result['data'];
@@ -180,7 +187,23 @@ class Variables extends Helper {
             throw new VariablesException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hGetAll(sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId));
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get_range(
+            $leveldbKey = sprintf(self::LEVELDB_USER_VARIABLE_KEY, $userId, ''),
+            null,
+            100
+        );
+
+        $LevelDb->execute();
+        if ($result = $Request->getResult()) {
+            foreach ($result as $key=>$val) {
+                if (strpos($key, $leveldbKey) === false) {
+                    unset($result[$key]);
+                }
+            }
+
+            return $result;
+        }
     }
 
     /**
@@ -217,16 +240,20 @@ class Variables extends Helper {
                 throw new VariablesException("Invalid data for key {$key}:". PHP_EOL . "==data start==" . PHP_EOL . var_export($data, true) . PHP_EOL . "==data end==");
             }
 
-            return false !== $this->getRedis()->hSet(
-                sprintf(self::REDIS_HASH_USER_VARIABLES_KEY, $userId),
-                $key,
-                json_encode(
+            $LevelDb = $this->getLeveldb();
+            $Request = $LevelDb->set(array(
+                $leveldbKey = sprintf(self::LEVELDB_USER_VARIABLE_KEY, $userId, $key) => json_encode(
                     array(
                         'expires' => $ttl ? (time() + $ttl) : 0,
                         'data'    => $data,
                     )
-                )
-            );
+                ),
+            ));
+
+            $LevelDb->execute();
+            if ($Request->getResult() === true){
+                return true;
+            }
         }
     }
 

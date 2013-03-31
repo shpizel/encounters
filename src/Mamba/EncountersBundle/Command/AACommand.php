@@ -34,10 +34,6 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $LevelDb = $this->getLeveldb();
-        $Request = $LevelDb->get_range('encounters:user:', null, 100);
-        $LevelDb->execute();
-        
-        $this->log("Result: " . var_export($Request->getResult(), true));
+        var_dump($this->getVariablesObject()->getAll(560015854));
     }
 }
