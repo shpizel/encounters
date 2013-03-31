@@ -17,7 +17,7 @@ class Counters extends Helper {
          *
          * @var str
          */
-        REDIS_HASH_USER_COUNTERS_KEY = "counters_by_%d"
+        LEVELDB_USER_COUNTERS_KEY = "encounters:counters:%d:%s"
     ;
 
     /**
@@ -32,7 +32,15 @@ class Counters extends Helper {
             throw new CountersException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hGet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key);
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get(
+            $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, $key)
+        );
+        $LevelDb->execute();
+
+        if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
+            return $result[$leveldbKey];
+        }
     }
 
     /**
@@ -46,7 +54,24 @@ class Counters extends Helper {
             throw new CountersException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->hGetAll(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId));
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get_range(
+            $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, ''),
+            null,
+            100
+        );
+
+        $LevelDb->execute();
+
+        if ($result = $Request->getResult()) {
+            foreach ($result as $key=>$val) {
+                if (strpos($key, $leveldbKey) === false) {
+                    unset($result[$key]);
+                }
+            }
+
+            return $result;
+        }
     }
 
     /**
@@ -65,7 +90,17 @@ class Counters extends Helper {
             throw new CountersException("Invalid value: \n" . var_export($value, true));
         }
 
-        return $this->getRedis()->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $value);
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->set(array(
+            $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, $key) => $value
+        ));
+        $LevelDb->execute();
+
+        if ($Request->getResult() === true) {
+            return true;
+        }
+
+        //return $this->getRedis()->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $value);
     }
 
     /**
@@ -84,7 +119,15 @@ class Counters extends Helper {
             throw new CountersException("Invalid rate: \n" . var_export($rate, true));
         }
 
-        return $this->getRedis()->hIncrBy(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $rate);
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->inc(array(
+            $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, $key) => $rate
+        ));
+        $LevelDb->execute();
+
+        if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
+            return $result[$leveldbKey];
+        }
     }
 
     /**

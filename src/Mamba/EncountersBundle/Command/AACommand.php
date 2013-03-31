@@ -34,6 +34,6 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        var_dump($this->getVariablesObject()->getAll(560015854));
+        //var_dump($this->getCountersObject()->get(1013785705, 'visitors'));
     }
 }

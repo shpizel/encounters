@@ -130,7 +130,6 @@ class NotificationSendCommand extends CronScript {
             'last_notification_metrics',
         );
 
-        //$appUsers = $Redis->hKeys(SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY);
         $appUsers = array();
         foreach ($Redis->getNodes() as $node) {
             $nodeConnection = $Redis->getNodeConnection($node);
@@ -149,9 +148,6 @@ class NotificationSendCommand extends CronScript {
                 $appUsers[] = $userId;
             }
         }
-
-//        shuffle($appUsers);
-//        $appUsers = array_slice($appUsers, 0, 1000);
 
         $this->log("Users: <info>" . count($appUsers) . "</info>");
 
