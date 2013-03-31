@@ -116,7 +116,7 @@ class RedisToLeveldbMigrationCommand extends CronScript {
                             $userId = (int) array_pop($userId);
                             $energy = (int) $data[$kn];
 
-                            $ldata["encounters:user:{$userId}:energy"] = $energy;
+                            $ldata["encounters:energy:{$userId}"] = $energy;
                             $counter++;
                         }
                     }

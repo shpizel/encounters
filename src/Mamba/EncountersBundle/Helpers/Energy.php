@@ -32,7 +32,7 @@ class Energy extends Helper {
          *
          * @var str
          */
-        LEVELDB_USER_ENERGY_KEY = "encounters:user:%d:energy"
+        LEVELDB_USER_ENERGY_KEY = "encounters:energy:%d"
     ;
 
     /**
