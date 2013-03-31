@@ -34,13 +34,10 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $Energy = $this->getEnergyObject();
-        var_dump($Energy->get(1));
-        var_dump($Energy->set(1, 2));
-        var_dump($Energy->incr(1));
-        var_dump($Energy->decr(1));
-
-
-
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get_range('encounters:user:', null, 100);
+        $LevelDb->execute();
+        
+        $this->log("Result: " . var_export($Request->getResult(), true));
     }
 }
