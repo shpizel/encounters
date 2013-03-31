@@ -45,6 +45,26 @@ profile:
     pattern: /profile
     defaults: { _controller: EncountersBundle:Profile:index }
 
+# Мессенджер
+messenger:
+    pattern: /messenger
+    defaults: { _controller: EncountersBundle:Messenger:index }
+
+# Дергалка контактов мессенджера
+messenger.contacts.get:
+    pattern: /ajax/messenger.contacts.get
+    defaults: { _controller: EncountersBundle:Messenger:getContacts }
+
+# Дергалка сообщений мессенджера
+messenger.messages.get:
+    pattern: /ajax/messenger.messages.get
+    defaults: { _controller: EncountersBundle:Messenger:getMessages }
+
+# Дергалка сообщений мессенджера
+messenger.message.send:
+    pattern: /ajax/messenger.messages.send
+    defaults: { _controller: EncountersBundle:Messenger:sendMessage }
+
 # Страница постоплаты
 billing:
     pattern: /billing

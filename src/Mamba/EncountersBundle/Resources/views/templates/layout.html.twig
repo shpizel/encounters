@@ -34,63 +34,65 @@
 </script>
 </head>
 <body>
+{% if controller != 'messenger' %}
 <div id="wrapper">
-<div class="app-layout">
-    <div class="app-menu-bar">
-        {% if controller == 'search' %}
-        <i class="l-menu-rounder"></i>
-        {% endif %}
-        <i class="l-rounder"></i>
-        <i class="r-rounder"></i>
-        <div class="app-menu-bar-inner">
-            <ul class="info-meet" style="float:right;">
-                <li class="item-popularity">
-                    <div class="bar">
-                        <div class="level-background lbc{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev) // 25 + 1  }}"></div>
-                        <div class="level l{{ webuser.popularity.level }}"></div>
-                        <div class="speedo-background"></div>
-                        <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
-                    </div>
-                </li>
-                {#<li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>#}
-                <li class="item-account">
-                    <div class="bar"><div class="account"><span>{{ webuser.account }}<i></i></span></div></div>
-                </li>
-                <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery*15 }}%"></b></b>{# <i>{{ webuser.battery*20 }}%</i>#}</li>
-            </ul>
-            <ul class="info-meet">
-                <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
-                <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
-                <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> {% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i> {% endif %}<i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
+    <div class="app-layout">
+        <div class="app-menu-bar">
+            {% if controller == 'search' %}
+            <i class="l-menu-rounder"></i>
+            {% endif %}
+            <i class="l-rounder"></i>
+            <i class="r-rounder"></i>
+            <div class="app-menu-bar-inner">
+                <ul class="info-meet" style="float:right;">
+                    <li class="item-popularity">
+                        <div class="bar">
+                            <div class="level-background lbc{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev) // 25 + 1  }}"></div>
+                            <div class="level l{{ webuser.popularity.level }}"></div>
+                            <div class="speedo-background"></div>
+                            <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
+                        </div>
+                    </li>
+                    {#<li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>#}
+                    <li class="item-account">
+                        <div class="bar"><div class="account"><span>{{ webuser.account }}<i></i></span></div></div>
+                    </li>
+                    <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery*15 }}%"></b></b>{# <i>{{ webuser.battery*20 }}%</i>#}</li>
+                </ul>
+                <ul class="info-meet">
+                    <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
+                    <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
+                    <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> {% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i> {% endif %}<i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
 
-                {% if webuser.stats.mutual_unread %}
-                    <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b class="mutual_unread">
-                        {% if webuser.stats.mutual_unread % 10 == 0 %}
-                            {{ webuser.stats.mutual_unread }} новых симпатий
-                        {% elseif webuser.stats.mutual_unread % 10 == 1 %}
-                            {{ webuser.stats.mutual_unread }} новая симпатия
-                        {% elseif webuser.stats.mutual_unread % 10 < 5 %}
-                            {{ webuser.stats.mutual_unread }} новые симпатии
-                        {% else %}
-                            {{ webuser.stats.mutual_unread }} новых симпатий
-                        {% endif %}
-                    </b></a></li>
-                {% else %}
-                    <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
-                {% endif %}
-            </ul>
+                    {% if webuser.stats.mutual_unread %}
+                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b class="mutual_unread">
+                            {% if webuser.stats.mutual_unread % 10 == 0 %}
+                                {{ webuser.stats.mutual_unread }} новых симпатий
+                            {% elseif webuser.stats.mutual_unread % 10 == 1 %}
+                                {{ webuser.stats.mutual_unread }} новая симпатия
+                            {% elseif webuser.stats.mutual_unread % 10 < 5 %}
+                                {{ webuser.stats.mutual_unread }} новые симпатии
+                            {% else %}
+                                {{ webuser.stats.mutual_unread }} новых симпатий
+                            {% endif %}
+                        </b></a></li>
+                    {% else %}
+                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
+
+        {% include 'EncountersBundle:widgets:photoline.html.twig' %}
     </div>
 
-    {% include 'EncountersBundle:widgets:photoline.html.twig' %}
-</div>
-
-{% if notification.message %}
-    {% if variables.notification_hidden != 1 %}
-        <div class="notification">
-            <a href="#" class="close"></a>
-            <div class="text">{{ notification.message }}</div>
-        </div>
+    {% if notification.message %}
+        {% if variables.notification_hidden != 1 %}
+            <div class="notification">
+                <a href="#" class="close"></a>
+                <div class="text">{{ notification.message }}</div>
+            </div>
+        {% endif %}
     {% endif %}
 {% endif %}
 
@@ -99,8 +101,12 @@
 {% include 'EncountersBundle:tools:ym.html.twig' %}
 {% include 'EncountersBundle:tools:ga.html.twig' %}
 {% endif %}
+
+{% if controller != 'messenger' %}
 </div>
-    {% block javascripts %}{% endblock %}
+{% endif %}
+
+{% block javascripts %}{% endblock %}
 {% javascripts
     '@EncountersBundle/Resources/public/js/core/jQuery/*'
     '@EncountersBundle/Resources/public/js/core/*'
@@ -121,17 +127,23 @@ $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% if settings.search %}$Config.set('search', {{settings.search}});{% endif %}
 $Config.set('webuser', {{ webuser.json }});
 $Config.set('variables', {{ variables|json_encode() }});
-$Config.set('photoline', {{ photoline|json_encode() }});
+
+{% if controller != 'messenger' %}
+    $Config.set('photoline', {{ photoline|json_encode() }});
+{% endif %}
+
 $Config.set('time', {{ time }});
 $Config.set('microtime', {{ microtime }});
 $Routing.setRoutes({{ routes }});
 {% endautoescape %}
 
+{% if controller != 'messenger' %}
 {% if non_app_users_contacts is defined %}
 {% if non_app_users_contacts %}
 {% autoescape false %}
 $Config.set('non_app_users_contacts', {{ non_app_users_contacts|json_encode() }});
 {% endautoescape %}
+{% endif %}
 {% endif %}
 {% endif %}
 

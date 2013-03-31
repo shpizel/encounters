@@ -118,7 +118,7 @@ textarea.input_i {
     display: block;
     height: 14px;
     width: 22px;
-    background-image: url('../i/i-smile.gif');
+    background-image: url('/bundles/encounters/images/button-smile.gif');
     cursor: pointer;
 }
 
@@ -229,7 +229,7 @@ textarea.input_i {
     width: 100%;
     min-width: 730px;
     background-color: #FFF;
-    background-image: url('../i/ajax-loader.gif');
+    background-image: url('/bundles/encounters/images/ajax-loader.gif');
     background-position: 50% 50%;
     background-repeat: no-repeat;
     content: '';
@@ -326,7 +326,6 @@ textarea.input_i {
     border-color: #c8c8c8;
 }
 
-/* bottom-online-user (begin) */
 .b-user_online {
     position: absolute;
     left: 0;
@@ -360,7 +359,7 @@ textarea.input_i {
     left: auto;
     right: 15px;
     top: 17px;
-    background-image: url('../i/icon_spin_dark.gif');
+    background-image: url('/bundles/encounters/images/icon_spin_dark.gif');
     height: 16px;
     width: 16px;
     border-top: 0px;
@@ -455,7 +454,7 @@ textarea.input_i {
 }
 
 .list-users .list-users_item:hover .list-users_state {
-    background: url('/i/icon_spin_light2.gif');
+    background: url('/bundles/encounters/images/icon_spin_light2.gif');
 }
 
 .list-users .list-users_item.list-users_item-current {
@@ -479,7 +478,7 @@ textarea.input_i {
 }
 
 .list-users .list-users_item.list-users_item-current .list-users_state {
-    background: url('/i/icon_spin_dark.gif');
+    background: url('/bundles/encounters/images/icon_spin_dark.gif');
 }
 
 .list-users .list-users_item.list-users_item-current .list-users_message {
@@ -498,6 +497,8 @@ textarea.input_i {
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
+    width: 28px;
+    height: 28px;
 }
 
 .list-users .list-users_item .list-users_message {
@@ -541,7 +542,7 @@ textarea.input_i {
     height: 16px;
     margin: 7px 2px 0 5px;
     width: 16px;
-    background: url('/i/icon_spin_light.gif');
+    background: url('/bundles/encounters/images/icon_spin_light.gif');
 }
 
 .list-users .list-users_item.new-message .list-users_message {
@@ -561,6 +562,7 @@ textarea.input_i {
     -webkit-box-shadow: inset 0 3px 5px #656565;
     -moz-box-shadow: inset 0 3px 5px #656565;
     box-shadow: inset 0 3px 5px #656565;
+    display: none;
 }
 
 .b-list_loading:before {
@@ -569,11 +571,10 @@ textarea.input_i {
     height: 16px;
     width: 16px;
     content: '';
-    background-image: url('../i/icon_spin_gray.gif');
+    background-image: url('/bundles/encounters/images/icon_spin_gray.gif');
     vertical-align: -3px;
 }
 
-/* list-user (end) */
 .layout-content {
     margin-left: 240px;
     min-width: 490px;
@@ -600,7 +601,6 @@ textarea.input_i {
     display: block;
 }
 
-/* user-select-list (begin) */
 .user-select {
     display: none;
     height: 100%;
@@ -613,7 +613,7 @@ textarea.input_i {
 .list-user_header {
     display: block;
     margin: 10px 10px 5px;
-    background-image: url('../i/title_s.png');
+    background-image: url('/bundes/encounters/images/texts/choose-user.png');
     background-position: 50% 0;
     background-repeat: no-repeat;
     text-indent: -300em;
@@ -736,6 +736,8 @@ textarea.input_i {
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
+    width: 100px;
+    height: 100px;
 }
 
 .window-user_info .user_info-pic .user_info-photo {
@@ -1173,7 +1175,7 @@ textarea.input_i {
 
 .messages__item__icon {
     display: inline;
-    margin: 0 0 -2px;
+    margin: 0 0 2px;
 }
 
 .messages__header {
@@ -1223,7 +1225,7 @@ textarea.input_i {
 .messages__item_promo .lobster {
     display: block;
     margin: 0 0 25px;
-    background-image: url('../i/title_i.png');
+    background-image: url('/bundles/encounters/images/texts/start-from-interesting-phrase.png');
     background-position: 50% 0;
     background-repeat: no-repeat;
     text-indent: -300em;
@@ -1352,21 +1354,6 @@ textarea.input_i {
     background-image: url('../i/baloon_ar.png');
 }
 
-/* delete after production */
-/*
-	loader-big - big loader for load messenger
-
-
- 	user-select_show - hide user list select
-
-	list-users_item-current - choose user;
- 	new-message - show new message in contact's list(default new message hide)
-
- 	status-user-
- 		status-on - на сайте
- 		status-off - была на сайте
- 		без класс - а фиг знает)
-*/
 .user-select_show .user-select {
     display: block;
 }

@@ -79,7 +79,9 @@ $Interface = {
             $Account.initUI();
         }
 
-        $Photoline.initUI();
+        if ($route != 'messenger') {
+            $Photoline.initUI();
+        }
 
         this['init' + $Tools.ucfirst($route) + 'UI']();
         $Layers.initUI();
@@ -156,5 +158,14 @@ $Interface = {
      */
     initBillingUI: function() {
         $Billing.initUI();
+    },
+
+    /**
+     * Messenger UI
+     *
+     * @init UI
+     */
+    initMessengerUI: function() {
+        $Messenger.initUI();
     }
 }

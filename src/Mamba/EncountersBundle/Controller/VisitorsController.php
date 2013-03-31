@@ -78,7 +78,7 @@ class VisitorsController extends ApplicationController {
 
         if ($result = $stmt->execute()) {
             $usersArray = array();
-            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $usersArray[(int) $item['web_user_id']] = (int) $item['decision'];
             }
 

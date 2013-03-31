@@ -2,6 +2,8 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Helpers\Gifts;
+use Mamba\EncountersBundle\Helpers\Messenger\Contacts;
+use Mamba\EncountersBundle\Helpers\Messenger\Messages;
 use Mamba\EncountersBundle\Tools\Gifts\Gift;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -142,6 +144,32 @@ abstract class ApplicationController extends Controller {
         }
 
         return self::$Instances[__FUNCTION__] = new Gifts($this->container);
+    }
+
+    /**
+     * Contacts helper getter
+     *
+     * @return Contacts
+     */
+    public function getContactsObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Contacts($this->container);
+    }
+
+    /**
+     * Messages helper getter
+     *
+     * @return Messages
+     */
+    public function getMessagesObject() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Messages($this->container);
     }
 
     /**

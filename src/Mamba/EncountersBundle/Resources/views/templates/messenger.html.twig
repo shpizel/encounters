@@ -1,0 +1,145 @@
+{% extends 'EncountersBundle:templates:layout.html.twig' %}
+{% block title %}Мессенджер{% endblock %}
+{% block stylesheets %}
+    {% stylesheets
+    '@EncountersBundle/Resources/public/css/pages/messenger/*'
+    output="css/compiled/messenger.css"
+    filter="?yui_css"
+    %}
+    <link rel="stylesheet" href="{{ asset_url }}" />
+    {% endstylesheets %}
+{% endblock %}
+
+{% block body %}
+    <div class="app_message-layout loader-big">
+    <div class="layout-sidebar">
+
+        <div class="b-empty_text">
+            <span class="t-shadow">Никто не выбран</span>
+        </div>
+
+        <div class="b-list_users">
+            <ul class="list-users"></ul>
+            <div class="b-list_loading">Загрузка списка</div>
+        </div>
+
+    </div>
+
+    <div class="layout-content *show-present">
+
+    <div class="window-user_info window">
+
+    <div class="user_info-inner">
+    <div class="user_info-pic yes-photo">
+        <img class="user_info-avatar"/>
+        <span class="user_info-photo"><i></i></span>
+    </div>
+
+    <div class="user_info">
+    <h1 class="user-info_header">
+        <a target="_blank" class="user-info_name"></a>
+        <span class="user-info_details"><strong></strong><span></span></span>
+    </h1>
+
+    <ul class="tags-list"></ul>
+
+    <ul class="orange-menu">
+        <li class="menu_item"><span>Встретиться</span></li>
+        <li class="menu_item"><span>Отправить подарок</span>
+            <div class="drop_down drop_down-present">
+
+                <ul class="ui-tabs">
+                    <li class="ui-tabs_item ui-tabs_item-active"><span class="ui-tabs_item-link">Вкусности</span></li>
+                    <li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">Гламурные</span></li>
+                    <li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">Новогодние</span></li>
+                </ul>
+
+                <div class="ui-tabs_content">
+                    <div id="tab-1" class="ui-tabs_panel" style="display: block">
+                        <ul class="list-present">
+                            <li class="list-present_item">
+                                <span class="list-present_content">
+                                    <img src="img/present.png" class="list-present_img" alt="">
+                                    <span class="list-present_cost">3 </span>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div id="tab-2" class="ui-tabs_panel">2</div>
+                    <div id="tab-3" class="ui-tabs_panel">3</div>
+                </div>
+
+                <div class="form-send form-send_gift">
+                    <form action="#" method="post">
+                        <input type="hidden" id="preset_id" value="" />
+                        <div class="input">
+                            <textarea class="input_i" placeholder="Напишите комплимент, например: «Ты почти что шикарная женщина»"></textarea>
+                        </div>
+                        <input type="submit" value="Отправить" class="button">
+                        <span class="form_label">Enter</span>
+                    </form>
+                </div>
+            </div>
+        </li>
+
+        <li class="menu_item menu_arrow"><span>или</span>
+            <div class="drop_down">
+                <ul class="list_drop_down-menu">
+                    <li class="list_item"><a href="#" class="list_item-link">Узнать, кто ей нравится</a></li>
+                    <li class="list_item"><a href="#" class="list_item-link">В черный список</a></li>
+                    <li class="list_item"><a href="#" class="list_item-link">Закрыть</a></li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+    </div>
+    </div>
+    <div class="user-info__shadow"></div>
+    </div>
+
+    <div class="window-user_message window">
+        <ul class="messages__list messages__item_promo_hide"></ul>
+    </div>
+
+    <div class="window-user_form window *disabled-message">
+        <div class="form_i">
+            <form action="#" method="POST">
+                <div class="input">
+                    <div class="input_i" contenteditable="true"></div>
+
+                    <span class="b-smile">
+                        <i class="i-smile" title="Смайлики"></i>
+
+                        <div class="b-pop_smile">
+                            <i class="border"></i>
+                            <ul class="list-smile">
+                                <li class="list-smile_item"><i class="smile s-1"></i></li>
+                            </ul>
+                        </div>
+                    </span>
+
+                </div>
+
+                <input type="submit" value="Отправить" class="button">
+                <span class="form_label">Enter</span>
+
+            </form>
+        </div>
+
+        <div class="b-user_disabled">
+            Вы уже отправили ей 3 сообщения.<br />
+            Как только она вам ответит, вы сможете продолжить общение с ней.<br />
+            Повысьте свои шансы на ответ, <span class="sent">отправив ей милый презент</span><br />
+        </div>
+    </div>
+
+    </div>
+
+    </div>
+{% endblock %}
+{% block pagejs %}
+{% autoescape false %}
+$Config.set('contacts', {{ contacts|json_encode }});
+{% endautoescape %}
+{% endblock %}

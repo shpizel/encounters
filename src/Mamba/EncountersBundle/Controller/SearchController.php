@@ -21,15 +21,6 @@ class SearchController extends ApplicationController {
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
         }
-//        header('Content-type: text/html; charset=utf8;');
-//
-//        foreach ([510083129, 751072037, 982056170, 690787903, 961113057,
-//                  961113057, 708214512, 159206311, 691674014, 728011279,
-//                     651399849, 475411587, 607620132, 679678280] as $userId) {
-//            $this->getSearchPreferences($userId);
-//            echo "<hr>";
-//        }
-//        exit();
 
         if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
