@@ -104,7 +104,7 @@
 {% endif %}
 
 {% if controller != 'messenger' %}
-    <div id="debug" style="font-size:13px;{% if not app.debug and (webuser.anketa.info.oid != 560015854 or webuser.anketa.info.oid != 751072037) %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
+    <div id="debug" style="font-size:13px;{% if not app.debug and webuser.anketa.info.oid != 560015854 and webuser.anketa.info.oid != 751072037 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
         <span>Generation time: {{ ((microtime - request_microtime)*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
         <div class="metrics" style="display:none;">
             <strong>leveldb {{ (metrics.leveldb.timeout*1000)|number_format(2) }} ms</strong>
