@@ -113,9 +113,14 @@ class Account extends Helper {
         }
 
         $Leveldb = $this->getLeveldb();
-        $Request = $Leveldb->inc(array(
-            $leveldbKey = sprintf(self::LEVELDB_USER_ACCOUNT_KEY, $userId) => $rate,
-        ));
+        $Request = $Leveldb->inc_add(
+            array(
+                $leveldbKey = sprintf(self::LEVELDB_USER_ACCOUNT_KEY, $userId) => $rate,
+            ),
+            array(
+                $leveldbKey => 0,
+            )
+        );
         $Leveldb->execute();
 
         $incrementResult = 0;

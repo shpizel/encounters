@@ -945,6 +945,7 @@ textarea.input_i {
     left: -50%;
     width: 410px;
     padding-bottom: 15px;
+    z-index: 999;
 }
 
 .list_drop_down-menu .list_item {
@@ -1176,6 +1177,7 @@ textarea.input_i {
 .messages__item__icon {
     display: inline;
     margin: 0 0 2px;
+    padding-right:6px;
 }
 
 .messages__header {
@@ -1382,16 +1384,6 @@ textarea.input_i {
     display: none;
 }
 
-.show-layer:after {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 100%;
-    content: '';
-    z-index: 999;
-    background-color: #000;
-    opacity: 0.5;
-    filter: aplha(opacity = 50);
+.orange-menu > .item span.form_label {
+    color:#999;
 }

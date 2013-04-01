@@ -25,14 +25,16 @@
 
     </div>
 
-    <div class="layout-content *show-present">
+    <div class="layout-content">
 
     <div class="window-user_info window">
 
     <div class="user_info-inner">
     <div class="user_info-pic yes-photo">
-        <img class="user_info-avatar"/>
-        <span class="user_info-photo"><i></i></span>
+        <a target="_blank">
+            <img class="user_info-avatar"/>
+            <span class="user_info-photo"><i></i></span>
+        </a>
     </div>
 
     <div class="user_info">
@@ -44,25 +46,36 @@
     <ul class="tags-list"></ul>
 
     <ul class="orange-menu">
-        <li class="menu_item"><span>Встретиться</span></li>
-        <li class="menu_item"><span>Отправить подарок</span>
+        <li class="item meet"><span>Встретиться</span></li>
+
+        <li class="item gift"><span>Отправить подарок</span>
             <div class="drop_down drop_down-present">
 
+                {% if gifts|length > 1 %}
                 <ul class="ui-tabs">
-                    <li class="ui-tabs_item ui-tabs_item-active"><span class="ui-tabs_item-link">Вкусности</span></li>
-                    <li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">Гламурные</span></li>
-                    <li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">Новогодние</span></li>
+                    {#<li class="ui-tabs_item ui-tabs_item-active"><span class="ui-tabs_item-link">Вкусности</span></li>#}
+                    {#<li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">Гламурные</span></li>#}
+                    {#<li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">Новогодние</span></li>#}
+
+                    {% for id, collection in gifts %}
+                        <li class="ui-tabs_item"><span class="ui-tabs_item-link" href="">{{ collection.name }}</span></li>
+                    {% endfor %}
                 </ul>
+                {% endif %}
 
                 <div class="ui-tabs_content">
                     <div id="tab-1" class="ui-tabs_panel" style="display: block">
                         <ul class="list-present">
-                            <li class="list-present_item">
-                                <span class="list-present_content">
-                                    <img src="img/present.png" class="list-present_img" alt="">
-                                    <span class="list-present_cost">3 </span>
-                                </span>
-                            </li>
+                            {% for id, collection in gifts %}
+                                {% for id, gift in collection.gifts %}
+                                    <li class="list-present_item" gift_id="{{ gift.id }}">
+                                        <span class="list-present_content">
+                                            <img src="{{ gift.url }}" class="list-present_img">
+                                            <span class="list-present_cost">{{ gift.cost }} </span>
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            {% endfor %}
                         </ul>
                     </div>
 
@@ -74,7 +87,7 @@
                     <form action="#" method="post">
                         <input type="hidden" id="preset_id" value="" />
                         <div class="input">
-                            <textarea class="input_i" placeholder="Напишите комплимент, например: «Ты почти что шикарная женщина»"></textarea>
+                            <textarea class="input_i" placeholder="Напишите комплимент"></textarea>
                         </div>
                         <input type="submit" value="Отправить" class="button">
                         <span class="form_label">Enter</span>
@@ -83,15 +96,15 @@
             </div>
         </li>
 
-        <li class="menu_item menu_arrow"><span>или</span>
-            <div class="drop_down">
-                <ul class="list_drop_down-menu">
-                    <li class="list_item"><a href="#" class="list_item-link">Узнать, кто ей нравится</a></li>
-                    <li class="list_item"><a href="#" class="list_item-link">В черный список</a></li>
-                    <li class="list_item"><a href="#" class="list_item-link">Закрыть</a></li>
-                </ul>
-            </div>
-        </li>
+        {#<li class="menu_item menu_arrow"><span>или</span>#}
+            {#<div class="drop_down">#}
+                {#<ul class="list_drop_down-menu">#}
+                    {#<li class="list_item"><a href="#" class="list_item-link">Узнать, кто ей нравится</a></li>#}
+                    {#<li class="list_item"><a href="#" class="list_item-link">В черный список</a></li>#}
+                    {#<li class="list_item"><a href="#" class="list_item-link">Закрыть</a></li>#}
+                {#</ul>#}
+            {#</div>#}
+        {#</li>#}
     </ul>
     </div>
     </div>

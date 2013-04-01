@@ -33,7 +33,7 @@ class MessengerController extends ApplicationController {
      *
      * @return Response
      */
-    public function indexAction(){
+    public function indexAction() {
         $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -103,13 +103,19 @@ class MessengerController extends ApplicationController {
             if ($contactId = (int) $this->getRequest()->request->get('contact_id')) {
                 if ($Contact = $this->getContactsObject()->getContactById($contactId)) {
                     if ($Contact->getSenderId() == $webUserId) {
-                        if ($messages = $this->getMessagesObject()->getMessages($Contact)) {
+                        if ($messages = $this->getMessagesObject()->getMessages($Contact, intval($this->getRequest()->request->get('last_message_id')))) {
                             foreach ($messages as $key=>$Message) {
                                 $messages[$key] = $Message->toArray();
                                 $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
                             }
-                            $this->json['data'] = $messages;
+
+                            $this->json['data']['messages'] = $messages;
+                            $this->json['data']['unread_count'] =
+                                $this->getContactsObject()->getContact($Contact->getRecieverId(), $Contact->getSenderId())
+                                    ->getUnreadCount()
+                            ;
                         }
+
                     } else {
                         list($this->json['status'], $this->json['message']) = array(3, "Invalid contact");
                     }
@@ -207,6 +213,7 @@ class MessengerController extends ApplicationController {
                 $contactData = $Contact->toArray();
                 if (isset($profilesData[$Contact->getRecieverId()])) {
                     $contactData['platform'] = $profilesData[$Contact->getRecieverId()];
+                    $contactData['rated'] = $this->getViewedQueueObject()->exists($this->webUserId, $Contact->getRecieverId());
                     $contacts[$Contact->getId()] = $contactData;
                 }
             }
@@ -221,7 +228,7 @@ class MessengerController extends ApplicationController {
         } else {
             $date = date("d, H:i", $timestamp);
 
-            $monthes = array(
+            $months = array(
                 1 => 'января',
                 2 => 'февраля',
                 3 => 'марта',
@@ -236,7 +243,7 @@ class MessengerController extends ApplicationController {
                 12 => 'декабря',
             );
 
-            $date = str_replace(",", $monthes[date('n', $timestamp)] .",", $date);
+            $date = str_replace(",", ' '. $months[date('n', $timestamp)] .",", $date);
         }
 
         return $date;

@@ -134,6 +134,7 @@ class MutualController extends ApplicationController {
 
         $dataArray['json'] = json_encode($json) ?: null;
 
+        $initialData['microtime'] = microtime(true);
         $Response = $this->render("EncountersBundle:templates:mutual.html.twig", $dataArray);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
         return $Response;

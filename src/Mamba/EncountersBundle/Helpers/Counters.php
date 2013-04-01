@@ -74,9 +74,8 @@ class Counters extends Helper {
 
         $regexp = "!" . str_replace(array("%d", "%s"), array("(\\d+)", "(.*)$"), self::LEVELDB_USER_COUNTERS_KEY) . "!S";
 
+        $ret = [];
         if ($results = $Request->getResult()) {
-            $ret = [];
-
             foreach ($results as $key=>$result) {
                 if (preg_match($regexp, $key, $data)) {
                     $leveldbKey = array_pop($data);
@@ -100,8 +99,24 @@ class Counters extends Helper {
                 }
             }
 
-            return $ret;
+            foreach ($users as $userId) {
+                if (!isset($ret[$userId])) {
+                    $ret[$userId] = [];
+                    foreach ($counters as $counter) {
+                        $ret[$userId][$counter] = null;
+                    }
+                }
+            }
+        } else {
+            foreach ($users as $userId) {
+                $ret[$userId] = [];
+                foreach ($counters as $counter) {
+                    $ret[$userId][$counter] = null;
+                }
+            }
         }
+
+        return $ret;
     }
 
 
@@ -183,9 +198,14 @@ class Counters extends Helper {
         }
 
         $LevelDb = $this->getLeveldb();
-        $Request = $LevelDb->inc(array(
-            $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, $key) => $rate
-        ));
+        $Request = $LevelDb->inc_add(
+            array(
+                $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, $key) => $rate,
+            ),
+            array(
+                $leveldbKey => 0,
+            )
+        );
         $LevelDb->execute();
 
         if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {

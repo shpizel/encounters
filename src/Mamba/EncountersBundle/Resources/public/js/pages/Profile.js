@@ -25,10 +25,10 @@ $Profile = {
             $(".orange-menu .drop-down").hide();
         });
 
-        $(".orange-menu .item-arrow").click(function() {
-            $(".orange-menu .drop-down").fadeIn('fast');
-            return false;
-        });
+//        $(".orange-menu .item-arrow").click(function() {
+//            $(".orange-menu .drop-down").fadeIn('fast');
+//            return false;
+//        });
 
         $(".profile-picture").click(function() {
             //$Layers.showProfilePhotosLayer();
@@ -43,8 +43,9 @@ $Profile = {
         });
 
         $(".orange-menu .meet").click(function() {
-            top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + "&extra=" + $Config.get('current_user_id');
+            top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + "&extra=meet" + $Config.get('current_user_id');
         });
+
         $("div.list-present_user").on('mouseenter', "a.list-present_user-item", function($event) {
             var $this = $(this);
 

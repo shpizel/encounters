@@ -56,22 +56,6 @@ class WelcomeController extends ApplicationController {
             $Session->start();
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
 
-            if (isset($getParams['extra']) && is_numeric($getParams['extra'])) {
-
-                /**
-                 * Нужно добавить айдишник в очередь
-                 *
-                 * @author shpizel
-                 */
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $getParams['extra'])) {
-                    if ($webUserId != $currentUserId && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
-                    }
-                }
-
-                $Session->set('active_id', intval($getParams['extra']));
-            }
-
             $lastAccessTime = $this->getVariablesObject()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
                 $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
@@ -102,6 +86,19 @@ class WelcomeController extends ApplicationController {
 
                     /** Кидаем на анкету внутри выбиратора */
                     $Response = $this->redirect($this->generateUrl('profile') . "?id={$profileId}");
+                    $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+
+                    return $Response;
+                } elseif (preg_match("!meet(\d+)$!", $extra, $data)) {
+                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) array_pop($data))) {
+                        if ($webUserId != $currentUserId && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
+                            $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
+                        }
+                    }
+
+                    $Session->set('active_id', intval($getParams['extra']));
+                } elseif (in_array($extra, ['search', 'mychoice', 'visitors', 'mutual'])) {
+                    $Response = $this->redirect($this->generateUrl($extra));
                     $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
 
                     return $Response;

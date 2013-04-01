@@ -4,9 +4,9 @@ namespace Core\MambaBundle\Helpers;
 use Core\RedisBundle\Redis;
 
 /**
- * PlatformParams
- *
- * @package MambaBundle
+ * Class PlatformSettings
+ * 
+ * @package Core\MambaBundle\Helpers
  */
 class PlatformSettings {
 

@@ -53,19 +53,20 @@
                             <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
                         </div>
                     </li>
-                    {#<li class="item-setting"><a{% if controller == 'preferences' %} class="active"{% endif %} href="/preferences"></a></li>#}
+
                     <li class="item-account">
                         <div class="bar"><div class="account"><span>{{ webuser.account }}<i></i></span></div></div>
                     </li>
+
                     <li class="item-energy"><b class="battery"><b style="width:{{ webuser.battery*15 }}%"></b></b>{# <i>{{ webuser.battery*20 }}%</i>#}</li>
                 </ul>
                 <ul class="info-meet">
-                    <li class="item-game{% if controller == 'search' %} active{% endif %}"><a href="/search"><b>Поиск</b></a></li>
-                    <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a href="/mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
-                    <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a href="/visitors"><b>Меня смотрели</b> {% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i> {% endif %}<i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
+                    <li class="item-game{% if controller == 'search' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=search"><b>Поиск</b></a></li>
+                    <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
+                    <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=visitors"><b>Меня смотрели</b> {% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i> {% endif %}<i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
 
                     {% if webuser.stats.mutual_unread %}
-                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b class="mutual_unread">
+                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b class="mutual_unread">
                             {% if webuser.stats.mutual_unread % 10 == 0 %}
                                 {{ webuser.stats.mutual_unread }} новых симпатий
                             {% elseif webuser.stats.mutual_unread % 10 == 1 %}
@@ -77,7 +78,7 @@
                             {% endif %}
                         </b></a></li>
                     {% else %}
-                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a href="/mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
+                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -103,6 +104,20 @@
 {% endif %}
 
 {% if controller != 'messenger' %}
+    <div id="debug" style="font-size:13px;{% if not app.debug and (webuser.anketa.info.oid != 560015854 or webuser.anketa.info.oid != 751072037) %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
+        <span>Generation time: {{ ((microtime - request_microtime)*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
+        <div class="metrics" style="display:none;">
+            <strong>leveldb {{ (metrics.leveldb.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="leveldb-metrics">
+                {% for item in metrics.leveldb.requests %}
+                    <strong>{{ item.request.id }}</strong>) {{ item.request.method }}:
+                    {% for key, val in item.request.data %}
+                        {% if item.request.method != 'get' %}'<u>{{ key }}</u>' => {% endif %} {{ val }};
+                    {% endfor %}<br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endif %}
 
@@ -156,17 +171,5 @@ $(document).ready(function(){
     $App.init(location.pathname).run();
 });
 </script>
-
-<div style="{% if not app.debug and webuser.anketa.info.oid != 560015854 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %}">
-    <h2>leveldb</h2>
-    {% for item in metrics.leveldb.requests %}
-        <strong>{{ item.request.id }}</strong>) {{ item.request.method }}:
-        {% for key, val in item.request.data %}
-            {% if item.request.method != 'get' %}'<u>{{ key }}</u>' => {% endif %} {{ val }};
-        {% endfor %}<br>
-    {% endfor %}
-    <br>
-    <strong>timeout</strong>: {{ metrics.leveldb.timeout }}
-</div>
 </body>
 </html>

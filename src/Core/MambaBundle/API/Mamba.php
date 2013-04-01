@@ -412,6 +412,16 @@ final class Mamba {
             'anketa.getHitlist',
             'achievement.set',
             'anketa.isAppOwner',
+        ),
+
+        /**
+         * Метрики использования
+         *
+         * @var array
+         */
+        $metrics = array(
+            'requests' => array(),
+            'timeout'  => 0,
         )
     ;
 

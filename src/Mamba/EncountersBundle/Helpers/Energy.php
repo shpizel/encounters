@@ -136,9 +136,14 @@ class Energy extends Helper {
         }
 
         $Leveldb = $this->getLeveldb();
-        $Request = $Leveldb->inc(array(
-            $key = sprintf(self::LEVELDB_USER_ENERGY_KEY, $userId) => $rate,
-        ));
+        $Request = $Leveldb->inc_add(
+            array(
+                $key = sprintf(self::LEVELDB_USER_ENERGY_KEY, $userId) => $rate,
+            ),
+            array(
+                $key => 0,
+            )
+        );
 
         $Leveldb->execute();
 

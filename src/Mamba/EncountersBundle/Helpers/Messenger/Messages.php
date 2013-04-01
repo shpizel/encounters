@@ -24,9 +24,10 @@ class Messages extends Helper {
             FROM
                 `Messenger`.`Messages`
             WHERE
-                `contact_id` = :contact_id
+                `contact_id` = :contact_id AND
+                `message_id` < :last_message_id
             ORDER BY
-                `message_id` ASC
+                `message_id` DESC
             LIMIT
                 %d
             OFFSET
@@ -52,9 +53,12 @@ class Messages extends Helper {
      * Contact messages getter
      *
      * @param Contact $Contact
+     * @param int $lastMessageId
+     * @param int $limit
+     * @param int $offset
      * @return array|null
      */
-    public function getMessages(Contact $Contact, $limit = 10, $offset = 0) {
+    public function getMessages(Contact $Contact, $lastMessageId = 0, $limit = 10, $offset = 0) {
         if (!is_int($limit)) {
             throw new MessagesException("Invalid limit type: ". gettype($limit));
         } elseif (!is_int($offset)) {
@@ -74,7 +78,9 @@ class Messages extends Helper {
         ;
 
         $_contactId = $Contact->getId();
+        $_lastMessageId = $lastMessageId ?: PHP_INT_MAX;
         $stmt->bindParam('contact_id', $_contactId, PDO::PARAM_INT);
+        $stmt->bindParam('last_message_id', $_lastMessageId, PDO::PARAM_INT);
 
         if ($result = $stmt->execute()) {
             $return = array();
@@ -91,7 +97,7 @@ class Messages extends Helper {
                 ;
             }
 
-            return $return ?: null;
+            return $return ? array_reverse($return) : null;
         }
     }
 

@@ -217,9 +217,8 @@ class Variables extends Helper {
         $Request = $LevelDb->get($keys);
         $LevelDb->execute();
 
+        $ret = [];
         if ($results = $Request->getResult()) {
-            $ret = [];
-
             foreach ($results as $key=>$result) {
                 if (preg_match($regexp, $key, $data)) {
                     $leveldbKey = array_pop($data);
@@ -246,8 +245,24 @@ class Variables extends Helper {
                 }
             }
 
-            return $ret;
+            foreach ($users as $userId) {
+                if (!isset($ret[$userId])) {
+                    $ret[$userId] = [];
+                    foreach ($variables as $variable) {
+                        $ret[$userId][$variable] = null;
+                    }
+                }
+            }
+        } else {
+            foreach ($users as $userId) {
+                $ret[$userId] = [];
+                foreach ($variables as $variable) {
+                    $ret[$userId][$variable] = null;
+                }
+            }
         }
+
+        return $ret;
     }
 
     /**

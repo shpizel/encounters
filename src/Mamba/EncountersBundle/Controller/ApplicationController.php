@@ -425,14 +425,6 @@ abstract class ApplicationController extends Controller {
 
         $webUser = $Mamba->Anketa()->getInfo($webUserId);
 
-//        $contactList = array();//$Mamba->Contacts()->getContactList();
-//        $contactListIds = array();
-//        if (isset($contactList['contacts'])) {
-//            $contactListIds = array_map(function($item){return (int) $item['info']['oid'];}, $contactList['contacts']);
-//        }
-
-        $searchPreferencesObject = $this->getSearchPreferencesObject();
-
         $dataArray['webuser'] = array(
             'anketa'      => $webUser[0],
             'popularity'  => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
@@ -526,13 +518,14 @@ abstract class ApplicationController extends Controller {
             }
         }
 
-        $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
-        $dataArray['time'] = time();
-        $dataArray['microtime'] = microtime(true);
-
         $dataArray['metrics'] = array(
             'leveldb' => $this->getLeveldb()->getMetrics(),
         );
+
+        $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
+        $dataArray['time'] = time();
+        $dataArray['request_microtime'] = $_SERVER["REQUEST_TIME_FLOAT"];
+        $dataArray['microtime'] = microtime(true);
 
         return $dataArray;
     }
