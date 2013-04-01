@@ -112,133 +112,119 @@ class NotificationSendCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $Redis = $this->getRedis();
-
-        list($Memcache, $DB, $Mamba, $Variables) = array(
+        list($Leveldb, $Redis, $Memcache, $DB, $Mamba, $Variables, $Counters) = [
+            $this->getLeveldb(),
+            $this->getRedis(),
             $this->getMemcache(),
             $this->getDoctrine()->getConnection(),
             $this->getMamba(),
             $this->getVariablesObject(),
-        );
+            $this->getCountersObject(),
+        ];
 
-        $DB->prepare("TRUNCATE Notifications")->execute();
+        $truncateSql = "TRUNCATE `Encounters`.`Notifications`";
+        $DB->prepare($truncateSql)->execute();
 
-        $usedVariables = array(
+        $usedVariables = [
             'lastaccess',
             'last_outgoing_decision',
             'last_notification_sent',
             'last_notification_metrics',
-        );
+        ];
 
-        $appUsers = array();
-        foreach ($Redis->getNodes() as $node) {
-            $nodeConnection = $Redis->getNodeConnection($node);
-            $keys = $nodeConnection->keys(
-                sprintf(
-                    str_replace("%d", "%s", SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY),
-                    "*"
-                )
-            );
+        $usedCounters = [
+            'visitors_unread',
+            'mutual_unread',
+        ];
 
-            $users = array_map(function($item) {
-                return (int) substr($item, strlen(str_replace("%d", "", SearchPreferences::REDIS_USER_SEARCH_PREFERENCES_KEY)));
-            }, $keys);
-
+        $usersProcessed = 0;
+        while ($users = $this->getUsers(1000)) {
+            $dataArray = [];
             foreach ($users as $userId) {
-                $appUsers[] = $userId;
-            }
-        }
-
-        $this->log("Users: <info>" . count($appUsers) . "</info>");
-
-        $appUsers = array_chunk($appUsers, 1000);
-        $stage = 0;
-
-        while ($chunk = array_shift($appUsers)) {
-
-            $dataArray = array();
-
-            $stage++;
-            $this->log("Stage {$stage}", 64);
-
-            $lastOnlineChunk = array_chunk($chunk, 30);
-            $anketaChunk = array_chunk($chunk, 100);
-
-            $Redis->multi();
-
-            foreach ($chunk as $userId) {
-                $Redis->hGetAll("variables_by_{$userId}");
-                $dataArray[$userId] = array();
+                $dataArray[$userId] = [];
             }
 
-            if ($result = $Redis->exec()) {
+            $variables = $Variables->getMulti($users, $usedVariables);
+            foreach ($variables as $userId=>$userVariables) {
+                foreach ($userVariables as $name=>$value) {
+                    $dataArray[$userId][$name] = $value;
+                }
+            }
 
-                foreach ($result as $key=>$item) {
-                    foreach ($item as $variable => $data) {
-                        if (in_array($variable, $usedVariables)) {
-                            $data = json_decode($data, true);
-                            $dataArray[$chunk[$key]][$variable] = $data['data'];
+            $counters = $Counters->getMulti($users, $usedCounters);
+            foreach ($counters as $userId=>$userCounters) {
+                foreach ($userCounters as $name=>$value) {
+                    $dataArray[$userId][$name] = $value;
+                }
+            }
+
+            foreach ($dataArray as $userId=>$variables) {
+                foreach ($usedVariables as $name) {
+                    if (!isset($variables[$name])) {
+                        $dataArray[$userId][$name] = null;
+                    }
+                }
+
+                foreach ($usedCounters as $name) {
+                    if (!isset($variables[$name])) {
+                        $dataArray[$userId][$name] = 0;
+                    }
+                }
+
+                $dataArray[$userId]['lastaccess'] = max(
+                    $dataArray[$userId]['lastaccess'],
+                    $dataArray[$userId]['last_outgoing_decision']
+                );
+
+                $dataArray[$userId]['user_id'] = $userId;
+            }
+
+            $lastOnlineChunk = array_chunk($users, 30);
+            $anketaChunk = array_chunk($users, 100);
+
+            $Mamba->multi();
+            foreach ($lastOnlineChunk as $chunk) {
+                $Mamba->Anketa()->isOnline(array_map(function($i) {
+                    return (int) $i;
+                }, $chunk));
+            }
+
+            if ($onlineCheckResult = $this->getMamba()->exec(35)) {
+                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
+                    foreach ($onlineCheckResultChunk as $_anketa) {
+                        if (isset($dataArray[$_anketa['anketa_id']])) {
+                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
                         }
                     }
                 }
+            }
 
-                foreach ($dataArray as $userId=>$variables) {
-                    foreach ($usedVariables as $name) {
-                        if (!isset($variables[$name])) {
-                            $dataArray[$userId][$name] = null;
-                        }
-                    }
+            $this->getMamba()->multi();
+            foreach ($anketaChunk as $chunk) {
+                $this->getMamba()->Anketa()->getInfo(array_map(function($i) {
+                    return (int)$i;
+                }, $chunk));
+            }
 
-                    $dataArray[$userId]['lastaccess'] = max(
-                        $dataArray[$userId]['lastaccess'],
-                        $dataArray[$userId]['last_outgoing_decision']
-                    );
+            if ($anketaResult = $this->getMamba()->exec(10)) {
+                foreach ($anketaResult as $anketaResultChunk) {
+                    foreach ($anketaResultChunk as $_anketa) {
 
-                    $dataArray[$userId]['user_id'] = $userId;
-                    $dataArray[$userId]['visitors_unread'] = $this->getCountersObject()->get($userId, 'visitors_unread');
-                    $dataArray[$userId]['mutual_unread'] = $this->getCountersObject()->get($userId, 'mutual_unread');
-                }
-
-                $this->getMamba()->multi();
-                foreach ($lastOnlineChunk as $__chunk) {
-                    $this->getMamba()->Anketa()->isOnline(array_map(function($i){return (int)$i;},$__chunk));
-                }
-                if ($onlineCheckResult = $this->getMamba()->exec(35)) {
-                    foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-                        foreach ($onlineCheckResultChunk as $_anketa) {
-                            if (isset($dataArray[$_anketa['anketa_id']])) {
-                                $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
-                            }
+                        if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
+                            $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
                         }
                     }
                 }
+            }
 
-                $this->getMamba()->multi();
-                foreach ($anketaChunk as $__chunk) {
-                    $this->getMamba()->Anketa()->getInfo(array_map(function($i){return (int)$i;},$__chunk));
-                }
-                if ($anketaResult = $this->getMamba()->exec(10)) {
-                    foreach ($anketaResult as $anketaResultChunk) {
-                        foreach ($anketaResultChunk as $_anketa) {
-
-                            if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
-                                $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
-                            }
-                        }
-                    }
+            foreach ($dataArray as $userId => $variables) {
+                if (!(isset($variables['is_app_user']) && $variables['is_app_user'])) {
+                    continue;
                 }
 
-                $this->log("Fetch variables from redis completed", 48);
-                $this->log("Storing data to database..");
+                $variables['last_online'] = isset($variables['last_online']) ? $variables['last_online'] : null;
 
-                foreach ($dataArray as $userId => $variables) {
-                    if (!(isset($variables['is_app_user']) && $variables['is_app_user'])) {
-                        continue;
-                    }
-
-                    $variables['last_online'] = isset($variables['last_online']) ? $variables['last_online'] : null;
-
-                    $sql = "INSERT INTO
+                $sql = "INSERT INTO
                         Notifications
                     SET
                         user_id    = ':user_id',
@@ -257,25 +243,23 @@ class NotificationSendCommand extends CronScript {
                         last_notification_metrics = ':last_notification_metrics',
                         visitors_unread = ':visitors_unread',
                         mutual_unread = ':mutual_unread'"
-                    ;
+                ;
 
-                    $sql = str_replace(':user_id', $variables['user_id'], $sql);
-                    $sql = str_replace(':lastaccess', $variables['lastaccess'], $sql);
-                    $sql = str_replace(':last_online', $variables['last_online'], $sql);
-                    $sql = str_replace(':last_outgoing_decision', $variables['last_outgoing_decision'], $sql);
-                    $sql = str_replace(':last_notification_sent', $variables['last_notification_sent'], $sql);
-                    $sql = str_replace(':last_notification_metrics', $variables['last_notification_metrics'], $sql);
-                    $sql = str_replace(':visitors_unread', $variables['visitors_unread'], $sql);
-                    $sql = str_replace(':mutual_unread', $variables['mutual_unread'], $sql);
+                $sql = str_replace(':user_id', $variables['user_id'], $sql);
+                $sql = str_replace(':lastaccess', $variables['lastaccess'], $sql);
+                $sql = str_replace(':last_online', $variables['last_online'], $sql);
+                $sql = str_replace(':last_outgoing_decision', $variables['last_outgoing_decision'], $sql);
+                $sql = str_replace(':last_notification_sent', $variables['last_notification_sent'], $sql);
+                $sql = str_replace(':last_notification_metrics', $variables['last_notification_metrics'], $sql);
+                $sql = str_replace(':visitors_unread', $variables['visitors_unread'], $sql);
+                $sql = str_replace(':mutual_unread', $variables['mutual_unread'], $sql);
 
-                    //$this->log($sql);
-                    $DB->exec($sql);
-                }
-
-                $this->log("Preparation completed", 64);
-            } else {
-                $this->log("Redis multiget error", 16);
+                //$this->log($sql);
+                $DB->exec($sql);
             }
+
+            $usersProcessed+= count($users);
+            $this->log("Processed <comment>{$usersProcessed}</comment>..");
         }
 
         $dataArray = $result = null;
@@ -327,6 +311,45 @@ class NotificationSendCommand extends CronScript {
             }
         } else {
             $this->log("SQL error", 16);
+        }
+
+        $this->log('Preparation completed');
+    }
+
+    /**
+     * Возвращает айдишники пользователей у который есть поисковые предпочтения (т.е. активные)
+     *
+     * @param $count
+     * @return array
+     */
+    private function getUsers($count) {
+        $defaultLastGetUsersKey =
+            sprintf(
+                str_replace('%d', '%s', SearchPreferences::LEVELDB_USER_SEARCH_PREFERENCES),
+                null
+            )
+        ;
+
+        if (!isset($this->lastGetUsersKey)) {
+            $this->lastGetUsersKey = $defaultLastGetUsersKey;
+        }
+
+        $Leveldb = $this->getLeveldb();
+        $Request = $Leveldb->get_range($this->lastGetUsersKey, null, $count);
+        $Leveldb->execute();
+
+        $users = array();
+        if ($result = $Request->getResult()) {
+            foreach ($result as $key=>$val) {
+                if (strpos($key, $defaultLastGetUsersKey) !== false && $key != $this->lastGetUsersKey) {
+                    $users[] = (int) substr($key, strlen($defaultLastGetUsersKey));
+                }
+            }
+
+            if ($users) {
+                $this->lastGetUsersKey = $defaultLastGetUsersKey . $users[count($users) - 1];
+                return $users;
+            }
         }
     }
 

@@ -177,6 +177,72 @@ class Variables extends Helper {
     }
 
     /**
+     * Variables multi getter
+     *
+     * @param array $users
+     * @param array $variables
+     * @return mixed
+     * @throws VariablesException
+     */
+    public function getMulti(array $users, array $variables = array()) {
+        foreach ($users as $userId) {
+            if (!is_int($userId)) {
+                throw new VariablesException("Invalid user id: \n" . var_export($userId, true));
+            }
+        }
+
+        if (!$variables) {
+            $variables = array_keys(self::$options);
+        }
+
+        foreach ($variables as $index=>$key) {
+            if (!array_key_exists($key, self::$options)) {
+                unset($variables[$index]);
+            }
+        }
+
+        $keys = [];
+        foreach ($users as $userId) {
+            foreach ($variables as $variable) {
+                $leveldbKey = sprintf(self::LEVELDB_USER_VARIABLE_KEY, $userId, $variable);
+                $keys[] = $leveldbKey;
+            }
+        }
+
+        if (!$keys) return;
+
+        $regexp = "!" . str_replace(array("%d", "%s"), array("(\\d+)", "(.*)$"), self::LEVELDB_USER_VARIABLE_KEY) . "!S";
+
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get($keys);
+        $LevelDb->execute();
+
+        if ($results = $Request->getResult()) {
+            $ret = [];
+
+            foreach ($results as $key=>$result) {
+                if (preg_match($regexp, $key, $data)) {
+                    $leveldbKey = array_pop($data);
+                    $userId = array_pop($data);
+
+                    if ($leveldbKey && $userId) {
+                        $result = json_decode($result, true);
+                        if ($result['expires'] > time() || !$result['expires']) {
+                            if (!isset($ret[$userId])) {
+                                $ret[$userId] = [];
+                            }
+
+                            $ret[$userId][$leveldbKey] = $result['data'];
+                        }
+                    }
+                }
+            }
+
+            return $ret;
+        }
+    }
+
+    /**
      * All variables getter
      *
      * @param int $userId

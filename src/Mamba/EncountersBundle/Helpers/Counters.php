@@ -44,6 +44,61 @@ class Counters extends Helper {
     }
 
     /**
+     * Counters multi getter
+     *
+     * @param array $users
+     * @param array $counters
+     * @return mixed
+     * @throws CountersException
+     */
+    public function getMulti(array $users, array $counters) {
+        foreach ($users as $userId) {
+            if (!is_int($userId)) {
+                throw new CountersException("Invalid user id: \n" . var_export($userId, true));
+            }
+        }
+
+        $keys = [];
+        foreach ($users as $userId) {
+            foreach ($counters as $counterName) {
+                $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, $counterName);
+                $keys[] = $leveldbKey;
+            }
+        }
+
+        if (!$keys) return;
+
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get($keys);
+        $LevelDb->execute();
+
+        $regexp = "!" . str_replace(array("%d", "%s"), array("(\\d+)", "(.*)$"), self::LEVELDB_USER_COUNTERS_KEY) . "!S";
+
+        if ($results = $Request->getResult()) {
+            $ret = [];
+
+            foreach ($results as $key=>$result) {
+                if (preg_match($regexp, $key, $data)) {
+                    $leveldbKey = array_pop($data);
+                    $userId = array_pop($data);
+
+                    if ($leveldbKey && $userId) {
+                        if (!isset($ret[$userId])) {
+                            $ret[$userId] = [];
+                        }
+
+                        $ret[$userId][$leveldbKey] = (int) $result;
+                    }
+                }
+            }
+
+            return $ret;
+        }
+    }
+
+
+
+    /**
      * All counter getter
      *
      * @param int $userId
