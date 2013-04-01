@@ -55,7 +55,7 @@ $Visitors = {
 //            return $showLayerFunction();
 //        });
 
-        $(".content div.photoListItem div.info a").click($showLayerFunction);
+        //$(".content div.photoListItem div.info a").click($showLayerFunction);
         $(".content div.photoListItem div.link a").click($showLayerFunction);
     },
 

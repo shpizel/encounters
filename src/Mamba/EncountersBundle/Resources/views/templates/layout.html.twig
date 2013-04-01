@@ -158,14 +158,15 @@ $(document).ready(function(){
 </script>
 
 <div style="{% if not app.debug and webuser.anketa.info.oid != 560015854 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %}">
-    <strong>leveldb</strong>:<br>
+    <h2>leveldb</h2>
     {% for item in metrics.leveldb.requests %}
-        <ol>{{ item.request.id }}) {{ item.request.method }}:
-            {% for key, val in item.request.data %}
-                {% if item.request.method != 'get' %}{{ key }}:{% endif %} {{ val }};
-            {% endfor %}
-        </ol>
+        <strong>{{ item.request.id }}</strong>) {{ item.request.method }}:
+        {% for key, val in item.request.data %}
+            {% if item.request.method != 'get' %}'<u>{{ key }}</u>' => {% endif %} {{ val }};
+        {% endfor %}<br>
     {% endfor %}
+    <br>
+    <strong>timeout</strong>: {{ metrics.leveldb.timeout }}
 </div>
 </body>
 </html>

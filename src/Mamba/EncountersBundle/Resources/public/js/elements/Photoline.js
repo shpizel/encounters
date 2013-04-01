@@ -115,7 +115,7 @@ $Photoline = {
                     window.clearInterval($Config.get($Photoline.$serverUpdateTimerName));
                 });
             }
-        }, 3 * 1000));
+        }, 5 * 1000));
 
         $Config.set($Photoline.$queueUpdateTimerName, window.setInterval(function() {
             if (!$Photoline.$locked) {
@@ -129,10 +129,8 @@ $Photoline = {
                             'age'  : $photolineItem['age'],
                             'city' : $photolineItem['city'],
                             'comment' : $photolineItem['comment'],
-//                            'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-                            'href': "/profile?id=" + $photolineItem['user_id'],
-//                            'target': '_blank'
-                            'target': '_self'
+                            'href': $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=355&extra=profile' + $photolineItem['user_id'],
+                            'target': '_top'
                         }).addClass('item');
 
                         $("div.photoline div.lenta a.pusher").css({'width': '0px'});
@@ -146,7 +144,7 @@ $Photoline = {
                     }
                 } while (false);
             }
-        }, 0.5 * 1000));
+        }, 1 * 1000));
 
         var $defaultPhotolineItems = $Config.get('photoline');
         if ($defaultPhotolineItems) {
@@ -160,16 +158,12 @@ $Photoline = {
                     'age'  : $photolineItem['age'],
                     'city' : $photolineItem['city'],
                     'comment' : $photolineItem['comment'],
-//                    'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-                    'href': "/profile?id=" + $photolineItem['user_id'],
-//                    'target': '_blank'
-                    'target': '_self'
+                    'href': $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=355&extra=profile' + $photolineItem['user_id'],
+                    'target': '_top'
                 }).addClass('item');
 
                 $html.insertAfter($("div.photoline div.lenta a.pusher"));
             }
-
-//            $("div.photoline div.lenta a.pusher").animate({'width': '+=62'}, 1000);
         }
     }
 }

@@ -57,6 +57,7 @@ class WelcomeController extends ApplicationController {
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
 
             if (isset($getParams['extra']) && is_numeric($getParams['extra'])) {
+
                 /**
                  * Нужно добавить айдишник в очередь
                  *
@@ -94,6 +95,19 @@ class WelcomeController extends ApplicationController {
         }
 
         if ($this->getRequest()->getMethod() == 'GET') {
+            if (isset($getParams['extra'])) {
+                $extra = $getParams['extra'];
+                if (preg_match("!profile(\d+)$!", $extra, $data)) {
+                    $profileId = array_pop($data);
+
+                    /** Кидаем на анкету внутри выбиратора */
+                    $Response = $this->redirect($this->generateUrl('profile') . "?id={$profileId}");
+                    $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+
+                    return $Response;
+                }
+            }
+
             return $this->render('EncountersBundle:templates:login.html.twig');
         } elseif ($this->getRequest()->getMethod() == 'POST') {
             if (!$this->getSearchPreferencesObject()->get($webUserId)) {

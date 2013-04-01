@@ -35,7 +35,12 @@ $Layers.$AnswerNoLayer = {
         var currentQueueElement = ($data) ? $Config.get('users')[$Config.get('current_user_id')] : $Search.$storage['currentQueueElement'];
         $("div.layer-no div.face img").attr('src', currentQueueElement['info']['medium_photo_url']);
         $("div.layer-no a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
-        $("div.layer-no div.info div.name a").attr('href', /*$Config.get('platform').partner_url + "anketa.phtml?oid="*/ "/profile?id=" + currentQueueElement['info']['id']).text(currentQueueElement['info']['name']);
+        $("div.layer-no div.info div.name a").attr(
+            {
+                'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                'target': '_top'
+            }
+        ).text(currentQueueElement['info']['name']);
 
         if (currentQueueElement['info']['gender'] == 'F') {
             $("div.layer-no div.info div.name i").removeClass('male');

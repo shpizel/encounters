@@ -39,3 +39,12 @@ div.mychoice div.pictures div.waiting div.link a.f {
 div.content div.pictures div.waiting div.link a.ln:hover {
     background: url('/bundles/encounters/images/button-start-meeting-orange.png') no-repeat;
 }
+
+a.profile-link {
+    position: absolute;
+    width: 110px;
+    height: 150px;
+    left: 5px;
+    background: #ccc;
+    top: 6px;
+}

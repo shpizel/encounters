@@ -12,7 +12,6 @@
         </div>
         {% else %}
         <div class="pictures">
-            {#<div class="title">Среди них есть те, кто хочет с вами встретиться</div>#}
             <div class="title">Эти пользователи оценили вас&nbsp;&nbsp;<a href="#" class="ui-btn ui-btn-big" style="font-style: normal;font-family: Arial;margin-top:10px;">Получить 50 доп. оценок за 30<i class="account-heart"></i></a></div>
             {% for item in data %}
 
@@ -26,8 +25,9 @@
             {% else %}
                 <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
                     <div class="background"></div>
+                    <a class="profile-link" target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.oid }}">
                     <img src="{{ item.info.medium_photo_url }}"><br>
-                    <div class="info"><a target="_blank" href="{{ platform.partner_url }}anketa.phtml?oid={{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
+                    <div class="info"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
                     <div class="link"><a class="ln" href="#"></a></div>
                 </div>
             {% endif %}

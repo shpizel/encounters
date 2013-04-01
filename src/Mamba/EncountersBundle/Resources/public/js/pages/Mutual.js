@@ -52,7 +52,7 @@ $Mutual = {
             return false;
         };
 
-        $("div.content div.photoListItem div.info a").click($showLayerFunction);
+        //$("div.content div.photoListItem div.info a").click($showLayerFunction);
         $("div.content div.photoListItem div.link a").click($showLayerFunction);
     },
 
