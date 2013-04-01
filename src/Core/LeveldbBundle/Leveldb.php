@@ -37,7 +37,17 @@ class Leveldb {
          *
          * @var int
          */
-        $id = 0
+        $id = 0,
+
+        /**
+         * Метрики использования
+         *
+         * @var array
+         */
+        $metrics = array(
+            'requests' => array(),
+            'timeout'  => 0,
+        )
     ;
 
     /**
@@ -49,6 +59,10 @@ class Leveldb {
     public function __construct(array $master, array $slave) {
         $this->master = array_shift($master);
         $this->slave  = array_shift($slave);
+    }
+
+    public function getMetrics() {
+        return $this->metrics;
     }
 
     /**
@@ -198,6 +212,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function get($keys) {
+        $startTime = microtime(true);
+
         if (is_string($keys)) {
             $keys = array($keys);
         }
@@ -212,6 +228,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getSlaveConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -221,6 +242,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function rep_status() {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -231,6 +254,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -244,6 +272,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function get_range($from, $to = null, $limit = 100, $skip = 0) {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -259,6 +289,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getSlaveConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -270,6 +305,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function set(array $data) {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -280,6 +317,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -291,6 +333,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function del(array $data) {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -301,6 +345,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -311,6 +360,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function inc(array $data) {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -321,6 +372,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -332,6 +388,8 @@ class Leveldb {
      * @return LeveldbRequest
      */
     public function inc_add(array $incrementList, array $defaultList) {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -345,6 +403,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 
@@ -363,6 +426,8 @@ class Leveldb {
         array $setList = array(),
         array $defaultList = array()
     ) {
+        $startTime = microtime(true);
+
         $Request = new LeveldbRequest();
         $Request
             ->setMethod(__FUNCTION__)
@@ -378,6 +443,11 @@ class Leveldb {
         $this->queue[$requestId] = $Request;
 
         $this->sendRequest($this->getMasterConnection(), $Request);
+        $this->metrics['requests'][] = array(
+            'request' => $Request->toArray(),
+            'timeout' => microtime(true) - $startTime,
+        );
+
         return $Request;
     }
 }

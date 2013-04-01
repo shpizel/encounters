@@ -156,5 +156,16 @@ $(document).ready(function(){
     $App.init(location.pathname).run();
 });
 </script>
+
+<div style="{% if not app.debug and webuser.anketa.info.oid != 560015854 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %}">
+    <strong>leveldb</strong>:<br>
+    {% for item in metrics.leveldb.requests %}
+        <ol>{{ item.request.id }}) {{ item.request.method }}:
+            {% for key, val in item.request.data %}
+                {% if item.request.method != 'get' %}{{ key }}:{% endif %} {{ val }};
+            {% endfor %}
+        </ol>
+    {% endfor %}
+</div>
 </body>
 </html>

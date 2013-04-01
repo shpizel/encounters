@@ -160,6 +160,19 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
+     * Leveldb getter
+     *
+     * @return Contacts
+     */
+    public function getLeveldb() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = $this->get('leveldb');
+    }
+
+    /**
      * Messages helper getter
      *
      * @return Messages
@@ -426,14 +439,11 @@ abstract class ApplicationController extends Controller {
             'battery'     => $this->getBatteryObject()->get($webUserId),
             'account'     => $this->getAccountObject()->get($webUserId),
             'preferences' => $searchPreferences,
-            'stats'       => array(
-                'mychoice'        => $this->getCountersObject()->get($webUserId, 'mychoice'),
-                'visitors'        => $this->getCountersObject()->get($webUserId, 'visitors'),
-                'visitors_unread' => $this->getCountersObject()->get($webUserId, 'visitors_unread'),
-                'mutual'          => $this->getCountersObject()->get($webUserId, 'mutual'),
-                'mutual_unread'   => $this->getCountersObject()->get($webUserId, 'mutual_unread'),
-            ),
         );
+
+        if ($counters = $this->getCountersObject()->getMulti([$webUserId], ['mychoice', 'visitors', 'visitors_unread', 'mutual', 'mutual_unread'])) {
+            $dataArray['webuser']['stats'] = $counters[$webUserId];
+        }
 
         if ($photolineItems = $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])) {
             $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
@@ -477,10 +487,9 @@ abstract class ApplicationController extends Controller {
             'message' => $this->getNotificationsObject()->get($webUserId),
         );
 
-        $dataArray['variables'] = array(
-            'search_no_popular_block_hidden'      => $this->getVariablesObject()->get($webUserId, 'search_no_popular_block_hidden'),
-            'notification_hidden'                 => $this->getVariablesObject()->get($webUserId, 'notification_hidden'),
-        );
+        if ($variables = $this->getVariablesObject()->getMulti([$webUserId], ['search_no_popular_block_hidden', 'notification_hidden'])) {
+            $dataArray['variables'] = $variables[$webUserId];
+        }
 
         $dataArray['gifts'] = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->toArray();
 
@@ -490,9 +499,9 @@ abstract class ApplicationController extends Controller {
                 $userId = (int) $userId;
                 $contacts[$key] = $userId;
 
-                if ($this->getVariablesObject()->get($userId, 'last_message_sent')) {
-                    unset($contacts[$key]);
-                }
+//                if ($this->getVariablesObject()->get($userId, 'last_message_sent')) {
+//                    unset($contacts[$key]);
+//                }
             }
 
             $contacts = array_chunk($contacts, 100);
@@ -512,10 +521,6 @@ abstract class ApplicationController extends Controller {
                 }
 
                 if ($contacts) {
-//                    shuffle($contacts);
-//                    $contacts = array_chunk($contacts, 10);
-//                    $contacts = array_shift($contacts);
-
                     $dataArray['non_app_users_contacts'] = $contacts;
                 }
             }
@@ -524,6 +529,10 @@ abstract class ApplicationController extends Controller {
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         $dataArray['time'] = time();
         $dataArray['microtime'] = microtime(true);
+
+        $dataArray['metrics'] = array(
+            'leveldb' => $this->getLeveldb()->getMetrics(),
+        );
 
         return $dataArray;
     }

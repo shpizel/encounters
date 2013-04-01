@@ -92,6 +92,14 @@ class Counters extends Helper {
                 }
             }
 
+            foreach ($ret as $userId=>$userCounters) {
+                foreach ($counters as $counter) {
+                    if (!isset($userCounters[$counter])) {
+                        $ret[$userId][$counter] = null;
+                    }
+                }
+            }
+
             return $ret;
         }
     }

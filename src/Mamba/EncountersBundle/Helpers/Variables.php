@@ -238,6 +238,14 @@ class Variables extends Helper {
                 }
             }
 
+            foreach ($ret as $userId=>$userVariables) {
+                foreach ($variables as $variable) {
+                    if (!isset($userVariables[$variable])) {
+                        $ret[$userId][$variable] = null;
+                    }
+                }
+            }
+
             return $ret;
         }
     }

@@ -1,8 +1,5 @@
 <?php
-
 namespace Core\LeveldbBundle;
-
-use Core\LeveldbBundle\LeveldbRequest;
 
 /**
  * Class LeveldbRequest
@@ -124,6 +121,22 @@ class LeveldbRequest {
      */
     public function getResult() {
         return $this->result;
+    }
+
+    /**
+     * toArray export
+     *
+     * @return array
+     */
+    public function toArray() {
+        return
+            array(
+                'id'     => $this->getId(),
+                'method' => $this->getMethod(),
+                'data'   => $this->getData(),
+                'result' => $this->getResult(),
+            )
+        ;
     }
 }
 
