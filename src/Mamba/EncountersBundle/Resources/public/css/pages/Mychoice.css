@@ -45,6 +45,6 @@ a.profile-link {
     width: 110px;
     height: 150px;
     left: 5px;
-    background: #ccc;
+    /*background: #ccc;*/
     top: 6px;
 }
