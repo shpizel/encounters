@@ -256,8 +256,6 @@ class Variables extends Helper {
             }
         }
     }
-
-
 }
 
 /**

@@ -34,6 +34,25 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        //var_dump($this->getCountersObject()->get(1013785705, 'visitors'));
+        $c = 0;
+        $Redis = $this->getRedis();
+        $nodes = $Redis->getNodes();
+
+        foreach ($nodes as $node) {
+            $nodeConnection = $Redis->getNodeConnection($node);
+            $keys = $nodeConnection->keys('battery_by*');
+            $chunks = array_chunk($keys, 10000);
+            //$nodeConnection->multi();
+            foreach ($chunks as $chunk) {
+                $nodeConnection->multi();
+                foreach ($chunk as $key) {
+                    $nodeConnection->del($key);
+                    $c++;
+                    $this->log($c, -1);
+                }
+                $nodeConnection->exec();
+            }
+            //$nodeConnection->exec();
+        }
     }
 }

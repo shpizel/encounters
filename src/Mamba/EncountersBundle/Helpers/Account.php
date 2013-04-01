@@ -4,9 +4,9 @@ namespace Mamba\EncountersBundle\Helpers;
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * Account
+ * Class Account
  *
- * @package EncountersBundle
+ * @package Mamba\EncountersBundle\Helpers
  */
 class Account extends Helper {
 
@@ -31,7 +31,7 @@ class Account extends Helper {
          *
          * @var str
          */
-        REDIS_USER_ACCOUNT_KEY = "account_by_%d"
+        LEVELDB_USER_ACCOUNT_KEY = "encounters:account:%d"
     ;
 
     /**
@@ -45,7 +45,15 @@ class Account extends Helper {
             throw new AccountException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        $account = $this->getRedis()->get(sprintf(self::REDIS_USER_ACCOUNT_KEY, $userId));
+        $Leveldb = $this->getLeveldb();
+        $Request = $Leveldb->get($leveldbKey = sprintf(self::LEVELDB_USER_ACCOUNT_KEY, $userId));
+        $Leveldb->execute();
+
+        $account = false;
+        if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
+            $account = $result[$leveldbKey];
+        }
+
         if (false === $account) {
             $this->set($userId, $account = self::DEFAULT_ACCOUNT);
         }
@@ -65,9 +73,18 @@ class Account extends Helper {
             throw new AccountException("Invalid user id: \n" . var_export($userId, true));
         }
 
+        $Leveldb = $this->getLeveldb();
         if (is_int($account) && $account >= self::MINIMUM_ACCOUNT) {
-            $result = $this->getRedis()->set(sprintf(self::REDIS_USER_ACCOUNT_KEY, $userId), $account);
-            return $result;
+            $Request = $Leveldb->set(array(
+                $leveldbKey = sprintf(self::LEVELDB_USER_ACCOUNT_KEY, $userId) => $account,
+            ));
+            $Leveldb->execute();
+
+            if (true === $Request->getResult()) {
+                return $account;
+            } else {
+                return false;
+            }
         }
 
         throw new AccountException("Invalid account: \n" . var_export($account, true));
@@ -95,11 +112,19 @@ class Account extends Helper {
             $Stats->incr("account-incr", abs($rate));
         }
 
-        $incrementResult = $this->getRedis()->incrBy(sprintf(self::REDIS_USER_ACCOUNT_KEY, $userId), $rate);
-        if ($incrementResult < self::MINIMUM_ACCOUNT) {
-            $result =  $this->set($userId, $incrementResult = self::MINIMUM_ACCOUNT);
+        $Leveldb = $this->getLeveldb();
+        $Request = $Leveldb->inc(array(
+            $leveldbKey = sprintf(self::LEVELDB_USER_ACCOUNT_KEY, $userId) => $rate,
+        ));
+        $Leveldb->execute();
 
-            return $result;
+        $incrementResult = 0;
+        if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
+            $incrementResult = (int) $result[$leveldbKey];
+        }
+
+        if ($incrementResult < self::MINIMUM_ACCOUNT) {
+            return $this->set($userId, $incrementResult = self::MINIMUM_ACCOUNT);
         }
 
         return $incrementResult;
@@ -121,9 +146,9 @@ class Account extends Helper {
 }
 
 /**
- * AccountException
+ * Class AccountException
  *
- * @package EncountersBundle
+ * @package Mamba\EncountersBundle\Helpers
  */
 class AccountException extends \Exception {
 
