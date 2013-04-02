@@ -1,6 +1,14 @@
 {% extends 'EncountersBundle:templates:layout.html.twig' %}
 {% block title %}Профиль{% endblock %}
-
+{% block stylesheets %}
+    {% stylesheets
+    '@EncountersBundle/Resources/public/css/pages/messenger/*'
+    output="css/compiled/messenger.css"
+    filter="?yui_css"
+    %}
+    <link rel="stylesheet" href="{{ asset_url }}" />
+    {% endstylesheets %}
+{% endblock %}
 {% block body %}
     {#<div class="app-layer app-layer-present" style="top: 100px;">#}
         {#<a href="#" class="close"></a>#}
@@ -154,7 +162,7 @@
 
 
     <div class="profile">
-        <div class="profile-picture yes-photo">
+        <div class="profile-picture">
             <img class="user_info-avatar" src="{{ profile.info.square_photo_url }}">
             <span class="profile-picture_col"><i>{{ profile.photos|length }}</i></span>
         </div>
@@ -169,25 +177,41 @@
                 <div class="list-present_user">
                     {# цикл по гифтам #}
                         <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
+                    <span class="list-present_user-item"></span>
                     {# конец цикла #}
                 </div>
             </div>
 
-            {% if not profile.myself %}
-            <ul class="menu">
-                <li class="menu_item"><span>Написать</span></li>
-                <li class="menu_item"><span>Встретиться</span></li>
-                <li class="menu_item menu_arrow"><span>или</span>
-                    <div class="drop_down">
-                        <ul class="list_drop_down-menu">
-                            <li class="list_item"><a href="#" class="list_item-link">Узнать, кто ей нравится</a></li>
-                            <li class="list_item"><a href="#" class="list_item-link">В черный список</a></li>
-                            <li class="list_item"><a href="#" class="list_item-link">Закрыть</a></li>
+            {#{% if not profile.myself %}#}
+            <ul class="orange-menu">
+                <li class="item"><span>Написать</span></li>
+                <li class="item"><span>Встретиться</span></li>
+                <li class="item item-arrow"><span>или</span>
+                    <div class="drop-down">
+                        <ul class="list">
+                            <li class="item"><a href="#" class="item-link">Узнать, кто ей нравится</a></li>
+                            <li class="item"><a href="#" class="item-link">В черный список</a></li>
+                            <li class="item"><a href="#" class="item-link">Закрыть</a></li>
                         </ul>
                     </div>
                 </li>
             </ul>
-            {% endif %}
+            {#{% endif %}#}
 
             {% if profile.interests|length > 0 %}
                 <div class="anketa-content_user-interes">

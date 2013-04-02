@@ -20,6 +20,23 @@ $Profile = {
          *
          * @author shpizel
          */
+
+        $(document).click(function(){
+            $(".orange-menu .drop-down").hide();
+        });
+
+        $(".orange-menu .item-arrow").click(function() {
+            $(".orange-menu .drop-down").fadeIn('fast');
+            return false;
+        });
+
+        $(".profile-picture").click(function() {
+            alert('avatar click');
+        });
+
+        $(".button-present").click(function() {
+            alert('send gift click');
+        });
     },
 
     /**

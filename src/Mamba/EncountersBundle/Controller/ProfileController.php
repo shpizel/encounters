@@ -34,7 +34,7 @@ class ProfileController extends ApplicationController {
             $currentUserId = (int) $webUserId;
         }
 
-        if (!($profile = $Mamba->Anketa()->getInfo($currentUserId))) {
+        if (!($profile = $Mamba->nocache()->Anketa()->getInfo($currentUserId))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 

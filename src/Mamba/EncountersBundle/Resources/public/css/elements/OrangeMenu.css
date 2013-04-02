@@ -1,4 +1,9 @@
-.menu_item {
+.orange-menu {
+    white-space: nowrap;
+    font-size: 0;
+}
+
+.orange-menu > .item {
     position: relative;
     display: inline-block;
     margin: 0;
@@ -22,36 +27,32 @@
     box-shadow: inset 1px 1px 1px #ffcb90;
 }
 
-.menu_item:first-child {
+.orange-menu > .item:first-child {
     -webkit-border-radius: 5px 0 0 5px;
     -moz-border-radius: 5px 0 0 5px;
     border-radius: 5px 0 0 5px;
 }
 
-.menu_item:last-child {
+.orange-menu > .item:last-child {
     border-right-width: 1px;
     -webkit-border-radius: 0 5px 5px 0;
     -moz-border-radius: 0 5px 5px 0;
     border-radius: 0 5px 5px 0;
 }
 
-.menu_item:hover {
+.orange-menu > .item:hover {
     background-image: -webkit-linear-gradient(#ffb464, #ff7027);
     background-image: -moz-linear-gradient(#ffb464, #ff7027);
     background-image: -o-linear-gradient(#ffb464, #ff7027);
     background-image: linear-gradient(#ffb464, #ff7027);
 }
 
-.menu_item span {
+.orange-menu > .item span {
     color: #fff;
 }
 
-.menu {
-    white-space: nowrap;
-    font-size: 0;
-}
-
-.menu .menu_item-current {
+.orange-menu > .item-current,
+.orange-menu > .item:active {
     background: #ec6300;
     background-image: -webkit-linear-gradient(#ff7e00, #cf4a00);
     background-image: -moz-linear-gradient(#ff7e00, #cf4a00);
@@ -63,7 +64,7 @@
     box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.3);
 }
 
-.menu .menu_arrow span:after {
+.orange-menu > .item-arrow span:after {
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 4px solid #000000;
@@ -79,7 +80,7 @@
     box-shadow: 0 -1px 1px #cc7d32;
 }
 
-.drop_down {
+.orange-menu .drop-down {
     display: none;
     position: absolute;
     right: 0;
@@ -102,25 +103,30 @@
     z-index: 3;
 }
 
-.drop_down.drop_down-present {
-    left: -50%;
-    width: 410px;
-    padding-bottom: 15px;
-}
-
-.list_drop_down-menu .list_item {
+.orange-menu .drop-down .list .item {
     margin-top: 5px;
     white-space: nowrap;
 }
 
-.list_drop_down-menu .list_item:first-child {
+.orange-menu .drop-down .list .item:first-child {
     margin-top: 0;
 }
 
-.list_drop_down-menu .list_item .list_item-link {
+.orange-menu .drop-down .list .item-link {
     font-size: 13px;
     font-weight: normal;
     color: #0066cc;
     text-shadow: 0 0 0 #fff;
     text-decoration: none;
+}
+
+/**
+ * WTF
+ *
+ * @author shpizel
+ */
+.orange-menu .drop-down .drop_down-present {
+    left: -50%;
+    width: 410px;
+    padding-bottom: 15px;
 }
