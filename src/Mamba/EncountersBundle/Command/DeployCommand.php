@@ -142,29 +142,48 @@ class DeployCommand extends Script {
                     $commands[] = array(
                         'description' => "Copying code to $server server",
                         'command'     => array(
-                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null",
-                        ),
-                    );
-
-                    $commands[] = array(
-                        'description' => "Preparing project on $server server",
-                        'command'     => array(
-                            "ssh $server 'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*'",
-                            "ssh $server 'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/'",
-                            "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug'",
-                            "ssh $server '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug'",
-                            "ssh $server 'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs'",
+                            "rsync -vrlgoD --delete /home/shpizel/encounters/ shpizel@{$server}:/home/shpizel/encounters > /dev/null &",
                         ),
                     );
                 }
             }
         }
 
-        /**
-         * Нужно
-         *
-         * @author shpizel
-         */
+        /** ждем пока зальется */
+        $commands[] = array(
+            'description' => "Waiting while all servers recieves new version of code..",
+            'command'     => array(
+                "wait",
+            ),
+        );
+
+        /** подготовка проекта на всех серверах */
+        foreach (self::$servers as $servers) {
+            foreach ($servers as $server) {
+                if ($server != 'www1') {
+                   $commands[] = array(
+                        'description' => "Preparing project on $server server",
+                        'command'     => array(
+                            "ssh $server '" . implode(";", array(
+                                "cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*",
+                                "cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/",
+                                "/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug",
+                                "/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug",
+                                "cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs"
+                            )) . "' &",
+                        ),
+                    );
+                }
+            }
+        }
+
+        /** ждем пока подготовятся проекты */
+        $commands[] = array(
+            'description' => "Waiting while all servers prepares project..",
+            'command'     => array(
+                "wait",
+            ),
+        );
 
         /** Стартуем веб-серверы */
         foreach (self::$servers['www'] as $server) {
@@ -188,6 +207,9 @@ class DeployCommand extends Script {
                 );
             }
         }
+
+        print_r($commands);
+        exit();
 
         $hostname = $this->getCurrentHostName();
         foreach ($commands as $item) {

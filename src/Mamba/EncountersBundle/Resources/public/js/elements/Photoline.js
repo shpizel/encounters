@@ -146,8 +146,8 @@ $Photoline = {
                             'age'  : $photolineItem['age'],
                             'city' : $photolineItem['city'],
                             'comment' : $photolineItem['comment'],
-//                            'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-                            'href': "/profile?id=" + $photolineItem['user_id'],
+                            'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+//                            'href': "/profile?id=" + $photolineItem['user_id'],
                             'target': '_self'
                         }).addClass('item');
 
@@ -176,8 +176,8 @@ $Photoline = {
                     'age'  : $photolineItem['age'],
                     'city' : $photolineItem['city'],
                     'comment' : $photolineItem['comment'],
-//                    'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
-                    'href': "/profile?id=" + $photolineItem['user_id'],
+                    'href': $Config.get('platform')['partner_url'] + 'anketa.phtml?oid=' + $photolineItem['user_id'],
+//                    'href': "/profile?id=" + $photolineItem['user_id'],
                     'target': '_self'
                 }).addClass('item');
 
