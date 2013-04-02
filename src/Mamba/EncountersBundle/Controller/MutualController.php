@@ -128,7 +128,7 @@ class MutualController extends ApplicationController {
         }
 
         $dataArray['data'] = $data ?: null;
-        if (!$data) {
+        if (!$data && $currentPage == todo) {
             $this->getCountersObject()->set($webUserId, 'mutual', 0);
         }
 

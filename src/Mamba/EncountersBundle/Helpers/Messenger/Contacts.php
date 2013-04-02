@@ -69,14 +69,12 @@ class Contacts extends Helper {
             UPDATE
                 `Messenger`.`Contacts`
             SET
-                `sender_id` = :sender_id,
-                `reciever_id` = :reciever_id,
                 `messages_count` = :messages_count,
                 `unread_count` = :unread_count,
                 `blocked` = :blocked,
                 `changed` = :changed
             WHERE
-                `contact_id` = :id",
+                `contact_id` = :contact_id",
 
         /**
          * SQL-запрос на получение контактов пользователей
@@ -89,7 +87,7 @@ class Contacts extends Helper {
             FROM
                 `Messenger`.`Contacts`
             WHERE
-                `sender_id` = :user_id
+                `sender_id` = :sender_id
             ORDER BY
                 `changed` DESC"
     ;
@@ -231,23 +229,23 @@ class Contacts extends Helper {
         $isBlocked = $Contact->isBlocked() ? 'Y' : 'N';
         $changed = $Contact->getChanged();
 
-        return
-            $this->getDoctrine()
-                ->getEntityManager()
-                ->getConnection()
-                ->prepare(self::SQL_UPDATE_CONTACT)
-                ->execute(
-                    array(
-                        `contact_id` => $contactId,
-                        `sender_id` => $senderId,
-                        `reciever_id` => $recieverId,
-                        `messages_count` => $messagesCount,
-                        `unread_count` => $unreadCount,
-                        `blocked` => $isBlocked,
-                        `changed` => $changed,
-                    )
-                )
+        $stmt = $this->getDoctrine()
+            ->getEntityManager()
+            ->getConnection()
+            ->prepare(
+                self::SQL_UPDATE_CONTACT
+            )
         ;
+
+        $stmt->bindParam('contact_id',  $contactId, PDO::PARAM_INT);
+        $stmt->bindParam('messages_count', $messagesCount, PDO::PARAM_INT);
+        $stmt->bindParam('unread_count', $unreadCount, PDO::PARAM_INT);
+        $stmt->bindParam('blocked', $isBlocked, PDO::PARAM_STR);
+        $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            return $Contact;
+        }
     }
 
     /**
@@ -277,8 +275,8 @@ class Contacts extends Helper {
             )
         ;
 
-        $_userId = $userId;
-        $stmt->bindParam('user_id', $_userId, PDO::PARAM_INT);
+        $_senderId = $userId;
+        $stmt->bindParam('sender_id', $_senderId, PDO::PARAM_INT);
 
         if ($result = $stmt->execute()) {
             $return = array();

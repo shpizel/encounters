@@ -23,6 +23,17 @@
             <div class="b-list_loading">Загрузка списка</div>
         </div>
 
+        <div class="b-user_online *online-select loading">
+            <span class="status-user status-on" title="Сейчас на сайте"></span>
+            <span class="list-user_more">...</span>
+            <ul class="list_users">
+                <li class="list_users_item"><img src="img/avatar_small.jpg" class="list_users_item-img" alt="" title=""></li>
+                <li class="list_users_item"><img src="img/avatar2_small.jpg" class="list_users_item-img" alt="" title=""></li>
+                <li class="list_users_item"><img src="img/avatar3_small.jpg" class="list_users_item-img" alt="" title=""></li>
+                <li class="list_users_item"><img src="img/avatar4_small.jpg" class="list_users_item-img" alt="" title="" `=""></li>
+            </ul>
+        </div>
+
     </div>
 
     <div class="layout-content">
@@ -127,7 +138,9 @@
                         <div class="b-pop_smile">
                             <i class="border"></i>
                             <ul class="list-smile">
-                                <li class="list-smile_item"><i class="smile s-1"></i></li>
+                                {% for i in range(1, 52) %}
+                                    <li class="list-smile_item"><i class="smile s-{{ i }}"></i></li>
+                                {% endfor %}
                             </ul>
                         </div>
                     </span>
@@ -141,18 +154,13 @@
         </div>
 
         <div class="b-user_disabled">
-            Вы уже отправили ей 3 сообщения.<br />
-            Как только она вам ответит, вы сможете продолжить общение с ней.<br />
-            Повысьте свои шансы на ответ, <span class="sent">отправив ей милый презент</span><br />
+            Вы уже отправили <span class="first"></span> 3 сообщения.<br />
+            Как только <span class="second"></span> вам ответит, вы сможете продолжить общение c <span class="third"></span>.<br />
+            Повысьте свои шансы на ответ, <span class="sent"></span><br />
         </div>
     </div>
 
     </div>
 
     </div>
-{% endblock %}
-{% block pagejs %}
-{% autoescape false %}
-$Config.set('contacts', {{ contacts|json_encode }});
-{% endautoescape %}
 {% endblock %}

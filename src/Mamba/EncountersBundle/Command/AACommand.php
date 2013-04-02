@@ -34,7 +34,18 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        var_dump($this->getCountersObject()->incr(560015854, 'mychoice'));
+        for ($i=0;$i<5;$i++) {
+            echo ".smile.s-" . ($i+1) . " {" . PHP_EOL;
+            $y = $i*16;
+
+            if ($i > 0  ) {
+                $y+=$i;
+            }
+
+            echo "    background-position: 0 {$y}px;" . PHP_EOL;
+            echo "}" . PHP_EOL;
+        }
+//        var_dump($this->getCountersObject()->incr(560015854, 'mychoice'));
 //        $c = 0;
 //        $Redis = $this->getRedis();
 //        $nodes = $Redis->getNodes();

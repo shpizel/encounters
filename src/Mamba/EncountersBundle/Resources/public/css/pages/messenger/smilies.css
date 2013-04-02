@@ -1,0 +1,240 @@
+/**
+ * Messenger smilies css
+ *
+ * @author shpizel
+ **/
+
+.b-smile {
+    position: absolute;
+    right: 21px;
+    top: 23px;
+}
+
+.b-smile .i-smile {
+    display: block;
+    height: 14px;
+    width: 22px;
+    background-image: url('/bundles/encounters/images/button-smile.gif');
+    cursor: pointer;
+}
+
+.b-smile .b-pop_smile {
+    display: none;
+    position: absolute;
+    padding: 5px 10px;
+    right: -6px;
+    top: -122px;
+    height: 97px;
+    width: 192px;
+    background-color: #4d5679;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.b-smile .b-pop_smile .border {
+    position: absolute;
+    right: 12px;
+    bottom: -10px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #4d5679;
+}
+
+.list-smile {
+    font-size: 0;
+    overflow-y:scroll;
+    height:97px;
+}
+
+.list-smile .list-smile_item {
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    padding: 4px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    vertical-align: top;
+}
+
+.list-smile .list-smile_item:hover {
+    background-color: #3e4561;
+    -webkit-box-shadow: inset 0 0 5px 0 rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: inset 0 0 5px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 0 5px 0 rgba(0, 0, 0, 0.3);
+}
+
+.smile {
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    position: relative;
+    top: -0.2em;
+    vertical-align: bottom;
+    background-image: url('/bundles/encounters/images/emoji-sprite.png');
+}
+
+.smile.s-1 {
+    background-position: 0 -0px;
+}
+.smile.s-2 {
+    background-position: 0 -17px;
+}
+.smile.s-3 {
+    background-position: 0 -34px;
+}
+.smile.s-4 {
+    background-position: 0 -51px;
+}
+.smile.s-5 {
+    background-position: 0 -68px;
+}
+.smile.s-6 {
+    background-position: 0 -85px;
+}
+.smile.s-7 {
+    background-position: 0 -102px;
+}
+.smile.s-8 {
+    background-position: 0 -119px;
+}
+.smile.s-9 {
+    background-position: 0 -136px;
+}
+.smile.s-10 {
+    background-position: 0 -153px;
+}
+.smile.s-11 {
+    background-position: 0 -170px;
+}
+.smile.s-12 {
+    background-position: 0 -187px;
+}
+.smile.s-13 {
+    background-position: 0 -204px;
+}
+.smile.s-14 {
+    background-position: 0 -221px;
+}
+.smile.s-15 {
+    background-position: 0 -238px;
+}
+.smile.s-16 {
+    background-position: 0 -255px;
+}
+.smile.s-17 {
+    background-position: 0 -272px;
+}
+.smile.s-18 {
+    background-position: 0 -289px;
+}
+.smile.s-19 {
+    background-position: 0 -306px;
+}
+.smile.s-20 {
+    background-position: 0 -323px;
+}
+.smile.s-21 {
+    background-position: 0 -340px;
+}
+.smile.s-22 {
+    background-position: 0 -357px;
+}
+.smile.s-23 {
+    background-position: 0 -374px;
+}
+.smile.s-24 {
+    background-position: 0 -391px;
+}
+.smile.s-25 {
+    background-position: 0 -408px;
+}
+.smile.s-26 {
+    background-position: 0 -425px;
+}
+.smile.s-27 {
+    background-position: 0 -442px;
+}
+.smile.s-28 {
+    background-position: 0 -459px;
+}
+.smile.s-29 {
+    background-position: 0 -476px;
+}
+.smile.s-30 {
+    background-position: 0 -493px;
+}
+.smile.s-31 {
+    background-position: 0 -510px;
+}
+.smile.s-32 {
+    background-position: 0 -527px;
+}
+.smile.s-33 {
+    background-position: 0 -544px;
+}
+.smile.s-34 {
+    background-position: 0 -561px;
+}
+.smile.s-35 {
+    background-position: 0 -578px;
+}
+.smile.s-36 {
+    background-position: 0 -595px;
+}
+.smile.s-37 {
+    background-position: 0 -612px;
+}
+.smile.s-38 {
+    background-position: 0 -629px;
+}
+.smile.s-39 {
+    background-position: 0 -646px;
+}
+.smile.s-40 {
+    background-position: 0 -663px;
+}
+.smile.s-41 {
+    background-position: 0 -680px;
+}
+.smile.s-42 {
+    background-position: 0 -697px;
+}
+.smile.s-43 {
+    background-position: 0 -714px;
+}
+.smile.s-44 {
+    background-position: 0 -731px;
+}
+.smile.s-45 {
+    background-position: 0 -748px;
+}
+.smile.s-46 {
+    background-position: 0 -765px;
+}
+.smile.s-47 {
+    background-position: 0 -782px;
+}
+.smile.s-48 {
+    background-position: 0 -799px;
+}
+.smile.s-49 {
+    background-position: 0 -816px;
+}
+.smile.s-50 {
+    background-position: 0 -833px;
+}
+.smile.s-51 {
+    background-position: 0 -850px;
+}
+.smile.s-52 {
+    background-position: 0 -867px;
+}
+.smile.s-53 {
+    background-position: 0 -884px;
+}

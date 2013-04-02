@@ -47,19 +47,15 @@ class MessengerController extends ApplicationController {
 
         $ContactsObject = $this->getContactsObject();
         if ($currentUserId = (int) $this->getRequest()->query->get('id')) {
-
-            if (!$ContactsObject->getContact($webUserId, $currentUserId)) {
-                $ContactsObject->createContact($webUserId, $currentUserId);
+            /**
+             * Если передан айдишник Мамбовский — нужно проверить есть ли контакт,
+             * и если нет — создать его
+             *
+             * @author
+             */
+            if (!($Contact = $ContactsObject->getContact($webUserId, $currentUserId))) {
+                $Contact = $ContactsObject->createContact($webUserId, $currentUserId);
             }
-
-            if (!$ContactsObject->getContact($currentUserId, $webUserId)) {
-                $ContactsObject->createContact($currentUserId, $webUserId);
-            }
-        }
-
-        $dataArray['messages'] = [];
-        if ($dataArray['contacts'] = $this->getContacts() ?: []) {
-            $dataArray['messages'][current($dataArray['contacts'])['reciever_id']] = [];
         }
 
         return $this->render('EncountersBundle:templates:messenger.html.twig', $dataArray);
@@ -141,39 +137,72 @@ class MessengerController extends ApplicationController {
      * @return Response
      */
     public function sendMessageAction() {
-        $message   = $this->getRequest()->request->get('message');
-        $contactId = (int) $this->getRequest()->request->get('contact_id');
+        $Mamba = $this->getMamba();
 
-        if ($message && strip_tags($message) && $contactId) {
-            if ($Contact = $this->getContactsObject()->getContactById($contactId)) {
-                $Message = (new Message)
-                    ->setContactId($Contact->getId())
-                    ->setType('text')
-                    ->setDirection(mt_rand(0, 1) ? 'from': 'to')
-                    ->setMessage($message)
-                    ->setTimestamp(time())
-                ;
+        if (!$Mamba->getReady()) {
+            list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
+        } else {
+            $webUserId = $Mamba->get('oid');
 
-                if ($Message = $this->getMessagesObject()->addMessage($Message)) {
-                    $this->json['data'] = $Message->toArray();
-                    $this->json['data']['date'] = $this->getHumanDate($this->json['data']['timestamp']);
+            $message   = $this->getRequest()->request->get('message');
+            $contactId = (int) $this->getRequest()->request->get('contact_id');
 
-                    /**
-                     * Нужно отправить данные в другой контакт через очередь
-                     *
-                     * @author shpizel
-                     */
-                    if ($_Contact = $this->getContactsObject()->getContact($Contact->getRecieverId(), $Contact->getSenderId())) {
-                        $this->getMessagesObject()->addMessage($Message->setContactId($_Contact->getId()));
+            if ($message && strip_tags($message) && $contactId) {
+                if (($Contact = $this->getContactsObject()->getContactById($contactId)) && $Contact->getSenderId() == $webUserId)  {
+                    $Message = (new Message)
+                        ->setContactId($Contact->getId())
+                        ->setType('text')
+                        ->setDirection('from')
+                        ->setMessage($message)
+                        ->setTimestamp(time())
+                    ;
+
+                    if ($Message = $this->getMessagesObject()->addMessage($Message)) {
+
+                        /**
+                         * Обновляем контакт
+                         *
+                         * @author shpizel
+                         */
+                        $Contact->setMessagesCount($Contact->getMessagesCount() + 1);
+                        $Contact->setChanged(time());
+                        $this->getContactsObject()->updateContact($Contact);
+
+                        /**
+                         * Сформируем основной вывод json
+                         *
+                         *
+                         */
+                        $this->json['data']['message'] = $Message->toArray();
+                        $this->json['data']['message']['date'] = $this->getHumanDate($this->json['data']['message']['timestamp']);
+
+                        /**
+                         * Отправляем данные в другой контакт (обратный) и обновляем его
+                         *
+                         * @author shpizel
+                         */
+                        if (!($OppositeContact = $this->getContactsObject()->getContact($Contact->getRecieverId(), $Contact->getSenderId()))) {
+                            $OppositeContact = $this->getContactsObject()->createContact($Contact->getRecieverId(), $Contact->getSenderId());
+                        }
+
+                        $Message->setContactId($OppositeContact->getId())->setDirection('to');
+                        if ($this->getMessagesObject()->addMessage($Message)) {
+                            $OppositeContact->setUnreadCount($OppositeContact->getUnreadCount() + 1);
+                            $OppositeContact->setMessagesCount($OppositeContact->getMessagesCount() + 1);
+                            $OppositeContact->setChanged(time());
+                            $this->getContactsObject()->updateContact($OppositeContact);
+                        }
+
+                        $this->json['data']['unread_count'] = $OppositeContact->getUnreadCount();
+                    } else {
+                        list($this->json['status'], $this->json['message']) = array(4, "Could not send message");
                     }
                 } else {
-                    list($this->json['status'], $this->json['message']) = array(3, "Could not send message");
+                    list($this->json['status'], $this->json['message']) = array(3, "Contact does not exists");
                 }
             } else {
-                list($this->json['status'], $this->json['message']) = array(2, "Contact does not exists");
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
             }
-        } else {
-            list($this->json['status'], $this->json['message']) = array(1, "Invalid params");
         }
 
         return
@@ -214,7 +243,7 @@ class MessengerController extends ApplicationController {
                 if (isset($profilesData[$Contact->getRecieverId()])) {
                     $contactData['platform'] = $profilesData[$Contact->getRecieverId()];
                     $contactData['rated'] = $this->getViewedQueueObject()->exists($this->webUserId, $Contact->getRecieverId());
-                    $contacts[$Contact->getId()] = $contactData;
+                    $contacts[/*$Contact->getId()*/] = $contactData;
                 }
             }
 
