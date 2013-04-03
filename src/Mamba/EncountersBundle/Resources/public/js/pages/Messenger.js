@@ -598,13 +598,13 @@ $Messenger = {
                 if ($message.direction == 'to') {
                     $("span.messages__name", $html).html($Config.get('contacts')[$message.contact_id].platform.info.name);
                     $("span.messages__details", $html).html((($Config.get('contacts')[$message.contact_id].platform.info.gender == 'F') ? 'отправила подарок' : 'отправил подарок') + ' ' + $message.date);
-//                    $html.addClass('messages__item_next');
+                    $html.addClass('messages__item_next');
                 } else {
                     $("span.messages__name", $html).html($Config.get('webuser').anketa.info.name);
                     $("span.messages__details", $html).html($message.date);
 
                     $("span.baloon_content-btn", $html).hide();
-//                    $html.addClass('messages__item_my');
+                    $html.addClass('messages__item_my');
                 }
 
                 if ($message.gift) {
