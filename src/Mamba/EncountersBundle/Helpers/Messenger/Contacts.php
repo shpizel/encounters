@@ -56,6 +56,7 @@ class Contacts extends Helper {
                 `sender_id` = :sender_id,
                 `reciever_id` = :reciever_id,
                 `messages_count` = :messages_count,
+                `dialog` = :dialog,
                 `unread_count` = :unread_count,
                 `blocked` = :blocked,
                 `changed` = :changed",
@@ -70,6 +71,7 @@ class Contacts extends Helper {
                 `Messenger`.`Contacts`
             SET
                 `messages_count` = :messages_count,
+                `dialog` = :dialog,
                 `unread_count` = :unread_count,
                 `blocked` = :blocked,
                 `changed` = :changed
@@ -89,7 +91,11 @@ class Contacts extends Helper {
             WHERE
                 `sender_id` = :sender_id
             ORDER BY
-                `changed` DESC"
+                `changed` DESC
+            LIMIT
+                %d
+            OFFSET
+                %d"
     ;
 
     /**
@@ -126,6 +132,7 @@ class Contacts extends Helper {
                         ->setId((int) $row['contact_id'])
                         ->setSenderId((int) $row['sender_id'])
                         ->setRecieverId((int) $row['reciever_id'])
+                        ->setMessagesCount((int) $row['messages_count'])
                         ->setUnreadCount((int) $row['unread_count'])
                         ->setBlocked($row['blocked'] == 'Y' ? true : false)
                         ->setChanged((int) $row['changed'])
@@ -149,7 +156,9 @@ class Contacts extends Helper {
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
-            ->prepare(self::SQL_GET_CONTACT_BY_ID)
+            ->prepare(
+                self::SQL_GET_CONTACT_BY_ID
+            )
         ;
 
         $_contactId = $contactId;
@@ -163,7 +172,9 @@ class Contacts extends Helper {
                         ->setId((int) $row['contact_id'])
                         ->setSenderId((int) $row['sender_id'])
                         ->setRecieverId((int) $row['reciever_id'])
+                        ->setMessagesCount((int) $row['messages_count'])
                         ->setUnreadCount((int) $row['unread_count'])
+                        ->setDialog($row['blocked'] == 'Y' ? true : false)
                         ->setBlocked($row['blocked'] == 'Y' ? true : false)
                         ->setChanged((int) $row['changed'])
                     ;
@@ -184,6 +195,7 @@ class Contacts extends Helper {
             ->setSenderId($webUserId)
             ->setRecieverId($currentUserId)
             ->setMessagesCount(0)
+            ->setDialog(false)
             ->setUnreadCount(0)
             ->setBlocked(false)
             ->setChanged(time())
@@ -195,6 +207,7 @@ class Contacts extends Helper {
         $senderId = $Contact->getSenderId();
         $recieverId = $Contact->getRecieverId();
         $messagesCount = $Contact->getMessagesCount();
+        $isDialog = $Contact->isDialog();
         $unreadCount = $Contact->getUnreadCount();
         $isBlocked = $Contact->isBlocked() ? 'Y' : 'N';
         $changed = $Contact->getChanged();
@@ -202,6 +215,7 @@ class Contacts extends Helper {
         $stmt->bindParam('sender_id',  $senderId, PDO::PARAM_INT);
         $stmt->bindParam('reciever_id', $recieverId, PDO::PARAM_INT);
         $stmt->bindParam('messages_count', $messagesCount, PDO::PARAM_INT);
+        $stmt->bindParam('dialog', $isDialog, PDO::PARAM_STR);
         $stmt->bindParam('unread_count', $unreadCount, PDO::PARAM_INT);
         $stmt->bindParam('blocked', $isBlocked, PDO::PARAM_STR);
         $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
@@ -225,6 +239,7 @@ class Contacts extends Helper {
         $senderId = $Contact->getSenderId();
         $recieverId = $Contact->getRecieverId();
         $messagesCount = $Contact->getMessagesCount();
+        $isDialog = $Contact->isDialog();
         $unreadCount = $Contact->getUnreadCount();
         $isBlocked = $Contact->isBlocked() ? 'Y' : 'N';
         $changed = $Contact->getChanged();
@@ -237,8 +252,9 @@ class Contacts extends Helper {
             )
         ;
 
-        $stmt->bindParam('contact_id',  $contactId, PDO::PARAM_INT);
+        $stmt->bindParam('contact_id', $contactId, PDO::PARAM_INT);
         $stmt->bindParam('messages_count', $messagesCount, PDO::PARAM_INT);
+        $stmt->bindParam('dialog', $isDialog, PDO::PARAM_STR);
         $stmt->bindParam('unread_count', $unreadCount, PDO::PARAM_INT);
         $stmt->bindParam('blocked', $isBlocked, PDO::PARAM_STR);
         $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
@@ -256,7 +272,7 @@ class Contacts extends Helper {
      * @param int $offset
      * @return array|null
      */
-    public function getContacts($userId, $limit = 10, $offset = 0) {
+    public function getContacts($userId, $limit = 20, $offset = 0) {
         if (!is_int($userId)) {
             throw new ContactsException("Invalid user id type: ". gettype($userId));
         } elseif (!is_int($limit)) {
@@ -269,9 +285,11 @@ class Contacts extends Helper {
             ->getEntityManager()
             ->getConnection()
             ->prepare(
-                self::SQL_GET_CONTACTS .
-                    " LIMIT {$limit} " .
-                    " OFFSET {$offset}"
+                sprintf(
+                    self::SQL_GET_CONTACTS,
+                    $limit,
+                    $offset
+                )
             )
         ;
 
@@ -288,6 +306,7 @@ class Contacts extends Helper {
                         ->setSenderId((int) $row['sender_id'])
                         ->setRecieverId((int) $row['reciever_id'])
                         ->setMessagesCount((int) $row['messages_count'])
+                        ->setDialog($row['dialog'] == 'Y' ? true : false)
                         ->setUnreadCount((int) $row['unread_count'])
                         ->setBlocked($row['blocked'] == 'Y' ? true : false)
                         ->setChanged((int) $row['changed'])

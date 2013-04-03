@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
+use Mamba\EncountersBundle\Helpers\Messenger\Message;
 use Symfony\Component\HttpFoundation\Response;
 use Core\MambaBundle\API\Mamba;
 use Mamba\EncountersBundle\Tools\Gifts\Gifts;
@@ -66,6 +67,38 @@ class GiftsController extends ApplicationController {
                             ),
                         ),
                     );
+
+                    /**
+                     * Нужно отправить гифт в мессенджер
+                     *
+                     * @author shpizel
+                     */
+                    $ContactsObject = $this->getContactsObject();
+                    $MessagesObject = $this->getMessagesObject();
+
+                    if (!($Contact = $ContactsObject->getContact($webUserId, $currentUserId))) {
+                        $Contact = $ContactsObject->createContact($webUserId, $currentUserId);
+                    }
+
+                    $Message = (new Message)
+                        ->setContactId($Contact->getId())
+                        ->setTimestamp(time())
+                        ->setType('gift')
+                        ->setDirection('from')
+                        ->setMessage(array(
+                            'gift_id' => $giftId,
+                            'comment' => $comment,
+                        ))
+                    ;
+
+                    if ($MessagesObject->addMessage($Message)) {
+
+                        if (!($Contact = $ContactsObject->getContact($currentUserId, $webUserId))) {
+                            $Contact = $ContactsObject->createContact($currentUserId, $webUserId);
+                        }
+
+                        $MessagesObject->addMessage($Message->setDirection('to')->setContactId($Contact->getId()));
+                    }
                 } else {
                     list($this->json['status'], $this->json['message']) = array(3, "Account is not enough for charge battery");
                 }

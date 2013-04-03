@@ -55,6 +55,11 @@ messenger.contacts.get:
     pattern: /ajax/messenger.contacts.get
     defaults: { _controller: EncountersBundle:Messenger:getContacts }
 
+# Обновлялка мессенджера
+messenger.update:
+    pattern: /ajax/messenger.update
+    defaults: { _controller: EncountersBundle:Messenger:getMessengerUpdate }
+
 # Дергалка сообщений мессенджера
 messenger.messages.get:
     pattern: /ajax/messenger.messages.get

@@ -23,12 +23,7 @@ input, select, span {
     vertical-align: inherit;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
     margin: 0;
     padding: 0;
     font-weight: normal;
@@ -81,27 +76,8 @@ textarea {
     font-family: Arial, sans-serif;
 }
 
-a {
-    text-decoration: underline;
-}
-
-:link,
-:visited {
-    color: #06c;
-    text-decoration: underline;
-}
-
-:visited {
-    /*color: #5834e2;*/
-
-}
-
-:link:hover,
-:visited:hover {
-    color: #f00 !important;
-}
-
-a img,
+/*a*/
+img,
 fieldset {
     border: 0;
 }
@@ -117,3 +93,24 @@ i {
 p {
     margin: 0 0 1.25em;
 }
+
+/*
+a {
+text-decoration: underline;
+}
+
+:link,
+:visited {
+color: #06c;
+text-decoration: underline;
+}
+
+:visited {
+color: #5834e2;
+
+}
+
+:link:hover,
+:visited:hover {
+color: #f00 !important;
+}*/

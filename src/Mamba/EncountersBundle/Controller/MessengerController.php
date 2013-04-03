@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
+use Mamba\EncountersBundle\Helpers\Gifts;
 use Mamba\EncountersBundle\Helpers\Messenger\Message;
 use Symfony\Component\HttpFoundation\Response;
 use Core\MambaBundle\API\Mamba;
@@ -85,6 +86,29 @@ class MessengerController extends ApplicationController {
     }
 
     /**
+     * Messenger updater
+     *
+     * @return Response
+     */
+    public function getMessengerUpdateAction() {
+        $Mamba = $this->getMamba();
+
+        if (!$Mamba->getReady()) {
+            list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
+        } else {
+            $this->webUserId = $webUserId = $Mamba->get('oid');
+            $this->json['data']['contacts'] = $this->getContacts() ?: [];
+        }
+
+        return
+            new Response(json_encode($this->json), 200, array(
+                    "content-type" => "application/json",
+                )
+            )
+        ;
+    }
+
+    /**
      * Messages getter action
      *
      *
@@ -103,13 +127,23 @@ class MessengerController extends ApplicationController {
                             foreach ($messages as $key=>$Message) {
                                 $messages[$key] = $Message->toArray();
                                 $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
+
+                                if ($Message->getType() == 'gift') {
+                                    if ($giftData = json_decode($Message->getMessage(), true)) {
+                                        $messages[$key]['gift'] = array(
+                                            'comment' => $giftData['comment'],
+                                            'url'     => \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->getUrl(),
+                                        );
+                                    }
+                                }
                             }
 
                             $this->json['data']['messages'] = $messages;
-                            $this->json['data']['unread_count'] =
-                                $this->getContactsObject()->getContact($Contact->getRecieverId(), $Contact->getSenderId())
-                                    ->getUnreadCount()
-                            ;
+                            $this->json['data']['unread_count'] = 0;
+
+                            if ($reverseContact = $this->getContactsObject()->getContact($Contact->getRecieverId(), $Contact->getSenderId())) {
+                                $this->json['data']['unread_count'] = $reverseContact->getUnreadCount();
+                            }
                         }
 
                     } else {

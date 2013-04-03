@@ -19,7 +19,7 @@ $Layers.$SendGiftLayer = {
             $("div.layer-send-gift .form-send_gift input").removeAttr('disabled');
         });
 
-        $("div.layer-send-gift .form-send_gift input[type=submit]").click(function() {
+        var $sendGiftFunction = function() {
             var $giftId = $("div.layer-send-gift .list-present_item-selected").attr('gift_id');
             var $comment = $("div.layer-send-gift textarea").val();
             var $currentUserId = $Config.get('current_user_id');
@@ -45,6 +45,18 @@ $Layers.$SendGiftLayer = {
             });
 
             return false;
+        };
+
+        $("div.layer-send-gift textarea").keypress(function($event) {
+            if ($event.ctrlKey && $event.keyCode == 13) {
+
+            } else if ($event.keyCode == 13) {
+                return $sendGiftFunction();
+            }
+        });
+
+        $("div.layer-send-gift .form-send_gift input[type=submit]").click(function() {
+            return $sendGiftFunction();
         });
 
         $("div.layer-send-gift .form-send_gift input[type=submit]").attr('disabled', 'disabled');

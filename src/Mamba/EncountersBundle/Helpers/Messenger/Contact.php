@@ -39,6 +39,13 @@ class Contact {
         $unreadCount = 0,
 
         /**
+         * Dialog label
+         *
+         * @var bool
+         */
+        $dialog = false,
+
+        /**
          * Messages count
          *
          * @var int
@@ -117,6 +124,31 @@ class Contact {
      */
     public function getRecieverId() {
         return $this->recieverId;
+    }
+
+    /**
+     * Messages count getter
+     *
+     * @return int
+     */
+    public function getMessagesCount() {
+        return $this->unreadCount;
+    }
+
+    /**
+     * Messages count setter
+     *
+     * @param int $messagesCount
+     * @return $this
+     * @throws ContactException
+     */
+    public function setMessagesCount($messagesCount) {
+        if (!is_int($messagesCount)) {
+            throw new ContactException("Invalid messages count type: ". gettype($messagesCount));
+        }
+
+        $this->messagesCount = $messagesCount;
+        return $this;
     }
 
     /**
@@ -211,27 +243,27 @@ class Contact {
     }
 
     /**
-     * Messages count getter
+     * Dialog getter
      *
-     * @return int
+     * @return bool
      */
-    public function getMessagesCount() {
-        return $this->unreadCount;
+    public function isDialog() {
+        return $this->dialog;
     }
 
     /**
-     * Messages count setter
+     * Dialog setter
      *
-     * @param int $messagesCount
+     * @param bool $dialog
      * @return $this
      * @throws ContactException
      */
-    public function setMessagesCount($messagesCount) {
-        if (!is_int($messagesCount)) {
-            throw new ContactException("Invalid messages count type: ". gettype($messagesCount));
+    public function setDialog($dialog) {
+        if (!is_bool($dialog)) {
+            throw new ContactException("Invalid dialog type: ". gettype($dialog));
         }
 
-        $this->messagesCount = $messagesCount;
+        $this->dialog = $dialog;
         return $this;
     }
 
@@ -247,6 +279,7 @@ class Contact {
                 'sender_id'      => $this->getSenderId(),
                 'reciever_id'    => $this->getRecieverId(),
                 'messages_count' => $this->getMessagesCount(),
+                'dialog'         => $this->isDialog(),
                 'unread_count'   => $this->getUnreadCount(),
                 'blocked'        => $this->isBlocked(),
                 'changed'        => $this->getChanged(),

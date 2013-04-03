@@ -1236,7 +1236,7 @@ textarea.input_i {
     top: 0;
     height: 32px;
     width: 13px;
-    background-image: url('../i/arrow_ballon.png');
+    background-image: url('/bundles/encounters/images/gift-arrow.png');
     background-repeat: no-repeat;
     background-position: 0 0;
 }
@@ -1248,7 +1248,7 @@ textarea.input_i {
     margin-top: -8px;
     height: 16px;
     width: 10px;
-    background-image: url('../i/baloon_ar.png');
+    background-image: url('/bundles/encounters/images/gift-baloon-arrow.png');
 }
 
 .user-select_show .user-select {

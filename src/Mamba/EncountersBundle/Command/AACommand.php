@@ -34,7 +34,32 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        for ($i=0;$i<5;$i++) {
+        $data = file("https://dl.dropboxusercontent.com/u/34766282/search.txt");
+        $ret = [];
+        foreach ($data as $line) {
+            $line = trim($line);
+            $dataArray = explode("\t", $line);
+
+            print_r($dataArray);
+            $date = $dataArray[0];
+            $date = explode(".", $date);
+            array_shift($date);
+            $date = implode(".", $date);
+
+            if (!isset($ret[$date])) {
+                $ret[$date] = 0;
+            }
+
+            $ret[$date]+= intval(str_replace(",","", $dataArray[1]));
+        }
+        ksort($ret);
+        foreach ($ret as $m=>$v) {
+            echo $m . "\t" . $v/28 . "\n";
+        }
+
+
+        exit()
+        ;for ($i=0;$i<5;$i++) {
             echo ".smile.s-" . ($i+1) . " {" . PHP_EOL;
             $y = $i*16;
 

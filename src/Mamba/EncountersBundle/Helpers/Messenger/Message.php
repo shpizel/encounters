@@ -41,7 +41,7 @@ class Message {
         /**
          * Message body
          * 
-         * @var str
+         * @var str|array
          */
         $message,
 
@@ -145,7 +145,7 @@ class Message {
      * @throws MessageException
      */
     public function setMessage($message) {
-        if (!is_string($message)) {
+        if (!is_string($message) && !is_array($message)) {
             throw new MessageException("Invalid message type: ". gettype($message));
         }
 

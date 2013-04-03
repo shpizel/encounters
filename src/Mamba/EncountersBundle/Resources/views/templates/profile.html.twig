@@ -72,7 +72,7 @@
 
                 <div class="block-left">
 
-                    {% if profile.familiarity is defined and profile.familiarity.lookfor %}
+                    {% if profile.familiarity is defined and profile.familiarity.lookfor is defined %}
                         <div class="block-info">
                             <div class="title">Познакомлюсь:</div>
                             <div class="content">{{ profile.familiarity.lookfor }}</div>

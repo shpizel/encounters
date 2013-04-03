@@ -116,7 +116,10 @@ class Messages extends Helper {
             $_contactId = $Message->getContactId();
             $_type      = $Message->getType();
             $_direction = $Message->getDirection();
-            $_message   = $Message->getMessage();
+            if (is_array($_message   = $Message->getMessage())) {
+                $_message = json_encode($_message);
+            }
+
             $_timestamp = $Message->getTimestamp();
 
             $stmt->bindParam('contact_id',  $_contactId, PDO::PARAM_INT);

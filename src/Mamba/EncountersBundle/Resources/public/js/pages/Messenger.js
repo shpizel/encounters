@@ -5,6 +5,8 @@
  */
 $Messenger = {
 
+    locked: false,
+
     /**
      * Инициализация интерфейса
      *
@@ -34,12 +36,65 @@ $Messenger = {
     },
 
     acquireLock: function() {
-        return true;
+        if ($Messenger.locked == false) {
+            return $Messenger.locked = true;
+        }
+
+        return false;
     },
 
     freeLock: function() {
-        return true;
+        $Messenger.locked = false;
     },
+
+    initUpdateTimer: function() {
+        window.setInterval(
+            function() {
+                if (!$Messenger.acquireLock()) return;
+
+                $.post($Routing.getPath('messenger.update'), {}, function($data) {
+                    if ($data.status == 0 && $data.message == '') {
+                        var $contacts = $data.data.contacts;
+
+                        var $contactsObject = $Config.get('contacts') || {};
+                        for (var $i=0;$i<$contacts.length;$i++) {
+                            $contactsObject[$contacts[$i].contact_id] = $contacts[$i];
+                        }
+
+                        $Config.set('contacts', $contactsObject);
+
+                        var $sortArray = [];
+                        for (var $contactId in $contactsObject) {
+                            $sortArray.push([$contactsObject[$contactId]['changed'], $contactsObject[$contactId]]);
+                        }
+
+                        $sortArray.sort(function($a, $b) {
+                            return - $a[0] + $b[0];
+                        });
+
+                        if ($sortArray.length > 0) {
+                            $Messenger.$contactList.setNotEmpty();
+                            $("div.layout-sidebar ul.list-users li.list-users_item[contact_id]").remove();
+
+                            for (var $i=0;$i<$sortArray.length;$i++) {
+                                var $contact = $sortArray[$i][1];
+                                $Messenger.$contactList.addContact($contact);
+                            }
+                        } else {
+                            $Messenger.$contactList.setEmpty();
+                        }
+                    }
+
+                    $Messenger.freeLock();
+                }).error(function() {
+                    $Messenger.freeLock();
+                });
+            },
+            $Messenger.updateTimeout
+        );
+    },
+
+    updateTimeout: 1000,
 
     /**
      * Запуск страницы
@@ -49,6 +104,7 @@ $Messenger = {
     run: function() {
 
     },
+
 
     /**
      * Показываем лоадер на всю страницу
@@ -75,6 +131,11 @@ $Messenger = {
      */
     $contactList: {
 
+        /**
+         * Init UI
+         *
+         * @init UI
+         */
         initUI: function() {
             $.post($Routing.getPath('messenger.contacts.get'), function($data) {
                 if ($data.status == 0 && $data.message == '') {
@@ -85,7 +146,6 @@ $Messenger = {
 
                     $Config.set('contacts', $contactsObject);
 
-
                     if ($contactsArray.length > 0) {
                         $Messenger.$contactList.setNotEmpty();
                         for (var $i=0;$i<$contactsArray.length;$i++) {
@@ -93,6 +153,7 @@ $Messenger = {
                         }
 
                         $Messenger.$contactList.select($contactsArray[0].contact_id, function() {
+                            $Messenger.initUpdateTimer();
                             $Messenger.hideLoader();
                         });
                     } else {
@@ -111,6 +172,10 @@ $Messenger = {
         },
 
         select: function($contactId, $callback) {
+            if (!$Messenger.acquireLock()) {
+                return;
+            }
+
             $Config.set('contact_id', $contactId);
 
             $("div.layout-sidebar div.b-list_users ul.list-users > li").removeClass('list-users_item-current').removeClass('loading');
@@ -134,7 +199,7 @@ $Messenger = {
             $Messenger.$messages.get($contactId, null, function($data) {
                 $Messenger.$messages.clear();
 
-                if ($data.hasOwnProperty('messages')) {
+                if ($data.messages) {
                     var $messages = $data.messages;
 
                     for (var $i=0;$i<$messages.length;$i++) {
@@ -144,7 +209,7 @@ $Messenger = {
                     if ($data.unread_count > 0) {
                         $Messenger.$messages.setNotReadedStatus();
 
-                        if ($data.unread_count >= 3 || !$data.dialog) {
+                        if ($data.unread_count >= 3 || !$data.is_dialog) {
                             $Messenger.$sendForm.lockByLimit();
                         } else {
                             $Messenger.$sendForm.unlockByLimit();
@@ -155,17 +220,19 @@ $Messenger = {
                         $Messenger.$sendForm.unlockByLimit();
                         $Messenger.$sendForm.focus();
                     }
+
+                    $Messenger.$messages.scrollDown();
                 } else {
                     $Messenger.$sendForm.unlockByLimit();
                     $Messenger.$sendForm.focus();
                 }
 
-                $Messenger.$messages.scrollDown();
                 $callback && $callback();
-
                 $item.removeClass('loading');
+                $Messenger.freeLock();
             }, function (){
                 $Messenger.$sendForm.unlockByLimit();
+                $Messenger.freeLock();
             });
         },
 
@@ -221,6 +288,11 @@ $Messenger = {
                 $("span.list-users_name", $html).html($contact.platform.info.name);
             }
 
+            if ($contact.contact_id == $Config.get('contact_id')) {
+                $html.addClass('list-users_item-current');
+                $html.removeClass('new-message');
+            }
+
             $html.appendTo($("div.layout-sidebar div.b-list_users ul.list-users"));
         },
 
@@ -259,39 +331,41 @@ $Messenger = {
                 $(".orange-menu .list-present_item").click(function() {
                     $(".orange-menu .list-present_item").removeClass("list-present_item-selected");
                     $(this).addClass("list-present_item-selected");
-
-//                    $("div.layer-send-gift .form-send_gift input").removeAttr('disabled');
                 });
 
-                $("div.layer-send-gift .form-send_gift input[type=submit]").click(function() {
-                    var $giftId = $("div.layer-send-gift .list-present_item-selected").attr('gift_id');
-                    var $comment = $("div.layer-send-gift textarea").val();
-                    var $currentUserId = $Config.get('current_user_id');
+                var $sendGiftFunction = function() {
+                    var $giftId = $("div.drop_down-present .list-present_item-selected").attr('gift_id');
+                    var $comment = $("div.drop_down-present textarea").val();
+                    var $currentUserId = $Config.get('contacts')[$Config.get('contact_id')].reciever_id;
 
                     $.post($Routing.getPath('gift.purchase'), {'gift_id': $giftId, 'comment': $comment, 'current_user_id': $currentUserId}, function($data) {
                         if ($data.status == 0 && $data.message == "") {
-                            $Account.setAccount($data.data.account);
-
-                            $Profile.addGift(
-                                $data.data.gift.url,
-                                $data.data.gift.comment,
-                                $data.data.gift.sender.user_id,
-                                $data.data.gift.sender.name,
-                                $data.data.gift.sender.age,
-                                $data.data.gift.sender.city
-                            );
-
-                            $("div#overflow").hide();
-                            $("div.app-layer").hide();
+                            alert('Подарок успешно отправлен :)');
                         } else if ($data.status == 3) {
-                            $Layers.showAccountLayer({'status': $data.status});
+                            alert('Не хватает сердечек');
+                        }
+
+                        var $orangeMenu = $(".orange-menu .drop_down");
+                        if ($orangeMenu.is(':visible')) {
+                            $orangeMenu.hide();
+                            $("div.layout-content").removeClass('show-present');
                         }
                     });
 
                     return false;
+                };
+
+                $("div.drop_down-present div.form-send_gift textarea").keypress(function($event) {
+                    if ($event.ctrlKey && $event.keyCode == 13) {
+
+                    } else if ($event.keyCode == 13) {
+                        return $sendGiftFunction();
+                    }
                 });
 
-                $("div.layer-send-gift .form-send_gift input[type=submit]").attr('disabled', 'disabled');
+                $("div.drop_down-present div.form-send_gift input[type=submit]").click(function() {
+                    return $sendGiftFunction();
+                });
             }
         },
 
@@ -387,29 +461,38 @@ $Messenger = {
                 var $scrollTop = $(this).scrollTop();
 
                 if ($scrollTop == 0) {
-                    if ($Messenger.acquireLock()) {
-                        $Messenger.$messages.setLoadingStatus();
+                    if (!$Messenger.acquireLock()) {
+                        return;
+                    } else if ($("ul.messages__list li.messages__item[message_id]").length <= 0) {
+                        $Messenger.freeLock();
+                        return;
+                    }
 
-                        var $messages = $("ul.messages__list li.messages__item[message_id]");
-                        if ($messages) {
-                            var $lastMessageId = $messages.eq(0).attr('message_id');
-                            if ($lastMessageId) {
-                                $Messenger.$messages.get($Config.get('contact_id'), $lastMessageId, function($data) {
-                                    var $messages = $data.messages;
-                                    $Messenger.$messages.removeLoadingStatus();
+                    $Messenger.$messages.setLoadingStatus();
 
-                                    for (var $i=$messages.length - 1;$i>=0;$i--) {
-                                        $Messenger.$messages.addMessage($messages[$i], false);
-                                    }
+                    var $messages = $("ul.messages__list li.messages__item[message_id]");
+                    if ($messages) {
+                        var $lastMessageId = $messages.eq(0).attr('message_id');
+                        if ($lastMessageId) {
+                            $Messenger.$messages.get($Config.get('contact_id'), $lastMessageId, function($data) {
+                                var $messages = $data.messages;
+                                $Messenger.$messages.removeLoadingStatus();
 
-                                    $Messenger.$messages.scrollTop();
+                                for (var $i=$messages.length - 1;$i>=0;$i--) {
+                                    $Messenger.$messages.addMessage($messages[$i], false);
+                                }
 
-
-                                }, function() {
-                                    $Messenger.$messages.removeLoadingStatus();
-                                });
-                            }
+                                $Messenger.$messages.scrollTop();
+                                $Messenger.freeLock();
+                            }, function() {
+                                $Messenger.$messages.removeLoadingStatus();
+                                $Messenger.freeLock();
+                            });
+                        } else {
+                            $Messenger.freeLock();
                         }
+                    } else {
+                        $Messenger.freeLock();
                     }
                 }
             });
@@ -466,19 +549,18 @@ $Messenger = {
         },
 
         addMessage: function($message, $directMode) {
-            var $html = $(
-                '<li class="messages__item">' +
-                    '<h3 class="messages__header">' +
+            if ($message.type == 'text') {
+                var $html = $(
+                    '<li class="messages__item">' +
+                        '<h3 class="messages__header">' +
                         '<span class="messages__name"></span> ' +
                         '<span class="messages__details"></span>' +
-                    '</h3>' +
-                    '<div class="messages__content"></div>' +
-                '</li>'
-            );
+                        '</h3>' +
+                        '<div class="messages__content"></div>' +
+                    '</li>'
+                );
+                $html.attr('message_id', $message.message_id);
 
-            $html.attr('message_id', $message.message_id);
-
-            if ($message.type == 'text') {
                 if ($message.direction == 'to') {
                     $("span.messages__name", $html).html($Config.get('contacts')[$message.contact_id].platform.info.name);
                     $("span.messages__details", $html).html($message.date);
@@ -491,7 +573,48 @@ $Messenger = {
 
                 $("div.messages__content", $html).html($message.message);
             } else if ($message.type == 'gift') {
+                var $html = $(
+                    '<li class="messages__item">' +
+                        '<h3 class="messages__header">' +
+                            '<span class="messages__name"></span> ' +
+                            '<span class="messages__details"></span>' +
+                        '</h3>' +
+                        '<div class="messages__content">' +
+                            '<div class="baloon">' +
+                                '<img src="" class="baloon_present-i">' +
+                                    '<span class="baloon_content">' +
+                                        '<i class="baloon_arrow"></i>' +
+                                        '<i class="baloon_lenta"></i>' +
+                                        '<span class="baloon_wrap">' +
+                                            '<span class="baloon_content-text"></span>' +
+                                            '<span class="baloon_content-btn"><a href="#" class="button">Отправить в ответ</a></span>' +
+                                        '</span>' +
+                                    '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</li>'
+                );
 
+                if ($message.direction == 'to') {
+                    $("span.messages__name", $html).html($Config.get('contacts')[$message.contact_id].platform.info.name);
+                    $("span.messages__details", $html).html((($Config.get('contacts')[$message.contact_id].platform.info.gender == 'F') ? 'отправила подарок' : 'отправил подарок') + ' ' + $message.date);
+//                    $html.addClass('messages__item_next');
+                } else {
+                    $("span.messages__name", $html).html($Config.get('webuser').anketa.info.name);
+                    $("span.messages__details", $html).html($message.date);
+
+                    $("span.baloon_content-btn", $html).hide();
+//                    $html.addClass('messages__item_my');
+                }
+
+                if ($message.gift) {
+                    $("div.messages__content img", $html).attr('src', $message.gift.url);
+                    if ($message.gift.comment) {
+                        $("div.messages__content span.baloon_content-text", $html).html($message.gift.comment);
+                    } else  {
+                        $("div.messages__content span.baloon_content-text", $html).html('...');
+                    }
+                }
             } else if ($message.type == 'rating') {
 
             }
@@ -594,7 +717,7 @@ $Messenger = {
                         if ($data.unread_count > 0) {
                             $Messenger.$messages.setNotReadedStatus();
 
-                            if ($data.unread_count >= 3 && !$data.dialog) {
+                            if ($data.unread_count >= 3 && !$data.is_dialog) {
                                 $Messenger.$sendForm.lockByLimit();
                             }
                         } else {
