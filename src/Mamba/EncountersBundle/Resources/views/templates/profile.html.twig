@@ -41,7 +41,9 @@
             {% if not profile.myself %}
                 <ul class="orange-menu">
                     <li class="item message"><span>Написать</span></li>
-                    <li class="item meet"><span>Встретиться</span></li>
+                    {% if not profile.rated %}
+                        <li class="item meet"><span>Встретиться</span></li>
+                    {% endif %}
                     {#<li class="item item-arrow"><span>или</span>#}
                         {#<div class="drop-down">#}
                             {#<ul class="list">#}
