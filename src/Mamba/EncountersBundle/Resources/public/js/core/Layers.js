@@ -91,7 +91,7 @@ $Layers = {
         try {
             $Config.get('messenger.popup') && $Config.get('messenger.popup').close();
 
-            if (!$userId) {
+            if (typeof($userId) == 'object' || !$userId) {
                 $userId = $(this).attr('user_id');
             }
 

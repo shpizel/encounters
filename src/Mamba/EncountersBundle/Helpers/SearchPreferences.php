@@ -17,7 +17,8 @@ class SearchPreferences extends Helper {
          *
          * @var str
          */
-        REDIS_USER_SEARCH_PREFERENCES_KEY = "search_preferences_by_%d"
+        //LEVELDB_USER_SEARCH_PREFERENCES = "search_preferences_by_%d"
+        LEVELDB_USER_SEARCH_PREFERENCES = "encounters:search-preferences:%d"
     ;
 
     /**
@@ -27,8 +28,11 @@ class SearchPreferences extends Helper {
      * @return mixed
      */
     public function get($userId) {
-        if (false !== $data = $this->getRedis()->get(sprintf(self::REDIS_USER_SEARCH_PREFERENCES_KEY, $userId))) {
-            return json_decode($data, true);
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get($leveldbKey = sprintf(self::LEVELDB_USER_SEARCH_PREFERENCES, $userId));
+        $LevelDb->execute();
+        if (($result = $Request->getResult()) && (isset($result[$leveldbKey]))) {
+            return json_decode($result[$leveldbKey], true);
         }
 
         return false;
@@ -42,9 +46,19 @@ class SearchPreferences extends Helper {
      * @return mixed
      */
     public function set($userId, array $data) {
+        $LevelDb = $this->getLeveldb();
         if ($data) {
             $data['changed'] = time();
-            return $this->getRedis()->set(sprintf(self::REDIS_USER_SEARCH_PREFERENCES_KEY, $userId), json_encode($data));
+            $Request = $LevelDb->set(array(
+                $leveldbKey = sprintf(self::LEVELDB_USER_SEARCH_PREFERENCES, $userId) => json_encode($data),
+            ));
+
+            $LevelDb->execute();
+            if ($Request->getResult() === true) {
+                return true;
+            } else {
+                throw new SearchPreferencesException("Could not set {$leveldbKey}");
+            }
         }
 
         throw new SearchPreferencesException("Invalid data: \n" . var_export($data, true));
@@ -57,7 +71,15 @@ class SearchPreferences extends Helper {
      * @return boolean
      */
     public function exists($userId) {
-        return $this->getRedis()->exists(sprintf(self::REDIS_USER_SEARCH_PREFERENCES_KEY, $userId));
+        $LevelDb = $this->getLeveldb();
+        $Request = $LevelDb->get($leveldbKey = sprintf(self::LEVELDB_USER_SEARCH_PREFERENCES, $userId));
+        $LevelDb->execute();
+
+        if ($Request->getResult()) {
+            return true;
+        }
+
+        return false;
     }
 }
 
