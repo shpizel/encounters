@@ -189,16 +189,16 @@ class NotificationSendCommand extends CronScript {
                 $dataArray[$userId]['user_id'] = $userId;
             }
 
-            $lastOnlineChunk = array_chunk($users, 30);
             $anketaChunk = array_chunk($users, 100);
 
-            $Mamba->multi();
-            foreach ($lastOnlineChunk as $chunk) {
-                $Mamba->Anketa()->isOnline(array_map(function($i) {
-                    return (int) $i;
-                }, $chunk));
-            }
-
+//            $lastOnlineChunk = array_chunk($users, 30);
+//            $Mamba->multi();
+//            foreach ($lastOnlineChunk as $chunk) {
+//                $Mamba->Anketa()->isOnline(array_map(function($i) {
+//                    return (int) $i;
+//                }, $chunk));
+//            }
+//
 //            $this->log("Fetching online data (API)..");
 //            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
 //                $this->log("OK", 64);
