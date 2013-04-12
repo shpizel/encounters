@@ -82,7 +82,14 @@ final class Mamba {
          *
          * @var str
          */
-        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params"
+        REDIS_HASH_USER_PLATFORM_PARAMS_KEY = "user_%d_platform_params",
+
+        /**
+         * Таймаут для курла
+         *
+         * @var int
+         */
+        CURL_TIMEOUT = 5 /** 5 секунд если Мамба не отвечает - отказ */
     ;
 
     public static
@@ -829,6 +836,7 @@ final class Mamba {
 
             $ch = curl_init($httpQuery);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, self::CURL_TIMEOUT);
 
             /** for network debug */
             #curl_setopt($ch, CURLOPT_VERBOSE, 1);
@@ -1067,6 +1075,7 @@ final class Mamba {
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 //                curl_setopt($ch, CURLOPT_VERBOSE, 1);
+                curl_setopt($ch, CURLOPT_TIMEOUT, self::CURL_TIMEOUT);
                 $singleCurlInstances[] = $ch;
                 curl_multi_add_handle($mh, $ch);
             }
