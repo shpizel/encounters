@@ -214,27 +214,31 @@ class NotificationSendCommand extends CronScript {
 //                $this->log("FAILED", 16);
 //            }
 
-            $this->getMamba()->multi();
+//            $this->getMamba()->multi();
+//            foreach ($anketaChunk as $chunk) {
+//                $this->getMamba()->Anketa()->getInfo(array_map(function($i) {
+//                    return (int)$i;
+//                }, $chunk));
+//            }
+
+            $ac = 1;
             foreach ($anketaChunk as $chunk) {
-                $this->getMamba()->Anketa()->getInfo(array_map(function($i) {
-                    return (int)$i;
-                }, $chunk));
-            }
+                $this->log("Fetching profile data (API#{$ac})..");
+                if ($anketaResult = $this->getMamba()->Anketa()->getInfo(array_map(function($i){return (int)$i;}, $chunk))) {
+                    $ac++;
+                    $this->log("OK", 64);
 
-            $this->log("Fetching profile data (API)..");
-            if ($anketaResult = $this->getMamba()->exec(10)) {
-                $this->log("OK", 64);
+//                    foreach ($anketaResult as $anketaResultChunk) {
+                        foreach ($anketaResult as $_anketa) {
 
-                foreach ($anketaResult as $anketaResultChunk) {
-                    foreach ($anketaResultChunk as $_anketa) {
-
-                        if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
-                            $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
+                            if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
+                                $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
+                            }
                         }
-                    }
+//                    }
+                } else {
+                    $this->log("FAILED", 16);
                 }
-            } else {
-                $this->log("FAILED", 16);
             }
 
             $this->log("Writing data to database..");

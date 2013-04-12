@@ -1066,7 +1066,7 @@ final class Mamba {
             foreach ($urls as $url) {
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_VERBOSE, 1);
+//                curl_setopt($ch, CURLOPT_VERBOSE, 1);
                 $singleCurlInstances[] = $ch;
                 curl_multi_add_handle($mh, $ch);
             }
