@@ -199,20 +199,20 @@ class NotificationSendCommand extends CronScript {
                 }, $chunk));
             }
 
-            $this->log("Fetching online data (API)..");
-            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
-                $this->log("OK", 64);
-
-                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-                    foreach ($onlineCheckResultChunk as $_anketa) {
-                        if (isset($dataArray[$_anketa['anketa_id']])) {
-                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
-                        }
-                    }
-                }
-            } else {
-                $this->log("FAILED", 16);
-            }
+//            $this->log("Fetching online data (API)..");
+//            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
+//                $this->log("OK", 64);
+//
+//                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
+//                    foreach ($onlineCheckResultChunk as $_anketa) {
+//                        if (isset($dataArray[$_anketa['anketa_id']])) {
+//                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
+//                        }
+//                    }
+//                }
+//            } else {
+//                $this->log("FAILED", 16);
+//            }
 
             $this->getMamba()->multi();
             foreach ($anketaChunk as $chunk) {
