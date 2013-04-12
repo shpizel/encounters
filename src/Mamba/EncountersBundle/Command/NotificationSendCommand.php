@@ -139,19 +139,29 @@ class NotificationSendCommand extends CronScript {
 
         $usersProcessed = 0;
         while ($users = $this->getUsers(1000)) {
+
+            $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
+
+
             $dataArray = [];
             foreach ($users as $userId) {
                 $dataArray[$userId] = [];
             }
 
+            $this->log("Fetching variables..");
             $variables = $Variables->getMulti($users, $usedVariables);
+            $this->log("OK", 64);
+
             foreach ($variables as $userId=>$userVariables) {
                 foreach ($userVariables as $name=>$value) {
                     $dataArray[$userId][$name] = $value;
                 }
             }
 
+            $this->log("Fetching counters..");
             $counters = $Counters->getMulti($users, $usedCounters);
+            $this->log("OK", 64);
+
             foreach ($counters as $userId=>$userCounters) {
                 foreach ($userCounters as $name=>$value) {
                     $dataArray[$userId][$name] = $value;
@@ -189,7 +199,10 @@ class NotificationSendCommand extends CronScript {
                 }, $chunk));
             }
 
-            if ($onlineCheckResult = $this->getMamba()->exec(35)) {
+            $this->log("Fetching online data (API)..");
+            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
+                $this->log("OK", 64);
+
                 foreach ($onlineCheckResult as $onlineCheckResultChunk) {
                     foreach ($onlineCheckResultChunk as $_anketa) {
                         if (isset($dataArray[$_anketa['anketa_id']])) {
@@ -197,6 +210,8 @@ class NotificationSendCommand extends CronScript {
                         }
                     }
                 }
+            } else {
+                $this->log("FAILED", 16);
             }
 
             $this->getMamba()->multi();
@@ -206,7 +221,10 @@ class NotificationSendCommand extends CronScript {
                 }, $chunk));
             }
 
+            $this->log("Fetching profile data (API)..");
             if ($anketaResult = $this->getMamba()->exec(10)) {
+                $this->log("OK", 64);
+
                 foreach ($anketaResult as $anketaResultChunk) {
                     foreach ($anketaResultChunk as $_anketa) {
 
@@ -215,8 +233,11 @@ class NotificationSendCommand extends CronScript {
                         }
                     }
                 }
+            } else {
+                $this->log("FAILED", 16);
             }
 
+            $this->log("Writing data to database..");
             foreach ($dataArray as $userId => $variables) {
                 if (!(isset($variables['is_app_user']) && $variables['is_app_user'])) {
                     continue;
@@ -257,9 +278,10 @@ class NotificationSendCommand extends CronScript {
                 //$this->log($sql);
                 $DB->exec($sql);
             }
+            $this->log("OK", 64);
 
             $usersProcessed+= count($users);
-            $this->log("Processed <comment>{$usersProcessed}</comment>..");
+            $this->log("Processed <comment>{$usersProcessed}</comment> users..");
         }
 
         $dataArray = $result = null;
