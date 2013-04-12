@@ -138,7 +138,7 @@ class NotificationSendCommand extends CronScript {
         ];
 
         $usersProcessed = 0;
-        while ($users = $this->getUsers(1000)) {
+        while ($users = $this->getUsers(500)) {
 
             $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
 
@@ -189,30 +189,30 @@ class NotificationSendCommand extends CronScript {
                 $dataArray[$userId]['user_id'] = $userId;
             }
 
-            $lastOnlineChunk = array_chunk($users, 30);
             $anketaChunk = array_chunk($users, 100);
-
-            $Mamba->multi();
-            foreach ($lastOnlineChunk as $chunk) {
-                $Mamba->Anketa()->isOnline(array_map(function($i) {
-                    return (int) $i;
-                }, $chunk));
-            }
-
-            $this->log("Fetching online data (API)..");
-            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
-                $this->log("OK", 64);
-
-                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-                    foreach ($onlineCheckResultChunk as $_anketa) {
-                        if (isset($dataArray[$_anketa['anketa_id']])) {
-                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
-                        }
-                    }
-                }
-            } else {
-                $this->log("FAILED", 16);
-            }
+//            $lastOnlineChunk = array_chunk($users, 30);
+//
+//            $Mamba->multi();
+//            foreach ($lastOnlineChunk as $chunk) {
+//                $Mamba->Anketa()->isOnline(array_map(function($i) {
+//                    return (int) $i;
+//                }, $chunk));
+//            }
+//
+//            $this->log("Fetching online data (API)..");
+//            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
+//                $this->log("OK", 64);
+//
+//                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
+//                    foreach ($onlineCheckResultChunk as $_anketa) {
+//                        if (isset($dataArray[$_anketa['anketa_id']])) {
+//                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
+//                        }
+//                    }
+//                }
+//            } else {
+//                $this->log("FAILED", 16);
+//            }
 
             $this->getMamba()->multi();
             foreach ($anketaChunk as $chunk) {
