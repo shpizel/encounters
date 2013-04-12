@@ -189,56 +189,52 @@ class NotificationSendCommand extends CronScript {
                 $dataArray[$userId]['user_id'] = $userId;
             }
 
+            $lastOnlineChunk = array_chunk($users, 30);
             $anketaChunk = array_chunk($users, 100);
 
-//            $lastOnlineChunk = array_chunk($users, 30);
-//            $Mamba->multi();
-//            foreach ($lastOnlineChunk as $chunk) {
-//                $Mamba->Anketa()->isOnline(array_map(function($i) {
-//                    return (int) $i;
-//                }, $chunk));
-//            }
-//
-//            $this->log("Fetching online data (API)..");
-//            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
-//                $this->log("OK", 64);
-//
-//                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-//                    foreach ($onlineCheckResultChunk as $_anketa) {
-//                        if (isset($dataArray[$_anketa['anketa_id']])) {
-//                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
-//                        }
-//                    }
-//                }
-//            } else {
-//                $this->log("FAILED", 16);
-//            }
+            $Mamba->multi();
+            foreach ($lastOnlineChunk as $chunk) {
+                $Mamba->Anketa()->isOnline(array_map(function($i) {
+                    return (int) $i;
+                }, $chunk));
+            }
 
-//            $this->getMamba()->multi();
-//            foreach ($anketaChunk as $chunk) {
-//                $this->getMamba()->Anketa()->getInfo(array_map(function($i) {
-//                    return (int)$i;
-//                }, $chunk));
-//            }
+            $this->log("Fetching online data (API)..");
+            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
+                $this->log("OK", 64);
 
-            $ac = 1;
-            foreach ($anketaChunk as $chunk) {
-                $this->log("Fetching profile data (API#{$ac})..");
-                if ($anketaResult = $this->getMamba()->Anketa()->getInfo(array_map(function($i){return (int)$i;}, $chunk))) {
-                    $ac++;
-                    $this->log("OK", 64);
-
-//                    foreach ($anketaResult as $anketaResultChunk) {
-                        foreach ($anketaResult as $_anketa) {
-
-                            if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
-                                $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
-                            }
+                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
+                    foreach ($onlineCheckResultChunk as $_anketa) {
+                        if (isset($dataArray[$_anketa['anketa_id']])) {
+                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
                         }
-//                    }
-                } else {
-                    $this->log("FAILED", 16);
+                    }
                 }
+            } else {
+                $this->log("FAILED", 16);
+            }
+
+            $this->getMamba()->multi();
+            foreach ($anketaChunk as $chunk) {
+                $this->getMamba()->Anketa()->getInfo(array_map(function($i) {
+                    return (int)$i;
+                }, $chunk));
+            }
+
+            $this->log("Fetching profile data (API)..");
+            if ($anketaResult = $this->getMamba()->exec(10)) {
+                $this->log("OK", 64);
+
+                foreach ($anketaResult as $anketaResultChunk) {
+                    foreach ($anketaResultChunk as $_anketa) {
+
+                        if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
+                            $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
+                        }
+                    }
+                }
+            } else {
+                $this->log("FAILED", 16);
             }
 
             $this->log("Writing data to database..");
