@@ -49,10 +49,7 @@ class NotificationSendCommand extends CronScript {
             LEFT JOIN Billing b
                 ON b.user_id = n.user_id
             WHERE
-                n.last_online AND
-                n.last_notification_sent < n.last_online AND
-                (NOT n.last_notification_sent OR
-                UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*60*60) AND
+                (NOT n.last_notification_sent OR UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*60*60) AND
                 n.visitors_unread > 0 AND
                 n.last_notification_metrics <> concat('v:', n.visitors_unread, ',m:', n.mutual_unread)
             GROUP BY
