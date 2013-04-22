@@ -17,8 +17,13 @@ class AdminCronController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        $dataArray['controller'] = $this->getControllerName(__CLASS__);
-
-        return $this->render('EncountersBundle:templates:admin.cron.html.twig', $dataArray);
+        return
+            $this->TwigResponse(
+                'EncountersBundle:templates:admin.cron.html.twig',
+                array(
+                    'controller' => $this->getControllerName(__CLASS__),
+                )
+            )
+        ;
     }
 }

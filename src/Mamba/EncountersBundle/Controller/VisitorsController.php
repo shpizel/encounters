@@ -42,24 +42,20 @@ class VisitorsController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $visitorsUnread = $this->getCountersObject()->get($webUserId, 'visitors_unread');
-        $this->getCountersObject()->set($webUserId, 'visitors_unread', 0);
+        $visitorsUnread = $this->getCountersHelper()->get($webUserId, 'visitors_unread');
+        if ($page == 1) {
+            $this->getCountersHelper()->set($webUserId, 'visitors_unread', 0);
+        }
+
         $dataArray  = $this->getInitialData();
 
-        //$visitorsUnread = 100;
-
-        /**
-         * Пагинатор
-         *
-         * @author shpizel
-         */
         $perPage = 25;
         $currentPage = (int) $this->getRequest()->query->get('page') ?: $page;
-        $lastPage = ceil(intval($this->getCountersObject()->get($webUserId, 'visitors')) / $perPage);
+        $lastPage = ceil(intval($this->getCountersHelper()->get($webUserId, 'visitors')) / $perPage);
         if ($currentPage > $lastPage) {
             $currentPage = $lastPage;
         }
@@ -110,8 +106,8 @@ class VisitorsController extends ApplicationController {
 
                     $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
 
-                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
+                    if ($this->getPurchasedHelper()->exists($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueHelper()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                             $anketa['decision'][] = 0;
 
@@ -134,9 +130,6 @@ class VisitorsController extends ApplicationController {
         $dataArray['data'] = $data ?: null;
         $dataArray['json'] = json_encode($json) ?: null;
 
-        $initialData['microtime'] = microtime(true);
-        $Response = $this->render("EncountersBundle:templates:visitors.html.twig", $dataArray);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        return $Response;
+        return $this->TwigResponse("EncountersBundle:templates:visitors.html.twig", $dataArray);
     }
 }

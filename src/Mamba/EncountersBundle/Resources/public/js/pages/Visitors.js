@@ -23,7 +23,7 @@ $Visitors = {
                 'medium_photo_url': $source.attr('medium_photo_url')
             };
 
-            $.post($Routing.getPath('decision.get'), { user_id: $dataArray['user_id']}, function($data) {
+            $Tools.ajaxPost('decision.get', { user_id: $dataArray['user_id']}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $data = $data.data;
                     if ($data.hasOwnProperty('charge')) {
@@ -66,7 +66,7 @@ $Visitors = {
      */
     initButtons: function() {
         $("div.visitors div.pictures div.title a.ui-btn").click(function() {
-            $.post($Routing.getPath('popularity.get'), function($data) {
+            $Tools.ajaxPost('popularity.get', {}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     var
                         $energy = $data.data['popularity']['energy'],
@@ -77,9 +77,9 @@ $Visitors = {
 
                     $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
 
-                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
-                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
-                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+                    $(".app-meet-button div.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".app-meet-button div.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".app-meet-button div.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
 
                     $Account.setAccount($data.data['account']);
 

@@ -20,7 +20,7 @@ class Contacts extends Helper {
          */
         SQL_GET_CONTACT = "
             SELECT
-                *
+                `contact_id`
             FROM
                 `Messenger`.`Contacts`
             WHERE
@@ -55,9 +55,11 @@ class Contacts extends Helper {
             SET
                 `sender_id` = :sender_id,
                 `reciever_id` = :reciever_id,
-                `messages_count` = :messages_count,
-                `dialog` = :dialog,
+
+                `inbox_count` = :inbox_count,
+                `outbox_count` = :outbox_count,
                 `unread_count` = :unread_count,
+
                 `blocked` = :blocked,
                 `changed` = :changed",
 
@@ -70,9 +72,10 @@ class Contacts extends Helper {
             UPDATE
                 `Messenger`.`Contacts`
             SET
-                `messages_count` = :messages_count,
-                `dialog` = :dialog,
+                `inbox_count` = :inbox_count,
+                `outbox_count` = :outbox_count,
                 `unread_count` = :unread_count,
+
                 `blocked` = :blocked,
                 `changed` = :changed
             WHERE
@@ -95,7 +98,21 @@ class Contacts extends Helper {
             LIMIT
                 %d
             OFFSET
-                %d"
+                %d",
+
+        /**
+         *
+         *
+         * @var str
+         */
+        CONTACT_BY_PARTICIPANTS_CACHE_KEY = "contact_from_%d_to_%d",
+
+        /**
+         *
+         *
+         * @var str
+         */
+        CONTACT_CACHE_KEY = 'contact_id_%d'
     ;
 
     /**
@@ -103,20 +120,33 @@ class Contacts extends Helper {
      *
      * @param int $webUserId
      * @param int $currentUserId
+     * @param bool $autoCreate = true
      * @return Contact|null
      * @throws ContactsException
      */
-    public function getContact($webUserId, $currentUserId) {
+    public function getContact($webUserId, $currentUserId, $autoCreate = false) {
         if (!is_int($webUserId)) {
             throw new ContactsException("Invalid web user id type: ". gettype($webUserId));
         } elseif (!is_int($currentUserId)) {
             throw new ContactsException("Invalid current user id type: ". gettype($currentUserId));
+        } elseif (!is_bool($autoCreate)) {
+            throw new ContactsException("Invalid autocreate param type: ". gettype($autoCreate));
         }
 
+        /** пытаемся достать из кеша */
+        $Memcache = $this->getMemcache();
+        $cacheKey = sprintf(self::CONTACT_BY_PARTICIPANTS_CACHE_KEY, $webUserId, $currentUserId);
+        if ($contactId = $Memcache->get($cacheKey)) {
+            return $this->getContactById((int) $contactId);
+        }
+
+        /** в кеше нету - идем в базу */
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
-            ->prepare(self::SQL_GET_CONTACT)
+            ->prepare(
+                self::SQL_GET_CONTACT
+            )
         ;
 
         $_webUserId = $webUserId;
@@ -127,17 +157,17 @@ class Contacts extends Helper {
 
         if ($result = $stmt->execute()) {
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                return
-                    (new Contact)
-                        ->setId((int) $row['contact_id'])
-                        ->setSenderId((int) $row['sender_id'])
-                        ->setRecieverId((int) $row['reciever_id'])
-                        ->setMessagesCount((int) $row['messages_count'])
-                        ->setUnreadCount((int) $row['unread_count'])
-                        ->setBlocked($row['blocked'] == 'Y' ? true : false)
-                        ->setChanged((int) $row['changed'])
-                ;
+                $contactId = (int) $row['contact_id'];
+
+                /** пишем кеш навечно */
+                $Memcache->set($cacheKey, $contactId);
+
+                return $this->getContactById($contactId);
             }
+        }
+
+        if ($autoCreate) {
+            return $this->createContact($webUserId, $currentUserId);
         }
     }
 
@@ -151,6 +181,13 @@ class Contacts extends Helper {
     public function getContactById($contactId) {
         if (!is_int($contactId)) {
             throw new ContactsException("Invalid contact id type: ". gettype($contactId));
+        }
+
+        $Memcache = $this->getMemcache();
+        $cacheKey = sprintf(self::CONTACT_CACHE_KEY, $contactId);
+
+        if ($Contact = $Memcache->get($cacheKey)) {
+            return unserialize($Contact);
         }
 
         $stmt = $this->getDoctrine()
@@ -167,17 +204,20 @@ class Contacts extends Helper {
 
         if ($result = $stmt->execute()) {
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                return
-                    (new Contact)
-                        ->setId((int) $row['contact_id'])
-                        ->setSenderId((int) $row['sender_id'])
-                        ->setRecieverId((int) $row['reciever_id'])
-                        ->setMessagesCount((int) $row['messages_count'])
-                        ->setUnreadCount((int) $row['unread_count'])
-                        ->setDialog($row['blocked'] == 'Y' ? true : false)
-                        ->setBlocked($row['blocked'] == 'Y' ? true : false)
-                        ->setChanged((int) $row['changed'])
-                    ;
+                $Contact = (new Contact)
+                    ->setId((int) $row['contact_id'])
+                    ->setSenderId((int) $row['sender_id'])
+                    ->setRecieverId((int) $row['reciever_id'])
+                    ->setInboxCount((int) $row['inbox_count'])
+                    ->setOutboxCount((int) $row['outbox_count'])
+                    ->setUnreadCount((int) $row['unread_count'])
+                    ->setBlocked($row['blocked'] == 'Y' ? true : false)
+                    ->setChanged((int) $row['changed'])
+                ;
+
+                $Memcache->set($cacheKey, serialize($Contact));
+
+                return $Contact;
             }
         }
     }
@@ -194,8 +234,8 @@ class Contacts extends Helper {
         $Contact = (new Contact)
             ->setSenderId($webUserId)
             ->setRecieverId($currentUserId)
-            ->setMessagesCount(0)
-            ->setDialog(false)
+            ->setInboxCount(0)
+            ->setOutboxCount(0)
             ->setUnreadCount(0)
             ->setBlocked(false)
             ->setChanged(time())
@@ -206,25 +246,28 @@ class Contacts extends Helper {
 
         $senderId = $Contact->getSenderId();
         $recieverId = $Contact->getRecieverId();
-        $messagesCount = $Contact->getMessagesCount();
-        $isDialog = $Contact->isDialog();
+        $inboxCount = $Contact->getInboxCount();
+        $outboxCount = $Contact->getOutboxCount();
         $unreadCount = $Contact->getUnreadCount();
         $isBlocked = $Contact->isBlocked() ? 'Y' : 'N';
         $changed = $Contact->getChanged();
 
         $stmt->bindParam('sender_id',  $senderId, PDO::PARAM_INT);
         $stmt->bindParam('reciever_id', $recieverId, PDO::PARAM_INT);
-        $stmt->bindParam('messages_count', $messagesCount, PDO::PARAM_INT);
-        $stmt->bindParam('dialog', $isDialog, PDO::PARAM_STR);
+        $stmt->bindParam('inbox_count', $inboxCount, PDO::PARAM_INT);
+        $stmt->bindParam('outbox_count', $outboxCount, PDO::PARAM_STR);
         $stmt->bindParam('unread_count', $unreadCount, PDO::PARAM_INT);
         $stmt->bindParam('blocked', $isBlocked, PDO::PARAM_STR);
         $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
-            return
-                $Contact
-                    ->setId((int)$Connection->lastInsertId())
-            ;
+            $Contact->setId((int)$Connection->lastInsertId());
+
+            $Memcache = $this->getMemcache();
+            $cacheKey = sprintf(self::CONTACT_CACHE_KEY, $Contact->getId());
+            $Memcache->set($cacheKey, serialize($Contact));
+
+            return $Contact;
         }
     }
 
@@ -238,9 +281,11 @@ class Contacts extends Helper {
         $contactId = $Contact->getId();
         $senderId = $Contact->getSenderId();
         $recieverId = $Contact->getRecieverId();
-        $messagesCount = $Contact->getMessagesCount();
-        $isDialog = $Contact->isDialog();
+
+        $inboxCount = $Contact->getInboxCount();
+        $outboxCount = $Contact->getOutboxCount();
         $unreadCount = $Contact->getUnreadCount();
+
         $isBlocked = $Contact->isBlocked() ? 'Y' : 'N';
         $changed = $Contact->getChanged();
 
@@ -253,13 +298,17 @@ class Contacts extends Helper {
         ;
 
         $stmt->bindParam('contact_id', $contactId, PDO::PARAM_INT);
-        $stmt->bindParam('messages_count', $messagesCount, PDO::PARAM_INT);
-        $stmt->bindParam('dialog', $isDialog, PDO::PARAM_STR);
+        $stmt->bindParam('inbox_count', $inboxCount, PDO::PARAM_INT);
+        $stmt->bindParam('outbox_count', $outboxCount, PDO::PARAM_INT);
         $stmt->bindParam('unread_count', $unreadCount, PDO::PARAM_INT);
         $stmt->bindParam('blocked', $isBlocked, PDO::PARAM_STR);
         $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
+            $Memcache = $this->getMemcache();
+            $cacheKey = sprintf(self::CONTACT_CACHE_KEY, $Contact->getId());
+            $Memcache->set($cacheKey, serialize($Contact));
+
             return $Contact;
         }
     }
@@ -305,8 +354,8 @@ class Contacts extends Helper {
                         ->setId((int) $row['contact_id'])
                         ->setSenderId((int) $row['sender_id'])
                         ->setRecieverId((int) $row['reciever_id'])
-                        ->setMessagesCount((int) $row['messages_count'])
-                        ->setDialog($row['dialog'] == 'Y' ? true : false)
+                        ->setInboxCount((int) $row['inbox_count'])
+                        ->setOutboxCount((int) $row['outbox_count'])
                         ->setUnreadCount((int) $row['unread_count'])
                         ->setBlocked($row['blocked'] == 'Y' ? true : false)
                         ->setChanged((int) $row['changed'])

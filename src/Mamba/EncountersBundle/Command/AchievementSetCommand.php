@@ -101,7 +101,7 @@ class AchievementSetCommand extends CronScript {
             if ($result = $Mamba->Achievement()->set($message, $extra = 'ref-achievement')) {
                 if (isset($result['update']) && $result['update']) {
                     $this->log('Achievement was set successfully', 64);
-                    $this->getStatsObject()->incr('achievement');
+                    $this->getStatsHelper()->incr('achievement');
                 } else {
                     throw new \Core\ScriptBundle\CronScriptException("Failed to set achievement");
                 }
@@ -122,9 +122,9 @@ class AchievementSetCommand extends CronScript {
     private function getAchievement($userId) {
         //Меня оценили %d человек, я сам%s — %d и у меня %d взаимных симпатий!
 
-        $visitors = $this->getCountersObject()->get($userId, 'visitors');
-        $mychoice = $this->getCountersObject()->get($userId, 'mychoice');
-        $mutual   = $this->getCountersObject()->get($userId, 'mutual');
+        $visitors = $this->getCountersHelper()->get($userId, 'visitors');
+        $mychoice = $this->getCountersHelper()->get($userId, 'mychoice');
+        $mutual   = $this->getCountersHelper()->get($userId, 'mutual');
 
         if ($visitors) {
             $message = "Меня оценили $visitors " . Declensions::get($visitors, "человек", "человека", "человек");

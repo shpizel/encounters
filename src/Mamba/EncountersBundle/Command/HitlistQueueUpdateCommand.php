@@ -150,7 +150,7 @@ class HitlistQueueUpdateCommand extends CronScript {
             throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
-        if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
+        if (!($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId))) {
             throw new \Core\ScriptBundle\CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
@@ -158,7 +158,7 @@ class HitlistQueueUpdateCommand extends CronScript {
             return;
         }
 
-        if ($this->getHitlistQueueObject()->getSize($webUserId) >= self::LIMIT) {
+        if ($this->getHitlistQueueHelper()->getSize($webUserId) >= self::LIMIT) {
             throw new \Core\ScriptBundle\CronScriptException("Hitlist queue for user_id=$webUserId has limit exceed");
         }
 
@@ -172,8 +172,8 @@ class HitlistQueueUpdateCommand extends CronScript {
                     if ($gender == $searchPreferences['gender']) {
                         if (!$age || ($age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to'])) {
 
-                            if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                                $this->getHitlistQueueObject()->put($webUserId, $currentUserId)
+                            if (is_int($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                                $this->getHitlistQueueHelper()->put($webUserId, $currentUserId)
                                     && $usersAddedCount++;
 
                                 if ($usersAddedCount >= self::LIMIT) {

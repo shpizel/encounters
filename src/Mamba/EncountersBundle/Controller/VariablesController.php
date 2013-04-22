@@ -39,10 +39,10 @@ class VariablesController extends ApplicationController {
             $key  = (string) $this->getRequest()->request->get('key');
             $data = (string) $this->getRequest()->request->get('data');
 
-            $Variables = $this->getVariablesObject();
+            $Variables = $this->getVariablesHelper();
             if ($Variables->isExternal($key)) {
                 try {
-                    if (!$this->getVariablesObject()->set($webUserId, $key, $data)) {
+                    if (!$this->getVariablesHelper()->set($webUserId, $key, $data)) {
                         list($this->json['status'], $this->json['message']) = array(2, "Could not set variable");
                     }
                 } catch (\Exception $e) {
@@ -55,11 +55,6 @@ class VariablesController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 }

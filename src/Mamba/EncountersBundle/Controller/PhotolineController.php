@@ -53,8 +53,8 @@ class PhotolineController extends ApplicationController {
                 $photolineItems =
                     (
                         (!$from)
-                            ? $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])
-                            : $this->getPhotolineObject()->getbyRange($webUser[0]['location']['region_id'], microtime(true), $from)
+                            ? $this->getPhotolineHelper()->get($webUser[0]['location']['region_id'])
+                            : $this->getPhotolineHelper()->getbyRange($webUser[0]['location']['region_id'], microtime(true), $from)
                     )
             ) {
                 $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
@@ -98,12 +98,7 @@ class PhotolineController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -113,7 +108,7 @@ class PhotolineController extends ApplicationController {
      */
     public function purchaseAction() {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $Account = $this->getAccountObject();
+            $Account = $this->getAccountHelper();
             $account = $Account->get($webUserId);
 
             $webUser = $this->getMamba()->Anketa()->getInfo($webUserId);
@@ -122,7 +117,7 @@ class PhotolineController extends ApplicationController {
             if ($account >= $cost) {
                 $account = $Account->decr($webUserId, $cost);
 
-                $this->getPhotolineObject()->add($webUser[0]['location']['region_id'], $webUserId, $this->getRequest()->request->get('comment'));
+                $this->getPhotolineHelper()->add($webUser[0]['location']['region_id'], $webUserId, $this->getRequest()->request->get('comment'));
 
                 $this->json['data'] = array(
                     'account' => $account
@@ -134,12 +129,7 @@ class PhotolineController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -150,17 +140,17 @@ class PhotolineController extends ApplicationController {
     public function chooseAction() {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
 
-            $this->getStatsObject()->incr('photoline-click');
+            $this->getStatsHelper()->incr('photoline-click');
 
             if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
+                if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId)) {
                     if ($webUserId != $currentUserId) {
 
                         $_data = $this->getMamba()->Anketa()->getInfo($webUserId);
-                        $_searchPreferences = $this->getSearchPreferencesObject()->get($currentUserId);
+                        $_searchPreferences = $this->getSearchPreferencesHelper()->get($currentUserId);
 
                         if ($_data[0]['info']['gender'] == $_searchPreferences['gender']) {
-                            $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
+                            $this->getCurrentQueueHelper()->put($webUserId, $currentUserId);
                         } else {
                             list($this->json['status'], $this->json['message']) = array(5, "Gender error");
                         }
@@ -178,11 +168,6 @@ class PhotolineController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 }

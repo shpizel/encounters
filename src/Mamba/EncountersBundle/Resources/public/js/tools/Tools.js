@@ -128,13 +128,64 @@ $Tools = {
     /**
      * Logger
      *
-     * @param $data
+     * @params arg1, arg2 ... argN
      */
-    log: function($data) {
+    log: function($arguments) {
         if ($Config.get('debug')) {
             if (window.console && window.console.log) {
-                console.log($data);
+                var $arguments  = Array.prototype.slice.call(arguments);
+                $arguments.unshift('['+ $Tools.round($Tools.microtime(true) - $Config.get('domready_microtime'), 2) + ']');
+                console.log.apply(console, $arguments);
             }
         }
+    },
+
+    ajaxPost: function($method, $postData, $doneCallback, $failCallback, $alwaysCallback) {
+        $.post($Routing.getPath($method), $postData || {})
+            .done(function($data) {
+                $doneCallback && $doneCallback($data);
+
+                if ($data.status == 0 && $data.message == '') {
+                    $Tools.log('method: ' + $method + ', post data:', $.toJSON($postData) + ', result:', $data.data, ', generation time:', $Tools.round($data.metrics.generation_time, 2)*1000 + 'ms');
+                }  else {
+                    $Tools.log('method: ' + $method + ', post data:' + $.toJSON($postData) +', result:' + $.toJSON({'code': $data.status, 'message': $data.message}) + ', generation time:', $Tools.round($data.metrics.generation_time, 2)*1000 + 'ms');
+                }
+            })
+            .fail(function() {
+                $failCallback && $failCallback();
+
+                $Tools.log('method: ' + $method + ', post data: ' + $.toJSON($postData) + ', result: FAILED');
+            })
+            .always(function() {
+                $alwaysCallback && $alwaysCallback();
+            })
+        ;
+    },
+
+    saveSelection: function() {
+        if (window.getSelection) {
+            var sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                $Config.set('window.selection', sel.getRangeAt(0));
+            }
+        } else if (document.selection && document.selection.createRange) {
+            $Config.set('window.selection', document.selection.createRange());
+        } else {
+            $Config.set('window.selection', null);
+        }
+    },
+
+    restoreSelection: function() {
+        var range = $Config.get('window.selection');
+        if (range) {
+            if (window.getSelection) {
+                sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else if (document.selection && range.select) {
+                range.select();
+            }
+        }
+
     }
 }

@@ -152,7 +152,7 @@ class ContactsQueueUpdateCommand extends CronScript {
             throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
-        if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
+        if (!($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId))) {
             throw new \Core\ScriptBundle\CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
@@ -160,7 +160,7 @@ class ContactsQueueUpdateCommand extends CronScript {
             return;
         }
 
-        if ($this->getContactsQueueObject()->getSize($webUserId) >= self::LIMIT) {
+        if ($this->getContactsQueueHelper()->getSize($webUserId) >= self::LIMIT) {
             throw new \Core\ScriptBundle\CronScriptException("Contacts queue for user_id=$webUserId has limit exceed");
         }
 
@@ -184,8 +184,8 @@ class ContactsQueueUpdateCommand extends CronScript {
                         list($currentUserId, $gender, $age) = array($contactInfo['oid'], $contactInfo['gender'], $contactInfo['age']);
                         if (isset($contactInfo['medium_photo_url']) && $contactInfo['medium_photo_url']) {
                             if ($gender == $searchPreferences['gender'] && $age >= $searchPreferences['age_from'] && $age <= $searchPreferences['age_to']) {
-                                if (is_int($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                                    if ($this->getContactsQueueObject()->put($webUserId, $currentUserId)) {
+                                if (is_int($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                                    if ($this->getContactsQueueHelper()->put($webUserId, $currentUserId)) {
                                         $usersAddedCount++;
                                     }
 

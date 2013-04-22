@@ -23,7 +23,7 @@ $Mutual = {
                 'medium_photo_url': $source.attr('medium_photo_url')
             };
 
-            $.post($Routing.getPath('decision.get'), { user_id: $dataArray['user_id']}, function($data) {
+            $Tools.ajaxPost('decision.get', { user_id: $dataArray['user_id']}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $data = $data.data;
                     if ($data.hasOwnProperty('charge')) {
@@ -64,7 +64,7 @@ $Mutual = {
     initButtons: function() {
         $("div.content div.info a.ui-btn").click(function() {
             var $extra = {service: {id: 3}};
-            $.post($Routing.getPath('service.add'), $extra, function($data) {
+            $Tools.ajaxPost('service.add', $extra, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     mamba.method('pay', 3, $.toJSON($extra));
                     location.href = $Routing.getPath("billing");
@@ -77,7 +77,7 @@ $Mutual = {
             var $userId = $parent.attr('user_id');
 
             if (confirm("Вы уверены, что хотите удалить этого пользователя из «Взаимных»?")) {
-                $.post($Routing.getPath('decision.remove'), {'user_id': $userId}, function($data) {
+                $Tools.ajaxPost('decision.remove', {'user_id': $userId}, function($data) {
                     if ($data.status == 0 && $data.message == "") {
                         $parent.hide();
 

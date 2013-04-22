@@ -39,18 +39,18 @@ class Contact {
         $unreadCount = 0,
 
         /**
-         * Dialog label
-         *
-         * @var bool
-         */
-        $dialog = false,
-
-        /**
-         * Messages count
+         * Inbox count
          *
          * @var int
          */
-        $messagesCount = 0,
+        $inboxCount = 0,
+
+        /**
+         * Outbox count
+         *
+         * @var int
+         */
+        $outboxCount = 0,
 
         /**
          * Blocked contact label
@@ -127,27 +127,52 @@ class Contact {
     }
 
     /**
-     * Messages count getter
+     * Inbox count getter
      *
      * @return int
      */
-    public function getMessagesCount() {
-        return $this->unreadCount;
+    public function getInboxCount() {
+        return $this->inboxCount;
     }
 
     /**
-     * Messages count setter
+     * Outbox count getter
      *
-     * @param int $messagesCount
+     * @return int
+     */
+    public function getOutboxCount() {
+        return $this->outboxCount;
+    }
+
+    /**
+     * Inbox count setter
+     *
+     * @param int $inboxCount
      * @return $this
      * @throws ContactException
      */
-    public function setMessagesCount($messagesCount) {
-        if (!is_int($messagesCount)) {
-            throw new ContactException("Invalid messages count type: ". gettype($messagesCount));
+    public function setInboxCount($inboxCount) {
+        if (!is_int($inboxCount)) {
+            throw new ContactException("Invalid inbox count type: ". gettype($inboxCount));
         }
 
-        $this->messagesCount = $messagesCount;
+        $this->inboxCount = $inboxCount;
+        return $this;
+    }
+
+    /**
+     * Outbox count setter
+     *
+     * @param int $outboxCount
+     * @return $this
+     * @throws ContactException
+     */
+    public function setOutboxCount($outboxCount) {
+        if (!is_int($outboxCount)) {
+            throw new ContactException("Invalid outbox count type: ". gettype($outboxCount));
+        }
+
+        $this->outboxCount = $outboxCount;
         return $this;
     }
 
@@ -243,31 +268,6 @@ class Contact {
     }
 
     /**
-     * Dialog getter
-     *
-     * @return bool
-     */
-    public function isDialog() {
-        return $this->dialog;
-    }
-
-    /**
-     * Dialog setter
-     *
-     * @param bool $dialog
-     * @return $this
-     * @throws ContactException
-     */
-    public function setDialog($dialog) {
-        if (!is_bool($dialog)) {
-            throw new ContactException("Invalid dialog type: ". gettype($dialog));
-        }
-
-        $this->dialog = $dialog;
-        return $this;
-    }
-
-    /**
      * Array export function
      *
      * @return array
@@ -275,12 +275,19 @@ class Contact {
     public function toArray() {
         return
             array(
+                /** pk */
                 'contact_id'     => $this->getId(),
+
+                /** main info */
                 'sender_id'      => $this->getSenderId(),
                 'reciever_id'    => $this->getRecieverId(),
-                'messages_count' => $this->getMessagesCount(),
-                'dialog'         => $this->isDialog(),
+
+                /** additional info */
+                'inbox_count'    => $this->getInboxCount(),
+                'outbox_count'   => $this->getOutboxCount(),
                 'unread_count'   => $this->getUnreadCount(),
+
+                /** meta info */
                 'blocked'        => $this->isBlocked(),
                 'changed'        => $this->getChanged(),
             )

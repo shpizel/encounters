@@ -457,7 +457,8 @@ textarea.input_i {
     -webkit-box-shadow: inset 0 3px 5px #656565;
     -moz-box-shadow: inset 0 3px 5px #656565;
     box-shadow: inset 0 3px 5px #656565;
-    display: none;
+    /*display: none;*/
+    visibility: hidden;
 }
 
 .b-list_loading:before {

@@ -21,7 +21,7 @@ $Mychoice = {
                 'medium_photo_url': $source.attr('medium_photo_url')
             };
 
-            $.post($Routing.getPath('decision.get'), { user_id: $dataArray['user_id']}, function($data) {
+            $Tools.ajaxPost('decision.get', { user_id: $dataArray['user_id']}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $data = $data.data;
                     if ($data.hasOwnProperty('charge')) {

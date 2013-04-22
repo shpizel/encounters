@@ -13,7 +13,7 @@ $Layers.$EnergyLayer = {
      */
     initUI: function() {
         $("div.layer-energy form p a").click(function() {
-            $.post($Routing.getPath('battery.charge'), function($data) {
+            $Tools.ajaxPost('battery.charge', {}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Battery.setCharge(5);
                     $Account.setAccount($data.data['account']);

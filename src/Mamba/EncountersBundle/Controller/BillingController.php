@@ -95,14 +95,12 @@ class BillingController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
         $dataArray = $this->getInitialData();
-        $Response = $this->render("EncountersBundle:templates:billing.html.twig", $dataArray);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        return $Response;
+        return $this->TwigResponse("EncountersBundle:templates:billing.html.twig", $dataArray);
     }
 
     /**
@@ -114,7 +112,7 @@ class BillingController extends ApplicationController {
         if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
             if ($service = $this->getRequest()->get('service')) {
                 if (is_array($service) && count($service) <= 2 && isset($service['id']) && ($serviceId = (int) $service['id'])) {
-                    $this->getServicesObject()->add($webUserId, $service);
+                    $this->getServicesHelper()->add($webUserId, $service);
                 } else {
                     list($this->json['status'], $this->json['message']) = array(1, "Invalid params");
                 }
@@ -125,12 +123,7 @@ class BillingController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -161,8 +154,8 @@ class BillingController extends ApplicationController {
                 );
 
                 if (array_key_exists((int) $amount, self::$rates)) {
-                    $this->getAccountObject()->incr($webUserId, $incr = self::$rates[(int) $amount]);
-                    $this->getNotificationsObject()->add($webUserId, "Ура! Ваш счет пополнен на {$incr} сердечек!");
+                    $this->getAccountHelper()->incr($webUserId, $incr = self::$rates[(int) $amount]);
+                    $this->getNotificationsHelper()->add($webUserId, "Ура! Ваш счет пополнен на {$incr} сердечек!");
                     $billed = true;
                 }
 

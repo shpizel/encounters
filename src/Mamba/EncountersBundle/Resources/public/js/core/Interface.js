@@ -63,24 +63,28 @@ $Interface = {
         }
 
         $("div.notification a.close").click(function() {
-            $.post($Routing.getPath('variable.set'), {'key': 'notification_hidden', 'data': 1}, function($data) {
+            $Tools.ajaxPost('variable.set', {'key': 'notification_hidden', 'data': 1}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $("div.notification").hide();
-
                 }
             });
 
             return false;
         });
 
+        $("ul.info-meet li.item-messages").click($Layers.openMessengerWindowFunction);
+
         if ($route != 'welcome') {
             $Battery.initUI();
-            $Speedo.initUI();
             $Account.initUI();
         }
 
         if ($route != 'messenger') {
             $Photoline.initUI();
+        }
+
+        if ($route == 'search') {
+            $Speedo.initUI();
         }
 
         this['init' + $Tools.ucfirst($route) + 'UI']();

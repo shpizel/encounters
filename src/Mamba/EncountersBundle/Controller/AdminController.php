@@ -16,8 +16,13 @@ class AdminController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
-        return $this->render('EncountersBundle:templates:admin.html.twig', array(
-            'controller' => __CLASS__
-        ));
+        return
+            $this->TwigResponse(
+                'EncountersBundle:templates:admin.html.twig',
+                array(
+                    'controller' => $this->getControllerName(__CLASS__),
+                )
+            )
+        ;
     }
 }

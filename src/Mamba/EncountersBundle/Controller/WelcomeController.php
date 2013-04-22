@@ -40,7 +40,7 @@ class WelcomeController extends ApplicationController {
             }
 
             if ($Mamba->checkAuthKey($getParams)) {
-                $this->getPlatformSettingsObject()->set($getPlatformParams);
+                $this->getPlatformSettingsHelper()->set($getPlatformParams);
             } else {
                 $getPlatformParams = array();
             }
@@ -56,7 +56,7 @@ class WelcomeController extends ApplicationController {
             $Session->start();
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
 
-            $lastAccessTime = $this->getVariablesObject()->get($webUserId, 'lastaccess');
+            $lastAccessTime = $this->getVariablesHelper()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
                 $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
                     'webUserId'     => $webUserId,
@@ -66,16 +66,13 @@ class WelcomeController extends ApplicationController {
                 )));
 
                 foreach (range(-1, 1) as $decision) {
-                    $this->getCountersObject()->set($webUserId, "noretry-($decision)", 0);
+                    $this->getCountersHelper()->set($webUserId, "noretry-($decision)", 0);
                 }
             }
-
-            $this->getVariablesObject()->set($webUserId, 'lastaccess', time());
         } elseif ($Session->has(Mamba::SESSION_USER_ID_KEY)) {
             $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
-            $this->getVariablesObject()->set($webUserId, 'lastaccess', time());
         } else {
-            return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
+            return $this->TwigResponse('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
         }
 
         if ($this->getRequest()->getMethod() == 'GET') {
@@ -90,13 +87,13 @@ class WelcomeController extends ApplicationController {
 
                     return $Response;
                 } elseif (preg_match("!meet(\d+)$!", $extra, $data)) {
-                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) array_pop($data))) {
-                        if ($webUserId != $currentUserId && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                            $this->getCurrentQueueObject()->put($webUserId, $currentUserId);
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId = (int) array_pop($data))) {
+                        if ($webUserId != $currentUserId && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                            $this->getCurrentQueueHelper()->put($webUserId, $currentUserId);
                         }
                     }
 
-                    $Session->set('active_id', intval($getParams['extra']));
+                    $Session->set('active_id', $currentUserId);
                 } elseif (in_array($extra, ['search', 'mychoice', 'visitors', 'mutual'])) {
                     $Response = $this->redirect($this->generateUrl($extra));
                     $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
@@ -105,9 +102,9 @@ class WelcomeController extends ApplicationController {
                 }
             }
 
-            return $this->render('EncountersBundle:templates:login.html.twig');
+            return $this->TwigResponse('EncountersBundle:templates:login.html.twig');
         } elseif ($this->getRequest()->getMethod() == 'POST') {
-            if (!$this->getSearchPreferencesObject()->get($webUserId)) {
+            if (!$this->getSearchPreferencesHelper()->get($webUserId)) {
                 $Response = $this->redirect($this->generateUrl('preferences'));
                 $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
                 return $Response;
@@ -116,7 +113,6 @@ class WelcomeController extends ApplicationController {
             /** В общем случае кидаем на поиск */
             $Response = $this->redirect($this->generateUrl('search'));
             $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-
             return $Response;
         }
     }

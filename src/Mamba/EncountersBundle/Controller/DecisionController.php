@@ -61,12 +61,12 @@ class DecisionController extends ApplicationController {
 
             /** Инкрементируем счетчик выбора у webUser'a */
             if ($this->decision + 1 > 0) {
-                $this->getCountersObject()->incr($this->webUserId, 'mychoice');
+                $this->getCountersHelper()->incr($this->webUserId, 'mychoice');
             }
 
             /** Обновляем переменные */
-            $this->getVariablesObject()->set($this->webUserId, 'last_outgoing_decision', time());
-            $this->getVariablesObject()->set($this->currentUserId, 'last_incoming_decision', time());
+            $this->getVariablesHelper()->set($this->webUserId, 'last_outgoing_decision', time());
+            $this->getVariablesHelper()->set($this->currentUserId, 'last_incoming_decision', time());
 
             /** увеличиваем счетчик дневных голосований в мемкеше */
             $dailyDecisionsCounter = $this->getMemcache()->increment($dailyDecisionsCounterMemcacheKey = $this->webUserId . '_daily_decisions_counter_by_' . date("Ymd"));
@@ -75,14 +75,14 @@ class DecisionController extends ApplicationController {
             }
 
             /** Инкрементируем счетчик просмотров у currentUser'a */
-            $this->getCountersObject()->incr($this->currentUserId, 'visitors');
-            $this->getCountersObject()->incr($this->currentUserId, 'visitors_unread');
+            $this->getCountersHelper()->incr($this->currentUserId, 'visitors');
+            $this->getCountersHelper()->incr($this->currentUserId, 'visitors_unread');
 
-            $this->getCountersObject()->set($this->currentUserId, 'updated', time());
+            $this->getCountersHelper()->set($this->currentUserId, 'updated', time());
 
             /** Увеличить энергию WebUser'a */
-            $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
-            $webUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy);
+            $webUserEnergy = $this->getEnergyHelper()->get($this->webUserId);
+            $webUserLevel = $this->getPopularityHelper()->getLevel($webUserEnergy);
 
             /** увеличиваем энергию веб-юзера на 100-300 очков базово и делим на логарифмический делитель */
             $log = log($dailyDecisionsCounter, 16);
@@ -90,10 +90,10 @@ class DecisionController extends ApplicationController {
                 $log = 1; //бодрости не будет
             }
 
-            $this->getEnergyObject()->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
+            $this->getEnergyHelper()->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
 
-            $webUserEnergy = $this->getEnergyObject()->get($this->webUserId);
-            if (($newWebUserLevel = $this->getPopularityObject()->getLevel($webUserEnergy)) > $webUserLevel) {
+            $webUserEnergy = $this->getEnergyHelper()->get($this->webUserId);
+            if (($newWebUserLevel = $this->getPopularityHelper()->getLevel($webUserEnergy)) > $webUserLevel) {
                 $cacheKey = "user_{$this->webUserId}_level_$newWebUserLevel";
 
                 if (!$this->getRedis()->get($cacheKey)) {
@@ -127,12 +127,12 @@ class DecisionController extends ApplicationController {
 
             /** откатились на старую версию */
             /** Уменьшить энергию CurrentUser'a */
-            if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
-                $currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId);
-                $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
+            if ($this->getSearchPreferencesHelper()->exists($this->currentUserId)) {
+                $currentUserEnergy = $this->getEnergyHelper()->get($this->currentUserId);
+                $currentUserLevel = $this->getPopularityHelper()->getLevel($currentUserEnergy);
 
                 /** мутная функция */
-                $this->getEnergyObject()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+                $this->getEnergyHelper()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
             }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
@@ -143,7 +143,7 @@ class DecisionController extends ApplicationController {
                  *
                  * @author shpizel
                  */
-                if (($currentUserSearchPreferences = $this->getSearchPreferencesObject()->get($this->currentUserId)) && ($webUserInfo = $Mamba->Anketa()->getInfo($this->webUserId, array()))) {
+                if (($currentUserSearchPreferences = $this->getSearchPreferencesHelper()->get($this->currentUserId)) && ($webUserInfo = $Mamba->Anketa()->getInfo($this->webUserId, array()))) {
                     $webUserInfo = array_shift($webUserInfo);
                     $webUserInfo = $webUserInfo['info'];
 
@@ -151,8 +151,8 @@ class DecisionController extends ApplicationController {
                         $webUserInfo['age'] >= $currentUserSearchPreferences['age_from'] &&
                         $webUserInfo['age'] <= $currentUserSearchPreferences['age_to']
                     ) {
-                        if (!$this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId)) {
-                            $this->getPriorityQueueObject()->put($this->currentUserId, $this->webUserId);
+                        if (!$this->getViewedQueueHelper()->get($this->currentUserId, $this->webUserId)) {
+                            $this->getPriorityQueueHelper()->put($this->currentUserId, $this->webUserId);
                         }
                     }
                 }
@@ -166,7 +166,10 @@ class DecisionController extends ApplicationController {
             );
 
             /** Ставим задачу на обновление базы */
-            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME, serialize($dataArray));
+            $this->getGearman()->getClient()->doLowBackground(
+                EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME,
+                serialize($dataArray)
+            );
 
             if ($this->decision + 1 > 0) {
 
@@ -177,7 +180,7 @@ class DecisionController extends ApplicationController {
                  */
                 if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId)) {
                     if (($appUser = $Mamba->Anketa()->isAppUser($this->currentUserId)) && (!$appUser[0]['is_app_user'])) {
-                        $lastMessageSent = (int) $this->getVariablesObject()->get($this->currentUserId, 'last_message_sent');
+                        $lastMessageSent = (int) $this->getVariablesHelper()->get($this->currentUserId, 'last_message_sent');
                         if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
                             $this->json['data']['is_contact'] = true;
                         }
@@ -186,46 +189,49 @@ class DecisionController extends ApplicationController {
             }
 
             /** Ставим задачу на установку ачивки */
-            $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize($dataArray));
+            $this->getGearman()->getClient()->doLowBackground(
+                EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME,
+                serialize($dataArray)
+            );
 
             /** Не спишком ли часто мы спамим? */
             foreach (range(-1, 1) as $decision) {
                 if ($decision == $this->decision) {
-                    if ($this->getCountersObject()->incr($this->webUserId, "noretry-($decision)") >= 25) {
+                    if ($this->getCountersHelper()->incr($this->webUserId, "noretry-($decision)") >= 25) {
                         $repeatWarningKey = "{$this->webUserId}_repeat_warning";
                         if ($this->getMemcache()->add($repeatWarningKey, 1, 3600)) {
                             $this->json['data']['repeat_warning'] = $decision;
                         }
 
-                        $this->getCountersObject()->set($this->webUserId, "noretry-($decision)", 0);
+                        $this->getCountersHelper()->set($this->webUserId, "noretry-($decision)", 0);
                     }
                 } else {
-                    $this->getCountersObject()->set($this->webUserId, "noretry-($decision)", 0);
+                    $this->getCountersHelper()->set($this->webUserId, "noretry-($decision)", 0);
                 }
             }
 
             /** Может быть мы совпали? */
-            if (($this->decision + 1) && ($mutual = $this->getViewedQueueObject()->get($this->currentUserId, $this->webUserId))) {
+            if (($this->decision + 1) && ($mutual = $this->getViewedQueueHelper()->get($this->currentUserId, $this->webUserId))) {
                 if (isset($mutual['decision']) && ($mutual['decision'] + 1)) {
                     $this->json['data']['mutual'] = true;
 
-                    $this->getPurchasedObject()->add($this->webUserId, $this->currentUserId);
-                    $this->getPurchasedObject()->add($this->currentUserId, $this->webUserId);
+                    $this->getPurchasedHelper()->add($this->webUserId, $this->currentUserId);
+                    $this->getPurchasedHelper()->add($this->currentUserId, $this->webUserId);
 
-                    $this->getCountersObject()->incr($this->webUserId, 'mutual');
-                    $this->getCountersObject()->incr($this->currentUserId, 'mutual');
+                    $this->getCountersHelper()->incr($this->webUserId, 'mutual');
+                    $this->getCountersHelper()->incr($this->currentUserId, 'mutual');
 
-                    $this->getCountersObject()->incr($this->currentUserId, 'mutual_unread');
+                    $this->getCountersHelper()->incr($this->currentUserId, 'mutual_unread');
                 }
             } else {
-                $this->getPurchasedObject()->remove(intval($this->webUserId), intval($this->currentUserId));
+                $this->getPurchasedHelper()->remove(intval($this->webUserId), intval($this->currentUserId));
             }
 
             /** Удалим currentUser'a из текущей очереди webUser'a */
-            $this->getCurrentQueueObject()->remove($this->webUserId, $this->currentUserId);
+            $this->getCurrentQueueHelper()->remove($this->webUserId, $this->currentUserId);
 
             /** Добавим currentUser'a в список уже просмотренных webUser'ом */
-            $this->getViewedQueueObject()->put(
+            $this->getViewedQueueHelper()->put(
                 $this->webUserId,
                 $this->currentUserId,
                 array(
@@ -234,24 +240,31 @@ class DecisionController extends ApplicationController {
                 )
             );
 
-            $this->json['data']['counters'] = array(
-                'visitors' => (int) $this->getCountersObject()->get($this->webUserId, 'visitors'),
-                'mychoice' => (int) $this->getCountersObject()->get($this->webUserId, 'mychoice'),
-                'mutual'   => (int) $this->getCountersObject()->get($this->webUserId, 'mutual'),
-            );
+            $this->json['data']['counters'] = $this->getCountersHelper()->getMulti([$this->webUserId], [
+                'visitors',
+                'visitors_unread',
+                'mutual',
+                'mutual_unread',
+                'messages_unread',
+                'events_unread'
+            ])[$this->webUserId];
+
+//            $this->json['data']['counters'] = array(
+//                'visitors' => mt_rand(0, 100),
+//                'visitors_unread' => mt_rand(0, 100),
+//                'mutual' => mt_rand(0, 100),
+//                'mutual_unread' => mt_rand(0, 100),
+//                'messages_unread' => mt_rand(0, 100),
+//                'events_unread' => mt_rand(0, 100),
+//            );
 
             $this->json['data']['popularity'] = array_merge(
-                $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($this->webUserId)),
+                $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($this->webUserId)),
                 array('level_up' => $levelUp)
             );
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -263,8 +276,8 @@ class DecisionController extends ApplicationController {
         if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
             if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
 
-                if ($this->getPurchasedObject()->exists($webUserId, $currentUserId)) {
-                    if ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId)) {
+                if ($this->getPurchasedHelper()->exists($webUserId, $currentUserId)) {
+                    if ($decision = $this->getViewedQueueHelper()->get($currentUserId, $webUserId)) {
                         $decision = $decision['decision'];
                     } else {
                         $decision = false;
@@ -274,21 +287,21 @@ class DecisionController extends ApplicationController {
                         'decision' => $decision,
                     );
 
-                    $this->getStatsObject()->incr('decision.get-battery.notrequired');
-                } elseif (($charge = (int) $this->getBatteryObject()->get($webUserId)) || (2 <= $account = $this->getAccountObject()->get($webUserId))) {
+                    $this->getStatsHelper()->incr('decision.get-battery.notrequired');
+                } elseif (($charge = (int) $this->getBatteryHelper()->get($webUserId)) || (2 <= $account = $this->getAccountHelper()->get($webUserId))) {
                     if (!$charge) {
                         $multiply = intval($account / 2);
                         if ($multiply > 5) {
                             $multiply = 5;
                         }
 
-                        $account = $this->getAccountObject()->decr($webUserId, $multiply*2);
-                        $this->getBatteryObject()->incr($webUserId, $multiply);
+                        $account = $this->getAccountHelper()->decr($webUserId, $multiply*2);
+                        $this->getBatteryHelper()->incr($webUserId, $multiply);
 
-                        $this->getStatsObject()->incr('decision.get-battery.charge');
+                        $this->getStatsHelper()->incr('decision.get-battery.charge');
                     }
 
-                    if ($decision = $this->getViewedQueueObject()->get($currentUserId, $webUserId)) {
+                    if ($decision = $this->getViewedQueueHelper()->get($currentUserId, $webUserId)) {
                         $decision = $decision['decision'];
                     } else {
                         $decision = false;
@@ -296,14 +309,14 @@ class DecisionController extends ApplicationController {
 
                     $this->json['data'] = array(
                         'decision' => $decision,
-                        'charge'   => $this->getBatteryObject()->decr($webUserId),
-                        'account'  => $this->getAccountObject()->get($webUserId),
+                        'charge'   => $this->getBatteryHelper()->decr($webUserId),
+                        'account'  => $this->getAccountHelper()->get($webUserId),
                     );
 
-                    $this->getPurchasedObject()->add($webUserId, $currentUserId);
-                    $this->getStatsObject()->incr('decision.get-battery.decr');
+                    $this->getPurchasedHelper()->add($webUserId, $currentUserId);
+                    $this->getStatsHelper()->incr('decision.get-battery.decr');
                 } else {
-                    $this->getStatsObject()->incr('decision.get-battery.empty');
+                    $this->getStatsHelper()->incr('decision.get-battery.empty');
                     list($this->json['status'], $this->json['message']) = array(3, "Battery charge is empty");
                 }
             } else {
@@ -313,12 +326,7 @@ class DecisionController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid params");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -329,11 +337,11 @@ class DecisionController extends ApplicationController {
     public function removeDecisionAction() {
         if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
             if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-                $currentUserDecision = $this->getViewedQueueObject()->get($currentUserId, $webUserId);
-                $webUserDecision     = $this->getViewedQueueObject()->get($webUserId, $currentUserId);
+                $currentUserDecision = $this->getViewedQueueHelper()->get($currentUserId, $webUserId);
+                $webUserDecision     = $this->getViewedQueueHelper()->get($webUserId, $currentUserId);
 
                 if ($currentUserDecision && $webUserDecision && $currentUserDecision['decision'] >=0 && $webUserDecision['decision'] >= 0) {
-                    $this->getViewedQueueObject()->put($webUserId, $currentUserId, array(
+                    $this->getViewedQueueHelper()->put($webUserId, $currentUserId, array(
                         'ts'       => time(),
                         'decision' => -1,
                     ));
@@ -351,11 +359,11 @@ class DecisionController extends ApplicationController {
                     );
 
                     /** Обновим счетчики */
-                    $this->getCountersObject()->decr($currentUserId, 'mutual');
+                    $this->getCountersHelper()->decr($currentUserId, 'mutual');
                     $this->json['data']['counters'] = array(
-                        'visitors' => $this->getCountersObject()->get($webUserId, 'visitors'),
-                        'mutual'   => $this->getCountersObject()->decr($webUserId, 'mutual'),
-                        'mychoice' => $this->getCountersObject()->get($webUserId, 'mychoice'),
+                        'visitors' => $this->getCountersHelper()->get($webUserId, 'visitors'),
+                        'mutual'   => $this->getCountersHelper()->decr($webUserId, 'mutual'),
+                        'mychoice' => $this->getCountersHelper()->get($webUserId, 'mychoice'),
                     );
 
                     $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(
@@ -366,7 +374,7 @@ class DecisionController extends ApplicationController {
                     )));
 
                     foreach (range(-1, 1) as $decision) {
-                        $this->getCountersObject()->set($webUserId, "noretry-($decision)", 0);
+                        $this->getCountersHelper()->set($webUserId, "noretry-($decision)", 0);
                     }
                 } else {
                     list($this->json['status'], $this->json['message']) = array(2, "Invalid input data");
@@ -378,12 +386,7 @@ class DecisionController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid params");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -405,7 +408,7 @@ class DecisionController extends ApplicationController {
             $decision = (int) $decision;
 
             if ($currentUserId && $decision >= -1 && $decision <= 1) {
-                if (false !== $this->getCurrentQueueObject()->exists($this->webUserId = (int) $this->getMamba()->get('oid'), $currentUserId)) {
+                if (false !== $this->getCurrentQueueHelper()->exists($this->webUserId = (int) $this->getMamba()->get('oid'), $currentUserId)) {
                     $this->currentUserId = (int) $currentUserId;
                     $this->decision = $decision;
 

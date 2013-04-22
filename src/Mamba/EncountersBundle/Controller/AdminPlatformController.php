@@ -19,6 +19,6 @@ class AdminPlatformController extends ApplicationController {
     public function indexAction() {
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
-        return $this->render('EncountersBundle:templates:admin.platform.html.twig', $dataArray);
+        return $this->TwigResponse('EncountersBundle:templates:admin.platform.html.twig', $dataArray);
     }
 }

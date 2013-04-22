@@ -14,7 +14,7 @@ $Layers.$AnswerNotSeeYetLayer = {
     initUI: function() {
         $("div.layer-not-see-yet div.content-center a.first").click(function() {
             var $userId = ($Search.$storage.hasOwnProperty('currentQueueElement') ? $Search.$storage['currentQueueElement']['info']['id'] : $Config.get('current_user_id'));
-            $.post($Routing.getPath('queue.add'), {'user_id': $userId}, function($data) {
+            $Tools.ajaxPost('queue.add', {'user_id': $userId}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data['account']);
 

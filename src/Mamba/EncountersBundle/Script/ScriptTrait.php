@@ -78,7 +78,7 @@ trait ScriptTrait {
      *
      * @return Purchased
      */
-    public function getPurchasedObject() {
+    public function getPurchasedHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -91,7 +91,7 @@ trait ScriptTrait {
      *
      * @return Variables
      */
-    public function getVariablesObject() {
+    public function getVariablesHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -104,7 +104,7 @@ trait ScriptTrait {
      *
      * @return Account
      */
-    public function getAccountObject() {
+    public function getAccountHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -117,7 +117,7 @@ trait ScriptTrait {
      *
      * @return Notifications
      */
-    public function getNotificationsObject() {
+    public function getNotificationsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -130,7 +130,7 @@ trait ScriptTrait {
      *
      * @return Popularity
      */
-    public function getPopularityObject() {
+    public function getPopularityHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -143,7 +143,7 @@ trait ScriptTrait {
      *
      * @return Battery
      */
-    public function getBatteryObject() {
+    public function getBatteryHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -156,7 +156,7 @@ trait ScriptTrait {
      *
      * @return Photoline
      */
-    public function getPhotolineObject() {
+    public function getPhotolineHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -169,7 +169,7 @@ trait ScriptTrait {
      *
      * @return Energy
      */
-    public function getEnergyObject() {
+    public function getEnergyHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -182,7 +182,7 @@ trait ScriptTrait {
      *
      * @return SearchPreferences
      */
-    public function getSearchPreferencesObject() {
+    public function getSearchPreferencesHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -195,7 +195,7 @@ trait ScriptTrait {
      *
      * @return Gifts
      */
-    public function getGiftsObject() {
+    public function getGiftsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -208,7 +208,7 @@ trait ScriptTrait {
      *
      * @return ContactsQueue
      */
-    public function getContactsQueueObject() {
+    public function getContactsQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -221,7 +221,7 @@ trait ScriptTrait {
      *
      * @return CurrentQueue
      */
-    public function getCurrentQueueObject() {
+    public function getCurrentQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -234,7 +234,7 @@ trait ScriptTrait {
      *
      * @return HitlistQueue
      */
-    public function getHitlistQueueObject() {
+    public function getHitlistQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -247,7 +247,7 @@ trait ScriptTrait {
      *
      * @return PriorityQueue
      */
-    public function getPriorityQueueObject() {
+    public function getPriorityQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -260,7 +260,7 @@ trait ScriptTrait {
      *
      * @return SearchQueue
      */
-    public function getSearchQueueObject() {
+    public function getSearchQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -273,7 +273,7 @@ trait ScriptTrait {
      *
      * @return ViewedQueue
      */
-    public function getViewedQueueObject() {
+    public function getViewedQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -286,7 +286,7 @@ trait ScriptTrait {
      *
      * @return Counters
      */
-    public function getCountersObject() {
+    public function getCountersHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -299,7 +299,7 @@ trait ScriptTrait {
      *
      * @return Stats
      */
-    public function getStatsObject() {
+    public function getStatsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }

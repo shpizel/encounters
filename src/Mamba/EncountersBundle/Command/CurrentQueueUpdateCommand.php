@@ -144,13 +144,13 @@ class CurrentQueueUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>current_user_id</info> = {$webUserId}, <info>timestamp</info> = {$timestamp}");
 
-        while ($this->getCurrentQueueObject()->getSize($webUserId) <= (SearchQueueUpdateCommand::LIMIT + ContactsQueueUpdateCommand::LIMIT + HitlistQueueUpdateCommand::LIMIT)) {
-            $searchQueueChunk = $this->getSearchQueueObject()->getRange($webUserId, 0, self::$balance['search'] - 1);
+        while ($this->getCurrentQueueHelper()->getSize($webUserId) <= 8) {
+            $searchQueueChunk = $this->getSearchQueueHelper()->getRange($webUserId, 0, self::$balance['search'] - 1);
             $usersAddedCount = 0;
             foreach ($searchQueueChunk as $currentUserId) {
-                $this->getSearchQueueObject()->remove($webUserId, $currentUserId = (int) $currentUserId);
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId)) {
-                    $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                $this->getSearchQueueHelper()->remove($webUserId, $currentUserId = (int) $currentUserId);
+                if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId)) {
+                    $this->getCurrentQueueHelper()->put($webUserId, $currentUserId)
                         && $usersAddedCount++;
                 }
             }
@@ -162,9 +162,9 @@ class CurrentQueueUpdateCommand extends CronScript {
             $priorityCount = self::$balance['priority'];
             $usersAddedCount = 0;
             while ($priorityCount--) {
-                if ($currentUserId = $this->getPriorityQueueObject()->pop($webUserId)) {
-                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
-                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                if ($currentUserId = $this->getPriorityQueueHelper()->pop($webUserId)) {
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+                        $this->getCurrentQueueHelper()->put($webUserId, $currentUserId)
                             && $usersAddedCount++;
                     }
                 } else {
@@ -176,9 +176,9 @@ class CurrentQueueUpdateCommand extends CronScript {
             $hitlistCount = self::$balance['hitlist'];
             $usersAddedCount = 0;
             while ($hitlistCount--) {
-                if ($currentUserId = $this->getHitlistQueueObject()->pop($webUserId)) {
-                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
-                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                if ($currentUserId = $this->getHitlistQueueHelper()->pop($webUserId)) {
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+                        $this->getCurrentQueueHelper()->put($webUserId, $currentUserId)
                             && $usersAddedCount++;
                     }
                 } else {
@@ -190,9 +190,9 @@ class CurrentQueueUpdateCommand extends CronScript {
             $contactsCount = self::$balance['contacts'];
             $usersAddedCount = 0;
             while ($contactsCount--) {
-                if ($currentUserId = $this->getContactsQueueObject()->pop($webUserId)) {
-                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
-                        $this->getCurrentQueueObject()->put($webUserId, $currentUserId)
+                if ($currentUserId = $this->getContactsQueueHelper()->pop($webUserId)) {
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId = (int) $currentUserId)) {
+                        $this->getCurrentQueueHelper()->put($webUserId, $currentUserId)
                             && $usersAddedCount++;
                     }
                 } else {
@@ -207,9 +207,9 @@ class CurrentQueueUpdateCommand extends CronScript {
          *
          * @author shpizel
          */
-        $searchPreferencesLastChecked = $this->getVariablesObject()->get($webUserId, 'search_preferences_last_checked');
+        $searchPreferencesLastChecked = $this->getVariablesHelper()->get($webUserId, 'search_preferences_last_checked');
         if (!$searchPreferencesLastChecked || (time() - $searchPreferencesLastChecked > 3600)) {
-            if ($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId)) {
+            if ($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId)) {
                 if ($apiResponse = $this->getMamba()->nocache()->Anketa()->getInfo($webUserId)) {
                     if ($anketa = array_shift($apiResponse)) {
 
@@ -218,7 +218,7 @@ class CurrentQueueUpdateCommand extends CronScript {
                         $searchPreferences['geo']['city_id'] = isset($anketa['location']['city_id']) ? $anketa['location']['city_id'] : $searchPreferences['geo']['city_id'];
                         $searchPreferences['changed'] = time();
 
-                        $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
+                        $this->getSearchPreferencesHelper()->set($webUserId, $searchPreferences);
 
                         $this->getGearmanClient()->doHighBackground(
                             EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
@@ -237,7 +237,7 @@ class CurrentQueueUpdateCommand extends CronScript {
                     }
                 }
 
-                $this->getVariablesObject()->set($webUserId, 'search_preferences_last_checked', time());
+                $this->getVariablesHelper()->set($webUserId, 'search_preferences_last_checked', time());
             }
         }
 

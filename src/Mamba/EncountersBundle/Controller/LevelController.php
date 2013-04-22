@@ -37,18 +37,18 @@ class LevelController extends ApplicationController {
      */
     public function upAction() {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $Account = $this->getAccountObject();
+            $Account = $this->getAccountHelper();
 
             $account = $Account->get($webUserId);
-            $level   = $this->getPopularityObject()->getLevel($this->getEnergyObject()->get($webUserId));
+            $level   = $this->getPopularityHelper()->getLevel($this->getEnergyHelper()->get($webUserId));
 
             if ($level >= 4 && $level < 16) {
                 $cost = ($level + 1 - 4)*10;
                 if ($account >= $cost) {
                     $account = $Account->decr($webUserId, $cost);
-                    $this->getEnergyObject()->set($webUserId, $this->getPopularityObject()->getLevels()[$level + 1]);
+                    $this->getEnergyHelper()->set($webUserId, $this->getPopularityHelper()->getLevels()[$level + 1]);
                     $this->json['data'] = array(
-                        'popularity' => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
+                        'popularity' => $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($webUserId)),
                         'account'    => $account,
                     );
                 } else {
@@ -61,11 +61,6 @@ class LevelController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 }

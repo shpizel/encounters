@@ -24,7 +24,7 @@ $Layers.$SendGiftLayer = {
             var $comment = $("div.layer-send-gift textarea").val();
             var $currentUserId = $Config.get('current_user_id');
 
-            $.post($Routing.getPath('gift.purchase'), {'gift_id': $giftId, 'comment': $comment, 'current_user_id': $currentUserId}, function($data) {
+            $Tools.ajaxPost('gift.purchase', {'gift_id': $giftId, 'comment': $comment, 'current_user_id': $currentUserId}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data.account);
 

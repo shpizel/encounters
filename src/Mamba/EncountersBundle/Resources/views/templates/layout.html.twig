@@ -45,13 +45,9 @@
             <i class="r-rounder"></i>
             <div class="app-menu-bar-inner">
                 <ul class="info-meet" style="float:right;">
-                    <li class="item-popularity">
-                        <div class="bar">
-                            <div class="level-background lbc{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev) // 25 + 1  }}"></div>
-                            <div class="level l{{ webuser.popularity.level }}"></div>
-                            <div class="speedo-background"></div>
-                            <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
-                        </div>
+                    <li class="item-profile">
+                        <img src="{{ webuser.anketa.info.square_photo_url }}"/>
+                        <a href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ webuser.anketa.info.oid }}" target="_top"><b>{{ webuser.anketa.info.name }}</b> <i class="plus"><b>{% if webuser.stats.events_unread %}{{ webuser.stats.events_unread }}{% endif %}</b></i></a>
                     </li>
 
                     <li class="item-account">
@@ -62,9 +58,8 @@
                 </ul>
                 <ul class="info-meet">
                     <li class="item-game{% if controller == 'search' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=search"><b>Поиск</b></a></li>
-                    <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
-                    <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=visitors"><b>Меня смотрели</b> {% if webuser.stats.visitors_unread %}<i class="plus"> <b>+{{ webuser.stats.visitors_unread }}</b></i> {% endif %}<i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
-
+                    {#<li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>#}
+                    <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=visitors"><b>Меня смотрели</b> <i class="plus"> <b>{% if webuser.stats.visitors_unread %}+{{ webuser.stats.visitors_unread }}{% endif %}</b></i> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
                     {% if webuser.stats.mutual_unread %}
                         <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b class="mutual_unread">
                             {% if webuser.stats.mutual_unread % 10 == 0 %}
@@ -80,6 +75,8 @@
                     {% else %}
                         <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
                     {% endif %}
+
+                    <li class="item-messages"><a target="_blank" href="/messenger"><b>Сообщения</b>  <i class="plus"><b>{% if webuser.stats.messages_unread %}{{ webuser.stats.messages_unread }}{% endif %}</b></i></a></li>
                 </ul>
             </div>
         </div>
@@ -105,7 +102,7 @@
 
 {% if controller != 'messenger' %}
     <div id="debug" style="font-size:13px;{% if not app.debug and webuser.anketa.info.oid != 560015854 and webuser.anketa.info.oid != 751072037 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
-        <span>Generation time: {{ ((microtime - request_microtime)*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
+        <span>Generation time: {{ (generation_time*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
         <div class="metrics" style="display:none;">
             <strong>leveldb {{ (metrics.leveldb.timeout*1000)|number_format(2) }} ms</strong>
             <div class="leveldb-metrics">
@@ -167,6 +164,8 @@ $(document).ready(function(){
     jQuery.error = function (message) {
         _gaq.push(['_trackEvent', 'jQuery Error', message, navigator.userAgent, 0, true]);
     }
+
+    $Config.set('domready_microtime', $Tools.microtime(true));
 
     $App.init(location.pathname).run();
 });

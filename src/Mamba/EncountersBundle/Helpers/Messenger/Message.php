@@ -172,7 +172,7 @@ class Message {
     public function setDirection($direction) {
         if (!is_string($direction)) {
             throw new MessageException("Invalid direction type: ". gettype($direction));
-        } elseif (!in_array($direction, array('from', 'to'))) {
+        } elseif (!in_array($direction, array('inbox', 'outbox'))) {
             throw new MessageException("Invalid direction: ". var_export($direction, true));
         }
 

@@ -31,11 +31,11 @@ class AdminUsersController extends ApplicationController {
                 'variables' => array(),
                 'notifications' => array(),
                 'queues' => array(
-                    'current'  => $this->getCurrentQueueObject()->getAll($userId),
-                    'search'   => $this->getSearchQueueObject()->getSize($userId),
-                    'contacts' => $this->getContactsQueueObject()->getSize($userId),
-                    'hitlist'  => $this->getHitlistQueueObject()->getSize($userId),
-                    'priority' => $this->getPriorityQueueObject()->getSize($userId),
+                    'current'  => $this->getCurrentQueueHelper()->getAll($userId),
+                    'search'   => $this->getSearchQueueHelper()->getSize($userId),
+                    'contacts' => $this->getContactsQueueHelper()->getSize($userId),
+                    'hitlist'  => $this->getHitlistQueueHelper()->getSize($userId),
+                    'priority' => $this->getPriorityQueueHelper()->getSize($userId),
                 )
             );
 
@@ -48,27 +48,27 @@ class AdminUsersController extends ApplicationController {
                 if ($action == 'saveEnergy' && is_numeric($energy = $this->getRequest()->request->get('energy'))) {
                     $energy = intval($energy);
                     if ($energy >= 0 && $energy <= max(Popularity::$levels))  {
-                        $this->getEnergyObject()->set($userId, $energy);
+                        $this->getEnergyHelper()->set($userId, $energy);
                         $dataArray['action']['result'] = true;
                     }
                 } elseif ($action == 'saveBattery' && is_numeric($battery = $this->getRequest()->request->get('battery'))) {
                     $battery = intval($battery);
                     if ($battery >= 0 && $battery <= 5)  {
-                        $this->getBatteryObject()->set($userId, $battery);
+                        $this->getBatteryHelper()->set($userId, $battery);
                         $dataArray['action']['result'] = true;
                     }
                 } elseif ($action == 'saveAccount' && is_numeric($account = $this->getRequest()->request->get('account'))) {
                     $account = intval($account);
                     if ($account >= 0)  {
-                        $this->getAccountObject()->set($userId, $account);
+                        $this->getAccountHelper()->set($userId, $account);
                         $dataArray['action']['result'] = true;
                     }
                 }
             }
 
-            $dataArray['platform_settings'] = $platformSettings = $this->getPlatformSettingsObject()->get($userId);
-            $dataArray['search_preferences'] = $searchPreferences = $this->getSearchPreferencesObject()->get($userId);
-            if ($notifications = $this->getNotificationsObject()->getAll($userId)) {
+            $dataArray['platform_settings'] = $platformSettings = $this->getPlatformSettingsHelper()->get($userId);
+            $dataArray['search_preferences'] = $searchPreferences = $this->getSearchPreferencesHelper()->get($userId);
+            if ($notifications = $this->getNotificationsHelper()->getAll($userId)) {
                 foreach ($notifications as &$notification) {
                     $notification = json_decode($notification, true);
                 }
@@ -76,7 +76,7 @@ class AdminUsersController extends ApplicationController {
                 $dataArray['notifications'] = $notifications;
             }
 
-            if ($variables = $this->getVariablesObject()->getAll($userId)) {
+            if ($variables = $this->getVariablesHelper()->getAll($userId)) {
                 foreach ($variables as &$data) {
                     $data = json_decode($data, true);
                 }
@@ -84,14 +84,14 @@ class AdminUsersController extends ApplicationController {
                 $dataArray['variables'] = $variables;
             }
 
-            $dataArray['counters'] = $counters = $this->getCountersObject()->getAll($userId);
+            $dataArray['counters'] = $counters = $this->getCountersHelper()->getAll($userId);
 
             $dataArray['user'] = array(
                 'id'      => $userId,
-                'energy'  => $this->getEnergyObject()->get($userId),
-                'level'   => $this->getPopularityObject()->getLevel($this->getEnergyObject()->get($userId)),
-                'battery' => $this->getBatteryObject()->get($userId),
-                'account' => $this->getAccountObject()->get($userId),
+                'energy'  => $this->getEnergyHelper()->get($userId),
+                'level'   => $this->getPopularityHelper()->getLevel($this->getEnergyHelper()->get($userId)),
+                'battery' => $this->getBatteryHelper()->get($userId),
+                'account' => $this->getAccountHelper()->get($userId),
             );
 
             $userInfo = $this->getMamba()->Anketa()->getInfo($userId);
@@ -117,6 +117,6 @@ class AdminUsersController extends ApplicationController {
 
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
-        return $this->render('EncountersBundle:templates:admin.users.html.twig', $dataArray);
+        return $this->TwigResponse('EncountersBundle:templates:admin.users.html.twig', $dataArray);
     }
 }

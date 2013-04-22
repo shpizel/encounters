@@ -17,8 +17,8 @@ class AppKernel extends Kernel
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new JMS\SecurityExtraBundle\JMSSecurityExtraBundle(),
+
             new Core\MemcacheBundle\MemcacheBundle(),
-            new Mamba\EncountersBundle\EncountersBundle(),
             new Core\RedisBundle\RedisBundle(),
             new Core\GearmanBundle\GearmanBundle(),
             new Core\ServersBundle\ServersBundle(),
@@ -27,6 +27,8 @@ class AppKernel extends Kernel
             new Core\FBBundle\FBBundle(),
             new Core\MambaBundle\MambaBundle(),
             new Core\LeveldbBundle\LeveldbBundle(),
+
+            new Mamba\EncountersBundle\EncountersBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

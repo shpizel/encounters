@@ -202,6 +202,36 @@
     margin-left:3px;
 }
 
+.info-meet li.item-profile {
+    background: url('/bundles/encounters/images/separate-meet-menu.png') no-repeat left top;
+    margin: 0;
+    max-width: 180px;
+    position: relative;
+}
+
+.info-meet li.item-profile img {
+    width: 21px;
+    height: 21px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    position: absolute;
+    top: 7px;
+    left: 10px;
+}
+
+.info-meet li.item-profile a {
+    padding-left: 38px;
+}
+
+.info-meet li.item-profile b {
+    max-width: 105px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
 .info-meet li.item-energy b.battery {
     background: url('/bundles/encounters/images/battery-small.gif') no-repeat left top;
     display: inline-block;
@@ -337,9 +367,9 @@
 
 .app-meet-button {
     height: 42px;
-    width: 440px;
+    width: 710px;
     margin: 0 auto 15px auto;
-    padding-left:60px;
+    background: url('/bundles/encounters/images/app-meet-button-background.png') no-repeat;
 }
 
 .app-meet-button a {

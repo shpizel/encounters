@@ -18,11 +18,22 @@
 
         <div class="app-title">Вы бы встретились с {% if webuser.preferences.gender == 'F' %}ней{% else %}ним{% endif %}?</div>
         <div class="app-meet-button">
+
+            <a class="link" target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id={{ platform.app_id }}&extra=mychoice">История</a>
+            <a class="link" href="/preferences">Настройка</a>
+
             <a href="javascript:void(0);" class="yes app-menu1">Да!</a>
             <a href="javascript:void(0);" class="maybe app-menu2">Возможно</a>
             <a href="javascript:void(0);" class="no app-menu3">Нет</a>
 
-            <a href="/preferences" class="preferences"></a>
+            <div class="item-popularity">
+                <div class="bar">
+                    <div class="level-background lbc{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev) // 25 + 1  }}"></div>
+                    <div class="level l{{ webuser.popularity.level }}"></div>
+                    <div class="speedo-background"></div>
+                    <div class="speedo" style="width:{{ (webuser.popularity.energy - webuser.popularity.prev)*100/(webuser.popularity.next - webuser.popularity.prev)*0.99 // 1 }}px;"></div>
+                </div>
+            </div>
         </div>
 
         <p class="app-see-block">{% if webuser.preferences.gender == 'F' %}Она уже видела{% else %}Он уже видел{% endif %} ваше фото? <a href="#">Узнайте</a></p>

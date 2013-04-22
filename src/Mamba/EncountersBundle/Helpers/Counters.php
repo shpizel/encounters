@@ -39,8 +39,10 @@ class Counters extends Helper {
         $LevelDb->execute();
 
         if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
-            return $result[$leveldbKey];
+            return (int) $result[$leveldbKey];
         }
+
+        return 0;
     }
 
     /**
@@ -94,7 +96,7 @@ class Counters extends Helper {
             foreach ($ret as $userId=>$userCounters) {
                 foreach ($counters as $counter) {
                     if (!isset($userCounters[$counter])) {
-                        $ret[$userId][$counter] = null;
+                        $ret[$userId][$counter] = 0;
                     }
                 }
             }
@@ -103,7 +105,7 @@ class Counters extends Helper {
                 if (!isset($ret[$userId])) {
                     $ret[$userId] = [];
                     foreach ($counters as $counter) {
-                        $ret[$userId][$counter] = null;
+                        $ret[$userId][$counter] = 0;
                     }
                 }
             }
@@ -111,7 +113,7 @@ class Counters extends Helper {
             foreach ($users as $userId) {
                 $ret[$userId] = [];
                 foreach ($counters as $counter) {
-                    $ret[$userId][$counter] = null;
+                    $ret[$userId][$counter] = 0;
                 }
             }
         }
@@ -125,9 +127,10 @@ class Counters extends Helper {
      * All counter getter
      *
      * @param int $userId
+     * @param int $limit = 100
      * @return mixed
      */
-    public function getAll($userId) {
+    public function getAll($userId, $limit = 100) {
         if (!is_int($userId)) {
             throw new CountersException("Invalid user id: \n" . var_export($userId, true));
         }
@@ -136,7 +139,7 @@ class Counters extends Helper {
         $Request = $LevelDb->get_range(
             $leveldbKey = sprintf(self::LEVELDB_USER_COUNTERS_KEY, $userId, ''),
             null,
-            100
+            $limit
         );
 
         $LevelDb->execute();
@@ -145,6 +148,8 @@ class Counters extends Helper {
             foreach ($result as $key=>$val) {
                 if (strpos($key, $leveldbKey) === false) {
                     unset($result[$key]);
+                } else {
+                    $result[$key] = (int) $val;
                 }
             }
 
@@ -177,8 +182,6 @@ class Counters extends Helper {
         if ($Request->getResult() === true) {
             return true;
         }
-
-        //return $this->getRedis()->hSet(sprintf(self::REDIS_HASH_USER_COUNTERS_KEY, $userId), $key, $value);
     }
 
     /**
@@ -211,6 +214,8 @@ class Counters extends Helper {
         if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
             return $result[$leveldbKey];
         }
+
+        return 0;
     }
 
     /**

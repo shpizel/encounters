@@ -119,7 +119,7 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
                 1  => 'decision_yes',
             );
 
-            $this->getStatsObject()->incr($decisions[$decision]);
+            $this->getStatsHelper()->incr($decisions[$decision]);
         } else {
             throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
         }

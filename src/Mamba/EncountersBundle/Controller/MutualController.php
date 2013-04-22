@@ -45,11 +45,13 @@ class MutualController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $this->getCountersObject()->set($webUserId, 'mutual_unread', 0);
+        if ($page == 1) {
+            $this->getCountersHelper()->set($webUserId, 'mutual_unread', 0);
+        }
 
         $dataArray  = $this->getInitialData();
 
@@ -59,8 +61,9 @@ class MutualController extends ApplicationController {
          * @author shpizel
          */
         $perPage = 25;
+
         $currentPage = (int) $this->getRequest()->query->get('page') ?: $page;
-        $lastPage = ceil(intval($this->getCountersObject()->get($webUserId, 'mutual')) / $perPage);
+        $lastPage = ceil(intval($this->getCountersHelper()->get($webUserId, 'mutual')) / $perPage);
         if ($currentPage > $lastPage) {
             $currentPage = $lastPage;
         }
@@ -112,8 +115,8 @@ class MutualController extends ApplicationController {
 
                     $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
 
-                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($webUserId, $anketa['info']['oid'])) {
+                    if ($this->getPurchasedHelper()->exists($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueHelper()->get($webUserId, $anketa['info']['oid'])) {
                             $anketa['decision'][] = $tmp['decision'];
                         } else {
                             $anketa['decision'][] = -2;
@@ -128,15 +131,14 @@ class MutualController extends ApplicationController {
         }
 
         $dataArray['data'] = $data ?: null;
-        if (!$data && $currentPage == todo) {
-            $this->getCountersObject()->set($webUserId, 'mutual', 0);
+        if (!$data) {
+            $this->getCountersHelper()->set($webUserId, 'mutual', 0);
         }
 
         $dataArray['json'] = json_encode($json) ?: null;
 
-        $initialData['microtime'] = microtime(true);
-        $Response = $this->render("EncountersBundle:templates:mutual.html.twig", $dataArray);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        $Response = $this->TwigResponse("EncountersBundle:templates:mutual.html.twig", $dataArray);
+
         return $Response;
     }
 }

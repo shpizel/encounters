@@ -43,20 +43,16 @@ class MyChoiceController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->getWebUserId())) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->getWebUserId())) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
         $dataArray  = $this->getInitialData();
 
-        /**
-         * Пагинатор
-         *
-         * @author shpizel
-         */
+
         $perPage = 25;
         $currentPage = (int) $this->getRequest()->query->get('page') ?: $page;
-        $lastPage = ceil(intval($this->getCountersObject()->get($webUserId, 'mychoice')) / $perPage);
+        $lastPage = ceil(intval($this->getCountersHelper()->get($webUserId, 'mychoice')) / $perPage);
         if ($currentPage > $lastPage) {
             $currentPage = $lastPage;
         }
@@ -107,8 +103,8 @@ class MyChoiceController extends ApplicationController {
 
                     $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
 
-                    if ($this->getPurchasedObject()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueObject()->get($anketa['info']['oid'], $webUserId)) {
+                    if ($this->getPurchasedHelper()->exists($webUserId, $anketa['info']['oid'])) {
+                        if ($tmp = $this->getViewedQueueHelper()->get($anketa['info']['oid'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                         } else {
                             $anketa['decision'][] = -3;
@@ -126,8 +122,6 @@ class MyChoiceController extends ApplicationController {
         $dataArray['json'] = json_encode($json) ?: null;
 
         $initialData['microtime'] = microtime(true);
-        $Response = $this->render("EncountersBundle:templates:mychoice.html.twig", $dataArray);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        return $Response;
+        return $this->TwigResponse("EncountersBundle:templates:mychoice.html.twig", $dataArray);
     }
 }

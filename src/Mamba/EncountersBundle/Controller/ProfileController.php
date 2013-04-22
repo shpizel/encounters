@@ -24,7 +24,7 @@ class ProfileController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->getWebUserId())) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->getWebUserId())) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
@@ -42,7 +42,7 @@ class ProfileController extends ApplicationController {
 
         $dataArray['profile'] = $profile[0];
         if (!($dataArray['profile']['myself'] = $currentUserId == $webUserId)) {
-            $dataArray['profile']['rated'] = $this->getViewedQueueObject()->exists($webUserId, $currentUserId);
+            $dataArray['profile']['rated'] = $this->getViewedQueueHelper()->exists($webUserId, $currentUserId);
         }
         $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
 
@@ -51,7 +51,7 @@ class ProfileController extends ApplicationController {
             shuffle($dataArray['profile']['interests']);
         }
 
-        if ($dataArray['profile']['gifts'] = $this->getGiftsObject()->get($currentUserId)) {
+        if ($dataArray['profile']['gifts'] = $this->getGiftsHelper()->get($currentUserId)) {
             $userData = array();
             foreach ($this->getMamba()->Anketa()->getInfo(array_unique(array_map(function($item) {
                 return (int) $item['web_user_id'];
@@ -71,11 +71,8 @@ class ProfileController extends ApplicationController {
 
         $dataArray['current_user_id'] = $currentUserId;
 
-        $Response = $this->render("EncountersBundle:templates:profile.html.twig", $dataArray);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        $this->getStatsHelper()->incr('profile-hits');
 
-        $this->getStatsObject()->incr('profile-hits');
-
-        return $Response;
+        return $this->TwigResponse("EncountersBundle:templates:profile.html.twig", $dataArray);
     }
 }

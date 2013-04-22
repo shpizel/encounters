@@ -115,8 +115,8 @@ class NotificationSendCommand extends CronScript {
             $this->getMemcache(),
             $this->getDoctrine()->getConnection(),
             $this->getMamba(),
-            $this->getVariablesObject(),
-            $this->getCountersObject(),
+            $this->getVariablesHelper(),
+            $this->getCountersHelper(),
         ];
 
         $truncateSql = "TRUNCATE `Encounters`.`Notifications`";
@@ -374,7 +374,7 @@ class NotificationSendCommand extends CronScript {
 
     private function processEnergyUpdate($task) {
         $this->log(var_export($task, true), 48);
-        $this->getEnergyObject()->set($task['user_id'], Popularity::$levels[4]);
+        $this->getEnergyHelper()->set($task['user_id'], Popularity::$levels[4]);
         $this->log("Added energy to {$task['user_id']}", 64);
     }
 
@@ -395,10 +395,10 @@ class NotificationSendCommand extends CronScript {
                 if ($result = $this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')) {
                     if (isset($result['count']) && $result['count']) {
                         $this->log($message, 64);
-                        $this->getStatsObject()->incr('notify');
+                        $this->getStatsHelper()->incr('notify');
 
-                        $this->getVariablesObject()->set($task['user_id'], 'last_notification_sent', time());
-                        $this->getVariablesObject()->set($task['user_id'], 'last_notification_metrics', $currentNotificationMetrics);
+                        $this->getVariablesHelper()->set($task['user_id'], 'last_notification_sent', time());
+                        $this->getVariablesHelper()->set($task['user_id'], 'last_notification_metrics', $currentNotificationMetrics);
                     } else {
                         $this->log($message, 16);
                     }

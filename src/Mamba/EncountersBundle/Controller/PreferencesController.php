@@ -23,7 +23,7 @@ class PreferencesController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $redisSearchPreferences = $this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'));
+        $redisSearchPreferences = $this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'));
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
 
@@ -37,7 +37,7 @@ class PreferencesController extends ApplicationController {
 
             $searchPreferences['orientation'] = intval($webUserAnketa[0]['info']['gender'] != $searchPreferences['gender']);
 
-            $this->getSearchPreferencesObject()->set($webUserId, $searchPreferences);
+            $this->getSearchPreferencesHelper()->set($webUserId, $searchPreferences);
 
             $this->getGearman()->getClient()->doHighBackground(
                 EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
@@ -138,9 +138,7 @@ class PreferencesController extends ApplicationController {
         $initialData = $this->getInitialData();
         $initialData['webuser']['preferences'] = $searchPreferences;
 
-        $Response = $this->render('EncountersBundle:templates:preferences.html.twig', $initialData);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        return $Response;
+        return $this->TwigResponse('EncountersBundle:templates:preferences.html.twig', $initialData);
     }
 
     /**
@@ -182,15 +180,15 @@ class PreferencesController extends ApplicationController {
     private function cleanUserQueues() {
         $Redis = $this->getRedis();
 
-        $Redis->delete($this->getHitlistQueueObject()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')));
-        $Redis->delete($this->getContactsQueueObject()->getRedisQueueKey($webUserId));
-        $Redis->delete($this->getSearchQueueObject()->getRedisQueueKey($webUserId));
+        $Redis->delete($this->getHitlistQueueHelper()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')));
+        $Redis->delete($this->getContactsQueueHelper()->getRedisQueueKey($webUserId));
+        $Redis->delete($this->getSearchQueueHelper()->getRedisQueueKey($webUserId));
 
         /**
          * По идее тут втупую удалять не нужно, потому что тут могут быть пользователи из PriorityQueue
          *
          * @author shpizel
          */
-        $Redis->delete($this->getCurrentQueueObject()->getRedisQueueKey($webUserId));
+        $Redis->delete($this->getCurrentQueueHelper()->getRedisQueueKey($webUserId));
     }
 }

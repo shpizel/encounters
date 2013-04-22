@@ -45,13 +45,13 @@ class RepairSearchPreferencesGeoCommand extends CronScript {
             if ($apiResponse = $this->getMamba()->Anketa()->getInfo($userId)) {
                 $anketa = $apiResponse[0];
 
-                if ($searchPreferences = $this->getSearchPreferencesObject()->get($userId)) {
+                if ($searchPreferences = $this->getSearchPreferencesHelper()->get($userId)) {
                     $searchPreferences['geo']['country_id'] = isset($anketa['location']['country_id']) ? $anketa['location']['country_id'] : null;
                     $searchPreferences['geo']['region_id'] = isset($anketa['location']['region_id']) ? $anketa['location']['region_id'] : null;
                     $searchPreferences['geo']['city_id'] = isset($anketa['location']['city_id']) ? $anketa['location']['city_id'] : null;
                     $searchPreferences['changed'] = time();
 
-                    $this->getSearchPreferencesObject()->set($userId, $searchPreferences);
+                    $this->getSearchPreferencesHelper()->set($userId, $searchPreferences);
 
                     $this->getGearmanClient()->doHighBackground(
                         EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,

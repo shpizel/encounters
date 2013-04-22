@@ -152,7 +152,7 @@ class PhotolineIcebreakerCommand extends CronScript {
                                      */
                                     $about = $this->getMamba()->Anketa()->getInfo($userId);
                                     $about = array_shift($about);
-                                    $this->getPhotolineObject()->add($regionId, $userId, $about['about'], true);
+                                    $this->getPhotolineHelper()->add($regionId, $userId, $about['about'], true);
                                     $this->log($userId . " was added to {$regionId} photoline", 64);
                                 } else {
                                     $this->log("Users was not found :(");

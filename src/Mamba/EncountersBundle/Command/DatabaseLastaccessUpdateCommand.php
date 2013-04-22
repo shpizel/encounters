@@ -2,15 +2,16 @@
 namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Script\CronScript;
+use PDO;
 
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * EnergyUpdateCommand
+ * DatabaseLastaccessUpdateCommand
  *
  * @package EncountersBundle
  */
-class DatabaseEnergyUpdateCommand extends CronScript {
+class DatabaseLastaccessUpdateCommand extends CronScript {
 
     const
 
@@ -19,28 +20,28 @@ class DatabaseEnergyUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Updates users energies",
+        SCRIPT_DESCRIPTION = "Updates users lastaccess",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:energy:update",
+        SCRIPT_NAME = "cron:database:lastaccess:update",
 
         /**
-         * SQL-запрос обновления таблицы энергий
+         * SQL-запрос обновления таблицы юзеров
          *
          * @var str
          */
-        SQL_ENERGY_UPDATE = "
+        SQL_USER_LASTACCESS_UPDATE = "
             INSERT INTO
-                Encounters.Energy
+                Encounters.LastAccess
             SET
-                `user_id` = :user_id,
-                `energy`  = :energy
+                `user_id`     = :user_id,
+                `lastaccess`  = :lastaccess
             ON DUPLICATE KEY UPDATE
-                `energy` = :energy
+                `lastaccess`  = :lastaccess
         "
     ;
 
@@ -53,8 +54,8 @@ class DatabaseEnergyUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME, function($job) use($class) {
-            return $class->updateEnergy($job);
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME, function($job) use($class) {
+            return $class->updateUserLastaccess($job);
         });
 
         $iterations = $this->iterations;
@@ -83,25 +84,24 @@ class DatabaseEnergyUpdateCommand extends CronScript {
     }
 
     /**
-     * Обновление таблицы энергий
+     * Обновление таблицы Lastaccess
      *
      * @param $job
      */
-    public function updateEnergy($job) {
-        list($userId, $energy) = array_values(unserialize($job->workload()));
+    public function updateUserLastaccess($job) {
+        list($userId) = array_values(unserialize($job->workload()));
 
-        $this->log("Got task for <info>current_user_id</info> = {$userId}, <info>energy</info> = {$energy}");
+        $this->log("Got task for <info>user_id</info> = {$userId}");
 
-        if ($this->getSearchPreferencesHelper()->exists($userId)) {
-            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_ENERGY_UPDATE);
-            $stmt->bindValue('user_id', $userId);
-            $stmt->bindValue('energy', $energy = $this->getEnergyHelper()->get($userId));
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_LASTACCESS_UPDATE);
+        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue('lastaccess', $_lastAccess = (int)$this->getVariablesHelper()->get($userId, 'lastaccess'), PDO::PARAM_INT);
 
-            $result = $stmt->execute();
-            $this->getMemcache()->delete("energy_update_lock_by_user_" . $userId);
-            if (!$result) {
-                throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
-            }
+        $result = $stmt->execute();
+        if (!$result) {
+            throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
+        } else {
+            $this->getMemcache()->delete("lastaccess_update_lock_by_user_" . $userId);
         }
     }
 }

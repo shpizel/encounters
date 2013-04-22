@@ -19,7 +19,7 @@ $Layers.$PhotolinePurchaseLayer = {
             }
 
 
-            $.post($Routing.getPath('photoline.purchase'), {'comment': $comment}, function($data) {
+            $Tools.ajaxPost('photoline.purchase', {'comment': $comment}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data['account']);
 

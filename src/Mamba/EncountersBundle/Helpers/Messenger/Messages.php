@@ -138,6 +138,8 @@ class Messages extends Helper {
 
             /**
              * Отправляем в очередь
+             *
+             * @author shpizel
              **/
 
             return true;

@@ -249,7 +249,7 @@ class SearchQueueUpdateCommand extends CronScript {
             throw new \Core\ScriptBundle\CronScriptException("Invalid workload");
         }
 
-        if (!($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))) {
+        if (!($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId))) {
             throw new \Core\ScriptBundle\CronScriptException("Could not get search preferences for user_id=$webUserId");
         }
 
@@ -257,7 +257,7 @@ class SearchQueueUpdateCommand extends CronScript {
             return;
         }
 
-        if ($this->getSearchQueueObject()->getSize($webUserId) >= self::LIMIT) {
+        if ($this->getSearchQueueHelper()->getSize($webUserId) >= self::LIMIT) {
             throw new \Core\ScriptBundle\CronScriptException("Search queue for user_id=$webUserId has limit exceed");
         }
 
@@ -281,16 +281,16 @@ class SearchQueueUpdateCommand extends CronScript {
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $currentUserId = (int) $item['user_id'];
 
-                if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId) &&
-                    !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId) &&
+                if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
+                    !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                     !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                 ) {
                     try {
                         $this->getMamba()->Photos()->get($currentUserId);
-                        $this->getSearchQueueObject()->put(
+                        $this->getSearchQueueHelper()->put(
                             $webUserId,
                             $currentUserId,
-                            $this->getEnergyObject()->get($currentUserId)
+                            $this->getEnergyHelper()->get($currentUserId)
                         ) && $usersAddedCount++;
 
                         if ($usersAddedCount >= self::LIMIT) {
@@ -350,8 +350,8 @@ class SearchQueueUpdateCommand extends CronScript {
                             );
 
                             foreach ($result['users'] as $currentUserId) {
-                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesHelper()->exists($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))
                                         && $usersAddedCount++;
 
                                     if ($usersAddedCount >= self::LIMIT) {
@@ -388,16 +388,16 @@ class SearchQueueUpdateCommand extends CronScript {
 
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $currentUserId = (int) $item['user_id'];
-                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId) &&
-                        !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId) &&
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
+                        !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                         !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                     ) {
                         try {
                             $this->getMamba()->Photos()->get($currentUserId);
-                            $this->getSearchQueueObject()->put(
+                            $this->getSearchQueueHelper()->put(
                                 $webUserId,
                                 $currentUserId,
-                                $this->getEnergyObject()->get($currentUserId)
+                                $this->getEnergyHelper()->get($currentUserId)
                             ) && $usersAddedCount++;
 
                             if ($usersAddedCount >= self::LIMIT) {
@@ -458,8 +458,8 @@ class SearchQueueUpdateCommand extends CronScript {
 
                         if (isset($result['users'])) {
                             foreach ($result['users'] as $currentUserId) {
-                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesHelper()->exists($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))
                                         && $usersAddedCount++;
 
                                     if ($usersAddedCount >= self::LIMIT) {
@@ -495,16 +495,16 @@ class SearchQueueUpdateCommand extends CronScript {
 
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $currentUserId = (int) $item['user_id'];
-                    if (!$this->getViewedQueueObject()->exists($webUserId, $currentUserId) &&
-                        !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId) &&
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
+                        !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                         !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                     ) {
                         try {
                             $this->getMamba()->Photos()->get($currentUserId);
-                            $this->getSearchQueueObject()->put(
+                            $this->getSearchQueueHelper()->put(
                                 $webUserId,
                                 $currentUserId,
-                                $this->getEnergyObject()->get($currentUserId)
+                                $this->getEnergyHelper()->get($currentUserId)
                             ) && $usersAddedCount++;
 
                             if ($usersAddedCount >= self::LIMIT) {
@@ -565,8 +565,8 @@ class SearchQueueUpdateCommand extends CronScript {
 
                         if (isset($result['users'])) {
                             foreach ($result['users'] as $currentUserId) {
-                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesHelper()->exists($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))
                                         && $usersAddedCount++;
 
                                     if ($usersAddedCount >= self::LIMIT) {
@@ -618,8 +618,8 @@ class SearchQueueUpdateCommand extends CronScript {
                     foreach ($results as $result) {
                         if (isset($result['users'])) {
                             foreach ($result['users'] as $currentUserId) {
-                                if (is_int($currentUserId) && !$this->getSearchPreferencesObject()->exists($currentUserId) && !$this->getViewedQueueObject()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueObject()->exists($webUserId, $currentUserId)) {
-                                    $this->getSearchQueueObject()->put($webUserId, $currentUserId, $this->getEnergyObject()->get($currentUserId))
+                                if (is_int($currentUserId) && !$this->getSearchPreferencesHelper()->exists($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
+                                    $this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))
                                         && $usersAddedCount++;
 
                                     if ($usersAddedCount >= self::LIMIT) {

@@ -37,7 +37,7 @@ $Search = {
         }
 
         var $showLayerFunction = function() {
-            $.post($Routing.getPath('decision.get'), { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
+            $Tools.ajaxPost('decision.get', { user_id: $Search.$storage['currentQueueElement']['info']['id']}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $data = $data.data;
                     if ($data.hasOwnProperty('charge')) {
@@ -69,7 +69,7 @@ $Search = {
         $("div.app-image-member div.name-container div.content a").click($showLayerFunction);
 
         $("div.app-block-no-popular a.close").click(function() {
-            $.post($Routing.getPath('variable.set'), { key: 'search_no_popular_block_hidden', data: 1}, function($data) {
+            $Tools.ajaxPost('variable.set', { key: 'search_no_popular_block_hidden', data: 1}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $("div.app-block-no-popular").hide();
                 }
@@ -138,7 +138,7 @@ $Search = {
         });
 
         $("div.message-help a#getmore").click(function() {
-            $.post($Routing.getPath('popularity.get'), function($data) {
+            $Tools.ajaxPost('popularity.get', {}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     var
                         $energy = $data.data['popularity']['energy'],
@@ -149,9 +149,9 @@ $Search = {
 
                     $Config.$storage['webuser']['popularity'] = $data.data['popularity'];
 
-                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
-                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
-                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+                    $(".app-meet-button div.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".app-meet-button div.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".app-meet-button div.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
 
                     $Account.setAccount($data.data['account']);
 
@@ -188,7 +188,7 @@ $Search = {
 
         $Search.$storage['locked'] = true;
 
-        $.post($Routing.getPath('decision.set'), { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
+        $Tools.ajaxPost('decision.set', { user_id: $Search.$storage['currentQueueElement']['info']['id'], decision: $decision }, function($data) {
             if ($data.status == 0 && $data.message == "") {
                 if ($data.data['mutual']) {
                     $Layers.showMutualLayer();
@@ -205,9 +205,9 @@ $Search = {
                         $levelUp = $data.data['popularity']['level_up']
                     ;
 
-                    $(".info-meet li.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
-                    $(".info-meet li.item-popularity div.bar div.level").attr('class', 'level l' + $level);
-                    $(".info-meet li.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
+                    $(".app-meet-button div.item-popularity div.bar div.level-background").attr('class', 'level-background lbc' + (parseInt(($energy - $prev)*100/($next - $prev)/25) + 1));
+                    $(".app-meet-button div.item-popularity div.bar div.level").attr('class', 'level l' + $level);
+                    $(".app-meet-button div.item-popularity div.bar div.speedo").css('width', parseInt(($energy - $prev)*100/($next - $prev)*0.99)+'px');
 
                     if ($levelUp) {
                         $Layers.showLevelAchievementLayer();
@@ -231,16 +231,32 @@ $Search = {
 
                 $data = $data.data;
                 if ($data.hasOwnProperty('counters')) {
-                    if ($data['counters']['mychoice'] > 0) {
-                        $('li.item-mychoice a i').eq(0).text($data['counters']['mychoice']);
-                    }
-
                     if ($data['counters']['visitors'] > 0 ) {
                         $('li.item-visitors a i').eq(1).text($data['counters']['visitors']);
                     }
 
-                    if ($data['counters']['mutual'] > 0) {
+                    if ($data['counters']['visitors_unread'] > 0 ) {
+                        $('li.item-visitors a i.plus b').eq(0).text('+' + $data['counters']['visitors_unread']);
+                    } else {
+                        $('li.item-visitors a i.plus b').eq(0).text('');
+                    }
+
+                    if ($data['counters']['mutual_unread'] > 0) {
+                        $('li.item-mutual a i').eq(0).text('+' + $data['counters']['mutual_unread']);
+                    } else if ($data['counters']['mutual'] > 0) {
                         $('li.item-mutual a i').eq(0).text($data['counters']['mutual']);
+                    }
+
+                    if ($data['counters']['messages_unread'] > 0) {
+                        $('li.item-messages a i.plus b').text('+' + $data['counters']['messages_unread']);
+                    } else {
+                        $('li.item-messages a i.plus b').text('');
+                    }
+
+                    if ($data['counters']['events_unread'] > 0) {
+                        $('li.item-profile a i.plus b').text('+' + $data['counters']['events_unread']);
+                    } else {
+                        $('li.item-profile a i.plus b').text('');
                     }
                 }
 
@@ -261,7 +277,7 @@ $Search = {
                 });
                 $Search.lockUI();
             }
-        }).error(function() {
+        }, function() {
             top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
         });
     },
@@ -477,7 +493,7 @@ $Search = {
      * @param $callback
      */
     loadQueue: function($callback) {
-        $.post($Routing.getPath('queue.get'), function($data) {
+        $Tools.ajaxPost('queue.get', {}, function($data) {
             if (typeof $data == 'object' && $data.status == 0 && $data.message == "") {
                 for (var $i=0;$i<$data.data.length;$i++) {
                     $Queue.put($data.data[$i]);
@@ -496,7 +512,7 @@ $Search = {
                     }, 1500);
                 }
             }
-        }).error(function() {
+        }, function() {
             top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
         });
     }

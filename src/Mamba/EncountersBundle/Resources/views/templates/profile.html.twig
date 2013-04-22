@@ -56,15 +56,17 @@
                 </ul>
             {% endif %}
 
-            {% if profile.interests|length > 0 %}
-                <div class="anketa-content_user-interes">
-                    <div class="title">{% if profile.info.gender == 'M' %}Его{% else %}Ее{% endif %} интересы</div>
-                    <ul class="tags-list">
-                        {% for interest in profile.interests %}
-                            <li class="tags-list_item">{{ interest }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+            {% if not profile.myself %}
+                {% if profile.interests|length > 0 %}
+                    <div class="anketa-content_user-interes">
+                        <div class="title">{% if profile.info.gender == 'M' %}Его{% else %}Ее{% endif %} интересы</div>
+                        <ul class="tags-list">
+                            {% for interest in profile.interests %}
+                                <li class="tags-list_item">{{ interest }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
             {% endif %}
 
             <div class="anketa-content_user-info">
@@ -106,6 +108,7 @@
                             <div class="content">{{ profile.familiarity.marital }}</div>
                         </div>
                     {% endif %}
+
                 </div>
 
                 <div class="block-right">

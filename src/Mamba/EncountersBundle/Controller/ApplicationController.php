@@ -1,6 +1,8 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
+use Mamba\EncountersBundle\EncountersBundle;
+
 use Mamba\EncountersBundle\Helpers\Gifts;
 use Mamba\EncountersBundle\Helpers\Messenger\Contacts;
 use Mamba\EncountersBundle\Helpers\Messenger\Messages;
@@ -35,6 +37,8 @@ use Mamba\EncountersBundle\Helpers\Queues\HitlistQueue;
 use Mamba\EncountersBundle\Helpers\Queues\PriorityQueue;
 use Mamba\EncountersBundle\Helpers\Queues\SearchQueue;
 use Mamba\EncountersBundle\Helpers\Queues\ViewedQueue;
+
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * ApplicationController
@@ -112,7 +116,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Battery
      */
-    public function getBatteryObject() {
+    public function getBatteryHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -125,7 +129,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Photoline
      */
-    public function getPhotolineObject() {
+    public function getPhotolineHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -138,7 +142,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Gifts
      */
-    public function getGiftsObject() {
+    public function getGiftsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -151,7 +155,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Contacts
      */
-    public function getContactsObject() {
+    public function getContactsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -165,11 +169,7 @@ abstract class ApplicationController extends Controller {
      * @return Contacts
      */
     public function getLeveldb() {
-        if (isset(self::$Instances[__FUNCTION__])) {
-            return self::$Instances[__FUNCTION__];
-        }
-
-        return self::$Instances[__FUNCTION__] = $this->get('leveldb');
+        return $this->get('leveldb');
     }
 
     /**
@@ -177,7 +177,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Messages
      */
-    public function getMessagesObject() {
+    public function getMessagesHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -190,7 +190,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Energy
      */
-    public function getEnergyObject() {
+    public function getEnergyHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -203,7 +203,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return SearchPreferences
      */
-    public function getSearchPreferencesObject() {
+    public function getSearchPreferencesHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -216,7 +216,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return PlatformSettings
      */
-    public function getPlatformSettingsObject() {
+    public function getPlatformSettingsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -229,7 +229,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return ContactsQueue
      */
-    public function getContactsQueueObject() {
+    public function getContactsQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -242,7 +242,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return CurrentQueue
      */
-    public function getCurrentQueueObject() {
+    public function getCurrentQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -255,7 +255,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return HitlistQueue
      */
-    public function getHitlistQueueObject() {
+    public function getHitlistQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -268,7 +268,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return PriorityQueue
      */
-    public function getPriorityQueueObject() {
+    public function getPriorityQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -281,7 +281,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return SearchQueue
      */
-    public function getSearchQueueObject() {
+    public function getSearchQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -294,7 +294,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return ViewedQueue
      */
-    public function getViewedQueueObject() {
+    public function getViewedQueueHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -307,7 +307,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Counters
      */
-    public function getCountersObject() {
+    public function getCountersHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -320,7 +320,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Notifications
      */
-    public function getNotificationsObject() {
+    public function getNotificationsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -333,7 +333,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Services
      */
-    public function getServicesObject() {
+    public function getServicesHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -346,7 +346,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Purchased
      */
-    public function getPurchasedObject() {
+    public function getPurchasedHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -359,7 +359,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Stats
      */
-    public function getStatsObject() {
+    public function getStatsHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -372,7 +372,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Variables
      */
-    public function getVariablesObject() {
+    public function getVariablesHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -385,7 +385,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Account
      */
-    public function getAccountObject() {
+    public function getAccountHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -398,7 +398,7 @@ abstract class ApplicationController extends Controller {
      *
      * @return Popularity
      */
-    public function getPopularityObject() {
+    public function getPopularityHelper() {
         if (isset(self::$Instances[__FUNCTION__])) {
             return self::$Instances[__FUNCTION__];
         }
@@ -414,8 +414,8 @@ abstract class ApplicationController extends Controller {
     public function getInitialData() {
         $dataArray = array();
         $dataArray['settings'] = array(
-            'platform' => json_encode($platformSettings = $this->getPlatformSettingsObject()->get($webUserId = (int) $this->getMamba()->get('oid'))),
-            'search'   => json_encode($searchPreferences = $this->getSearchPreferencesObject()->get($webUserId))
+            'platform' => json_encode($platformSettings = $this->getPlatformSettingsHelper()->get($webUserId = (int) $this->getMamba()->get('oid'))),
+            'search'   => json_encode($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId))
         );
 
         $dataArray['platform'] = $platformSettings;
@@ -427,17 +427,17 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['webuser'] = array(
             'anketa'      => $webUser[0],
-            'popularity'  => $this->getPopularityObject()->getInfo($this->getEnergyObject()->get($webUserId)),
-            'battery'     => $this->getBatteryObject()->get($webUserId),
-            'account'     => $this->getAccountObject()->get($webUserId),
+            'popularity'  => $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($webUserId)),
+            'battery'     => $this->getBatteryHelper()->get($webUserId),
+            'account'     => $this->getAccountHelper()->get($webUserId),
             'preferences' => $searchPreferences,
         );
 
-        if ($counters = $this->getCountersObject()->getMulti([$webUserId], ['mychoice', 'visitors', 'visitors_unread', 'mutual', 'mutual_unread'])) {
+        if ($counters = $this->getCountersHelper()->getMulti([$webUserId], ['mychoice', 'visitors', 'visitors_unread', 'mutual', 'mutual_unread', 'messages_unread', 'events_unread'])) {
             $dataArray['webuser']['stats'] = $counters[$webUserId];
         }
 
-        if ($photolineItems = $this->getPhotolineObject()->get($webUser[0]['location']['region_id'])) {
+        if ($photolineItems = $this->getPhotolineHelper()->get($webUser[0]['location']['region_id'])) {
             $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
                 return (int) $item['user_id'];
             }, $photolineItems), array('location'));
@@ -476,10 +476,10 @@ abstract class ApplicationController extends Controller {
         $dataArray['routes'] = json_encode($this->getRoutes());
 
         $dataArray['notification'] = array(
-            'message' => $this->getNotificationsObject()->get($webUserId),
+            'message' => $this->getNotificationsHelper()->get($webUserId),
         );
 
-        if ($variables = $this->getVariablesObject()->getMulti([$webUserId], ['search_no_popular_block_hidden', 'notification_hidden'])) {
+        if ($variables = $this->getVariablesHelper()->getMulti([$webUserId], ['search_no_popular_block_hidden', 'notification_hidden'])) {
             $dataArray['variables'] = $variables[$webUserId];
         }
 
@@ -524,7 +524,6 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         $dataArray['time'] = time();
-        $dataArray['request_microtime'] = $_SERVER["REQUEST_TIME_FLOAT"];
         $dataArray['microtime'] = microtime(true);
 
         return $dataArray;
@@ -555,5 +554,62 @@ abstract class ApplicationController extends Controller {
         }
 
         return $routes;
+    }
+
+    private function updateLastAccess() {
+        $Session = $this->getSession();
+        if ($webUserId = (int) $Session->get(Mamba::SESSION_USER_ID_KEY)) {
+            $this->getVariablesHelper()->set($webUserId, 'lastaccess', time());
+
+            $this->getMemcache()->add("lastaccess_update_lock_by_user_" . $webUserId, time(), 750) &&
+                $this->getGearman()->getClient()->doHighBackground(
+                    EncountersBundle::GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME,
+                    serialize(
+                        array(
+                            'user_id' => $webUserId,
+                        )
+                    )
+                )
+            ;
+        }
+    }
+
+    /**
+     * @param array $JSON
+     * @return Response
+     */
+    public function JSONResponse(array $JSON) {
+        $this->updateLastAccess();
+
+        $JSON['metrics'] = array(
+            'generation_time' => microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
+            'leveldb' => $this->getLeveldb()->getMetrics(),
+        );
+
+        return
+            new Response(
+                json_encode($JSON),
+                200,
+                array(
+                    "content-type" => "application/json",
+                )
+            )
+        ;
+    }
+
+    /**
+     *
+     * @param $view
+     * @param array $parameters
+     * @param Response $response
+     * @return Response
+     */
+    public function TwigResponse($view, array $parameters = array(), Response $response = null) {
+        $this->updateLastAccess();
+
+        $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+        $Response = $this->render($view, $parameters, $response);
+        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+        return $Response;
     }
 }

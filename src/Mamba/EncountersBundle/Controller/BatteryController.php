@@ -37,8 +37,8 @@ class BatteryController extends ApplicationController {
      */
     public function chargeAction() {
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $Account = $this->getAccountObject();
-            $Battery = $this->getBatteryObject();
+            $Account = $this->getAccountHelper();
+            $Battery = $this->getBatteryHelper();
 
             $charge  = $Battery->get($webUserId);
             $account = $Account->get($webUserId);
@@ -62,11 +62,6 @@ class BatteryController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 }

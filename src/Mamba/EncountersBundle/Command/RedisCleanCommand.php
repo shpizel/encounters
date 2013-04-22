@@ -43,23 +43,23 @@ class RedisCleanCommand extends CronScript {
         }
 
         foreach ($appUsers as $userId) {
-            $lastAccess = $this->getVariablesObject()->get($userId, 'lastaccess');
+            $lastAccess = $this->getVariablesHelper()->get($userId, 'lastaccess');
             if (!$lastAccess || ((time() - $lastAccess)/86400) > 28) {
-                $Redis->del($this->getContactsQueueObject()->getRedisQueueKey($userId));
-                $Redis->del($this->getCurrentQueueObject()->getRedisQueueKey($userId));
-                $Redis->del($this->getHitlistQueueObject()->getRedisQueueKey($userId));
-                $Redis->del($this->getSearchQueueObject()->getRedisQueueKey($userId));
+                $Redis->del($this->getContactsQueueHelper()->getRedisQueueKey($userId));
+                $Redis->del($this->getCurrentQueueHelper()->getRedisQueueKey($userId));
+                $Redis->del($this->getHitlistQueueHelper()->getRedisQueueKey($userId));
+                $Redis->del($this->getSearchQueueHelper()->getRedisQueueKey($userId));
             }
         }
 
         foreach ($appUsers as $userId) {
-            $lastAccess = $this->getVariablesObject()->get($userId, 'lastaccess');
+            $lastAccess = $this->getVariablesHelper()->get($userId, 'lastaccess');
             if (!$lastAccess || ((time() - $lastAccess)/86400) > 6) {
                 if ($purchased = $Redis->sMembers($purchasedKey = "purchased_by_{$userId}")) {
                     foreach ($purchased as $purchasedUserId) {
                         $purchasedUserId = (int) $purchasedUserId;
 
-                        if (!$this->getViewedQueueObject()->get($purchasedUserId, $userId)) {
+                        if (!$this->getViewedQueueHelper()->get($purchasedUserId, $userId)) {
                             $Redis->sRemove($purchasedKey, $purchasedUserId);
                         }
                     }

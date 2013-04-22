@@ -54,6 +54,6 @@ class AdminDecisionsController extends ApplicationController {
 
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
-        return $this->render('EncountersBundle:templates:admin.decisions.html.twig', $dataArray);
+        return $this->TwigResponse('EncountersBundle:templates:admin.decisions.html.twig', $dataArray);
     }
 }

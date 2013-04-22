@@ -93,7 +93,7 @@ class RedisCountersUpdateCommand extends CronScript {
             $userId  = (int) $item['user_id'];
             $counter = (int) $item['counter'];
 
-            $this->getCountersObject()->set($userId, 'mutual', $counter);
+            $this->getCountersHelper()->set($userId, 'mutual', $counter);
         }
 
         $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MYCHOICE_COUNT);
@@ -103,7 +103,7 @@ class RedisCountersUpdateCommand extends CronScript {
             $userId  = (int) $item['user_id'];
             $counter = (int) $item['counter'];
 
-            $this->getCountersObject()->set($userId, 'mychoice', $counter);
+            $this->getCountersHelper()->set($userId, 'mychoice', $counter);
         }
 
         $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_VISITORS_COUNT);
@@ -113,7 +113,7 @@ class RedisCountersUpdateCommand extends CronScript {
             $userId  = (int) $item['user_id'];
             $counter = (int) $item['counter'];
 
-            $this->getCountersObject()->set($userId, 'visitors', $counter);
+            $this->getCountersHelper()->set($userId, 'visitors', $counter);
         }
     }
 }

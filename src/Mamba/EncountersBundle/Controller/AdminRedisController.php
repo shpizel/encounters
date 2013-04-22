@@ -30,6 +30,6 @@ class AdminRedisController extends ApplicationController {
         $dataArray['keys'] = array_keys($items);
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
-        return $this->render('EncountersBundle:templates:admin.redis.html.twig', $dataArray);
+        return $this->TwigResponse('EncountersBundle:templates:admin.redis.html.twig', $dataArray);
     }
 }

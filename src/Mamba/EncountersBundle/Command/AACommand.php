@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
+use Mamba\EncountersBundle\Controller\MessengerController;
 use Mamba\EncountersBundle\Script\Script;
 use Mamba\EncountersBundle\Tools\Gifts\Gifts;
 
@@ -34,7 +35,14 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $data = file("https://dl.dropboxusercontent.com/u/34766282/search.txt");
+        echo (new MessengerController())->cleanHTMLMessage('<p fff>111</p><img src="/bundles/encounters/images/pixel.if" class="smile s-23">');
+
+        exit();
+        $N = $this->getNo();
+        $N->add(560015854, 'test');
+        exit();
+
+        /*$data = file("https://dl.dropboxusercontent.com/u/34766282/search.txt");
         $ret = [];
         foreach ($data as $line) {
             $line = trim($line);
@@ -59,7 +67,7 @@ class AACommand extends Script {
 
 
         exit()
-        ;for ($i=0;$i<5;$i++) {
+        ;*/for ($i=0;$i<5;$i++) {
             echo ".smile.s-" . ($i+1) . " {" . PHP_EOL;
             $y = $i*16;
 

@@ -87,6 +87,7 @@ $Photoline = {
             } else {
                 $photolineInfoLayer.css({left: $photoPosition.left + 2 + 'px'});
             }
+
             $photolineInfoLayer.show();
         });
 
@@ -98,7 +99,7 @@ $Photoline = {
             if (!$Photoline.$locked) {
                 $Photoline.$locked = true;
 
-                $.post($Routing.getPath('photoline.get'), {'from': $Photoline.$lastUpdated}, function($data) {
+                $Tools.ajaxPost('photoline.get', {'from': $Photoline.$lastUpdated}, function($data) {
                     if ($data.status == 0 && $data.message == "") {
                         var $items = $data.data['items'];
                         if ($items.length > 0) {
@@ -111,11 +112,11 @@ $Photoline = {
                     }
 
                     $Photoline.$locked = false;
-                }).onerror(function() {
+                },function() {
                     window.clearInterval($Config.get($Photoline.$serverUpdateTimerName));
                 });
             }
-        }, 5 * 1000));
+        }, 7.5 * 1000));
 
         $Config.set($Photoline.$queueUpdateTimerName, window.setInterval(function() {
             if (!$Photoline.$locked) {

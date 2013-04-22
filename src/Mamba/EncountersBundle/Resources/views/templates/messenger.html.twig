@@ -57,8 +57,7 @@
     <ul class="tags-list"></ul>
 
     <ul class="orange-menu">
-        <li class="item meet"><span>Встретиться</span></li>
-
+        {#<li class="item meet"><span>Встретиться</span></li>#}
         <li class="item gift"><span>Отправить подарок</span>
             <div class="drop_down drop_down-present">
 
@@ -163,4 +162,10 @@
     </div>
 
     </div>
+{% endblock %}
+
+{% block pagejs %}
+{% if contact_id is defined %}
+    $Config.set('contact_id', {{ contact_id }});
+{% endif %}
 {% endblock %}

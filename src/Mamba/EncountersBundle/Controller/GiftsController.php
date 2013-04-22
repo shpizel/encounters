@@ -43,14 +43,14 @@ class GiftsController extends ApplicationController {
 
             if ($currentUserId && $giftId && ($Gift = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftId))) {
 
-                $Account = $this->getAccountObject();
+                $Account = $this->getAccountHelper();
                 $account = $Account->get($webUserId);
 
                 $cost = $Gift->getCost();
                 if ($account >= $cost) {
                     $account = $Account->decr($webUserId, $cost);
 
-                    $this->getGiftsObject()->add($webUserId, $currentUserId, $giftId, $comment);
+                    $this->getGiftsHelper()->add($webUserId, $currentUserId, $giftId, $comment);
 
                     $userInfo = $this->getMamba()->Anketa()->getInfo($webUserId);
 
@@ -73,8 +73,8 @@ class GiftsController extends ApplicationController {
                      *
                      * @author shpizel
                      */
-                    $ContactsObject = $this->getContactsObject();
-                    $MessagesObject = $this->getMessagesObject();
+                    $ContactsObject = $this->getContactsHelper();
+                    $MessagesObject = $this->getMessagesHelper();
 
                     if (!($Contact = $ContactsObject->getContact($webUserId, $currentUserId))) {
                         $Contact = $ContactsObject->createContact($webUserId, $currentUserId);
@@ -109,11 +109,6 @@ class GiftsController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 }

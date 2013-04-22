@@ -23,6 +23,6 @@ class AdminMemcacheController extends ApplicationController {
         $dataArray['keys'] = array_keys($stats);
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
-        return $this->render('EncountersBundle:templates:admin.memcache.html.twig', $dataArray);
+        return $this->TwigResponse('EncountersBundle:templates:admin.memcache.html.twig', $dataArray);
     }
 }

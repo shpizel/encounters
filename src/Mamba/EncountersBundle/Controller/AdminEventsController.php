@@ -271,6 +271,6 @@ class AdminEventsController extends ApplicationController {
 
         $dataArray['controller'] = $this->getControllerName(__CLASS__);
 
-        return $this->render('EncountersBundle:templates:admin.events.html.twig', $dataArray);
+        return $this->TwigResponse('EncountersBundle:templates:admin.events.html.twig', $dataArray);
     }
 }

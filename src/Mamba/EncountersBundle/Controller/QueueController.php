@@ -40,12 +40,12 @@ class QueueController extends ApplicationController {
 
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
             if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
-                $Account = $this->getAccountObject();
+                $Account = $this->getAccountHelper();
                 $account = $Account->get($webUserId);
 
                 if ($account >= $cost) {
                     $account = $Account->decr($webUserId, $cost);
-                    $this->getPriorityQueueObject()->put($currentUserId, $webUserId);
+                    $this->getPriorityQueueHelper()->put($currentUserId, $webUserId);
 
                     $this->json['data'] = array(
                         'account' => $account,
@@ -60,12 +60,7 @@ class QueueController extends ApplicationController {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 
     /**
@@ -78,7 +73,7 @@ class QueueController extends ApplicationController {
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
-        } elseif (($webUserId = $Mamba->get('oid')) && ($currentQueue = $this->getCurrentQueueObject()->getAll($webUserId))) {
+        } elseif (($webUserId = $Mamba->get('oid')) && ($currentQueue = $this->getCurrentQueueHelper()->getAll($webUserId))) {
             $currentQueue = array_reverse($currentQueue);
             $currentQueue = array_chunk($currentQueue, 100);
             foreach ($currentQueue as $key=>$subQueue) {
@@ -98,8 +93,8 @@ class QueueController extends ApplicationController {
                     if (!(isset($dataArray['location']) && isset($dataArray['flags']) && isset($dataArray['familiarity']))) {
                         $currentUserId = $dataArray['info']['oid'];
 
-                        $this->getCurrentQueueObject()->remove($webUserId, (int)$currentUserId);
-                        $this->getViewedQueueObject()->put($webUserId, (int)$currentUserId, array('error' => 1));
+                        $this->getCurrentQueueHelper()->remove($webUserId, (int)$currentUserId);
+                        $this->getViewedQueueHelper()->put($webUserId, (int)$currentUserId, array('error' => 1));
 
                         continue;
                     }
@@ -152,14 +147,14 @@ class QueueController extends ApplicationController {
                     if (!isset($dataArray['photos'])) {
                         unset($this->json['data'][$key]);
 
-                        $this->getCurrentQueueObject()->remove($webUserId, $currentUserId);
+                        $this->getCurrentQueueHelper()->remove($webUserId, $currentUserId);
                     }
                 }
             } else {
                 foreach ($currentQueue as $chunk) {
                     foreach ($chunk as $currentUserId) {
-                        $this->getCurrentQueueObject()->remove($webUserId, (int)$currentUserId);
-                        $this->getViewedQueueObject()->put($webUserId, (int)$currentUserId, array('error' => 1));
+                        $this->getCurrentQueueHelper()->remove($webUserId, (int)$currentUserId);
+                        $this->getViewedQueueHelper()->put($webUserId, (int)$currentUserId, array('error' => 1));
                     }
                 }
             }
@@ -177,11 +172,6 @@ class QueueController extends ApplicationController {
             $this->json['data'] = array_values($this->json['data']);
         }
 
-        return
-            new Response(json_encode($this->json), 200, array(
-                    "content-type" => "application/json",
-                )
-            )
-        ;
+        return $this->JSONResponse($this->json);
     }
 }

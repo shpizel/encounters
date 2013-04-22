@@ -101,6 +101,8 @@ class Leveldb {
         $errorNumber = $errorString = null;
         if ($slaveConnection = fsockopen($this->slave['host'], (int) $this->slave['port'], $errorNumber, $errorString, $this->slave['timeout'])) {
             return $this->slave['connection'] = $slaveConnection;
+        } elseif ($masterConnection = $this->getMasterConnection()) {
+            return $this->slave['connection'] = $masterConnection;
         } else {
             throw new LeveldbException("Could not connect to slave {$this->slave['host']}:{$this->slave['port']}, '{$errorString}'", $errorNumber);
         }

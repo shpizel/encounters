@@ -33,7 +33,7 @@ class PopularityRegressionCommand extends Script {
      * @return null
      */
     protected function process() {
-        $Popularity = $this->getPopularityObject();
+        $Popularity = $this->getPopularityHelper();
 
         $energy = $Popularity->getMaxEnergy();
         $this->log("Starting energy: " . $energy, 64);

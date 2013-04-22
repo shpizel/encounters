@@ -22,7 +22,7 @@ class SearchController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesObject()->get($webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
@@ -34,9 +34,6 @@ class SearchController extends ApplicationController {
             $this->getSession()->remove('active_id');
         }
 
-        $initialData['microtime'] = microtime(true);
-        $Response = $this->render("EncountersBundle:templates:search.html.twig", $initialData);
-        $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        return $Response;
+        return $this->TwigResponse("EncountersBundle:templates:search.html.twig", $initialData);
     }
 }
