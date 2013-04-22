@@ -896,8 +896,11 @@ textarea.input_i {
 .ui-tabs_content {
     /*height: 207px;*/
     margin: 0 0 10px 0;
-    overflow-y: scroll;
-    overflow-x: auto;
+
+    /*overflow-y: scroll;*/
+    /*overflow-x: auto;*/
+
+    overflow: auto;
 }
 
 .ui-tabs_content .ui-tabs_panel {

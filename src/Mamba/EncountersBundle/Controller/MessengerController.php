@@ -200,7 +200,7 @@ class MessengerController extends ApplicationController {
     }
 
     /**
-     * Contacts getter action
+     * Send message action
      *
      * @return Response
      */
@@ -260,6 +260,112 @@ class MessengerController extends ApplicationController {
                     }
                 } else {
                     list($this->json['status'], $this->json['message']) = array(3, "Contact does not exists");
+                }
+            } else {
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+            }
+        }
+
+        return $this->JSONResponse($this->json);
+    }
+
+    /**
+     * Send gift action
+     *
+     * @return Response
+     */
+    public function sendGiftAction() {
+        $Mamba = $this->getMamba();
+
+        $ContactsObject = $this->getContactsHelper();
+        $MessagesObject = $this->getMessagesHelper();
+
+        if (!$Mamba->getReady()) {
+            list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
+        } else {
+            $webUserId = $Mamba->get('oid');
+            $currentUserId = (int) $this->getRequest()->request->get('user_id');
+
+            $giftInfo = $this->getRequest()->request->get('gift');
+
+            if ($currentUserId &&
+                is_array($giftInfo) &&
+                isset($giftInfo['id']) &&
+                is_numeric($giftInfo['id']) &&
+                ($Gift = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftId = (int) $giftInfo['id'])) &&
+                isset($giftInfo['comment'])
+            ) {
+                $Account = $this->getAccountHelper();
+                $account = $Account->get($webUserId);
+
+                if ($account >= ($cost = $Gift->getCost())) {
+                    $account = $Account->decr($webUserId, $cost);
+                    $this->getGiftsHelper()->add($webUserId, $currentUserId, $giftId, $comment = $giftInfo['comment']);
+
+                    $userInfo = $this->getMamba()->Anketa()->getInfo($webUserId);
+
+                    $this->json['data'] = array(
+                        'account' => $account,
+                        'gift'    => array(
+                            'url' => $Gift->getUrl(),
+                            'comment' => $comment,
+                            'sender' => array(
+                                'user_id' => $userInfo[0]['info']['oid'],
+                                'name' => $userInfo[0]['info']['name'],
+                                'age' => $userInfo[0]['info']['age'],
+                                'city' => $userInfo[0]['location']['city'],
+                            ),
+                        ),
+                    );
+
+                    if ($Contact = $ContactsObject->getContact($webUserId, $currentUserId, true)) {
+                        $Message = (new Message)
+                            ->setContactId($Contact->getId())
+                            ->setTimestamp(time())
+                            ->setType('gift')
+                            ->setDirection('outbox')
+                            ->setMessage(array(
+                                'gift_id' => $giftId,
+                                'comment' => $comment,
+                            ))
+                        ;
+
+                        if ($MessagesObject->addMessage($Message)) {
+
+
+                            $messages = [$Message->toArray()];
+                            if ($lastMessageId = (int) $this->getRequest()->request->get('last_message_id')) {
+                                if ($messages = $MessagesObject->getMessages($Contact, $lastMessageId, 'DESC')) {
+                                    foreach ($messages as $key=>$Message) {
+                                        $messages[$key] = $Message->toArray();
+                                        $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
+
+                                        if ($Message->getType() == 'gift') {
+                                            if ($giftData = json_decode($Message->getMessage(), true)) {
+                                                $messages[$key]['gift'] = array(
+                                                    'comment' => $giftData['comment'],
+                                                    'url'     => \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->getUrl(),
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            $this->json['data']['messages'] = $messages;
+
+                            $this->json['data']['unread_count'] = 0;
+                            $this->json['data']['dialog'] = $Contact->getInboxCount() && $Contact->getOutboxCount();
+
+                            $Contact = $ContactsObject->getContact($currentUserId, $webUserId, true);
+                            $MessagesObject->addMessage($Message->setDirection('inbox')->setContactId($Contact->getId()));
+
+                            $this->json['data']['unread_count'] = $Contact->getUnreadCount();
+                        }
+                    }
+
+                } else {
+                    list($this->json['status'], $this->json['message']) = array(3, "Account is not enough for charge battery");
                 }
             } else {
                 list($this->json['status'], $this->json['message']) = array(2, "Invalid params");

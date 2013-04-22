@@ -25,7 +25,7 @@ class Messages extends Helper {
                 `Messenger`.`Messages`
             WHERE
                 `contact_id` = :contact_id AND
-                `message_id` < :last_message_id
+                `message_id` %s :last_message_id
             ORDER BY
                 `message_id` DESC
             LIMIT
@@ -58,11 +58,13 @@ class Messages extends Helper {
      * @param int $offset
      * @return array|null
      */
-    public function getMessages(Contact $Contact, $lastMessageId = 0, $limit = 10, $offset = 0) {
+    public function getMessages(Contact $Contact, $lastMessageId = 0, $direction = 'ASC', $limit = 10, $offset = 0) {
         if (!is_int($limit)) {
             throw new MessagesException("Invalid limit type: ". gettype($limit));
         } elseif (!is_int($offset)) {
             throw new MessagesException("Invalid offset type: ". gettype($offset));
+        } elseif (!in_array($direction, ['ASC', 'DESC'])) {
+            throw new MessagesException("Invalid direction type: ". var_export($direction, true));
         }
 
         $stmt = $this->getDoctrine()
@@ -71,6 +73,7 @@ class Messages extends Helper {
             ->prepare(
                 sprintf(
                     self::SQL_GET_MESSAGES,
+                    ($direction == 'ASC') ? '<' : '>',
                     $limit,
                     $offset
                 )

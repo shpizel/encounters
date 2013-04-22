@@ -274,6 +274,10 @@ $Messenger = {
                     });
                 }
             });
+
+            $("div.b-list_users").slimScroll({
+                height: '100%'
+            });
         },
 
         exists: function($contactId) {
@@ -480,6 +484,7 @@ $Messenger = {
                 $(".orange-menu .list-present_item").click(function() {
                     $(".orange-menu .list-present_item").removeClass("list-present_item-selected");
                     $(this).addClass("list-present_item-selected");
+                    $("div.drop_down-present textarea").focus();
                 });
 
                 var $sendGiftFunction = function() {
@@ -487,11 +492,44 @@ $Messenger = {
                     var $comment = $("div.drop_down-present textarea").val();
                     var $currentUserId = $Config.get('contacts')[$Config.get('contact_id')].reciever_id;
 
-                    $Tools.ajaxPost('gift.purchase', {'gift_id': $giftId, 'comment': $comment, 'current_user_id': $currentUserId}, function($data) {
+                    var $postData = {'gift[id]': $giftId, 'gift[comment]': $comment, 'user_id': $currentUserId};
+                    var $lastMessageId = $Messenger.$messages.getLastMessageId();
+                    if ($lastMessageId) {
+                        $postData['last_message_id'] = $lastMessageId;
+                    }
+
+                    $Tools.ajaxPost('messenger.gift.send', $postData, function($data) {
                         if ($data.status == 0 && $data.message == "") {
-                            alert('Подарок успешно отправлен :)');
+                            $data = $data.data;
+
+                            var $messages = $data.messages, $lastMessage;
+                            $Messenger.$messages.removeStatus();
+
+                            for (var $i=0;$i<$messages.length;$i++) {
+                                $Messenger.$messages.addMessage($lastMessage = $messages[$i], true);
+                            }
+
+                            if ($data.unread_count > 0) {
+                                ($lastMessage['direction'] == 'outbox') &&
+                                    $Messenger.$messages.setNotReadedStatus();
+
+                                if ($data.unread_count >= 3 && !$data.dialog) {
+                                    $Messenger.$sendForm.lockByLimit();
+                                } else {
+                                    $Messenger.$sendForm.unlockByLimit();
+                                    $Messenger.$sendForm.focus();
+                                }
+                            } else {
+                                ($lastMessage['direction'] == 'outbox') &&
+                                    $Messenger.$messages.setReadedStatus();
+
+                                $Messenger.$sendForm.unlockByLimit();
+                                $Messenger.$sendForm.focus();
+                            }
+
+                            $Messenger.$messages.scrollDown();
                         } else if ($data.status == 3) {
-                            alert('Не хватает сердечек');
+                            alert('$');
                         }
 
                         var $orangeMenu = $(".orange-menu .drop_down");
@@ -509,12 +547,26 @@ $Messenger = {
                     if ($event.ctrlKey && $event.keyCode == 13) {
 
                     } else if ($event.keyCode == 13) {
-                        return $sendGiftFunction();
+                        if ($("div.drop_down-present .list-present_item-selected").length > 0) {
+                            return $sendGiftFunction();
+                        }
                     }
                 });
 
                 $("div.drop_down-present div.form-send_gift input[type=submit]").click(function() {
-                    return $sendGiftFunction();
+                    if ($("div.drop_down-present .list-present_item-selected").length > 0) {
+                        return $sendGiftFunction();
+                    }
+
+                    return false;
+                });
+
+                $("ul.messages__list").on('click', 'div.baloon span.baloon_content-btn', function() {
+                    $(".orange-menu .drop_down.drop_down-present").show();
+                    $("div.layout-content").addClass('show-present');
+                    $(".orange-menu .item.gift").addClass('item-current');
+
+                    return false;
                 });
             }
         },
@@ -558,7 +610,7 @@ $Messenger = {
          * @param $age
          */
         setAge: function($age) {
-            $("div.window-user_info span.user-info_details strong").html($age);
+            $("div.window-user_info span.user-info_details strong").html(($age > 0) ? $age : '');
         },
 
         /**
@@ -661,6 +713,13 @@ $Messenger = {
             $("div.layout-content div.window-user_message").click(function() {
                 $Messenger.$sendForm.$smilies.hide();
             });
+        },
+
+        getLastMessageId: function() {
+            var $lastMessage = $("ul.messages__list li.messages__item:not(.messages__item_status):last");
+            if ($lastMessage.length > 0) {
+                return $lastMessage.attr('message_id');
+            }
         },
 
         showPromo: function() {
@@ -778,6 +837,7 @@ $Messenger = {
                         '<div class="messages__content"></div>' +
                     '</li>'
                 );
+
                 $html.attr('message_id', $message.message_id);
 
                 if ($message.direction == 'to') {
@@ -814,16 +874,20 @@ $Messenger = {
                         '</li>'
                 );
 
-                if ($message.direction == 'to') {
-                    $("span.messages__name", $html).html($Config.get('contacts')[$message.contact_id].platform.info.name);
-                    $("span.messages__details", $html).html((($Config.get('contacts')[$message.contact_id].platform.info.gender == 'F') ? 'отправила подарок' : 'отправил подарок') + ' ' + $message.date);
-                    $html.addClass('messages__item_next');
-                } else {
+                $html.attr('message_id', $message.message_id);
+
+                if ($message.direction == 'outbox') {
                     $("span.messages__name", $html).html($Config.get('webuser').anketa.info.name);
                     $("span.messages__details", $html).html($message.date);
 
                     $("span.baloon_content-btn", $html).hide();
                     $html.addClass('messages__item_my');
+                } else {
+
+
+                    $("span.messages__name", $html).html($Config.get('contacts')[$message.contact_id].platform.info.name);
+                    $("span.messages__details", $html).html((($Config.get('contacts')[$message.contact_id].platform.info.gender == 'F') ? 'отправила подарок' : 'отправил подарок') + ' ' + $message.date);
+                    $html.addClass('messages__item_next');
                 }
 
                 if ($message.gift) {
@@ -835,7 +899,11 @@ $Messenger = {
                     }
                 }
             } else if ($message.type == 'rating') {
-
+                /**
+                 * TODO:
+                 *
+                 * @author shpizel
+                 */
             }
 
             $Messenger.$messages.hidePromo();
@@ -890,6 +958,13 @@ $Messenger = {
         initUI: function() {
 
             var $sendMessage = function() {
+
+                /**
+                 * Встроить блокировку
+                 *
+                 * @author shpizel
+                 */
+
                 var $textarea = $("div.window-user_form div.input_i");
                 var $message = $textarea.html();
 
@@ -1053,6 +1128,8 @@ $Messenger = {
                     $Tools.saveSelection();
                     return false;
                 });
+
+                $("div.b-pop_smile ul.list-smile").slimScroll({height: '100%'});
             },
 
             hide: function() {

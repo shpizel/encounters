@@ -131,7 +131,10 @@
 %}
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}
-<script src="http://js.aplatform.ru/v2.js"></script>
+{% if controller == 'messenger' %}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+{% endif %}
+<script type="text/javascript" src="http://js.aplatform.ru/v2.js"></script>
 <script>
 $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});
 {% autoescape false %}

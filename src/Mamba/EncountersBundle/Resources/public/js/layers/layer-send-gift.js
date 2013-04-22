@@ -15,8 +15,7 @@ $Layers.$SendGiftLayer = {
         $("div.layer-send-gift .list-present_item").click(function() {
             $("div.layer-send-gift .list-present_item").removeClass("list-present_item-selected");
             $(this).addClass("list-present_item-selected");
-
-            $("div.layer-send-gift .form-send_gift input").removeAttr('disabled');
+            $("div.layer-send-gift textarea").focus();
         });
 
         var $sendGiftFunction = function() {
@@ -24,7 +23,7 @@ $Layers.$SendGiftLayer = {
             var $comment = $("div.layer-send-gift textarea").val();
             var $currentUserId = $Config.get('current_user_id');
 
-            $Tools.ajaxPost('gift.purchase', {'gift_id': $giftId, 'comment': $comment, 'current_user_id': $currentUserId}, function($data) {
+            $Tools.ajaxPost('messenger.gift.send', {'gift[id]': $giftId, 'gift[comment]': $comment, 'user_id': $currentUserId}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data.account);
 
@@ -51,15 +50,21 @@ $Layers.$SendGiftLayer = {
             if ($event.ctrlKey && $event.keyCode == 13) {
 
             } else if ($event.keyCode == 13) {
-                return $sendGiftFunction();
+                if ($("div.layer-send-gift .list-present_item-selected").length > 0) {
+                    return $sendGiftFunction();
+                }
+
+                return false;
             }
         });
 
         $("div.layer-send-gift .form-send_gift input[type=submit]").click(function() {
-            return $sendGiftFunction();
-        });
+            if ($("div.layer-send-gift .list-present_item-selected").length > 0) {
+                return $sendGiftFunction();
+            }
 
-        $("div.layer-send-gift .form-send_gift input[type=submit]").attr('disabled', 'disabled');
+            return false;
+        });
     },
 
     /**

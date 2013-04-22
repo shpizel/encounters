@@ -70,6 +70,13 @@ messenger.message.send:
     pattern: /ajax/messenger.messages.send
     defaults: { _controller: EncountersBundle:Messenger:sendMessage }
 
+# Messenger gift sender
+messenger.gift.send:
+    pattern: /ajax/messenger.gift.send
+    defaults: { _controller: EncountersBundle:Messenger:sendGift }
+    requirements:
+        _method: POST
+
 # Страница постоплаты
 billing:
     pattern: /billing
@@ -109,13 +116,6 @@ photoline.purchase:
 photoline.choose:
     pattern: /ajax/photoline.choose
     defaults: { _controller: EncountersBundle:Photoline:choose }
-    requirements:
-        _method: POST
-
-# Gift purchaser
-gift.purchase:
-    pattern: /ajax/gift.purchase
-    defaults: { _controller: EncountersBundle:Gifts:purchase }
     requirements:
         _method: POST
 
