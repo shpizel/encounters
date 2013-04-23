@@ -454,11 +454,6 @@ $Messenger = {
             if ($contact.platform.info.name) {
                 $("span.list-users_name", $html).html($contact.platform.info.name);
             }
-
-//            if ($contact.contact_id == $Config.get('contact_id')) {
-//                $html.addClass('list-users_item-current');
-//                $html.removeClass('new-message');
-//            }
         }
     },
 
@@ -474,6 +469,7 @@ $Messenger = {
                 $(".orange-menu .drop_down.drop_down-present").show();
                 $("div.layout-content").addClass('show-present');
                 $(".orange-menu .item.gift").addClass('item-current');
+
                 return false;
             });
         },
@@ -664,12 +660,12 @@ $Messenger = {
 
         initUI: function() {
             $(".window-user_message").scroll(function($event) {
-                var $scrollTop = $(this).scrollTop();
+                var $scrollTop = $(this).scrollTop(), $firstMessageId;
 
-                if ($scrollTop == 0) {
+                if ($scrollTop < 5 /** раньше было == 0 */) {
                     if (!$Messenger.acquireLock()) {
                         return;
-                    } else if ($("ul.messages__list li.messages__item[message_id]").length <= 0) {
+                    } else if (!($firstMessageId = $Messenger.$messages.getFirstMessageId())) {
                         $Messenger.freeLock();
                         return;
                     }
@@ -707,6 +703,7 @@ $Messenger = {
                 $(".orange-menu .drop_down.drop_down-present").show();
                 $("div.layout-content").addClass('show-present');
                 $(".orange-menu .item.gift").addClass('item-current');
+
                 return false;
             });
 
@@ -719,6 +716,13 @@ $Messenger = {
             var $lastMessage = $("ul.messages__list li.messages__item:not(.messages__item_status):last");
             if ($lastMessage.length > 0) {
                 return $lastMessage.attr('message_id');
+            }
+        },
+
+        getFirstMessageId: function() {
+            var firstMessage = $("ul.messages__list li.messages__item:not(.messages__item_status):first");
+            if (firstMessage.length > 0) {
+                return firstMessage.attr('message_id');
             }
         },
 
@@ -1095,10 +1099,15 @@ $Messenger = {
         /**
          * Смайлики
          *
-         * @object
+         * @var Object
          */
         $smilies: {
 
+            /**
+             * Smilies UI initializer
+             *
+             * @init UI
+             */
             initUI: function() {
                 $("span.b-smile").click(function() {
                     var $smiliesPopup = $("div.b-pop_smile");
@@ -1132,13 +1141,23 @@ $Messenger = {
                 $("div.b-pop_smile ul.list-smile").slimScroll({height: '100%'});
             },
 
+            /**
+             * Hides smilies
+             *
+             * @hide layer
+             */
             hide: function() {
                 $("div.b-pop_smile").fadeOut('fast');
             },
 
+            /**
+             * Shows smilies
+             *
+             * @hide layer
+             */
             show: function() {
                 $("div.b-pop_smile").fadeIn('fast');
             }
-        },
+        }
     }
 }
