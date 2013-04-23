@@ -132,7 +132,7 @@ class Leveldb {
     }
 
     private function isMasterRequest($method) {
-        if (in_array($method, array('set', 'del', 'inc', 'inc_add', 'update_packed', 'rep_status'))) {
+        if (in_array($method, array('get', 'set', 'del', 'inc', 'inc_add', 'update_packed', 'rep_status'))) {
             return true;
         }
 
@@ -140,7 +140,7 @@ class Leveldb {
     }
 
     private function isSlaveRequest($method) {
-        if (in_array($method, array('get', 'get_range'))) {
+        if (in_array($method, array('get_range'))) {
             return true;
         }
 
@@ -232,7 +232,7 @@ class Leveldb {
 
         $this->queue[$requestId] = $Request;
 
-        $this->sendRequest($this->getSlaveConnection(), $Request);
+        $this->sendRequest($this->getMasterConnection(), $Request);
         $this->metrics['requests'][] = array(
             'request' => $Request->toArray(),
             'timeout' => $timeout = microtime(true) - $startTime,
