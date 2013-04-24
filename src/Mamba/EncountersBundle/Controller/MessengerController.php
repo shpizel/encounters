@@ -441,7 +441,7 @@ class MessengerController extends ApplicationController {
 
                             $messages = [$Message->toArray()];
                             $messages[0]['date'] = $this->getHumanDate($messages[0]['timestamp']);
-                            if ($giftData = json_decode($Message->getMessage(), true)) {
+                            if ($giftData = $Message->getMessage()) {
                                 $messages[0]['gift'] = array(
                                     'comment' => $giftData['comment'],
                                     'url'     => \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->getUrl(),
