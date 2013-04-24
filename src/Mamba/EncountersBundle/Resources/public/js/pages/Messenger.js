@@ -1172,7 +1172,7 @@ $Messenger = {
                 if ($message && $message!='<br>') {
                     $Messenger.$sendForm.$smilies.hide();
 
-                    if (!$Messenger.acquireLock()) return false;
+                    if (!$Messenger.acquireLock('sendmessage')) return false;
 
                     $Messenger.$sendForm.sendMessage($message, function($data) {
                         var
@@ -1213,10 +1213,10 @@ $Messenger = {
 
                         $Messenger.$messages.scrollDown();
                         $Messenger.$sendForm.clear();
-                        $Messenger.freeLock();
+                        $Messenger.freeLock('sendmessage');
                     }, function() {
                         $Messenger.$sendForm.focus();
-                        $Messenger.freeLock();
+                        $Messenger.freeLock('sendmessage');
                     });
                 }
 
