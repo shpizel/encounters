@@ -509,7 +509,7 @@ $Messenger = {
                         if ($contactId) {
                             if ($Config.get('contacts')[$contactId]['unread_count']) {
                                 $Messenger.$contactList.select($contactId);
-                            } else if ($Config.get('last-message-by-' + $contactId)) {
+                            } else if ($Config.get('last-message-by-' + $contactId) && $Config.get('contacts')[$contactId]['online']) {
                                 $Messenger.$contactList.select($contactId);
                             }
                         }
@@ -665,7 +665,7 @@ $Messenger = {
                         $postData['last_message_id'] = $lastMessageId;
                     }
 
-                    if (!$Messenger.acquireLock()) return false;
+                    if (!$Messenger.acquireLock('sendmessage')) return false;
 
                     $Tools.ajaxPost('messenger.gift.send', $postData, function($data) {
                         if ($data.status == 0 && $data.message == "") {
@@ -710,9 +710,9 @@ $Messenger = {
                         }
 
                         $Messenger.$userInfo.$gifts.hideLayer();
-                        $Messenger.freeLock();
+                        $Messenger.freeLock('sendmessage');
                     }, function() {
-                        $Messenger.freeLock();
+                        $Messenger.freeLock('sendmessage');
                     });
 
                     return false;
@@ -1094,8 +1094,6 @@ $Messenger = {
                     $("span.baloon_content-btn", $html).hide();
                     $html.addClass('messages__item_my');
                 } else {
-
-
                     $("span.messages__name", $html).html($Config.get('contacts')[$message.contact_id].platform.info.name);
                     $("span.messages__details", $html).html((($Config.get('contacts')[$message.contact_id].platform.info.gender == 'F') ? 'отправила подарок' : 'отправил подарок') + ' ' + $message.date);
                     $html.addClass('messages__item_next');
