@@ -115,6 +115,8 @@ class MyChoiceController extends ApplicationController {
 
                     $data[] = $anketa;
                 }
+            } else {
+
             }
         }
 

@@ -76,9 +76,9 @@
                         <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
                     {% endif %}
 
-                    {% if app.debug or webuser.anketa.info.oid == 560015854 or webuser.anketa.info.oid == 751072037 or webuser.anketa.info.oid == 728011279 or webuser.anketa.info.oid == 742241457 %}
+                    {#{% if app.debug or webuser.anketa.info.oid == 560015854 or webuser.anketa.info.oid == 751072037 or webuser.anketa.info.oid == 728011279 or webuser.anketa.info.oid == 742241457 %}#}
                     <li class="item-messages"><a target="_blank" href="/messenger"><b>Сообщения</b>  <i class="plus"><b>{% if webuser.stats.messages_unread %}+{{ webuser.stats.messages_unread }}{% endif %}</b></i></a></li>
-                    {% endif %}
+                    {#{% endif %}#}
                 </ul>
             </div>
         </div>

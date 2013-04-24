@@ -7,6 +7,7 @@ use Mamba\EncountersBundle\Helpers\Messenger\Message;
 use Symfony\Component\HttpFoundation\Response;
 use Core\MambaBundle\API\Mamba;
 use Mamba\EncountersBundle\Helpers\Messenger\Contacts;
+use PDO;
 
 /**
  * MessengerController
@@ -73,8 +74,28 @@ class MessengerController extends ApplicationController {
             $offset = (int) $this->getRequest()->request->get('offset');
             $requiredContactId = (int) $this->getRequest()->request->get('contact_id') ?: null;
 
-
             $this->json['data']['contacts'] = $this->getContacts($limit, $offset, $requiredContactId) ?: [];
+            $this->json['data']['online'] = [];
+
+            if ($this->getRequest()->request->get('online')) {
+                 if ($onlineUsers = $this->getOnlineUsers()) {
+                     if ($platformData = $Mamba->Anketa()->getInfo($onlineUsers, ['location'])) {
+                         $platformData = array_filter($platformData, function($item) {
+                             if (!$item['info']['square_photo_url']) {
+                                 return false;
+                             }
+
+                             return true;
+                         });
+
+                         shuffle($platformData);
+
+                         if ($platformData) {
+                            $this->json['data']['online'] = $platformData;
+                         }
+                     }
+                 }
+            }
         }
 
         return $this->JSONResponse($this->json);
@@ -97,6 +118,33 @@ class MessengerController extends ApplicationController {
 
         return $this->JSONResponse($this->json);
     }
+
+    private function getOnlineUsers() {
+        if ($searchPreferences = $this->getSearchPreferencesHelper()->get($this->webUserId)) {
+            $stmt = $this->getDoctrine()
+                ->getEntityManager()
+                ->getConnection()
+                ->prepare(
+                    "select la.user_id from Encounters.LastAccess la, Encounters.User u where u.user_id = la.user_id and u.gender=:gender order by la.lastaccess desc limit 100"
+                )
+            ;
+
+            $gender = $searchPreferences['gender'];
+
+            $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
+
+            $users = [];
+            if ($result = $stmt->execute()) {
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $users[] = (int) $row['user_id'];
+                }
+
+                return $users;
+            }
+        }
+    }
+
+
 
     /**
      * Messages getter action
@@ -133,7 +181,6 @@ class MessengerController extends ApplicationController {
                             $CountersHelper->set($webUserId, 'messages_unread', 0);
                         }
                     }
-
 
                     if ($lastMessageId = intval($this->getRequest()->request->get('first_message_id'))) {
                         $sort = 'ASC';
@@ -200,7 +247,6 @@ class MessengerController extends ApplicationController {
                 ($contactId = (int) $this->getRequest()->request->get('contact_id'))
             ) {
                 if (($WebUserContact = $ContactsHelper->getContactById($contactId)) && ($WebUserContact->getSenderId() == $webUserId))  {
-
                     $CurrentUserContact = $this->getContactsHelper()->getContact($WebUserContact->getRecieverId(), $WebUserContact->getSenderId(), true);
 
                     /** messages всегда должно быть в ответе, даже если [] */
@@ -236,6 +282,22 @@ class MessengerController extends ApplicationController {
                         $messages[0]['date'] = $this->getHumanDate($messages[0]['timestamp']);
 
                         if ($lastMessageId = (int) $this->getRequest()->request->get('last_message_id')) {
+
+                            if ($unreadCount = $WebUserContact->getUnreadCount()) {
+                                $this->getContactsHelper()->updateContact(
+                                    $WebUserContact
+                                        ->setUnreadCount(0)
+                                );
+
+                                $levedbUnreadCount = $CountersHelper->get($webUserId, 'messages_unread');
+
+                                if ($levedbUnreadCount >= $unreadCount) {
+                                    $CountersHelper->decr($webUserId, 'messages_unread', $unreadCount);
+                                } else {
+                                    $CountersHelper->set($webUserId, 'messages_unread', 0);
+                                }
+                            }
+
                             if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
                                 foreach ($messages as $key=>$Message) {
                                     $messages[$key] = $Message->toArray();
@@ -381,6 +443,22 @@ class MessengerController extends ApplicationController {
                             $messages[0]['date'] = $this->getHumanDate($messages[0]['timestamp']);
 
                             if ($lastMessageId = (int) $this->getRequest()->request->get('last_message_id')) {
+
+                                if ($unreadCount = $WebUserContact->getUnreadCount()) {
+                                    $this->getContactsHelper()->updateContact(
+                                        $WebUserContact
+                                            ->setUnreadCount(0)
+                                    );
+
+                                    $levedbUnreadCount = $CountersHelper->get($webUserId, 'messages_unread');
+
+                                    if ($levedbUnreadCount >= $unreadCount) {
+                                        $CountersHelper->decr($webUserId, 'messages_unread', $unreadCount);
+                                    } else {
+                                        $CountersHelper->set($webUserId, 'messages_unread', 0);
+                                    }
+                                }
+
                                 if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
                                     foreach ($messages as $key=>$Message) {
                                         $messages[$key] = $Message->toArray();

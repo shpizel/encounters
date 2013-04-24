@@ -236,6 +236,7 @@ textarea.input_i {
     background-image: -moz-linear-gradient(#f0f0f0, #eeeeee);
     background-image: -o-linear-gradient(#f0f0f0, #eeeeee);
     background-image: linear-gradient(#f0f0f0, #eeeeee);
+    visibility: hidden;
 }
 
 .b-user_online:before,
@@ -509,7 +510,7 @@ textarea.input_i {
 .list-user_header {
     display: block;
     margin: 10px 10px 5px;
-    background-image: url('/bundes/encounters/images/texts/choose-user.png');
+    background-image: url('/bundles/encounters/images/texts/choose-user.png');
     background-position: 50% 0;
     background-repeat: no-repeat;
     text-indent: -300em;
@@ -577,6 +578,7 @@ textarea.input_i {
 
 .user-info .user-location {
     padding: 0 5px;
+    color: #fff;
 }
 
 .user-info .user-add_list {

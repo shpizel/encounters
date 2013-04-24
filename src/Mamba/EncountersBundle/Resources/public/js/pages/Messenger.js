@@ -103,14 +103,24 @@ $Messenger = {
          * @init UI
          */
         initUI: function() {
-            var $contactId = $Config.get('contact_id'), $postData = {};
+            var $contactId = $Config.get('contact_id'), $postData = {'online': true};
             if ($contactId) {
-                $postData = {'contact_id': $contactId};
+                $postData['contact_id'] = $contactId;
             }
 
             $Tools.ajaxPost('messenger.contacts.get', $postData, function($data) {
                 if ($data.status == 0 && $data.message == '') {
-                    var $contactsArray = $data.data.contacts, $contactsObject = {};
+                    var
+                        $onlineArray = $data.data.online,
+                        $contactsArray = $data.data.contacts,
+                        $contactsObject = {}
+                    ;
+
+                    if ($onlineArray.length > 0) {
+                        $Config.set('online', $onlineArray);
+                        $Messenger.$contactList.$onlineUsers.initUI();
+                    }
+
                     for (var $i=0;$i<$contactsArray.length;$i++) {
                         $contactsObject[$contactsArray[$i].contact_id] = $contactsArray[$i];
                     }
@@ -130,9 +140,8 @@ $Messenger = {
                         });
                     } else {
                         $Messenger.$contactList.setEmpty();
+                        $Messenger.$contactList.$onlineUsers.select();
                         $Messenger.hideLoader();
-
-                        //$Messenger.$contactList.$onlineUsers.select();
                     }
 
                     $Messenger.$contactList.initUpdateTimer();
@@ -215,8 +224,6 @@ $Messenger = {
             $("div.b-list_users").slimScroll({
                 height: '100%'
             });
-
-            $Messenger.$contactList.$onlineUsers.initUI();
         },
 
         showLoader: function() {
@@ -232,6 +239,10 @@ $Messenger = {
             return !!$item.length;
         },
 
+        deselect: function() {
+            $("div.layout-sidebar div.b-list_users ul.list-users > li").removeClass('list-users_item-current').removeClass('loading');
+        },
+
         select: function($contactId, $callback) {
             if (!$Messenger.acquireLock()) {
                 return false;
@@ -241,7 +252,9 @@ $Messenger = {
 
             $Config.set('contact_id', $contactId);
 
-            $("div.layout-sidebar div.b-list_users ul.list-users > li").removeClass('list-users_item-current').removeClass('loading');
+            $Messenger.$contactList.deselect();
+            $Messenger.$contactList.$onlineUsers.setInactiveStatus();
+            $Messenger.$contactList.$onlineUsers.hideOnlineUsersSelector();
 
             var $item = $("div.layout-sidebar div.b-list_users ul.list-users > li[contact_id=" + $contactId +"]");
             $item.addClass('list-users_item-current');
@@ -516,11 +529,78 @@ $Messenger = {
                 $("div.layout-sidebar div.b-user_online").click(function() {
                     $Messenger.$contactList.$onlineUsers.select();
                 });
+
+                /**
+                 * Берем до 4х юзеров рандомно и суем их в виджет
+                 *
+                 * @author shpizel
+                 */
+                var $onlineUsers = $Config.get('online');
+                if ($onlineUsers && $onlineUsers.length > 0) {
+                    $onlineUsers = $Tools.shuffle($onlineUsers);
+                    $onlineUsers = $onlineUsers.slice(0, 4);
+
+                    var $menu = $("div.layout-sidebar div.b-user_online ul.list_users");
+                    $menu.html('');
+
+                    for (var $i=0;$i<$onlineUsers.length;$i++) {
+                        $html = $('<li class="list_users_item"><img height="28" width="28" class="list_users_item-img"></li>');
+                        $("img", $html).attr('src', $onlineUsers[$i]['info']['square_photo_url']);
+                        $html.appendTo($menu);
+                    }
+                }
+
+                $Messenger.$contactList.$onlineUsers.show();
+            },
+
+            hideOnlineUsersSelector: function() {
+                $layout = $("div.app_message-layout").removeClass('user-select_show');
             },
 
             select: function() {
                 $Messenger.$contactList.$onlineUsers.setActiveStatus();
                 $Messenger.$contactList.$onlineUsers.setLoadingStatus();
+                $Messenger.$contactList.deselect();
+                $Config.set('contact_id', null);
+
+                var
+                    $layout = $("div.app_message-layout")
+                    $select = $("div.user-select ul.list-user_select", $layout),
+                    $onlineUsers = $Config.get('online')
+                ;
+
+                if (!$layout.hasClass('user-select_show') && $onlineUsers.length > 0) {
+                    $onlineUsers = $Tools.shuffle($onlineUsers);
+
+                    $select.html('');
+
+
+                    for (var $i=0;$i<$onlineUsers.length;$i++) {
+                        $html = $(
+                            '<li class="list-user_select-item">' +
+                                '<img class="users-select__avatar">' +
+                                '<div class="user-info">' +
+                                    '<div class="inner">' +
+                                        '<div class="user-name">Твоя Красотка</div>' +
+                                        '<div class="user-location">27, Москва</div>' +
+                                        '<a class="button user-add_list">Добавить</a>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</li>'
+                        );
+
+                        $("img", $html).attr('src', $onlineUsers[$i]['info']['square_photo_url']);
+                        $("div.user-name", $html).html($onlineUsers[$i]['info']['name']);
+                        $("div.user-location", $html).html($onlineUsers[$i]['info']['age'] + ', ' + $onlineUsers[$i]['location']['city']);
+                        $("a.button", $html).attr('href', '/messenger?id=' + $onlineUsers[$i]['info']['oid']);
+                        $html.appendTo($select);
+                    }
+
+                    $layout.addClass('user-select_show');
+                }
+
+                $Messenger.$contactList.$onlineUsers.removeStatus();
+
             },
 
             removeStatus: function() {
@@ -537,6 +617,14 @@ $Messenger = {
 
             setInactiveStatus: function() {
                 $("div.layout-sidebar div.b-user_online").removeClass('online-select');
+            },
+
+            hide: function() {
+                $("div.layout-sidebar div.b-user_online").css('visibility', 'hidden');
+            },
+
+            show: function() {
+                $("div.layout-sidebar div.b-user_online").css('visibility', 'visible');
             }
         }
     },
@@ -584,6 +672,7 @@ $Messenger = {
                             var
                                 $messages = $data.data.messages,
                                 $lastMessageKey = "last-message-by-" + $Config.get('contact_id'),
+                                $data = $data.data,
                                 $lastMessage
                             ;
 
