@@ -34,6 +34,7 @@ class LeveldbClearCommand extends Script {
      * @return null
      */
     protected function process() {
+        return;
         $LevelDb = $this->getLeveldb();
 
         $counter = 0;

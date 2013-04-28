@@ -111,43 +111,51 @@ class MessengerController extends ApplicationController {
         } else {
             $webUserId = $Mamba->get('oid');
 
+            $CountersHelper = $this->getCountersHelper();
+
             if ($contactId = (int) $this->getRequest()->request->get('contact_id')) {
-                if ($Contact = $this->getContactsHelper()->getContactById($contactId)) {
-                    if ($Contact->getSenderId() == $webUserId) {
+                if (($Contact = $this->getContactsHelper()->getContactById($contactId)) && ($Contact->getSenderId() == $webUserId)) {
 
-                        /** messages всегда должно быть в ответе, даже если [] */
-                        $this->json['data']['messages'] = [];
+                    /** messages всегда должно быть в ответе, даже если [] */
+                    $this->json['data']['messages'] = [];
 
-                        if ($Contact->getUnreadCount()) {
-                            $Contact->setUnreadCount(0);
-                            $this->getContactsHelper()->updateContact($Contact);
+                    if ($unreadCount = $Contact->getUnreadCount()) {
+                        $this->getContactsHelper()->updateContact(
+                            $Contact
+                                ->setUnreadCount(0)
+                        );
+
+                        $levedbUnreadCount = $CountersHelper->get($webUserId, 'messages_unread');
+
+                        if ($levedbUnreadCount >= $unreadCount) {
+                            $CountersHelper->decr($webUserId, 'messages_unread', $unreadCount);
+                        } else {
+                            $CountersHelper->set($webUserId, 'messages_unread', 0);
                         }
+                    }
 
-                        if ($messages = $this->getMessagesHelper()->getMessages($Contact, intval($this->getRequest()->request->get('last_message_id')))) {
-                            foreach ($messages as $key=>$Message) {
-                                $messages[$key] = $Message->toArray();
-                                $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
+                    if ($messages = $this->getMessagesHelper()->getMessages($Contact, intval($this->getRequest()->request->get('last_message_id')))) {
+                        foreach ($messages as $key=>$Message) {
+                            $messages[$key] = $Message->toArray();
+                            $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
 
-                                if ($Message->getType() == 'gift') {
-                                    if ($giftData = json_decode($Message->getMessage(), true)) {
-                                        $messages[$key]['gift'] = array(
-                                            'comment' => $giftData['comment'],
-                                            'url'     => \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->getUrl(),
-                                        );
-                                    }
+                            if ($Message->getType() == 'gift') {
+                                if ($giftData = json_decode($Message->getMessage(), true)) {
+                                    $messages[$key]['gift'] = array(
+                                        'comment' => $giftData['comment'],
+                                        'url'     => \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->getUrl(),
+                                    );
                                 }
                             }
-
-                            $this->json['data']['messages'] = $messages;
-                            $this->json['data']['unread_count'] = 0;
-                            $this->json['data']['dialog'] = $Contact->getInboxCount() && $Contact->getOutboxCount();
-
-                            if ($reverseContact = $this->getContactsHelper()->getContact($Contact->getRecieverId(), $Contact->getSenderId())) {
-                                $this->json['data']['unread_count'] = $reverseContact->getUnreadCount();
-                            }
                         }
-                    } else {
-                        list($this->json['status'], $this->json['message']) = array(3, "Invalid contact");
+
+                        $this->json['data']['messages'] = $messages;
+                        $this->json['data']['unread_count'] = 0;
+                        $this->json['data']['dialog'] = $Contact->getInboxCount() && $Contact->getOutboxCount();
+
+                        if ($reverseContact = $this->getContactsHelper()->getContact($Contact->getRecieverId(), $Contact->getSenderId())) {
+                            $this->json['data']['unread_count'] = $reverseContact->getUnreadCount();
+                        }
                     }
                 } else {
                     list($this->json['status'], $this->json['message']) = array(2, "Contact does not exists");
@@ -160,45 +168,6 @@ class MessengerController extends ApplicationController {
         return $this->JSONResponse($this->json);
     }
 
-    public function cleanHTMLMessage($message) {
-        if (!strip_tags($message)) return;
-
-        $message = preg_replace_callback("!<(?P<tagname>\w+)(?P<attributes>[^>]*?)>!", function($data) {
-            $tagname = $data['tagname'];
-            $attributes = $data['attributes'];
-
-            if ($tagname != 'img') {
-                return "<{$tagname}>";
-            } else {
-                $allowedAttrs = [];
-                if (($attributes = trim($attributes)) && preg_match_all("!(?P<attrs>\w+)\s*?=\s*?\"+(?P<values>[^\"]+?)\"+!is", $attributes, $result)) {
-                    $attrs = $result['attrs'];
-                    $values = $result['values'];
-
-                    foreach ($attrs as $attrIndex=>$attr) {
-                        $value = $values[$attrIndex];
-
-                        if ((strtolower($attr) == 'class') && preg_match("!^smile s-\d+$!", $value)) {
-                            $allowedAttrs[$attr] = $value;
-                        } elseif (strtolower($attr) == 'src' && $value == '/bundles/encounters/images/pixel.gif') {
-                            $allowedAttrs[$attr] = $value;
-                        }
-                    }
-                }
-
-                $tag = "<{$tagname}";
-                foreach ($allowedAttrs as $attr=>$val) {
-                    $tag .= " {$attr}=\"{$val}\"";
-                }
-                $tag.=">";
-
-                return $tag;
-            }
-        }, $message);
-
-        return $message;
-    }
-
     /**
      * Send message action
      *
@@ -207,16 +176,22 @@ class MessengerController extends ApplicationController {
     public function sendMessageAction() {
         $Mamba = $this->getMamba();
 
+        $ContactsHelper = $this->getContactsHelper();
+        $MessagesHelper = $this->getMessagesHelper();
+
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
             $webUserId = $Mamba->get('oid');
 
-            $message   = $this->cleanHTMLMessage($this->getRequest()->request->get('message'));
-            $contactId = (int) $this->getRequest()->request->get('contact_id');
+            if (($message   = $this->cleanHTMLMessage($this->getRequest()->request->get('message'))) &&
+                ($contactId = (int) $this->getRequest()->request->get('contact_id'))
+            ) {
+                if (($WebUserContact = $ContactsHelper->getContactById($contactId)) && ($WebUserContact->getSenderId() == $webUserId))  {
 
-            if ($message && $contactId) {
-                if (($WebUserContact = $this->getContactsHelper()->getContactById($contactId)) && $WebUserContact->getSenderId() == $webUserId)  {
+                    /** messages всегда должно быть в ответе, даже если [] */
+                    $this->json['data']['messages'] = [];
+
                     $Message = (new Message)
                         ->setContactId($WebUserContact->getId())
                         ->setType('text')
@@ -225,7 +200,7 @@ class MessengerController extends ApplicationController {
                         ->setTimestamp(time())
                     ;
 
-                    if ($Message = $this->getMessagesHelper()->addMessage($Message)) {
+                    if ($Message = $MessagesHelper->addMessage($Message)) {
 
                         /** Обновляем контакт */
                         $this->getContactsHelper()->updateContact(
@@ -234,26 +209,52 @@ class MessengerController extends ApplicationController {
                                 ->setChanged(time())
                         );
 
-                        /** Сформируем основной вывод json */
-                        $this->json['data']['message'] = $Message->toArray();
-                        $this->json['data']['message']['date'] = $this->getHumanDate($this->json['data']['message']['timestamp']);
+                        $messages = [$Message->toArray()];
+                        $messages[0]['date'] = $this->getHumanDate($messages[0]['timestamp']);
+
+                        if ($lastMessageId = (int) $this->getRequest()->request->get('last_message_id')) {
+                            if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
+                                foreach ($messages as $key=>$Message) {
+                                    $messages[$key] = $Message->toArray();
+                                    $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
+
+                                    if ($Message->getType() == 'gift') {
+                                        if ($giftData = json_decode($Message->getMessage(), true)) {
+                                            $messages[$key]['gift'] = array(
+                                                'comment' => $giftData['comment'],
+                                                'url'     => \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftData['gift_id'])->getUrl(),
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        $this->json['data']['messages'] = $messages;
+
+                        $this->json['data']['unread_count'] = 0;
+                        $this->json['data']['dialog'] = $WebUserContact->getInboxCount() && $WebUserContact->getOutboxCount();
 
                         /** Отправляем данные в другой контакт (обратный) и обновляем его */
-                        if (!($CurrentUserContact = $this->getContactsHelper()->getContact($WebUserContact->getRecieverId(), $WebUserContact->getSenderId()))) {
-                            $CurrentUserContact = $this->getContactsHelper()->createContact($WebUserContact->getRecieverId(), $WebUserContact->getSenderId());
-                        }
+                        if ($CurrentUserContact = $this->getContactsHelper()->getContact($WebUserContact->getRecieverId(), $WebUserContact->getSenderId(), true)) {
+                            if ($MessagesHelper->addMessage(
+                                $Message
+                                    ->setContactId($CurrentUserContact->getId())
+                                    ->setDirection('inbox'))
+                            ) {
+                                $ContactsHelper->updateContact(
+                                    $CurrentUserContact
+                                        ->setUnreadCount($CurrentUserContact->getUnreadCount() + 1)
+                                        ->setInboxCount($CurrentUserContact->getOutboxCount() + 1)
+                                        ->setChanged(time())
+                                );
 
-                        $Message->setContactId($CurrentUserContact->getId())->setDirection('inbox');
-                        if ($this->getMessagesHelper()->addMessage($Message)) {
-                            $this->getContactsHelper()->updateContact(
-                                $CurrentUserContact
-                                    ->setUnreadCount($CurrentUserContact->getUnreadCount() + 1)
-                                    ->setInboxCount($CurrentUserContact->getOutboxCount() + 1)
-                                    ->setChanged(time())
-                            );
-                        }
+                                /** установим +1 к счетчику сообщений */
+                                $this->getCountersHelper()->incr($WebUserContact->getRecieverId(), 'messages_unread');
+                            }
 
-                        $this->json['data']['unread_count'] = $CurrentUserContact->getUnreadCount();
+                            $this->json['data']['unread_count'] = $CurrentUserContact->getUnreadCount();
+                        }
                         $this->json['data']['dialog'] = $WebUserContact->getInboxCount() && $WebUserContact->getOutboxCount();
                     } else {
                         list($this->json['status'], $this->json['message']) = array(4, "Could not send message");
@@ -277,15 +278,16 @@ class MessengerController extends ApplicationController {
     public function sendGiftAction() {
         $Mamba = $this->getMamba();
 
-        $ContactsObject = $this->getContactsHelper();
-        $MessagesObject = $this->getMessagesHelper();
+        $AccountHelper = $this->getAccountHelper();
+        $ContactsHelper = $this->getContactsHelper();
+        $MessagesHelper = $this->getMessagesHelper();
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
             $webUserId = $Mamba->get('oid');
-            $currentUserId = (int) $this->getRequest()->request->get('user_id');
 
+            $currentUserId = (int) $this->getRequest()->request->get('current_user_id');
             $giftInfo = $this->getRequest()->request->get('gift');
 
             if ($currentUserId &&
@@ -295,11 +297,10 @@ class MessengerController extends ApplicationController {
                 ($Gift = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->getGiftById($giftId = (int) $giftInfo['id'])) &&
                 isset($giftInfo['comment'])
             ) {
-                $Account = $this->getAccountHelper();
-                $account = $Account->get($webUserId);
+                $account = $AccountHelper->get($webUserId);
 
                 if ($account >= ($cost = $Gift->getCost())) {
-                    $account = $Account->decr($webUserId, $cost);
+                    $account = $AccountHelper->decr($webUserId, $cost);
                     $this->getGiftsHelper()->add($webUserId, $currentUserId, $giftId, $comment = $giftInfo['comment']);
 
                     $userInfo = $this->getMamba()->Anketa()->getInfo($webUserId);
@@ -318,9 +319,19 @@ class MessengerController extends ApplicationController {
                         ),
                     );
 
-                    if ($Contact = $ContactsObject->getContact($webUserId, $currentUserId, true)) {
+                    /** установим +1 к счетчику анкеты */
+                    $this->getCountersHelper()->incr($currentUserId, 'events_unread');
+
+                    $WebUserContact = $ContactsHelper->getContact($webUserId, $currentUserId, true);
+                    $CurrentUserContact = $ContactsHelper->getContact($currentUserId, $webUserId, true);
+
+                    if ($WebUserContact) {
+
+                        /** messages всегда должно быть в ответе, даже если [] */
+                        $this->json['data']['messages'] = [];
+
                         $Message = (new Message)
-                            ->setContactId($Contact->getId())
+                            ->setContactId($WebUserContact->getId())
                             ->setTimestamp(time())
                             ->setType('gift')
                             ->setDirection('outbox')
@@ -330,12 +341,20 @@ class MessengerController extends ApplicationController {
                             ))
                         ;
 
-                        if ($MessagesObject->addMessage($Message)) {
+                        if ($MessagesHelper->addMessage($Message)) {
 
+                            /** Обновляем контакт */
+                            $ContactsHelper->updateContact(
+                                $WebUserContact
+                                    ->setOutboxCount($WebUserContact->getOutboxCount() + 1)
+                                    ->setChanged(time())
+                            );
 
                             $messages = [$Message->toArray()];
+                            $messages[0]['date'] = $this->getHumanDate($messages[0]['timestamp']);
+
                             if ($lastMessageId = (int) $this->getRequest()->request->get('last_message_id')) {
-                                if ($messages = $MessagesObject->getMessages($Contact, $lastMessageId, 'DESC')) {
+                                if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
                                     foreach ($messages as $key=>$Message) {
                                         $messages[$key] = $Message->toArray();
                                         $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
@@ -355,15 +374,30 @@ class MessengerController extends ApplicationController {
                             $this->json['data']['messages'] = $messages;
 
                             $this->json['data']['unread_count'] = 0;
-                            $this->json['data']['dialog'] = $Contact->getInboxCount() && $Contact->getOutboxCount();
+                            $this->json['data']['dialog'] = $WebUserContact->getInboxCount() && $WebUserContact->getOutboxCount();
 
-                            $Contact = $ContactsObject->getContact($currentUserId, $webUserId, true);
-                            $MessagesObject->addMessage($Message->setDirection('inbox')->setContactId($Contact->getId()));
+                            if ($CurrentUserContact) {
+                                if ($MessagesHelper->addMessage(
+                                    $Message
+                                        ->setDirection('inbox')
+                                        ->setContactId($CurrentUserContact->getId())
+                                )) {
 
-                            $this->json['data']['unread_count'] = $Contact->getUnreadCount();
+                                    $this->getContactsHelper()->updateContact(
+                                        $CurrentUserContact
+                                            ->setUnreadCount($CurrentUserContact->getUnreadCount() + 1)
+                                            ->setInboxCount($CurrentUserContact->getOutboxCount() + 1)
+                                            ->setChanged(time())
+                                    );
+
+                                    /** установим +1 к счетчику сообщений */
+                                    $this->getCountersHelper()->incr($currentUserId, 'messages_unread');
+                                }
+
+                                $this->json['data']['unread_count'] = $CurrentUserContact->getUnreadCount();
+                            }
                         }
                     }
-
                 } else {
                     list($this->json['status'], $this->json['message']) = array(3, "Account is not enough for charge battery");
                 }
@@ -462,5 +496,44 @@ class MessengerController extends ApplicationController {
         }
 
         return $date;
+    }
+
+    private function cleanHTMLMessage($message) {
+        if (!strip_tags($message)) return;
+
+        $message = preg_replace_callback("!<(?P<tagname>\w+)(?P<attributes>[^>]*?)>!", function($data) {
+            $tagname = $data['tagname'];
+            $attributes = $data['attributes'];
+
+            if ($tagname != 'img') {
+                return "<{$tagname}>";
+            } else {
+                $allowedAttrs = [];
+                if (($attributes = trim($attributes)) && preg_match_all("!(?P<attrs>\w+)\s*?=\s*?\"+(?P<values>[^\"]+?)\"+!is", $attributes, $result)) {
+                    $attrs = $result['attrs'];
+                    $values = $result['values'];
+
+                    foreach ($attrs as $attrIndex=>$attr) {
+                        $value = $values[$attrIndex];
+
+                        if ((strtolower($attr) == 'class') && preg_match("!^smile s-\d+$!", $value)) {
+                            $allowedAttrs[$attr] = $value;
+                        } elseif (strtolower($attr) == 'src' && $value == '/bundles/encounters/images/pixel.gif') {
+                            $allowedAttrs[$attr] = $value;
+                        }
+                    }
+                }
+
+                $tag = "<{$tagname}";
+                foreach ($allowedAttrs as $attr=>$val) {
+                    $tag .= " {$attr}=\"{$val}\"";
+                }
+                $tag.=">";
+
+                return $tag;
+            }
+        }, $message);
+
+        return $message;
     }
 }

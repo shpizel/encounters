@@ -130,7 +130,7 @@ $Photoline = {
                             'age'  : $photolineItem['age'],
                             'city' : $photolineItem['city'],
                             'comment' : $photolineItem['comment'],
-                            'href': $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=355&extra=profile' + $photolineItem['user_id'],
+                            'href': $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + '&extra=profile' + $photolineItem['user_id'],
                             'target': '_top'
                         }).addClass('item');
 
@@ -159,7 +159,7 @@ $Photoline = {
                     'age'  : $photolineItem['age'],
                     'city' : $photolineItem['city'],
                     'comment' : $photolineItem['comment'],
-                    'href': $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=355&extra=profile' + $photolineItem['user_id'],
+                    'href': $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + '&extra=profile' + $photolineItem['user_id'],
                     'target': '_top'
                 }).addClass('item');
 

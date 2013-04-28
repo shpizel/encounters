@@ -49,7 +49,7 @@ $Profile = {
         $("div.list-present_user").on('mouseenter', "a.list-present_user-item", function($event) {
             var $this = $(this);
 
-            var $html = "<a href=\"/profile?id=" + $this.attr('user_id') + "\"><strong>" + $this.attr('name') + "</strong></a>, ";
+            var $html = "<a target=\"_top\" href=\"" + $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + "&extra=profile" + $this.attr('user_id') + "\"><strong>" + $this.attr('name') + "</strong></a>, ";
             var $age = $this.attr('age');
             if (parseInt($age) > 0) {
                 $html+= $age + ", ";

@@ -26,7 +26,7 @@ $Layers.$UserInfoLayer = {
         $("div.layer-user-info a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
         $("div.layer-user-info div.info div.name a").attr(
             {
-                'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + currentQueueElement['info']['id'],
                 'target': '_top'
             }
         ).text(currentQueueElement['info']['name']);

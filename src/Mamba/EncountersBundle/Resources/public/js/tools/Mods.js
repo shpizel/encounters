@@ -22,3 +22,11 @@ if(!Object.keys) {
         return ret;
     }
 }
+
+/**
+ * console.log.apply fix for IE
+ *
+ * @link https://gist.github.com/subzey/1466437
+ **/
+$.browser.msie &&
+    (function(){var a=this.console,b=a&&a.log,c=!b||b.call?0:a.log=function(){c.apply.call(b,a,arguments)}})();

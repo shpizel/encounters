@@ -26,13 +26,13 @@ $Layers.$MutualLayer = {
             $("div.layer-mutual div.photo div.current").css('background', "url('" + currentQueueElement['info']['medium_photo_url'] + "')");
             $("div.layer-mutual div.content-center a").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + currentQueueElement['info']['id'],
                     'target': '_top'
                 }
             ).text(currentQueueElement['info']['name']);
             $("div.layer-mutual div.center a.see").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + currentQueueElement['info']['id'],
                     'target': '_top'
                 }
             );
@@ -40,13 +40,13 @@ $Layers.$MutualLayer = {
             $("div.layer-mutual div.photo div.current").css('background', "url('" + $data['medium_photo_url'] + "')");
             $("div.layer-mutual div.content-center a").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + $data['user_id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + $data['user_id'],
                     'target': '_top'
                 }
             ).text($data['name']);
             $("div.layer-mutual div.center a.see").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + $data['user_id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + $data['user_id'],
                     'target': '_top'
                 }
             );

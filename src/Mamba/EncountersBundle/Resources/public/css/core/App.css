@@ -382,10 +382,13 @@
     text-align: center;
     text-decoration: none;
     text-shadow: 0px 1px 1px #fff;
+}
+
+.app-meet-button a.yes, .app-meet-button a.no, .app-meet-button a.maybe {
     filter: dropshadow(color = #fff, offx = 0, offy = 1);
 }
 
-.app-meet-button a:active {
+.app-meet-button a.yes:active, .app-meet-button a.no:active,.app-meet-button a.maybe:active {
     line-height: 43px;
 }
 
@@ -455,8 +458,12 @@
     color: white;
 }
 
-.app-meet-button a:hover,
-.app-meet-button a:active {
+.app-meet-button a.yes:hover,
+.app-meet-button a.no:hover,
+.app-meet-button a.maybe:hover,
+.app-meet-button a.yes:active,
+.app-meet-button a.no:active,
+.app-meet-button a.maybe:active {
     color: #fff;
     text-shadow: 0 0 0 #fff;
     filter: none;

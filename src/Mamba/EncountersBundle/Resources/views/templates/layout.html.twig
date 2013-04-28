@@ -47,7 +47,7 @@
                 <ul class="info-meet" style="float:right;">
                     <li class="item-profile">
                         <img src="{{ webuser.anketa.info.square_photo_url }}"/>
-                        <a href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ webuser.anketa.info.oid }}" target="_top"><b>{{ webuser.anketa.info.name }}</b> <i class="plus"><b>{% if webuser.stats.events_unread %}{{ webuser.stats.events_unread }}{% endif %}</b></i></a>
+                        <a href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ webuser.anketa.info.oid }}" target="_top"><b>{{ webuser.anketa.info.name }}</b> <i class="plus"><b>{% if webuser.stats.events_unread %}+{{ webuser.stats.events_unread }}{% endif %}</b></i></a>
                     </li>
 
                     <li class="item-account">
@@ -76,7 +76,7 @@
                         <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
                     {% endif %}
 
-                    <li class="item-messages"><a target="_blank" href="/messenger"><b>Сообщения</b>  <i class="plus"><b>{% if webuser.stats.messages_unread %}{{ webuser.stats.messages_unread }}{% endif %}</b></i></a></li>
+                    <li class="item-messages"><a target="_blank" href="/messenger"><b>Сообщения</b>  <i class="plus"><b>{% if webuser.stats.messages_unread %}+{{ webuser.stats.messages_unread }}{% endif %}</b></i></a></li>
                 </ul>
             </div>
         </div>

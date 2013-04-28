@@ -23,7 +23,7 @@ $Layers.$SendGiftLayer = {
             var $comment = $("div.layer-send-gift textarea").val();
             var $currentUserId = $Config.get('current_user_id');
 
-            $Tools.ajaxPost('messenger.gift.send', {'gift[id]': $giftId, 'gift[comment]': $comment, 'user_id': $currentUserId}, function($data) {
+            $Tools.ajaxPost('messenger.gift.send', {'gift[id]': $giftId, 'gift[comment]': $comment, 'current_user_id': $currentUserId}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data.account);
 

@@ -25,13 +25,13 @@ $Layers.$AnswerYesLayer = {
             var currentQueueElement = $Search.$storage['currentQueueElement'];
             $("div.layer-yes div.content-center a").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + currentQueueElement['info']['id'],
                     'target': '_top'
                 }
             ).text(currentQueueElement['info']['name']);
             $("div.layer-yes div.center a.see").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + currentQueueElement['info']['id'],
                     'target': '_top'
                 }
             );
@@ -39,13 +39,13 @@ $Layers.$AnswerYesLayer = {
             $Config.set('current_user_id', $data['user_id']);
             $("div.layer-yes div.content-center a").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + $data['user_id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + $data['user_id'],
                     'target': '_top'
                 }
             ).text($data['name']);
             $("div.layer-yes div.center a.see").attr(
                 {
-                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + $data['user_id'],
+                    'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + $data['user_id'],
                     'target': '_top'
                 }
             );
@@ -57,7 +57,7 @@ $Layers.$AnswerYesLayer = {
         $("div.layer-yes a.ui-btn").attr("user_id", currentQueueElement['info']['id']);
         $("div.layer-yes div.info div.name a").attr(
             {
-                'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=355&extra=profile" + currentQueueElement['info']['id'],
+                'href': $Config.get('platform').partner_url + "app_platform/?action=view&app_id=" + $Config.get('platform').app_id + "&extra=profile" + currentQueueElement['info']['id'],
                 'target': '_top'
             }
         ).text(currentQueueElement['info']['name']);

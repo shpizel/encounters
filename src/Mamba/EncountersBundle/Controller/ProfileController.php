@@ -28,23 +28,31 @@ class ProfileController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $dataArray  = $this->getInitialData();
-
         /** Определяем user_id */
-
         if (!($currentUserId = (int) $this->getRequest()->query->get('id'))) {
             $currentUserId = (int) $webUserId;
+        }
+
+        if ($webUserId == $currentUserId) {
+            $this->getCountersHelper()->set($webUserId, 'events_unread', 0);
         }
 
         if (!($profile = $Mamba->Anketa()->getInfo($currentUserId))) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
+        $dataArray = $this->getInitialData();
+
         $dataArray['profile'] = $profile[0];
         if (!($dataArray['profile']['myself'] = $currentUserId == $webUserId)) {
             $dataArray['profile']['rated'] = $this->getViewedQueueHelper()->exists($webUserId, $currentUserId);
         }
-        $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
+
+        try {
+            $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
+        } catch (\Exception $e) {
+            $dataArray['profile']['photos'] = [];
+        }
 
         /** перемешаем интересы */
         if (isset($dataArray['profile']['interests'])) {

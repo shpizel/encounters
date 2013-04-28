@@ -230,7 +230,7 @@ class Contacts extends Helper {
      * @return Contact|null
      * @throws ContactsException
      */
-    public function createContact($webUserId, $currentUserId) {
+    private function createContact($webUserId, $currentUserId) {
         $Contact = (new Contact)
             ->setSenderId($webUserId)
             ->setRecieverId($currentUserId)
