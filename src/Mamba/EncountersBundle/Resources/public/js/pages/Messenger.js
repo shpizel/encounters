@@ -16,7 +16,9 @@ $Messenger = {
         $(document).click(function(){
             $Messenger.$userInfo.$gifts.hideLayer();
         }).keydown(function() {
-            if (!$Messenger.$sendForm.isFocused()) {
+            if ($Messenger.$userInfo.$gifts.active) {
+
+            } else if (!$Messenger.$sendForm.isFocused()) {
                 $Messenger.$sendForm.focus();
             }
         });
@@ -232,6 +234,8 @@ $Messenger = {
                 return;
             }
 
+            var $currentContactId = $Config.get('contact_id');
+
             $Messenger.$sendForm.$smilies.hide();
 
             $Config.set('contact_id', $contactId);
@@ -254,16 +258,68 @@ $Messenger = {
             $Messenger.$userInfo.setMeetButtonVisible(!$contact.rated);
             $Messenger.$sendForm.setLimitLockInfo($contact.platform.info.gender);
 
-            $Messenger.$messages.get($contactId, null, function($data) {
-                $Messenger.$messages.clear();
+            var $lastMessageId = null, $itself = false, $lastMessage;
+            if (($currentContactId == $contactId)) {
+                $lastMessageId = $Messenger.$messages.getLastMessageId();
+                $itself = true;
+            }
 
-                if ($data.messages.length > 0) {
-                    $Messenger.$messages.hidePromo();
+            $Messenger.$messages.get($contactId, null, $lastMessageId, function($data) {
+                if (!$itself) {
+                    $Messenger.$messages.clear();
+                }
 
-                    var $messages = $data.messages, $lastMessage;
+                var
+                    $messages = $data.messages,
+                    $lastMessageKey = "last-message-by-" + $contactId
+                ;
+
+                if ($messages.length > 0) {
+                    if ($itself) {
+                        $Messenger.$messages.removeStatus();
+                    }
+
+                    if (!$lastMessageId) {
+                        $Messenger.$messages.hidePromo();
+                    }
 
                     for (var $i=0;$i<$messages.length;$i++) {
-                        $Messenger.$messages.addMessage($lastMessage = $messages[$i], true);
+                        if (!$Messenger.$messages.exists($Config.set($lastMessageKey, $messages[$i]))) {
+                            $Messenger.$messages.addMessage($messages[$i], true);
+                        }
+                    }
+
+                    $lastMessage = $Config.get($lastMessageKey);
+
+                    if ($data.unread_count > 0) {
+                        ($lastMessage['direction'] == 'outbox') &&
+                        $Messenger.$messages.setNotReadedStatus();
+
+                        if ($data.unread_count >= 3 && !$data.dialog) {
+                            $Messenger.$sendForm.lockByLimit();
+                        } else {
+                            $Messenger.$sendForm.unlockByLimit();
+                            $Messenger.$sendForm.focus();
+                        }
+                    } else {
+                        ($lastMessage['direction'] == 'outbox') &&
+                        $Messenger.$messages.setReadedStatus();
+
+                        $Messenger.$sendForm.unlockByLimit();
+                        $Messenger.$sendForm.focus();
+                    }
+
+                    $Messenger.$messages.scrollDown();
+                } else if (!$Config.get($lastMessageKey)) {
+                    $Messenger.$messages.showPromo();
+                    $Messenger.$sendForm.unlockByLimit();
+                    $Messenger.$sendForm.focus();
+                } else {
+                    //сообщений нет, но диалог не пустой
+                    $lastMessage = $Config.get($lastMessageKey);
+
+                    if ($itself) {
+                        $Messenger.$messages.removeStatus();
                     }
 
                     if ($data.unread_count > 0) {
@@ -283,12 +339,6 @@ $Messenger = {
                         $Messenger.$sendForm.unlockByLimit();
                         $Messenger.$sendForm.focus();
                     }
-
-                    $Messenger.$messages.scrollDown();
-                } else {
-                    $Messenger.$messages.showPromo();
-                    $Messenger.$sendForm.unlockByLimit();
-                    $Messenger.$sendForm.focus();
                 }
 
                 $callback && $callback();
@@ -447,9 +497,9 @@ $Messenger = {
 
                         var $contactId = $Config.get('contact_id');
                         if ($contactId) {
-                            if ($Config.get('contacts')[$contactId]['unread_count']) {
-                                $Messenger.$contactList.select($contactId);
-                            }
+                            //if ($Config.get('contacts')[$contactId]['unread_count']) {
+                            $Messenger.$contactList.select($contactId);
+                            //}
                         }
                     }, function() {
                         $Messenger.freeLock();
@@ -499,6 +549,8 @@ $Messenger = {
      */
     $userInfo: {
 
+        active: false,
+
         initUI: function() {
             $(".orange-menu .item.gift").click(function() {
                 $Messenger.$userInfo.$gifts.showLayer();
@@ -526,18 +578,26 @@ $Messenger = {
                         $postData['last_message_id'] = $lastMessageId;
                     }
 
+                    if (!$Messenger.acquireLock()) return;
+
                     $Tools.ajaxPost('messenger.gift.send', $postData, function($data) {
                         if ($data.status == 0 && $data.message == "") {
-                            var $messages = $data.data.messages, $lastMessage;
+                            var
+                                $messages = $data.data.messages,
+                                $lastMessageKey = "last-message-by-" + $Config.get('contact_id'),
+                                $lastMessage
+                            ;
+
                             $Messenger.$messages.removeStatus();
 
                             for (var $i=0;$i<$messages.length;$i++) {
-                                $lastMessage = $messages[$i];
 
-                                if (!$Messenger.$messages.exists($messages[$i])) {
+                                if (!$Messenger.$messages.exists($Config.set($lastMessageKey($messages[$i])))) {
                                     $Messenger.$messages.addMessage($messages[$i], true);
                                 }
                             }
+
+                            $lastMessage = $Config.get($lastMessageKey);
 
                             if ($data.unread_count > 0) {
                                 ($lastMessage['direction'] == 'outbox') &&
@@ -563,6 +623,9 @@ $Messenger = {
                         }
 
                         $Messenger.$userInfo.$gifts.hideLayer();
+                        $Messenger.freeLock();
+                    }, function() {
+                        $Messenger.freeLock();
                     });
 
                     return false;
@@ -596,6 +659,8 @@ $Messenger = {
                 $(".orange-menu .drop_down.drop_down-present").show();
                 $("div.layout-content").addClass('show-present');
                 $(".orange-menu .item.gift").addClass('item-current');
+
+                $Messenger.$userInfo.$gifts.active = true;
             },
 
             hideLayer: function() {
@@ -605,6 +670,8 @@ $Messenger = {
                     $("div.layout-content").removeClass('show-present');
                     $(".orange-menu .item.gift").removeClass('item-current');
                 }
+
+                $Messenger.$userInfo.$gifts.active = false;
             }
         },
 
@@ -720,27 +787,21 @@ $Messenger = {
 
                     $Messenger.$messages.setLoadingStatus();
 
-                    var $messages = $("ul.messages__list li.messages__item[message_id]");
-                    if ($messages) {
-                        var $lastMessageId = $messages.eq(0).attr('message_id');
-                        if ($lastMessageId) {
-                            $Messenger.$messages.get($Config.get('contact_id'), $lastMessageId, function($data) {
-                                var $messages = $data.messages;
-                                $Messenger.$messages.removeLoadingStatus();
+                    if ($firstMessageId) {
+                        $Messenger.$messages.get($Config.get('contact_id'), $firstMessageId, null, function($data) {
+                            var $messages = $data.messages;
+                            $Messenger.$messages.removeLoadingStatus();
 
-                                for (var $i=$messages.length - 1;$i>=0;$i--) {
-                                    $Messenger.$messages.addMessage($messages[$i], false);
-                                }
+                            for (var $i=$messages.length - 1;$i>=0;$i--) {
+                                $Messenger.$messages.addMessage($messages[$i], false);
+                            }
 
-                                $messages.length > 0 && $Messenger.$messages.scrollTop();
-                                $Messenger.freeLock();
-                            }, function() {
-                                $Messenger.$messages.removeLoadingStatus();
-                                $Messenger.freeLock();
-                            });
-                        } else {
+                            $messages.length > 0 && $Messenger.$messages.scrollTop(5);
                             $Messenger.freeLock();
-                        }
+                        }, function() {
+                            $Messenger.$messages.removeLoadingStatus();
+                            $Messenger.freeLock();
+                        });
                     } else {
                         $Messenger.freeLock();
                     }
@@ -986,13 +1047,15 @@ $Messenger = {
             $("ul.messages__list li.messages__item").remove();
         },
 
-        get: function($contactId, $lastMessageId, $successCallback, $errorCallback) {
-            var $params = {'contact_id': $contactId};
-            if ($lastMessageId) {
-                $params.last_message_id = $lastMessageId;
+        get: function($contactId, $firstMessageId, $lastMessageId, $successCallback, $errorCallback) {
+            var $postData = {'contact_id': $contactId};
+            if ($firstMessageId) {
+                $postData['first_message_id'] = $firstMessageId;
+            } else if ($lastMessageId) {
+                $postData['last_message_id'] = $lastMessageId;
             }
 
-            $Tools.ajaxPost('messenger.messages.get', $params, function($data) {
+            $Tools.ajaxPost('messenger.messages.get', $postData, function($data) {
                 $successCallback($data.data);
             }, $errorCallback);
         },
@@ -1001,8 +1064,8 @@ $Messenger = {
             $(".window-user_message").scrollTop($(".window-user_message").prop('scrollHeight'));
         },
 
-        scrollTop: function() {
-            $(".window-user_message").scrollTop(0);
+        scrollTop: function($top) {
+            $(".window-user_message").scrollTop($top || 0);
         }
     },
 
@@ -1016,34 +1079,36 @@ $Messenger = {
         initUI: function() {
 
             var $sendMessage = function() {
-
-                /**
-                 * Встроить блокировку
-                 *
-                 * @author shpizel
-                 */
-
                 var $textarea = $("div.window-user_form div.input_i");
                 var $message = $textarea.html();
 
                 if ($message && $message!='<br>') {
                     $Messenger.$sendForm.$smilies.hide();
 
+                    if (!$Messenger.acquireLock()) return;
+
                     $Messenger.$sendForm.sendMessage($message, function($data) {
-                        var $messages = $data.messages, $lastMessage;
+                        var
+                            $messages = $data.messages,
+                            $lastMessageKey = "last-message-by-" + $Config.get('contact_id'),
+                            $lastMessage
+                        ;
+
                         $Messenger.$messages.removeStatus();
 
                         for (var $i=0;$i<$messages.length;$i++) {
                             $lastMessage = $messages[$i];
 
-                            if (!$Messenger.$messages.exists($messages[$i])) {
+                            if (!$Messenger.$messages.exists($Config.set($lastMessageKey, $messages[$i]))) {
                                 $Messenger.$messages.addMessage($messages[$i], true);
                             }
                         }
 
+                        $lastMessage = $Config.get($lastMessageKey);
+
                         if ($data.unread_count > 0) {
                             ($lastMessage['direction'] == 'outbox') &&
-                            $Messenger.$messages.setNotReadedStatus();
+                                $Messenger.$messages.setNotReadedStatus();
 
                             if ($data.unread_count >= 3 && !$data.dialog) {
                                 $Messenger.$sendForm.lockByLimit();
@@ -1053,7 +1118,7 @@ $Messenger = {
                             }
                         } else {
                             ($lastMessage['direction'] == 'outbox') &&
-                            $Messenger.$messages.setReadedStatus();
+                                $Messenger.$messages.setReadedStatus();
 
                             $Messenger.$sendForm.unlockByLimit();
                             $Messenger.$sendForm.focus();
@@ -1061,8 +1126,10 @@ $Messenger = {
 
                         $Messenger.$messages.scrollDown();
                         $Messenger.$sendForm.clear();
+                        $Messenger.freeLock();
                     }, function() {
                         $Messenger.$sendForm.focus();
+                        $Messenger.freeLock();
                     });
                 }
 
@@ -1085,6 +1152,7 @@ $Messenger = {
                 $Tools.saveSelection();
             }).focus(function(){
                 $Tools.restoreSelection();
+            }).click(function() {
                 return false;
             });
 
@@ -1138,7 +1206,7 @@ $Messenger = {
         },
 
         clear: function() {
-            $("div.window-user_form div.input_i").html('');
+            $("div.window-user_form div.input_i").html('<br/>');
         },
 
         sendMessage: function($message, $successCallback, $errorCallback) {

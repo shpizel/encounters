@@ -10,9 +10,7 @@ $Config = {
      *
      * @var object
      */
-    $storage: {
-        'debug': true
-    },
+    $storage: {},
 
     /**
      * Setter
@@ -23,10 +21,12 @@ $Config = {
         var $argc = arguments.length;
         if ($argc == 2) {
             this.$storage[arguments[0]] = arguments[1];
+            return arguments[1];
         } else if ($argc == 1 && typeof(arguments[0]) == 'object') {
             for (var $key in arguments[0]) {
                 this.set($key, arguments[0][$key]);
             }
+            return arguments[0];
         }
     },
 

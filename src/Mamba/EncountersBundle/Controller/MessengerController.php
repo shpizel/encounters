@@ -134,7 +134,17 @@ class MessengerController extends ApplicationController {
                         }
                     }
 
-                    if ($messages = $this->getMessagesHelper()->getMessages($Contact, intval($this->getRequest()->request->get('last_message_id')))) {
+
+                    if ($lastMessageId = intval($this->getRequest()->request->get('first_message_id'))) {
+                        $sort = 'ASC';
+                    } elseif ($lastMessageId = intval($this->getRequest()->request->get('last_message_id'))) {
+                        $sort = 'DESC';
+                    } else {
+                        $lastMessageId = 0;
+                        $sort = "ASC";
+                    }
+
+                    if ($messages = $this->getMessagesHelper()->getMessages($Contact, $lastMessageId, $sort)) {
                         foreach ($messages as $key=>$Message) {
                             $messages[$key] = $Message->toArray();
                             $messages[$key]['date'] = $this->getHumanDate($messages[$key]['timestamp']);
@@ -150,12 +160,13 @@ class MessengerController extends ApplicationController {
                         }
 
                         $this->json['data']['messages'] = $messages;
-                        $this->json['data']['unread_count'] = 0;
-                        $this->json['data']['dialog'] = $Contact->getInboxCount() && $Contact->getOutboxCount();
+                    }
 
-                        if ($reverseContact = $this->getContactsHelper()->getContact($Contact->getRecieverId(), $Contact->getSenderId())) {
-                            $this->json['data']['unread_count'] = $reverseContact->getUnreadCount();
-                        }
+                    $this->json['data']['unread_count'] = 0;
+                    $this->json['data']['dialog'] = $Contact->getInboxCount() && $Contact->getOutboxCount();
+
+                    if ($reverseContact = $this->getContactsHelper()->getContact($Contact->getRecieverId(), $Contact->getSenderId())) {
+                        $this->json['data']['unread_count'] = $reverseContact->getUnreadCount();
                     }
                 } else {
                     list($this->json['status'], $this->json['message']) = array(2, "Contact does not exists");

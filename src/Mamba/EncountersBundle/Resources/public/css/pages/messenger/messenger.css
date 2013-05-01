@@ -1021,6 +1021,7 @@ textarea.input_i {
     overflow-y: auto;
     overflow-x: visible;
     word-wrap: break-word;
+    /*background: #00aa00;*/
 }
 
 .window-user_form .button {
