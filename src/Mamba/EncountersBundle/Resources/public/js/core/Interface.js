@@ -53,7 +53,7 @@ $Interface = {
                     });
 
                 }, function() {
-                    if (!$Config.get('debug')) {
+                    if (!$Config.get('debug') && $route != 'messenger') {
                         top.location.href = $Config.get('platform')['partner_url'] + 'app_platform/?action=view&app_id=' + $Config.get('platform')['app_id'];
                     } else {
                         $Tools.log('Mamba JS API disabled');
