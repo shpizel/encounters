@@ -17,7 +17,10 @@ $Messenger = {
             $Messenger.$userInfo.$gifts.hideLayer();
         }).keydown(function() {
             if ($Messenger.$userInfo.$gifts.active) {
-
+                var $texarea = $("div.drop_down-present textarea");
+                if (!$texarea.is(":focus")) {
+                    $texarea.focus();
+                }
             } else if (!$Messenger.$sendForm.isFocused()) {
                 $Messenger.$sendForm.focus();
             }
@@ -231,7 +234,7 @@ $Messenger = {
 
         select: function($contactId, $callback) {
             if (!$Messenger.acquireLock()) {
-                return;
+                return false;
             }
 
             var $currentContactId = $Config.get('contact_id');
@@ -328,16 +331,10 @@ $Messenger = {
 
                         if ($data.unread_count >= 3 && !$data.dialog) {
                             $Messenger.$sendForm.lockByLimit();
-                        } else {
-                            $Messenger.$sendForm.unlockByLimit();
-                            $Messenger.$sendForm.focus();
                         }
                     } else {
                         ($lastMessage['direction'] == 'outbox') &&
                             $Messenger.$messages.setReadedStatus();
-
-                        $Messenger.$sendForm.unlockByLimit();
-                        $Messenger.$sendForm.focus();
                     }
                 }
 
@@ -451,7 +448,7 @@ $Messenger = {
         initUpdateTimer: function() {
             window.setInterval(
                 function() {
-                    if (!$Messenger.acquireLock()) return;
+                    if (!$Messenger.acquireLock()) return false;
 
                     $Tools.ajaxPost('messenger.contacts.update', {}, function($data) {
                         if ($data.status == 0 && $data.message == '') {
@@ -578,7 +575,7 @@ $Messenger = {
                         $postData['last_message_id'] = $lastMessageId;
                     }
 
-                    if (!$Messenger.acquireLock()) return;
+                    if (!$Messenger.acquireLock()) return false;
 
                     $Tools.ajaxPost('messenger.gift.send', $postData, function($data) {
                         if ($data.status == 0 && $data.message == "") {
@@ -779,7 +776,7 @@ $Messenger = {
 
                 if ($scrollTop == 0) {
                     if (!$Messenger.acquireLock()) {
-                        return;
+                        return false;
                     } else if (!($firstMessageId = $Messenger.$messages.getFirstMessageId())) {
                         $Messenger.freeLock();
                         return;
@@ -1085,7 +1082,7 @@ $Messenger = {
                 if ($message && $message!='<br>') {
                     $Messenger.$sendForm.$smilies.hide();
 
-                    if (!$Messenger.acquireLock()) return;
+                    if (!$Messenger.acquireLock()) return false;
 
                     $Messenger.$sendForm.sendMessage($message, function($data) {
                         var

@@ -185,6 +185,7 @@ class MessengerController extends ApplicationController {
      * @return Response
      */
     public function sendMessageAction() {
+        //sleep(1);
         $Mamba = $this->getMamba();
 
         $ContactsHelper = $this->getContactsHelper();
