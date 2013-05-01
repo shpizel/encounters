@@ -239,8 +239,6 @@ $Messenger = {
 
             var $currentContactId = $Config.get('contact_id');
 
-            $Messenger.$sendForm.$smilies.hide();
-
             $Config.set('contact_id', $contactId);
 
             $("div.layout-sidebar div.b-list_users ul.list-users > li").removeClass('list-users_item-current').removeClass('loading');
@@ -265,6 +263,8 @@ $Messenger = {
             if (($currentContactId == $contactId)) {
                 $lastMessageId = $Messenger.$messages.getLastMessageId();
                 $itself = true;
+            } else {
+                $Messenger.$sendForm.$smilies.hide();
             }
 
             $Messenger.$messages.get($contactId, null, $lastMessageId, function($data) {
@@ -494,9 +494,11 @@ $Messenger = {
 
                         var $contactId = $Config.get('contact_id');
                         if ($contactId) {
-                            //if ($Config.get('contacts')[$contactId]['unread_count']) {
-                            $Messenger.$contactList.select($contactId);
-                            //}
+                            if ($Config.get('contacts')[$contactId]['unread_count']) {
+                                $Messenger.$contactList.select($contactId);
+                            } else if ($Config.get('last-message-by' + $contactId) && !$Messenger.$sendForm.getHTML()) {
+                                $Messenger.$contactList.select($contactId);
+                            }
                         }
                     }, function() {
                         $Messenger.freeLock();
@@ -1163,6 +1165,10 @@ $Messenger = {
             });
 
             $Messenger.$sendForm.$smilies.initUI();
+        },
+
+        getHTML: function() {
+            return $("div.window-user_form div.input_i").html();
         },
 
         setLimitLockInfo: function($gender) {
