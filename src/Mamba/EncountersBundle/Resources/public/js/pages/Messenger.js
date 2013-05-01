@@ -496,7 +496,7 @@ $Messenger = {
                         if ($contactId) {
                             if ($Config.get('contacts')[$contactId]['unread_count']) {
                                 $Messenger.$contactList.select($contactId);
-                            } else if ($Config.get('last-message-by' + $contactId) && !$Messenger.$sendForm.getHTML()) {
+                            } else if ($Config.get('last-message-by' + $contactId)) {
                                 $Messenger.$contactList.select($contactId);
                             }
                         }
@@ -590,8 +590,7 @@ $Messenger = {
                             $Messenger.$messages.removeStatus();
 
                             for (var $i=0;$i<$messages.length;$i++) {
-
-                                if (!$Messenger.$messages.exists($Config.set($lastMessageKey($messages[$i])))) {
+                                if (!$Messenger.$messages.exists($Config.set($lastMessageKey, $messages[$i]))) {
                                     $Messenger.$messages.addMessage($messages[$i], true);
                                 }
                             }
@@ -1205,7 +1204,10 @@ $Messenger = {
         },
 
         focus: function() {
-            $("div.window-user_form div.input_i").focus();
+            var $textarea = $("div.window-user_form div.input_i");
+            if (!$textarea.is(":focus")) {
+                $textarea.focus();
+            }
         },
 
         clear: function() {
