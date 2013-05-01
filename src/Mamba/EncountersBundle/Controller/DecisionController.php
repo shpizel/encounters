@@ -249,14 +249,14 @@ class DecisionController extends ApplicationController {
                 'events_unread'
             ])[$this->webUserId];
 
-//            $this->json['data']['counters'] = array(
-//                'visitors' => mt_rand(0, 100),
-//                'visitors_unread' => mt_rand(0, 100),
-//                'mutual' => mt_rand(0, 100),
-//                'mutual_unread' => mt_rand(0, 100),
-//                'messages_unread' => mt_rand(0, 100),
-//                'events_unread' => mt_rand(0, 100),
-//            );
+            /*$this->json['data']['counters'] = array(
+                'visitors' => mt_rand(0, 100),
+                'visitors_unread' => mt_rand(0, 100),
+                'mutual' => mt_rand(0, 100),
+                'mutual_unread' => mt_rand(0, 100),
+                'messages_unread' => mt_rand(0, 100),
+                'events_unread' => mt_rand(0, 100),
+            );*/
 
             $this->json['data']['popularity'] = array_merge(
                 $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($this->webUserId)),

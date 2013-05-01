@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Helpers\Messenger;
 
 use Mamba\EncountersBundle\Helpers\Helper;
+use Mamba\EncountersBundle\Helpers\Stats;
 use PDO;
 
 /**
@@ -266,6 +267,9 @@ class Contacts extends Helper {
             $Memcache = $this->getMemcache();
             $cacheKey = sprintf(self::CONTACT_CACHE_KEY, $Contact->getId());
             $Memcache->set($cacheKey, serialize($Contact));
+
+            $Stats = new Stats($this->Container);
+            $Stats->incr('contacts-created');
 
             return $Contact;
         }

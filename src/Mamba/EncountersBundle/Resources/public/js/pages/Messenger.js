@@ -14,11 +14,10 @@ $Messenger = {
      */
     initUI: function() {
         $(document).click(function(){
-            var $orangeMenu = $(".orange-menu .drop_down");
-            if ($orangeMenu.is(':visible')) {
-                $orangeMenu.hide();
-                $("div.layout-content").removeClass('show-present');
-                $(".orange-menu .item.gift").removeClass('item-current');
+            $Messenger.$userInfo.$gifts.hideLayer();
+        }).keydown(function() {
+            if (!$Messenger.$sendForm.isFocused()) {
+                $Messenger.$sendForm.focus();
             }
         });
 
@@ -59,69 +58,6 @@ $Messenger = {
         $Messenger.locks[$key] = false;
     },
 
-    initUpdateTimer: function() {
-        window.setInterval(
-            function() {
-                if (!$Messenger.acquireLock()) return;
-
-                $Tools.ajaxPost('messenger.update', {}, function($data) {
-                    if ($data.status == 0 && $data.message == '') {
-                        var $contacts = $data.data.contacts, $contactsObject = {};
-                        for (var $i=0;$i<$contacts.length;$i++) {
-                            $contactsObject[$contacts[$i].contact_id] = $contacts[$i];
-                        }
-
-                        var $contacts = $Config.get('contacts'), $item;
-                        for (var $contactId in $contactsObject) {
-                            $contacts[$contactId] = $contactsObject[$contactId];
-                        }
-
-                        $Config.set('contacts', $contactsObject = $contacts);
-
-                        var $sortArray = [];
-                        for (var $contactId in $contactsObject) {
-                            $sortArray.push([$contactsObject[$contactId]['changed'], $contactsObject[$contactId]]);
-                        }
-
-                        $sortArray.sort(function($a, $b) {
-                            return - $a[0] + $b[0];
-                        });
-
-                        if ($sortArray.length > 0) {
-                            $Messenger.$contactList.setNotEmpty();
-
-                            for (var $i=0;$i<$sortArray.length;$i++) {
-                                $item = $sortArray[$i][1];
-
-                                if ($Messenger.$contactList.exists($item['contact_id'])) {
-                                    $Messenger.$contactList.updateContact($item);
-                                } else {
-                                    $Messenger.$contactList.addContact($item);
-                                }
-
-                            }
-                        } else {
-                            $Messenger.$contactList.setEmpty();
-                        }
-
-                        /**
-                         * Работа с сообщениями
-                         *
-                         * @author shpizel
-                         */
-                    }
-
-                    $Messenger.freeLock();
-                }, function() {
-                    $Messenger.freeLock();
-                });
-            },
-            $Messenger.updateTimeout
-        );
-    },
-
-    updateTimeout: 5000,
-
     /**
      * Запуск страницы
      *
@@ -130,7 +66,6 @@ $Messenger = {
     run: function() {
 
     },
-
 
     /**
      * Показываем лоадер на всю страницу
@@ -156,14 +91,6 @@ $Messenger = {
      * @object
      */
     $contactList: {
-
-        showLoader: function() {
-            $("div.b-list_users div.b-list_loading").css('visibility', 'visible');
-        },
-
-        hideLoader: function() {
-            $("div.b-list_users div.b-list_loading").css('visibility', 'hidden');
-        },
 
         /**
          * Init UI
@@ -194,12 +121,17 @@ $Messenger = {
                         $contactId = $contactId || $contactsArray[0].contact_id;
 
                         $Messenger.$contactList.select($contactId, function() {
-                            $Messenger.initUpdateTimer();
                             $Messenger.hideLoader();
                         });
                     } else {
                         $Messenger.$contactList.setEmpty();
+                        $Messenger.hideLoader();
+
+                        //$Messenger.$contactList.$onlineUsers.select();
                     }
+
+                    $Messenger.$contactList.initUpdateTimer();
+
                 } else {
                     $Tools.log('Error while recieving contacts');
                     window.close();
@@ -278,6 +210,16 @@ $Messenger = {
             $("div.b-list_users").slimScroll({
                 height: '100%'
             });
+
+            $Messenger.$contactList.$onlineUsers.initUI();
+        },
+
+        showLoader: function() {
+            $("div.b-list_users div.b-list_loading").css('visibility', 'visible');
+        },
+
+        hideLoader: function() {
+            $("div.b-list_users div.b-list_loading").css('visibility', 'hidden');
         },
 
         exists: function($contactId) {
@@ -454,6 +396,99 @@ $Messenger = {
             if ($contact.platform.info.name) {
                 $("span.list-users_name", $html).html($contact.platform.info.name);
             }
+        },
+
+        initUpdateTimer: function() {
+            window.setInterval(
+                function() {
+                    if (!$Messenger.acquireLock()) return;
+
+                    $Tools.ajaxPost('messenger.contacts.update', {}, function($data) {
+                        if ($data.status == 0 && $data.message == '') {
+                            var $contacts = $data.data.contacts, $contactsObject = {};
+                            for (var $i=0;$i<$contacts.length;$i++) {
+                                $contactsObject[$contacts[$i].contact_id] = $contacts[$i];
+                            }
+
+                            var $contacts = $Config.get('contacts'), $item;
+                            for (var $contactId in $contactsObject) {
+                                $contacts[$contactId] = $contactsObject[$contactId];
+                            }
+
+                            $Config.set('contacts', $contactsObject = $contacts);
+
+                            var $sortArray = [];
+                            for (var $contactId in $contactsObject) {
+                                $sortArray.push([$contactsObject[$contactId]['changed'], $contactsObject[$contactId]]);
+                            }
+
+                            $sortArray.sort(function($a, $b) {
+                                return - $a[0] + $b[0];
+                            });
+
+                            if ($sortArray.length > 0) {
+                                $Messenger.$contactList.setNotEmpty();
+
+                                for (var $i=0;$i<$sortArray.length;$i++) {
+                                    $item = $sortArray[$i][1];
+
+                                    if ($Messenger.$contactList.exists($item['contact_id'])) {
+                                        $Messenger.$contactList.updateContact($item);
+                                    } else {
+                                        $Messenger.$contactList.addContact($item);
+                                    }
+                                }
+                            } else {
+                                $Messenger.$contactList.setEmpty();
+                            }
+                        }
+
+                        $Messenger.freeLock();
+
+                        var $contactId = $Config.get('contact_id');
+                        if ($contactId) {
+                            if ($Config.get('contacts')[$contactId]['unread_count']) {
+                                $Messenger.$contactList.select($contactId);
+                            }
+                        }
+                    }, function() {
+                        $Messenger.freeLock();
+                    });
+                },
+                $Messenger.$contactList.updateTimeout
+            );
+        },
+
+        updateTimeout: 5000,
+
+        $onlineUsers: {
+
+            initUI: function() {
+                $("div.layout-sidebar div.b-user_online").click(function() {
+                    $Messenger.$contactList.$onlineUsers.select();
+                });
+            },
+
+            select: function() {
+                $Messenger.$contactList.$onlineUsers.setActiveStatus();
+                $Messenger.$contactList.$onlineUsers.setLoadingStatus();
+            },
+
+            removeStatus: function() {
+                $("div.layout-sidebar div.b-user_online").removeClass('loading');
+            },
+
+            setLoadingStatus: function() {
+                $("div.layout-sidebar div.b-user_online").addClass('loading');
+            },
+
+            setActiveStatus: function() {
+                $("div.layout-sidebar div.b-user_online").addClass('online-select');
+            },
+
+            setInactiveStatus: function() {
+                $("div.layout-sidebar div.b-user_online").removeClass('online-select');
+            }
         }
     },
 
@@ -466,10 +501,7 @@ $Messenger = {
 
         initUI: function() {
             $(".orange-menu .item.gift").click(function() {
-                $(".orange-menu .drop_down.drop_down-present").show();
-                $("div.layout-content").addClass('show-present');
-                $(".orange-menu .item.gift").addClass('item-current');
-
+                $Messenger.$userInfo.$gifts.showLayer();
                 return false;
             });
         },
@@ -530,12 +562,7 @@ $Messenger = {
                             alert('Недостаточно сердечек для покупки подарка! Сердечки можно приобрести в приложении :)');
                         }
 
-                        var $orangeMenu = $(".orange-menu .drop_down");
-                        if ($orangeMenu.is(':visible')) {
-                            $orangeMenu.hide();
-                            $("div.layout-content").removeClass('show-present');
-                            $(".orange-menu .item.gift").removeClass('item-current');
-                        }
+                        $Messenger.$userInfo.$gifts.hideLayer();
                     });
 
                     return false;
@@ -560,12 +587,24 @@ $Messenger = {
                 });
 
                 $("ul.messages__list").on('click', 'div.baloon span.baloon_content-btn', function() {
-                    $(".orange-menu .drop_down.drop_down-present").show();
-                    $("div.layout-content").addClass('show-present');
-                    $(".orange-menu .item.gift").addClass('item-current');
-
+                    $Messenger.$userInfo.$gifts.showLayer();
                     return false;
                 });
+            },
+
+            showLayer: function() {
+                $(".orange-menu .drop_down.drop_down-present").show();
+                $("div.layout-content").addClass('show-present');
+                $(".orange-menu .item.gift").addClass('item-current');
+            },
+
+            hideLayer: function() {
+                var $orangeMenu = $(".orange-menu .drop_down");
+                if ($orangeMenu.is(':visible')) {
+                    $orangeMenu.hide();
+                    $("div.layout-content").removeClass('show-present');
+                    $(".orange-menu .item.gift").removeClass('item-current');
+                }
             }
         },
 
@@ -709,10 +748,7 @@ $Messenger = {
             });
 
             $("ul.messages__list").on('click', 'li.messages__item.messages__item_promo a', function() {
-                $(".orange-menu .drop_down.drop_down-present").show();
-                $("div.layout-content").addClass('show-present');
-                $(".orange-menu .item.gift").addClass('item-current');
-
+                $Messenger.$userInfo.$gifts.showLayer();
                 return false;
             });
 
@@ -778,8 +814,18 @@ $Messenger = {
                     $interestsBlock.append($('<li class="tags-list_item">' + $mutualInterests[$i] + '</li>'));
                 }
             } else {
-                $interestsBlock.hide();
-                $text.html("У нас есть подсказка:<br>" + $userInfo.info.name + ' еще не написал' + ($userInfo.info.gender == 'F' ? 'а' : '') + ' о своих увлечениях,<br>спросите чем он'+($userInfo.info.gender == 'F' ? 'а' : '')+' увлекается');
+
+
+                if ($webUserInterests.length == 0) {
+                    $interestsBlock.hide();
+                    $text.html("У нас есть подсказка:<br>" + $userInfo.info.name + ' еще не написал' + ($userInfo.info.gender == 'F' ? 'а' : '') + ' о своих увлечениях,<br>спросите чем он'+($userInfo.info.gender == 'F' ? 'а' : '')+' увлекается');
+                } else {
+                    $currentUserInterests = $Tools.shuffle($currentUserInterests);
+                    $text.html('Произведите хорошее впечатление!<br> ' + $userInfo.info.name + ' отметил' + ($userInfo.info.gender == 'F' ? 'а' : '') + ' свои увлечения');
+                    for (var $i=0;$i<(($currentUserInterests.length > 3) ? 3 : $currentUserInterests.length);$i++) {
+                        $interestsBlock.append($('<li class="tags-list_item">' + $currentUserInterests[$i] + '</li>'));
+                    }
+                }
             }
 
             $Messenger.$messages.clear();
@@ -1047,9 +1093,7 @@ $Messenger = {
             });
 
             $("div.layout-content div.window-user_form div.b-user_disabled span.sent").click(function() {
-                $(".orange-menu .drop_down.drop_down-present").show();
-                $("div.layout-content").addClass('show-present');
-                $(".orange-menu .item.gift").addClass('item-current');
+                $Messenger.$userInfo.$gifts.showLayer();
                 return false;
             });
 
@@ -1121,6 +1165,15 @@ $Messenger = {
             });
         },
 
+        isFocused: function() {
+            var $textarea = $("div.window-user_form div.input_i");
+            if ($textarea.is(':focus')) {
+                return true;
+            }
+
+            return false;
+        },
+
         /**
          * Смайлики
          *
@@ -1140,10 +1193,8 @@ $Messenger = {
 
                     return false;
                 }).mousedown(function() {
-                    var $textarea = $("div.window-user_form div.input_i");
-                    if (!$textarea.is(':focus')) {
-                        $textarea.focus();
-                    }
+                    !$Messenger.$sendForm.isFocused() &&
+                        $Messenger.$sendForm.focus();
 
                     return false;
                 });

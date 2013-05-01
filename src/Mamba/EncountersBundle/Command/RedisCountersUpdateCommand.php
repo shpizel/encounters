@@ -84,8 +84,6 @@ class RedisCountersUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $Mamba = $this->getMamba();
-
         $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MUTUALS_COUNT);
         $stmt->execute();
 
@@ -94,16 +92,6 @@ class RedisCountersUpdateCommand extends CronScript {
             $counter = (int) $item['counter'];
 
             $this->getCountersHelper()->set($userId, 'mutual', $counter);
-        }
-
-        $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MYCHOICE_COUNT);
-        $stmt->execute();
-
-        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['counter'];
-
-            $this->getCountersHelper()->set($userId, 'mychoice', $counter);
         }
 
         $stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_VISITORS_COUNT);
@@ -115,5 +103,21 @@ class RedisCountersUpdateCommand extends CronScript {
 
             $this->getCountersHelper()->set($userId, 'visitors', $counter);
         }
+
+        /**
+         * Пересчет счетчиков для mychoice выпиливаем
+         *
+         * @author shpizel
+         */
+
+        /*$stmt = $this->getContainer()->get('doctrine')->getEntityManager()->getConnection()->prepare(self::SQL_GET_MYCHOICE_COUNT);
+        $stmt->execute();
+
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $userId  = (int) $item['user_id'];
+            $counter = (int) $item['counter'];
+
+            $this->getCountersHelper()->set($userId, 'mychoice', $counter);
+        }*/
     }
 }

@@ -128,6 +128,12 @@ class VisitorsController extends ApplicationController {
         }
 
         $dataArray['data'] = $data ?: null;
+        if (!$data) {
+            $this->getCountersHelper()->set($webUserId, 'visitors', 0);
+        } elseif ($page == 1 && count($data) < $perPage) {
+            $this->getCountersHelper()->set($webUserId, 'visitors', count($data));
+        }
+
         $dataArray['json'] = json_encode($json) ?: null;
 
         return $this->TwigResponse("EncountersBundle:templates:visitors.html.twig", $dataArray);

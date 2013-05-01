@@ -433,7 +433,7 @@ abstract class ApplicationController extends Controller {
             'preferences' => $searchPreferences,
         );
 
-        if ($counters = $this->getCountersHelper()->getMulti([$webUserId], ['mychoice', 'visitors', 'visitors_unread', 'mutual', 'mutual_unread', 'messages_unread', 'events_unread'])) {
+        if ($counters = $this->getCountersHelper()->getMulti([$webUserId], [/*'mychoice', */'visitors', 'visitors_unread', 'mutual', 'mutual_unread', 'messages_unread', 'events_unread'])) {
             $dataArray['webuser']['stats'] = $counters[$webUserId];
         }
 

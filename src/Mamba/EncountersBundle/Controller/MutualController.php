@@ -133,6 +133,8 @@ class MutualController extends ApplicationController {
         $dataArray['data'] = $data ?: null;
         if (!$data) {
             $this->getCountersHelper()->set($webUserId, 'mutual', 0);
+        } elseif ($page == 1 && count($data) < $perPage) {
+            $this->getCountersHelper()->set($webUserId, 'mutual', count($data));
         }
 
         $dataArray['json'] = json_encode($json) ?: null;

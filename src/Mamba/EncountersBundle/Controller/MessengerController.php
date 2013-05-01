@@ -81,11 +81,11 @@ class MessengerController extends ApplicationController {
     }
 
     /**
-     * Messenger updater
+     * Messenger contacts updater
      *
      * @return Response
      */
-    public function getMessengerUpdateAction() {
+    public function getContactsUpdateAction() {
         $Mamba = $this->getMamba();
 
         if (!$Mamba->getReady()) {
@@ -189,6 +189,8 @@ class MessengerController extends ApplicationController {
             ) {
                 if (($WebUserContact = $ContactsHelper->getContactById($contactId)) && ($WebUserContact->getSenderId() == $webUserId))  {
 
+                    $CurrentUserContact = $this->getContactsHelper()->getContact($WebUserContact->getRecieverId(), $WebUserContact->getSenderId(), true);
+
                     /** messages всегда должно быть в ответе, даже если [] */
                     $this->json['data']['messages'] = [];
 
@@ -200,7 +202,16 @@ class MessengerController extends ApplicationController {
                         ->setTimestamp(time())
                     ;
 
-                    if ($Message = $MessagesHelper->addMessage($Message)) {
+                    if
+                    (
+                        /** или диалог или меньше 3х непрочитанных у обратного контакта */
+                        (($WebUserContact->getInboxCount() && $WebUserContact->getOutboxCount()) || $CurrentUserContact->getUnreadCount() < 3) &&
+
+                        /** пытаемся отправить сообщение */
+                        ($Message = $MessagesHelper->addMessage($Message))
+                    ) {
+
+                        $this->getStatsHelper()->incr('messages-sent');
 
                         /** Обновляем контакт */
                         $this->getContactsHelper()->updateContact(
@@ -236,12 +247,14 @@ class MessengerController extends ApplicationController {
                         $this->json['data']['dialog'] = $WebUserContact->getInboxCount() && $WebUserContact->getOutboxCount();
 
                         /** Отправляем данные в другой контакт (обратный) и обновляем его */
-                        if ($CurrentUserContact = $this->getContactsHelper()->getContact($WebUserContact->getRecieverId(), $WebUserContact->getSenderId(), true)) {
+                        if ($CurrentUserContact) {
                             if ($MessagesHelper->addMessage(
                                 $Message
                                     ->setContactId($CurrentUserContact->getId())
                                     ->setDirection('inbox'))
                             ) {
+                                $this->getStatsHelper()->incr('messages-sent');
+
                                 $ContactsHelper->updateContact(
                                     $CurrentUserContact
                                         ->setUnreadCount($CurrentUserContact->getUnreadCount() + 1)
@@ -302,6 +315,8 @@ class MessengerController extends ApplicationController {
                 if ($account >= ($cost = $Gift->getCost())) {
                     $account = $AccountHelper->decr($webUserId, $cost);
                     $this->getGiftsHelper()->add($webUserId, $currentUserId, $giftId, $comment = $giftInfo['comment']);
+
+                    $this->getStatsHelper()->incr('gifts-sent');
 
                     $userInfo = $this->getMamba()->Anketa()->getInfo($webUserId);
 

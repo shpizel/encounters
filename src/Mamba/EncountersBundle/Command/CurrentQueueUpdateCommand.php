@@ -144,7 +144,7 @@ class CurrentQueueUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>current_user_id</info> = {$webUserId}, <info>timestamp</info> = {$timestamp}");
 
-        while ($this->getCurrentQueueHelper()->getSize($webUserId) <= 8) {
+        while ($this->getCurrentQueueHelper()->getSize($webUserId) <= 16) {
             $searchQueueChunk = $this->getSearchQueueHelper()->getRange($webUserId, 0, self::$balance['search'] - 1);
             $usersAddedCount = 0;
             foreach ($searchQueueChunk as $currentUserId) {
