@@ -90,6 +90,16 @@ class AdminEventsController extends ApplicationController {
                     'limit' => $limit,
                 ),
             ),
+
+            'traffic' => array(
+                'items' => array(),
+                'info'  => array(
+                    'ref-notifications' => 0,
+                    'ref-achievement' => 0,
+
+                    'limit' => $limit,
+                ),
+            ),
         );
 
         $Redis = $this->getRedis();
@@ -292,6 +302,31 @@ class AdminEventsController extends ApplicationController {
             }
 
             $dataArray['messenger']['items'][] = array(
+                'date' => date('Y-m-d', strtotime("-$key day")),
+                'ts'   => strtotime("-$key day"),
+                'item' => $item,
+            );
+        }
+
+        foreach ($data as $key=>$item) {
+            foreach ($requiredKeys = array(
+                'ref-notifications',
+                'ref-achievement') as $_key) {
+                if (!isset($item[$_key])) {
+                    $item[$_key] = null;
+                } else {
+                    $dataArray['traffic']['info'][$_key] += $item[$_key];
+                }
+            }
+
+            /** фильтруем item */
+            foreach ($item as $ikey=>$val) {
+                if (!in_array($ikey, $requiredKeys)) {
+                    unset($item[$ikey]);
+                }
+            }
+
+            $dataArray['traffic']['items'][] = array(
                 'date' => date('Y-m-d', strtotime("-$key day")),
                 'ts'   => strtotime("-$key day"),
                 'item' => $item,

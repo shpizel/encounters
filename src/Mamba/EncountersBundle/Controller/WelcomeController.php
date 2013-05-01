@@ -99,6 +99,8 @@ class WelcomeController extends ApplicationController {
                     $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
 
                     return $Response;
+                } elseif (in_array($extra, ['ref-notifications', 'ref-achievement'])) {
+                    $this->getStatsHelper()->incr($extra);
                 }
             }
 
