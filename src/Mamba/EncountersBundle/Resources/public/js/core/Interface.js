@@ -14,7 +14,7 @@ $Interface = {
     init: function($route) {
 
         if (window.location.href.indexOf('ym_playback') < 0 && document.referrer.indexOf('metrika.yandex') < 0) {
-            if ((window.top == window.self) && !($Config.get('debug') || $route != 'messenger')) {
+            if ((window.top == window.self) && !($Config.get('debug') || $route == 'messenger')) {
                 top.location = $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id;
             } else {
                 var $documentHeight = $('#wrapper').height();
