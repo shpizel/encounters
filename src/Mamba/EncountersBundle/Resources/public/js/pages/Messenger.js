@@ -496,7 +496,7 @@ $Messenger = {
                         if ($contactId) {
                             if ($Config.get('contacts')[$contactId]['unread_count']) {
                                 $Messenger.$contactList.select($contactId);
-                            } else if ($Config.get('last-message-by' + $contactId)) {
+                            } else if ($Config.get('last-message-by-' + $contactId)) {
                                 $Messenger.$contactList.select($contactId);
                             }
                         }
