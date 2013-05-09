@@ -38,6 +38,8 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        var_dump($this->getMamba()->getReady());
+        exit();
         $html = "<div>a <textarea cols=\"aaa\"></textarea>aaa" . '<br><img   class="smile s-1" src=\'/bundles/encounters/images/pixel.gif\'><img><br /></div>';
         echo MessengerController::cleanHTMLMessage($html);
 
