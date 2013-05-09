@@ -150,6 +150,9 @@ $Messenger = {
                     $Tools.log('Error while recieving contacts');
                     window.close();
                 }
+            }, function() {
+                $Tools.log('Error while recieving contacts');
+                window.close();
             });
 
             $("div.layout-sidebar div.b-list_users ul.list-users").on("click", 'li.list-users_item', function($event) {

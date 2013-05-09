@@ -121,8 +121,9 @@ class MessengerController extends ApplicationController {
 
     private function getOnlineUsers() {
         if ($searchPreferences = $this->getSearchPreferencesHelper()->get($this->webUserId)) {
-            $Connection = $stmt = $this->getDoctrine()->getEntityManager()->getConnection();
-            $Connection
+            $Connection = $this->getDoctrine()->getEntityManager()->getConnection();
+
+            $stmt = $Connection
                 ->prepare(
                     "select
                         la.user_id
