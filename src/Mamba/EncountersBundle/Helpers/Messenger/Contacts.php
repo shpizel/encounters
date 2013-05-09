@@ -141,12 +141,14 @@ class Contacts extends Helper {
             return $this->getContactById((int) $contactId);
         }
 
+        $startTime = microtime(true);
+
         /** в кеше нету - идем в базу */
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
             ->prepare(
-                self::SQL_GET_CONTACT
+                $sql = self::SQL_GET_CONTACT
             )
         ;
 
@@ -157,6 +159,18 @@ class Contacts extends Helper {
         $stmt->bindParam('current_user_id', $_currentUserId, PDO::PARAM_INT);
 
         if ($result = $stmt->execute()) {
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => [
+                    'web_user_id' => $_webUserId,
+                    'current_user_id' => $_currentUserId,
+                ],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $contactId = (int) $row['contact_id'];
 
@@ -191,11 +205,13 @@ class Contacts extends Helper {
             return unserialize($Contact);
         }
 
+        $startTime = microtime(true);
+
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
             ->prepare(
-                self::SQL_GET_CONTACT_BY_ID
+                $sql = self::SQL_GET_CONTACT_BY_ID
             )
         ;
 
@@ -204,6 +220,17 @@ class Contacts extends Helper {
         $stmt->bindParam('contact_id', $_contactId, PDO::PARAM_INT);
 
         if ($result = $stmt->execute()) {
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => [
+                    'contact_id' => $_contactId,
+                ],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $Contact = (new Contact)
                     ->setId((int) $row['contact_id'])
@@ -242,8 +269,9 @@ class Contacts extends Helper {
             ->setChanged(time())
         ;
 
+        $startTime = microtime(true);
         $Connection = $this->getDoctrine()->getEntityManager()->getConnection();
-        $stmt = $Connection->prepare(self::SQL_CREATE_CONTACT);
+        $stmt = $Connection->prepare($sql = self::SQL_CREATE_CONTACT);
 
         $senderId = $Contact->getSenderId();
         $recieverId = $Contact->getRecieverId();
@@ -262,6 +290,23 @@ class Contacts extends Helper {
         $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => [
+                    'sender_id' =>  $senderId,
+                    'reciever_id' => $recieverId,
+                    'inbox_count' => $inboxCount,
+                    'outbox_count' => $outboxCount,
+                    'unread_count' => $unreadCount,
+                    'blocked' => $isBlocked,
+                    'changed' => $changed,
+                ],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             $Contact->setId((int)$Connection->lastInsertId());
 
             $Memcache = $this->getMemcache();
@@ -293,11 +338,12 @@ class Contacts extends Helper {
         $isBlocked = $Contact->isBlocked() ? 'Y' : 'N';
         $changed = $Contact->getChanged();
 
+        $startTime = microtime(true);
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
             ->prepare(
-                self::SQL_UPDATE_CONTACT
+                $sql = self::SQL_UPDATE_CONTACT
             )
         ;
 
@@ -309,6 +355,22 @@ class Contacts extends Helper {
         $stmt->bindParam('changed', $changed, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => [
+                    'contact_id' =>  $contactId,
+                    'inbox_count' => $inboxCount,
+                    'outbox_count' => $outboxCount,
+                    'unread_count' => $unreadCount,
+                    'blocked' => $isBlocked,
+                    'changed' => $changed,
+                ],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             $Memcache = $this->getMemcache();
             $cacheKey = sprintf(self::CONTACT_CACHE_KEY, $Contact->getId());
             $Memcache->set($cacheKey, serialize($Contact));
@@ -334,11 +396,12 @@ class Contacts extends Helper {
             throw new ContactsException("Invalid offset type: ". gettype($offset));
         }
 
+        $startTime = microtime(true);
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
             ->prepare(
-                sprintf(
+                $sql = sprintf(
                     self::SQL_GET_CONTACTS,
                     $limit,
                     $offset
@@ -350,6 +413,16 @@ class Contacts extends Helper {
         $stmt->bindParam('sender_id', $_senderId, PDO::PARAM_INT);
 
         if ($result = $stmt->execute()) {
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => [
+                    'sender_id' =>  $_senderId,
+                ],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             $return = array();
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

@@ -53,7 +53,7 @@ class VisitorsController extends ApplicationController {
             $this->getCountersHelper()->set($webUserId, 'visitors_unread', 0);
         }
 
-        $dataArray  = $this->getInitialData();
+        $dataArray  = [];
 
         $perPage = 25;
         $currentPage = (int) $this->getRequest()->query->get('page') ?: $page;
@@ -75,13 +75,13 @@ class VisitorsController extends ApplicationController {
         $stmt->bindParam('web_user_id',  $_webUserId);
 
         if ($result = $stmt->execute()) {
-            $this->metrics['requests'][] = array(
+            self::$metrics['requests'][] = array(
                 'method'  => $sql,
                 'args'  => ['web_user_id' => $webUserId],
                 'timeout' => $timeout = microtime(true) - $startTime,
             );
 
-            $this->metrics['timeout']+=$timeout;
+            self::$metrics['timeout']+=$timeout;
 
             $usersArray = array();
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -136,6 +136,8 @@ class VisitorsController extends ApplicationController {
             }
 
         }
+
+        $dataArray = array_merge($dataArray, $this->getInitialData());
 
         $dataArray['data'] = $data ?: null;
         if (!$data) {

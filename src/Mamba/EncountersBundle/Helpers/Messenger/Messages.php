@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers\Messenger;
 
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\EncountersBundle\Helpers\Helper;
 use PDO;
 
@@ -67,11 +68,13 @@ class Messages extends Helper {
             throw new MessagesException("Invalid direction type: ". var_export($direction, true));
         }
 
+        $startTime = microtime(true);
+
         $stmt = $this->getDoctrine()
             ->getEntityManager()
             ->getConnection()
             ->prepare(
-                sprintf(
+                $sql = sprintf(
                     self::SQL_GET_MESSAGES,
                     ($direction == 'ASC') ? '<' : '>',
                     $limit,
@@ -86,6 +89,15 @@ class Messages extends Helper {
         $stmt->bindParam('last_message_id', $_lastMessageId, PDO::PARAM_INT);
 
         if ($result = $stmt->execute()) {
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => ['contact_id' => $_contactId, 'last_message_id' => $_lastMessageId],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             $return = array();
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -112,8 +124,10 @@ class Messages extends Helper {
      * @return Message|bool
      */
     public function addMessage(Message $Message, $delayed = false) {
+        $startTime = microtime(true);
+
         $Connection = $this->getDoctrine()->getEntityManager()->getConnection();
-        $stmt = $Connection->prepare(self::SQL_ADD_MESSAGE);
+        $stmt = $Connection->prepare($sql = self::SQL_ADD_MESSAGE);
 
         if (!$delayed) {
             $_contactId = $Message->getContactId();
@@ -132,6 +146,20 @@ class Messages extends Helper {
             $stmt->bindParam('timestamp', $_timestamp, PDO::PARAM_INT);
 
             if ($stmt->execute()) {
+
+                \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                    'method'  => $sql,
+                    'args'  => ['contact_id' => $_contactId,
+                        'type' => $_type,
+                        'direction' => $_direction,
+                        'message' => $_message,
+                        'timestamp' => $_timestamp
+                    ],
+                    'timeout' => $timeout = microtime(true) - $startTime,
+                );
+
+                \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
                 return
                     $Message
                         ->setId((int) $Connection->lastInsertId())

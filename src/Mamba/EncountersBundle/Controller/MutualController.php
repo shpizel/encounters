@@ -84,13 +84,13 @@ class MutualController extends ApplicationController {
 
         if ($result = $stmt->execute()) {
 
-            $this->metrics['requests'][] = array(
+            self::$metrics['requests'][] = array(
                 'method'  => $sql,
                 'args'  => ['web_user_id' => $webUserId],
                 'timeout' => $timeout = microtime(true) - $startTime,
             );
 
-            $this->metrics['timeout']+=$timeout;
+            self::$metrics['timeout']+=$timeout;
 
             $usersArray = array();
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {

@@ -47,7 +47,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 abstract class ApplicationController extends Controller {
 
-    protected
+    public static
 
         $metrics = array(
             'requests' => array(),
@@ -527,6 +527,7 @@ abstract class ApplicationController extends Controller {
         }
 
         $dataArray['metrics'] = array(
+            'mysql'   => self::$metrics,
             'redis'   => $this->getRedis()->getMetrics(),
             'leveldb' => $this->getLeveldb()->getMetrics(),
             'mamba'   => $this->getMamba()->getMetrics(),
@@ -594,6 +595,7 @@ abstract class ApplicationController extends Controller {
         $JSON['metrics'] = array(
             'generation_time' => microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
 
+            'mysql'   => self::$metrics,
             'redis'   => $this->getRedis()->getMetrics(),
             'leveldb' => $this->getLeveldb()->getMetrics(),
             'mamba'   => $this->getMamba()->getMetrics(),

@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Helpers\Queues;
 
+use Mamba\EncountersBundle\Controller\ApplicationController;
 use Mamba\EncountersBundle\Helpers\Helper;
 use PDO;
 
@@ -73,8 +74,19 @@ class ViewedQueue extends Helper {
             }
         }
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare("SELECT * FROM Decisions where web_user_id = $webUserId and current_user_id = $currentUserId LIMIT 1");
+        $startTime = microtime(true);
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql = "SELECT * FROM Decisions where web_user_id = $webUserId and current_user_id = $currentUserId LIMIT 1");
+
         if ($stmt->execute()) {
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => null,
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
+
             if ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $this->put($webUserId, $currentUserId, $data = array('ts' => (int) $item['changed'], 'decision' => (int) $item['decision']));
                 return $data;

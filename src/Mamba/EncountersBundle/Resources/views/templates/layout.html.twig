@@ -108,6 +108,13 @@
 
         <div class="metrics" style="display:none;">
 
+            <strong>mysql {{ (metrics.mysql.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="redis-metrics">
+                {% for item in metrics.mysql.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.args|json_encode() }}</pre>
+                {% endfor %}
+            </div>
+
             <strong>redis {{ (metrics.redis.timeout*1000)|number_format(2) }} ms</strong>
             <div class="redis-metrics">
                 {% for item in metrics.redis.requests %}

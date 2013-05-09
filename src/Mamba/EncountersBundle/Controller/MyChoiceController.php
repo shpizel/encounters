@@ -38,8 +38,6 @@ class MyChoiceController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction($page) {
-        $startTime = microtime(true);
-
         $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -67,19 +65,21 @@ class MyChoiceController extends ApplicationController {
 
         $data = $json = array();
         $offset = $dataArray['paginator']['current'] > 0 ? ($dataArray['paginator']['current'] -1) * $perPage : 0;
+
+        $startTime = microtime(true);
         $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare($sql = self::MYCHOICE_SQL . " LIMIT $perPage OFFSET {$offset}");
         $_webUserId = $webUserId;
         $stmt->bindParam('web_user_id',  $_webUserId);
 
         if ($result = $stmt->execute()) {
 
-            $this->metrics['requests'][] = array(
+            self::$metrics['requests'][] = array(
                 'method'  => $sql,
                 'args'  => ['web_user_id' => $webUserId],
                 'timeout' => $timeout = microtime(true) - $startTime,
             );
 
-            $this->metrics['timeout']+=$timeout;
+            self::$metrics['timeout']+=$timeout;
 
             $usersArray = array();
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
