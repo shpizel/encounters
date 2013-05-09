@@ -117,8 +117,6 @@ class Leveldb {
         }
 
         $this->metricsEnabled = $enabled;
-        var_dump($this->metricsEnabled);
-        exit('set');
         return $this;
     }
 
