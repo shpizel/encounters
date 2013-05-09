@@ -544,7 +544,7 @@ $Messenger = {
                  */
                 var $onlineUsers = $Config.get('online');
                 if ($onlineUsers && $onlineUsers.length > 0) {
-                    $onlineUsers = $Tools.shuffle($onlineUsers);
+                    //$onlineUsers = $Tools.shuffle($onlineUsers);
                     $onlineUsers = $onlineUsers.slice(0, 4);
 
                     var $menu = $("div.layout-sidebar div.b-user_online ul.list_users");
@@ -577,10 +577,9 @@ $Messenger = {
                 ;
 
                 if (!$layout.hasClass('user-select_show') && $onlineUsers.length > 0) {
-                    $onlineUsers = $Tools.shuffle($onlineUsers);
+                    //$onlineUsers = $Tools.shuffle($onlineUsers);
 
                     $select.html('');
-
 
                     for (var $i=0;$i<$onlineUsers.length;$i++) {
                         $html = $(

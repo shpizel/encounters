@@ -34,7 +34,7 @@
     <div class="layout-content">
 
     <div class="user-select">
-        <h1 class="list-user_header lobster">Выбери же свою красавицу!</h1>
+        <h1 class="list-user_header lobster {% if webuser.preferences.gender == 'F' %}female{% else %}male{% endif %}">&nbsp;</h1>
         <ul class="list-user_select"></ul>
     </div>
 

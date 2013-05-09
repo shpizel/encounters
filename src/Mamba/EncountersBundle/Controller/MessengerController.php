@@ -88,7 +88,7 @@ class MessengerController extends ApplicationController {
                              return true;
                          });
 
-                         shuffle($platformData);
+                         $platformData = array_values($platformData);
 
                          if ($platformData) {
                             $this->json['data']['online'] = $platformData;
@@ -131,7 +131,11 @@ class MessengerController extends ApplicationController {
                         Encounters.LastAccess la, Encounters.User u
                     where
                         u.user_id = la.user_id and
-                        u.gender=:gender
+                        u.gender = :gender and
+                        u.age >= :age_min and
+                        u.age <= :age_max and
+                        u.city_id = :city_id and
+                        la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*3600
                     order by
                         la.lastaccess desc
                     limit 100"
@@ -139,17 +143,107 @@ class MessengerController extends ApplicationController {
             ;
 
             $gender = $searchPreferences['gender'];
+            $ageMin = $searchPreferences['age_from'];
+            $ageMax = $searchPreferences['age_to'];
+            $cityId = $searchPreferences['geo']['city_id'];
 
             $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
+            $stmt->bindParam('age_min', $ageMin, PDO::PARAM_STR);
+            $stmt->bindParam('age_max', $ageMax, PDO::PARAM_STR);
+            $stmt->bindParam('city_id', $cityId, PDO::PARAM_STR);
 
             $users = [];
             if ($result = $stmt->execute()) {
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $users[] = (int) $row['user_id'];
                 }
-
-                return $users;
             }
+
+            if (count($users) < 100) {
+                $stmt = $Connection
+                    ->prepare(
+                        "select
+                            la.user_id
+                        from
+                            Encounters.LastAccess la, Encounters.User u
+                        where
+                            u.user_id = la.user_id and
+                            u.gender = :gender and
+                            u.age >= :age_min and
+                            u.age <= :age_max and
+                            la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*60
+                        order by
+                            la.lastaccess desc
+                        limit 100"
+                    )
+                ;
+
+                $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
+                $stmt->bindParam('age_min', $ageMin, PDO::PARAM_STR);
+                $stmt->bindParam('age_max', $ageMax, PDO::PARAM_STR);
+
+                if ($result = $stmt->execute()) {
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $users[] = (int) $row['user_id'];
+                    }
+                }
+            }
+
+            $users = array_unique($users);
+
+            if (count($users) < 100) {
+                $stmt = $Connection
+                    ->prepare(
+                        "select
+                            la.user_id
+                        from
+                            Encounters.LastAccess la, Encounters.User u
+                        where
+                            u.user_id = la.user_id and
+                            u.gender = :gender and
+                            la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*60
+                        order by
+                            la.lastaccess desc
+                        limit 100"
+                    )
+                ;
+
+                $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
+
+                if ($result = $stmt->execute()) {
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $users[] = (int) $row['user_id'];
+                    }
+                }
+            }
+
+            $users = array_unique($users);
+
+            if (count($users) < 100) {
+                $stmt = $Connection
+                    ->prepare(
+                        "select
+                            la.user_id
+                        from
+                            Encounters.LastAccess la, Encounters.User u
+                        where
+                            u.user_id = la.user_id and
+                            u.gender = :gender
+                        order by
+                            la.lastaccess desc
+                        limit 100"
+                    )
+                ;
+
+                $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
+                if ($result = $stmt->execute()) {
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $users[] = (int) $row['user_id'];
+                    }
+                }
+            }
+
+            return array_slice($users, 0, 99);
         }
     }
 

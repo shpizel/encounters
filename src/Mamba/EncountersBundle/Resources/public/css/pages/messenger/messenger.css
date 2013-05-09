@@ -510,10 +510,17 @@ textarea.input_i {
 .list-user_header {
     display: block;
     margin: 10px 10px 5px;
-    background-image: url('/bundles/encounters/images/texts/choose-user.png');
     background-position: 50% 0;
     background-repeat: no-repeat;
     text-indent: -300em;
+}
+
+.list-user_header.female {
+    background-image: url('/bundles/encounters/images/texts/female/choose-user.png');
+}
+
+.list-user_header.male {
+    background-image: url('/bundles/encounters/images/texts/male/choose-user.png');
 }
 
 .list-user_select {
