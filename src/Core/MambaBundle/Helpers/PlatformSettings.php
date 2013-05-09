@@ -17,7 +17,17 @@ class PlatformSettings {
          *
          * @var Redis
          */
-        $Redis = null
+        $Redis = null,
+
+        /**
+         * Статический кеш
+         *
+         * @var array
+         */
+        $staticCache = [
+            'settings'  => [],
+            'lastquery' => [],
+        ]
     ;
 
     const
@@ -66,8 +76,12 @@ class PlatformSettings {
             throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
         }
 
+        if (isset($this->staticCache['settings'][$userId])) {
+            return $this->staticCache['settings'][$userId];
+        }
+
         if (false !== $data = $this->getRedis()->get(sprintf(self::REDIS_USER_PLATFORM_SETTINGS_KEY, $userId))) {
-            return json_decode($data, true);
+            return $this->staticCache['settings'][$userId] = json_decode($data, true);
         }
     }
 
@@ -85,6 +99,8 @@ class PlatformSettings {
 
             $this->getRedis()->set(sprintf(self::REDIS_USER_PLATFORM_SETTINGS_KEY, $userId), json_encode($platformParams));
             $this->setLastQueryTime($userId);
+
+            $this->staticCache['settings'][$userId] = $platformParams;
 
             return;
         }
@@ -112,18 +128,25 @@ class PlatformSettings {
             throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));
         }
 
+        $this->staticCache['lastquery'][$userId] = $timestamp;
+
         return $this->getRedis()->set(sprintf(self::REDIS_USER_PLATFORM_LAST_QUERY_TIME_KEY, $userId), $timestamp);
     }
 
     /**
-     * Устанавливает время последнего обращения к API
+     * Запрашивает время последнего обращения к API
      *
      * @param int $userId
      * @return int
      */
     public function getLastQueryTime($userId) {
         if (is_int($userId)) {
-            return $this->getRedis()->get(sprintf(self::REDIS_USER_PLATFORM_LAST_QUERY_TIME_KEY, $userId));
+            $ret = $this->getRedis()->get(sprintf(self::REDIS_USER_PLATFORM_LAST_QUERY_TIME_KEY, $userId));
+            if ($ret) {
+                $this->staticCache['lastquery'][$userId] = $ret;
+            }
+
+            return $ret;
         }
 
         throw new PlatformParamsException("Invalid user id: \n" . var_export($userId, true));

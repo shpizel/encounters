@@ -244,9 +244,9 @@ $Messenger = {
         },
 
         select: function($contactId, $callback) {
-            if (!$Messenger.acquireLock()) {
-                return false;
-            }
+//            if (!$Messenger.acquireLock()) {
+//                return false;
+//            }
 
             var $currentContactId = $Config.get('contact_id');
 
@@ -281,6 +281,10 @@ $Messenger = {
             }
 
             $Messenger.$messages.get($contactId, null, $lastMessageId, function($data) {
+                if ($contactId != $Config.get('contact_id')) {
+                    return;
+                }
+
                 if (!$itself) {
                     $Messenger.$messages.clear();
                 }
@@ -353,10 +357,10 @@ $Messenger = {
 
                 $callback && $callback();
                 $item.removeClass('loading');
-                $Messenger.freeLock();
+                //$Messenger.freeLock();
             }, function (){
                 $Messenger.$sendForm.unlockByLimit();
-                $Messenger.freeLock();
+                //$Messenger.freeLock();
             });
         },
 
@@ -669,6 +673,7 @@ $Messenger = {
 
                     if (!$Messenger.acquireLock('sendmessage')) return false;
 
+                    document.body.style.cursor = "wait";
                     $Tools.ajaxPost('messenger.gift.send', $postData, function($data) {
                         if ($data.status == 0 && $data.message == "") {
                             var
@@ -713,8 +718,11 @@ $Messenger = {
 
                         $Messenger.$userInfo.$gifts.hideLayer();
                         $Messenger.freeLock('sendmessage');
+
+                        document.body.style.cursor = "default";
                     }, function() {
                         $Messenger.freeLock('sendmessage');
+                        document.body.style.cursor = "default";
                     });
 
                     return false;
@@ -1169,11 +1177,12 @@ $Messenger = {
                 var $textarea = $("div.window-user_form div.input_i");
                 var $message = $textarea.html();
 
-                if ($message && $message!='<br>') {
+                if ($message && $.trim($message.toLowerCase())!='<br>') {
                     $Messenger.$sendForm.$smilies.hide();
 
                     if (!$Messenger.acquireLock('sendmessage')) return false;
 
+                    document.body.style.cursor = "wait";
                     $Messenger.$sendForm.sendMessage($message, function($data) {
                         var
                             $messages = $data.messages,
@@ -1214,10 +1223,14 @@ $Messenger = {
                         $Messenger.$messages.scrollDown();
                         $Messenger.$sendForm.clear();
                         $Messenger.freeLock('sendmessage');
+                        document.body.style.cursor = "default";
                     }, function() {
                         $Messenger.$sendForm.focus();
                         $Messenger.freeLock('sendmessage');
+                        document.body.style.cursor = "default";
                     });
+                } else {
+                    $Messenger.$sendForm.focus();
                 }
 
                 return false;

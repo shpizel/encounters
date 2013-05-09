@@ -121,11 +121,19 @@ class MessengerController extends ApplicationController {
 
     private function getOnlineUsers() {
         if ($searchPreferences = $this->getSearchPreferencesHelper()->get($this->webUserId)) {
-            $stmt = $this->getDoctrine()
-                ->getEntityManager()
-                ->getConnection()
+            $Connection = $stmt = $this->getDoctrine()->getEntityManager()->getConnection();
+            $Connection
                 ->prepare(
-                    "select la.user_id from Encounters.LastAccess la, Encounters.User u where u.user_id = la.user_id and u.gender=:gender order by la.lastaccess desc limit 100"
+                    "select
+                        la.user_id
+                    from
+                        Encounters.LastAccess la, Encounters.User u
+                    where
+                        u.user_id = la.user_id and
+                        u.gender=:gender
+                    order by
+                        la.lastaccess desc
+                    limit 100"
                 )
             ;
 
