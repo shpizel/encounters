@@ -95,6 +95,13 @@ textarea.input_i {
     background-image: linear-gradient(#f5f5f5, #eeeeee);
 }
 
+.button.active {
+    border-color: #afafaf #dadada #afafaf;
+    -webkit-box-shadow: inset 0 3px 4px #ddd;
+    -moz-box-shadow: inset 0 3px 4px #ddd;
+    box-shadow: inset 0 3px 4px #ddd;
+}
+
 .button:active {
     border-color: #afafaf #dadada #afafaf;
     -webkit-box-shadow: inset 0 3px 4px #ddd;

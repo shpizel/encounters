@@ -678,6 +678,7 @@ $Messenger = {
                     if (!$Messenger.acquireLock('sendmessage')) return false;
 
                     document.body.style.cursor = "wait";
+                    $("span.button").addClass('active');
                     $Tools.ajaxPost('messenger.gift.send', $postData, function($data) {
                         if ($data.status == 0 && $data.message == "") {
                             var
@@ -724,9 +725,11 @@ $Messenger = {
                         $Messenger.freeLock('sendmessage');
 
                         document.body.style.cursor = "default";
+                        $("span.button").removeClass('active');
                     }, function() {
                         $Messenger.freeLock('sendmessage');
                         document.body.style.cursor = "default";
+                        $("span.button").removeClass('active');
                     });
 
                     return false;
@@ -742,7 +745,7 @@ $Messenger = {
                     }
                 });
 
-                $("div.drop_down-present div.form-send_gift input[type=submit]").click(function() {
+                $("div.drop_down-present div.form-send_gift span.button").click(function() {
                     if ($("div.drop_down-present .list-present_item-selected").length > 0) {
                         return $sendGiftFunction();
                     }
@@ -1185,6 +1188,7 @@ $Messenger = {
                     if (!$Messenger.acquireLock('sendmessage')) return false;
 
                     document.body.style.cursor = "wait";
+                    $("span.button").addClass('active');
                     $Messenger.$sendForm.sendMessage($message, function($data) {
                         var
                             $messages = $data.messages,
@@ -1226,10 +1230,12 @@ $Messenger = {
                         $Messenger.$sendForm.clear();
                         $Messenger.freeLock('sendmessage');
                         document.body.style.cursor = "default";
+                        $("span.button").removeClass('active');
                     }, function() {
                         $Messenger.$sendForm.focus();
                         $Messenger.freeLock('sendmessage');
                         document.body.style.cursor = "default";
+                        $("span.button").removeClass('active');
                     });
                 } else {
                     $Messenger.$sendForm.focus();
@@ -1238,7 +1244,7 @@ $Messenger = {
                 return false;
             };
 
-            $("div.window-user_form input[type=submit]").click(function() {
+            $("div.window-user_form span.button").click(function() {
                 return $sendMessage();
             });
 
