@@ -558,8 +558,6 @@ $Messenger = {
                 }
 
                 $Messenger.$contactList.$onlineUsers.show();
-
-                $("div.app_message-layout div.user-select").slimScroll({height: '100%'});
             },
 
             hideOnlineUsersSelector: function() {

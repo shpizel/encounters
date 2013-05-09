@@ -102,7 +102,7 @@
 {% include 'EncountersBundle:tools:ga.html.twig' %}
 {% endif %}
 
-{#{% if controller != 'messenger' %}#}
+{% if controller != 'messenger' %}
     <div id="debug" style="font-size:13px;{% if not app.debug and webuser.anketa.info.oid != 560015854 and webuser.anketa.info.oid != 751072037 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
         <span>Generation time: {{ (generation_time*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
 
@@ -142,7 +142,7 @@
 
     </div>
 </div>
-{#{% endif %}#}
+{% endif %}
 
 {% block javascripts %}{% endblock %}
 {% javascripts

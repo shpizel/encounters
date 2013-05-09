@@ -96,7 +96,7 @@ $Layers = {
             }
 
             //if ([560015854, 751072037, 728011279, 742241457].in_array($Config.get('webuser').anketa.info.oid)) {
-                $Config.set('messenger.popup', window.open('/messenger' + ($userId ? ('?id=' + $userId) : ''), "Messenger", "width=860,height=" + e + ",resizable=1,scrollbars=1"));
+                $Config.set('messenger.popup', window.open('/messenger' + ($userId ? ('?id=' + $userId) : ''), "Messenger", "width=867,height=" + e + ",resizable=1,scrollbars=1"));
 //            } else {
 //                $Config.set('messenger.popup', window.open($Config.get('platform')['partner_url'] + 'my/message.phtml?oid=' +  $userId ,"Messenger","width=750,height=" + e + ",resizable=1,scrollbars=1"));
 //            }
