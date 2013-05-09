@@ -397,7 +397,7 @@ class DecisionController extends ApplicationController {
             $decision = (int) $decision;
 
             if ($currentUserId && $decision >= -1 && $decision <= 1) {
-                if (false !== $this->getCurrentQueueHelper()->exists($this->webUserId = (int) $this->getMamba()->get('oid'), $currentUserId)) {
+                if (false !== $this->getCurrentQueueHelper()->exists($this->webUserId = $this->getMamba()->getWebUserId(), $currentUserId)) {
                     $this->currentUserId = (int) $currentUserId;
                     $this->decision = $decision;
 

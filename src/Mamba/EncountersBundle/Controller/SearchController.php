@@ -22,7 +22,7 @@ class SearchController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesHelper()->get($webUserId = $this->getMamba()->getWebUserId())) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 

@@ -422,8 +422,8 @@ abstract class ApplicationController extends Controller {
     public function getInitialData() {
         $dataArray = array();
         $dataArray['settings'] = array(
-            'platform' => json_encode($platformSettings = $this->getPlatformSettingsHelper()->get($webUserId = (int) $this->getMamba()->get('oid'))),
-            'search'   => json_encode($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId))
+            'platform' => json_encode($platformSettings = $this->getSession()->get('platform_settings')),
+            'search'   => json_encode($searchPreferences = $this->getSearchPreferencesHelper()->get($webUserId = $this->getMamba()->getWebUserId()))
         );
 
         $dataArray['platform'] = $platformSettings;

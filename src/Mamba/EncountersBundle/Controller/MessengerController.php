@@ -42,7 +42,7 @@ class MessengerController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        if (!$this->getSearchPreferencesHelper()->get($this->webUserId = $webUserId = $Mamba->get('oid'))) {
+        if (!$this->getSearchPreferencesHelper()->get($this->webUserId = $webUserId = $this->getMamba()->getWebUserId())) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
@@ -69,7 +69,7 @@ class MessengerController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
-            $this->webUserId = $webUserId = $Mamba->get('oid');
+            $this->webUserId = $webUserId = $this->getMamba()->getWebUserId();
 
             $limit = (int) $this->getRequest()->request->get('limit') ?: 20;
             $offset = (int) $this->getRequest()->request->get('offset');
@@ -113,7 +113,7 @@ class MessengerController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
-            $this->webUserId = $webUserId = $Mamba->get('oid');
+            $this->webUserId = $webUserId = $this->getMamba()->getWebUserId();
             $this->json['data']['contacts'] = $this->getContacts() ?: [];
         }
 
@@ -261,7 +261,7 @@ class MessengerController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
-            $webUserId = $Mamba->get('oid');
+            $webUserId = $this->getMamba()->getWebUserId();
 
             $CountersHelper = $this->getCountersHelper();
 
@@ -355,7 +355,7 @@ class MessengerController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
-            $webUserId = $Mamba->get('oid');
+            $webUserId = $this->getMamba()->getWebUserId();
 
             if (($message   = $this->cleanHTMLMessage($this->getRequest()->request->get('message'))) &&
                 ($contactId = (int) $this->getRequest()->request->get('contact_id'))
@@ -497,7 +497,7 @@ class MessengerController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } else {
-            $webUserId = $Mamba->get('oid');
+            $webUserId = $this->getMamba()->getWebUserId();
 
             $currentUserId = (int) $this->getRequest()->request->get('current_user_id');
             $giftInfo = $this->getRequest()->request->get('gift');

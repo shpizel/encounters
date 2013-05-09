@@ -23,7 +23,7 @@ class PreferencesController extends ApplicationController {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
-        $redisSearchPreferences = $this->getSearchPreferencesHelper()->get($webUserId = $Mamba->get('oid'));
+        $redisSearchPreferences = $this->getSearchPreferencesHelper()->get($webUserId = $this->getMamba()->getWebUserId());
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
 
@@ -180,7 +180,7 @@ class PreferencesController extends ApplicationController {
     private function cleanUserQueues() {
         $Redis = $this->getRedis();
 
-        $Redis->delete($this->getHitlistQueueHelper()->getRedisQueueKey($webUserId = $this->getMamba()->get('oid')));
+        $Redis->delete($this->getHitlistQueueHelper()->getRedisQueueKey($webUserId = $this->getMamba()->getWebUserId()));
         $Redis->delete($this->getContactsQueueHelper()->getRedisQueueKey($webUserId));
         $Redis->delete($this->getSearchQueueHelper()->getRedisQueueKey($webUserId));
 

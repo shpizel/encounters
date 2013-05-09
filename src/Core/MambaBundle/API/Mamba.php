@@ -798,7 +798,7 @@ final class Mamba {
         }
 
         if ($webUserId = $this->getWebUserId()) {
-            if ($platformParams = $this->getPlatformSettingsObject()->get($webUserId)) {
+            if ($platformParams = /*$this->getPlatformSettingsObject()->get($webUserId)*/$this->getSession()->get('platform_settings')) {
                 $this->set($platformParams);
                 return $this->ready = true;
             }

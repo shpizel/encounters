@@ -55,6 +55,7 @@ class WelcomeController extends ApplicationController {
 
             $Session->start();
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
+            $Session->set('platform_settings', $getPlatformParams);
 
             $lastAccessTime = $this->getVariablesHelper()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
