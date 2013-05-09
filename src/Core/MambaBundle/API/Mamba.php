@@ -89,7 +89,7 @@ final class Mamba {
          *
          * @var int
          */
-        CURL_TIMEOUT = 5 /** 5 секунд если Мамба не отвечает - отказ */
+        CURL_TIMEOUT = 5 /** 5 секунд если Мамба не отвечает - уже не ответит */
     ;
 
     public static
@@ -477,6 +477,15 @@ final class Mamba {
     }
 
     /**
+     * Returns usage metrics
+     *
+     * @return array
+     */
+    public function getMetrics() {
+        return $this->metrics;
+    }
+
+    /**
      * Временное включение режиме НЕ-кеширования
      *
      * @return Mamba
@@ -785,6 +794,8 @@ final class Mamba {
      * @return array
      */
     public function execute($method, array $params = array()) {
+        $startTime = microtime(true);
+
         if (strpos($method, "\\") !== false) {
             $method = explode("\\", $method);
             $method = array_pop($method);
@@ -799,6 +810,14 @@ final class Mamba {
 
                     return $this;
                 }
+
+                $this->metrics['requests'][] = array(
+                    'method'  => $method,
+                    'params'  => $params,
+                    'timeout' => $timeout = microtime(true) - $startTime,
+                );
+
+                $this->metrics['timeout']+=$timeout;
 
                 return $cacheResult;
             }
@@ -861,6 +880,15 @@ final class Mamba {
 
                 if ($JSON && $JSON['status'] === 0 && !$JSON['message']) {
                     $this->setCache($method, $params, $JSON['data']);
+
+                    $this->metrics['requests'][] = array(
+                        'method'  => $method,
+                        'params'  => $params,
+                        'timeout' => $timeout = microtime(true) - $startTime,
+                    );
+
+                    $this->metrics['timeout']+=$timeout;
+
                     return $JSON['data'];
                 } else {
                     throw new MambaException($JSON['message'], $JSON["status"]);

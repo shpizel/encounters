@@ -8,23 +8,6 @@ namespace Core\RedisBundle;
  */
 class Redis {
 
-    /**
-     * Описание
-     *
-     * нужно замутить мультинодный редис, чтобы он работал, хешируя ключи, то се
-     * список нодов - в настройках
-     * по умолчанию думаю что режим (тоже в настройках) будет мультинодный
-     * есть так же режим который подразумевает работу с 1 нодой
-     * в классе должна быть переключалка режима работы
-     * задачи, multi и прочие должны throw exceptions если режим мультинодный
-     * в переключалке можно будет назначить имя ноды, с которй работать в синглмоде
-     *
-     * нужно сделать так чтобы и 1 нодная схема работала ок
-     * класс будет хранилищем объектов редиса
-     *
-     * все функции нужно переопределить
-     * lazy-инициализация и коннекты
-     */
     const
 
         /**
@@ -70,7 +53,17 @@ class Redis {
           *
           * @var array
           */
-         $multiQueue = array()
+         $multiQueue = array(),
+
+         /**
+          * Метрики использования
+          *
+          * @var array
+          */
+         $metrics = array(
+             'requests' => array(),
+             'timeout'  => 0,
+         )
      ;
 
     /**
@@ -90,6 +83,15 @@ class Redis {
         $this->nodes = array_map(function($nodeArray) {
             return RedisDSN::getDSNFromArray($nodeArray);
         }, $nodes);
+    }
+
+    /**
+     * Returns usage metrics
+     *
+     * @return array
+     */
+    public function getMetrics() {
+        return $this->metrics;
     }
 
     /**
@@ -202,6 +204,8 @@ class Redis {
      * @example $redis->get('key');
      */
     public function get($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -212,7 +216,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -227,6 +241,8 @@ class Redis {
      * @example $redis->set('key', 'value');
      */
     public function set($key, $value, $timeout = 0.0) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -237,7 +253,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -251,6 +277,8 @@ class Redis {
      * @example $redis->setex('key', 3600, 'value'); // sets key → value, with 1h TTL.
      */
     public function setex($key, $ttl, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -261,7 +289,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -278,6 +316,8 @@ class Redis {
      * </pre>
      */
     public function setnx($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -288,7 +328,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -310,6 +360,8 @@ class Redis {
      * </pre>
      */
     public function del($key1, $key2 = null, $key3 = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
@@ -380,6 +432,8 @@ class Redis {
      * @link    http://redis.io/commands/exec
      */
     public function exec() {
+        $startTime = microtime(true);
+
         $result = array();
         $chunks = array();
 
@@ -493,6 +547,8 @@ class Redis {
      * </pre>
      */
     public function exists($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -503,7 +559,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -521,6 +587,8 @@ class Redis {
      * </pre>
      */
     public function incr($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -531,7 +599,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -553,6 +631,8 @@ class Redis {
      * </pre>
      */
     public function incrByFloat($key, $increment) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -563,7 +643,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -584,6 +674,8 @@ class Redis {
      * </pre>
      */
     public function incrBy($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -594,7 +686,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -611,6 +713,8 @@ class Redis {
      * </pre>
      */
     public function decr($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -621,7 +725,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -641,6 +755,8 @@ class Redis {
      * </pre>
      */
     public function decrBy($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -651,7 +767,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -678,6 +804,8 @@ class Redis {
      * </pre>
      */
     public function lPush($key, $value1, $value2 = null, $valueN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -688,7 +816,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -715,6 +853,8 @@ class Redis {
      * </pre>
      */
     public function rPush($key, $value1, $value2 = null, $valueN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -725,7 +865,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -746,6 +896,8 @@ class Redis {
      * </pre>
      */
     public function lPushx($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -756,7 +908,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -777,6 +939,8 @@ class Redis {
      * </pre>
      */
     public function rPushx($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -787,7 +951,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -805,6 +979,8 @@ class Redis {
      * </pre>
      */
     public function lPop($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -815,7 +991,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -833,6 +1019,8 @@ class Redis {
      * </pre>
      */
     public function rPop($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -843,7 +1031,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -865,6 +1063,8 @@ class Redis {
      * </pre>
      */
     public function lLen($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -875,7 +1075,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -885,6 +1095,8 @@ class Redis {
      * @link    http://redis.io/commands/llen
      */
     public function lSize($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -895,7 +1107,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -919,6 +1141,8 @@ class Redis {
      * </pre>
      */
     public function lIndex($key, $index) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -929,7 +1153,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -939,6 +1173,8 @@ class Redis {
      * @link    http://redis.io/commands/lindex
      */
     public function lGet($key, $index) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -949,9 +1185,18 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
-    }
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
 
+        return $ret;
+    }
 
     /**
      * Set the list at index with the new value.
@@ -973,6 +1218,8 @@ class Redis {
      * </pre>
      */
     public function lSet($key, $index, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -983,7 +1230,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1005,6 +1262,8 @@ class Redis {
      * </pre>
      */
     public function lRange($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1015,7 +1274,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1026,6 +1295,8 @@ class Redis {
      * @param int       $end
      */
     public function lGetRange($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1036,7 +1307,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1059,6 +1340,8 @@ class Redis {
      * </pre>
      */
     public function lTrim($key, $start, $stop) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1069,7 +1352,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1097,6 +1390,8 @@ class Redis {
      * </pre>
      */
     public function lRem($key, $value, $count) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1107,7 +1402,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1118,7 +1423,9 @@ class Redis {
      * @param int       $count
      */
     public function lRemove($key, $value, $count) {
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), "lRem"), func_get_args());
+        $startTime = microtime(true);
+
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), "lRem"), func_get_args());
     }
 
 
@@ -1152,6 +1459,8 @@ class Redis {
      * </pre>
      */
     public function lInsert($key, $position, $pivot, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1162,7 +1471,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1182,6 +1501,8 @@ class Redis {
      * </pre>
      */
     public function sAdd($key, $value1, $value2 = null, $valueN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1192,7 +1513,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1217,6 +1548,8 @@ class Redis {
      * </pre>
      */
     public function sRem($key, $member1, $member2 = null, $memberN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1227,7 +1560,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1239,6 +1582,8 @@ class Redis {
      * @param   string  $memberN
      */
     public function sRemove($key, $member1, $member2 = null, $memberN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1249,7 +1594,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1271,6 +1626,8 @@ class Redis {
      * </pre>
      */
     public function sIsMember($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1281,7 +1638,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1291,6 +1658,8 @@ class Redis {
      * @param   string  $value
      */
     public function sContains($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1301,7 +1670,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1320,6 +1699,8 @@ class Redis {
      * </pre>
      */
     public function sCard($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1330,7 +1711,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1339,6 +1730,8 @@ class Redis {
      * @param   string  $key
      */
     public function sSize($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1369,6 +1762,8 @@ class Redis {
      * </pre>
      */
     public function sPop($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1379,7 +1774,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1400,6 +1805,8 @@ class Redis {
      * </pre>
      */
     public function sRandMember($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1410,7 +1817,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1440,6 +1857,8 @@ class Redis {
      * </pre>
      */
     public function sMembers($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1450,7 +1869,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1477,6 +1906,8 @@ class Redis {
      * </pre>
      */
     public function getSet($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1487,7 +1918,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1507,6 +1948,8 @@ class Redis {
      * </pre>
      */
     public function move($key, $dbindex) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1517,7 +1960,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1536,6 +1989,8 @@ class Redis {
      * </pre>
      */
     public function expire($key, $ttl) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1546,7 +2001,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1565,6 +2030,8 @@ class Redis {
      * </pre>
      */
     public function pExpire($key, $ttl) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1575,7 +2042,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1585,6 +2062,8 @@ class Redis {
      * @link    http://redis.io/commands/expire
      */
     public function setTimeout($key, $ttl) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1595,7 +2074,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1615,6 +2104,8 @@ class Redis {
      * </pre>
      */
     public function expireAt($key, $timestamp) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1625,7 +2116,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1644,6 +2145,8 @@ class Redis {
      * </pre>
      */
     public function pExpireAt($key, $timestamp) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1654,7 +2157,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1677,6 +2190,8 @@ class Redis {
      * </pre>
      */
     public function object($string = '', $key = '') {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1687,7 +2202,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1708,6 +2233,8 @@ class Redis {
      * @example $redis->type('key');
      */
     public function type($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1718,7 +2245,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1736,6 +2273,8 @@ class Redis {
      * </pre>
      */
     public function append($key, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1746,7 +2285,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1766,6 +2315,8 @@ class Redis {
      * </pre>
      */
     public function getRange($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1776,7 +2327,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1788,6 +2349,8 @@ class Redis {
      * @param   int     $end
      */
     public function substr($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1798,7 +2361,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
 
@@ -1818,6 +2391,8 @@ class Redis {
      * </pre>
      */
     public function setRange($key, $offset, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1828,7 +2403,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1844,6 +2429,8 @@ class Redis {
      * </pre>
      */
     public function strlen($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1854,7 +2441,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1872,6 +2469,8 @@ class Redis {
      * </pre>
      */
     public function getBit($key, $offset) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1882,7 +2481,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1902,6 +2511,8 @@ class Redis {
      * </pre>
      */
     public function setBit($key, $offset, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1912,7 +2523,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1931,6 +2552,8 @@ class Redis {
      * </pre>
      */
     public function bitCount($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1941,7 +2564,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1973,6 +2606,8 @@ class Redis {
      * </pre>
      */
     public function sort($key, $option = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -1983,7 +2618,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -1995,6 +2640,8 @@ class Redis {
      * @example $redis->ttl('key');
      */
     public function ttl($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2005,7 +2652,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2019,6 +2676,8 @@ class Redis {
      * @example $redis->pttl('key');
      */
     public function pttl($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2029,7 +2688,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2041,6 +2710,8 @@ class Redis {
      * @example $redis->persist('key');
      */
     public function persist($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2051,7 +2722,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2072,6 +2753,8 @@ class Redis {
      * </pre>
      */
     public function mset(array $array) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
@@ -2102,6 +2785,8 @@ class Redis {
      * @link    http://redis.io/commands/msetnx
      */
     public function msetnx(array $array) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
@@ -2156,6 +2841,8 @@ class Redis {
      * </pre>
      */
     public function mget(array $array) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
@@ -2229,6 +2916,8 @@ class Redis {
      * </pre>
      */
     public function zAdd($key, $score1, $value1, $score2 = null, $value2 = null, $scoreN = null, $valueN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2239,7 +2928,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2267,6 +2966,8 @@ class Redis {
      * </pre>
      */
     public function zRange($key, $start, $end, $withscores = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2277,7 +2978,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2302,6 +3013,8 @@ class Redis {
      * </pre>
      */
     public function zRem($key, $member1, $member2 = null, $memberN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2312,7 +3025,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2324,6 +3047,8 @@ class Redis {
      * @link    http://redis.io/commands/zrem
      */
     public function zDelete($key, $member1, $member2 = null, $memberN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2334,7 +3059,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2363,6 +3098,8 @@ class Redis {
      * </pre>
      */
     public function zRevRange($key, $start, $end, $withscore = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2373,7 +3110,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2404,6 +3151,8 @@ class Redis {
      * </pre>
      */
     public function zRangeByScore($key, $start, $end, array $options = array()) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2414,7 +3163,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2427,6 +3186,8 @@ class Redis {
      * @return     array
      */
     public function zRevRangeByScore($key, $start, $end, array $options = array()) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2437,7 +3198,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2459,6 +3230,8 @@ class Redis {
      * </pre>
      */
     public function zCount($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2469,7 +3242,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2489,6 +3272,8 @@ class Redis {
      * </pre>
      */
     public function zRemRangeByScore($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2499,7 +3284,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2509,6 +3304,8 @@ class Redis {
      * @param float     $end
      */
     public function zDeleteRangeByScore($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2519,7 +3316,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2540,6 +3347,8 @@ class Redis {
      * </pre>
      */
     public function zRemRangeByRank($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2550,7 +3359,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2561,6 +3380,8 @@ class Redis {
      * @link    http://redis.io/commands/zremrangebyscore
      */
     public function zDeleteRangeByRank($key, $start, $end) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2571,7 +3392,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2589,6 +3420,8 @@ class Redis {
      * </pre>
      */
     public function zCard($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2599,7 +3432,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2607,6 +3450,8 @@ class Redis {
      * @param string $key
      */
     public function zSize($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2617,7 +3462,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2634,6 +3489,8 @@ class Redis {
      * </pre>
      */
     public function zScore($key, $member) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2644,7 +3501,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2667,6 +3534,8 @@ class Redis {
      * </pre>
      */
     public function zRank($key, $member) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2677,7 +3546,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2686,6 +3565,8 @@ class Redis {
      * @param string $member
      */
     public function zRevRank($key, $member) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2696,7 +3577,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2716,6 +3607,8 @@ class Redis {
      * </pre>
      */
     public function zIncrBy($key, $value, $member) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2726,7 +3619,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2750,6 +3653,8 @@ class Redis {
      * </pre>
      */
     public function hSet($key, $hashKey, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2760,7 +3665,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2780,6 +3695,8 @@ class Redis {
      * </pre>
      */
     public function hSetNx($key, $hashKey, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2790,7 +3707,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2803,6 +3730,8 @@ class Redis {
      * @link    http://redis.io/commands/hget
      */
     public function hGet($key, $hashKey) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2813,7 +3742,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2831,6 +3770,8 @@ class Redis {
      * </pre>
      */
     public function hLen($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2841,7 +3782,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2875,6 +3826,8 @@ class Redis {
      * </pre>
      */
     public function hDel($key, $hashKey1, $hashKey2 = null, $hashKeyN = null) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2885,7 +3838,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2918,6 +3881,8 @@ class Redis {
      * </pre>
      */
     public function hKeys($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2928,7 +3893,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -2961,6 +3936,8 @@ class Redis {
      * </pre>
      */
     public function hVals($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -2971,7 +3948,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3004,6 +3991,8 @@ class Redis {
      * </pre>
      */
     public function hGetAll($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -3014,7 +4003,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3032,6 +4031,8 @@ class Redis {
      * </pre>
      */
     public function hExists($key, $hashKey) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -3042,7 +4043,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3061,6 +4072,8 @@ class Redis {
      * </pre>
      */
     public function hIncrBy($key, $hashKey, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -3071,7 +4084,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3101,6 +4124,8 @@ class Redis {
      * </pre>
      */
     public function hIncrByFloat($key, $field, $increment) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -3111,7 +4136,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3130,6 +4165,8 @@ class Redis {
      * </pre>
      */
     public function hMset($key, $hashKeys) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -3140,7 +4177,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3160,6 +4207,8 @@ class Redis {
      * </pre>
      */
     public function hMGet($key, $hashKeys) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             $this->multiQueue[] = array(
                 'function' => __FUNCTION__,
@@ -3170,7 +4219,17 @@ class Redis {
             return $this;
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3186,11 +4245,23 @@ class Redis {
      * </pre>
      */
     public function dump($key) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3209,11 +4280,23 @@ class Redis {
      * </pre>
      */
     public function restore($key, $ttl, $value) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 
     /**
@@ -3232,11 +4315,23 @@ class Redis {
      * </pre>
      */
     public function migrate($host, $port, $key, $db, $timeout) {
+        $startTime = microtime(true);
+
         if ($this->mode == self::MULTI_MODE) {
             throw new RedisException(__CLASS__ . "::" . __FUNCTION__ . " is not supported for multi-mode");
         }
 
-        return call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
+        
+        $this->metrics['requests'][] = array(
+            'method'  => __FUNCTION__,
+            'args'  => func_get_args(),
+            'timeout' => $timeout = microtime(true) - $startTime,
+        );
+        
+        $this->metrics['timeout']+=$timeout;
+
+        return $ret;
     }
 }
 

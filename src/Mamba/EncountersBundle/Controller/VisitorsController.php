@@ -37,6 +37,8 @@ class VisitorsController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction($page) {
+        $startTime = microtime(true);
+
         $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -68,11 +70,19 @@ class VisitorsController extends ApplicationController {
 
         $data = $json = array();
         $offset = $dataArray['paginator']['current'] > 0 ? ($dataArray['paginator']['current'] -1) * $perPage : 0;
-        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::VISITORS_SQL . " LIMIT $perPage OFFSET {$offset}");
+        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare($sql = self::VISITORS_SQL . " LIMIT $perPage OFFSET {$offset}");
         $_webUserId = $webUserId;
         $stmt->bindParam('web_user_id',  $_webUserId);
 
         if ($result = $stmt->execute()) {
+            $this->metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => ['web_user_id' => $webUserId],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+
             $usersArray = array();
                 while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $usersArray[(int) $item['web_user_id']] = (int) $item['decision'];

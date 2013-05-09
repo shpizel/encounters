@@ -47,6 +47,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 abstract class ApplicationController extends Controller {
 
+    protected
+
+        $metrics = array(
+            'requests' => array(),
+            'timeout'  => 0,
+        )
+    ;
+
     protected static
 
         /**
@@ -519,7 +527,9 @@ abstract class ApplicationController extends Controller {
         }
 
         $dataArray['metrics'] = array(
+            'redis'   => $this->getRedis()->getMetrics(),
             'leveldb' => $this->getLeveldb()->getMetrics(),
+            'mamba'   => $this->getMamba()->getMetrics(),
         );
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
@@ -583,7 +593,10 @@ abstract class ApplicationController extends Controller {
 
         $JSON['metrics'] = array(
             'generation_time' => microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
+
+            'redis'   => $this->getRedis()->getMetrics(),
             'leveldb' => $this->getLeveldb()->getMetrics(),
+            'mamba'   => $this->getMamba()->getMetrics(),
         );
 
         return

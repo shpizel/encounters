@@ -332,7 +332,7 @@ class MessengerController extends ApplicationController {
                                 $ContactsHelper->updateContact(
                                     $CurrentUserContact
                                         ->setUnreadCount($CurrentUserContact->getUnreadCount() + 1)
-                                        ->setInboxCount($CurrentUserContact->getOutboxCount() + 1)
+                                        ->setInboxCount($CurrentUserContact->getInboxCount() + 1)
                                         ->setChanged(time())
                                 );
 

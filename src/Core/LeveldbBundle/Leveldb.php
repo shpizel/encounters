@@ -61,6 +61,11 @@ class Leveldb {
         $this->slave  = array_shift($slave);
     }
 
+    /**
+     * Returns usage metrics
+     *
+     * @return array
+     */
     public function getMetrics() {
         return $this->metrics;
     }

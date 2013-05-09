@@ -40,6 +40,8 @@ class MutualController extends ApplicationController {
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction($page) {
+        $startTime = microtime(true);
+
         $Mamba = $this->getMamba();
         if (!$Mamba->getReady()) {
             return $this->redirect($this->generateUrl('welcome'));
@@ -53,7 +55,7 @@ class MutualController extends ApplicationController {
             $this->getCountersHelper()->set($webUserId, 'mutual_unread', 0);
         }
 
-        $dataArray  = $this->getInitialData();
+        $dataArray = [];
 
         /**
          * Пагинатор
@@ -76,11 +78,20 @@ class MutualController extends ApplicationController {
 
         $data = $json = array();
         $offset = $dataArray['paginator']['current'] > 0 ? ($dataArray['paginator']['current'] -1) * $perPage : 0;
-        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::MUTUAL_SQL . " LIMIT $perPage OFFSET {$offset}");
+        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare($sql = self::MUTUAL_SQL . " LIMIT $perPage OFFSET {$offset}");
         $_webUserId = $webUserId;
         $stmt->bindParam('web_user_id',  $_webUserId);
 
         if ($result = $stmt->execute()) {
+
+            $this->metrics['requests'][] = array(
+                'method'  => $sql,
+                'args'  => ['web_user_id' => $webUserId],
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+
             $usersArray = array();
             while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $usersArray[(int) $item['current_user_id']] = 1;
@@ -129,6 +140,8 @@ class MutualController extends ApplicationController {
                 }
             }
         }
+
+        $dataArray = array_merge($this->getInitialData(), $dataArray);
 
         $dataArray['data'] = $data ?: null;
         if (!$data) {
