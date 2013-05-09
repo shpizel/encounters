@@ -63,7 +63,14 @@ class Redis {
          $metrics = array(
              'requests' => array(),
              'timeout'  => 0,
-         )
+         ),
+
+         /**
+          * Метрики использования включены?
+          *
+          * @var bool
+          */
+         $metricsEnabled = true
      ;
 
     /**
@@ -94,11 +101,19 @@ class Redis {
         return $this->metrics;
     }
 
-    public function clearMetrics() {
-        $this->metrics = array(
-            'requests' => array(),
-            'timeout'  => 0,
-        );
+    /**
+     * Metrics enabler
+     *
+     * @param bool $enabled
+     * @throws MambaException
+     */
+    public function setMetricsEnabled($enabled) {
+        if (!is_bool($enabled)) {
+            throw new RedisException("Invalid param");
+        }
+
+        $this->metricsEnabled = $enabled;
+        return $this;
     }
 
     /**
@@ -225,13 +240,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -262,13 +279,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -298,13 +317,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -337,13 +358,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -568,13 +591,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -608,13 +633,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -652,13 +679,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -695,13 +724,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -734,13 +765,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -776,13 +809,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -825,13 +860,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -874,13 +911,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -917,13 +956,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -960,13 +1001,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1000,13 +1043,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1040,13 +1085,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1084,13 +1131,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1116,13 +1165,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1162,13 +1213,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1194,13 +1247,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1239,13 +1294,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1283,13 +1340,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1316,13 +1375,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1361,13 +1422,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1411,13 +1474,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1480,13 +1545,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1522,13 +1589,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1569,13 +1638,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1603,13 +1674,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1647,13 +1720,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1679,13 +1754,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1720,13 +1797,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1783,13 +1862,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1826,13 +1907,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1878,13 +1961,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1927,13 +2012,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -1969,13 +2056,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2010,13 +2099,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2051,13 +2142,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2083,13 +2176,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2125,13 +2220,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2166,13 +2263,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2211,13 +2310,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2254,13 +2355,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2294,13 +2397,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2336,13 +2441,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2370,13 +2477,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2412,13 +2521,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2450,13 +2561,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2490,13 +2603,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2532,13 +2647,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2573,13 +2690,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2627,13 +2746,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2661,13 +2782,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2697,13 +2820,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2731,13 +2856,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2937,13 +3064,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -2987,13 +3116,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3034,13 +3165,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3068,13 +3201,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3119,13 +3254,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3172,13 +3309,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3207,13 +3346,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3251,13 +3392,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3293,13 +3436,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3325,13 +3470,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3368,13 +3515,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3401,13 +3550,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3441,13 +3592,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3471,13 +3624,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3510,13 +3665,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3555,13 +3712,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3586,13 +3745,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3628,13 +3789,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3674,13 +3837,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3716,13 +3881,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3751,13 +3918,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3791,13 +3960,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3847,13 +4018,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3902,13 +4075,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -3957,13 +4132,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4012,13 +4189,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4052,13 +4231,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4093,13 +4274,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4145,13 +4328,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4186,13 +4371,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4228,13 +4415,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4260,13 +4449,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4295,13 +4486,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }
@@ -4330,13 +4523,15 @@ class Redis {
 
         $ret = call_user_func_array(array($this->getNodeConnectionByKey($key), __FUNCTION__), func_get_args());
         
-        $this->metrics['requests'][] = array(
-            'method'  => __FUNCTION__,
-            'args'  => func_get_args(),
-            'timeout' => $timeout = microtime(true) - $startTime,
-        );
-        
-        $this->metrics['timeout']+=$timeout;
+        if ($this->metricsEnabled) {
+            $this->metrics['requests'][] = array(
+                'method'  => __FUNCTION__,
+                'args'  => func_get_args(),
+                'timeout' => $timeout = microtime(true) - $startTime,
+            );
+
+            $this->metrics['timeout']+=$timeout;
+        }
 
         return $ret;
     }

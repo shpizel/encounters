@@ -422,7 +422,14 @@ final class Mamba {
         $metrics = array(
             'requests' => array(),
             'timeout'  => 0,
-        )
+        ),
+
+        /**
+         * Метрики использования включены?
+         *
+         * @var bool
+         */
+        $metricsEnabled = true
     ;
 
     protected static
@@ -483,6 +490,21 @@ final class Mamba {
      */
     public function getMetrics() {
         return $this->metrics;
+    }
+
+    /**
+     * Metrics enabler
+     *
+     * @param bool $enabled
+     * @throws MambaException
+     */
+    public function setMetricsEnabled($enabled) {
+        if (!is_bool($enabled)) {
+            throw new MambaException("Invalid param");
+        }
+
+        $this->metricsEnabled = $enabled;
+        return $this;
     }
 
     /**
@@ -811,13 +833,15 @@ final class Mamba {
                     return $this;
                 }
 
-                $this->metrics['requests'][] = array(
-                    'method'  => $method,
-                    'params'  => $params,
-                    'timeout' => $timeout = microtime(true) - $startTime,
-                );
+                if ($this->metricsEnabled) {
+                    $this->metrics['requests'][] = array(
+                        'method'  => $method,
+                        'params'  => $params,
+                        'timeout' => $timeout = microtime(true) - $startTime,
+                    );
 
-                $this->metrics['timeout']+=$timeout;
+                    $this->metrics['timeout']+=$timeout;
+                }
 
                 return $cacheResult;
             }

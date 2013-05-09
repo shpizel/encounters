@@ -138,6 +138,8 @@ class NotificationSendCommand extends CronScript {
         $truncateSql = "TRUNCATE `Encounters`.`Notifications`";
         $DB->prepare($truncateSql)->execute();
 
+        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_INSERT_ROW_INTO_NOTIFICATIONS);
+
         $usedVariables = [
             'lastaccess',
             'last_outgoing_decision',
@@ -152,7 +154,7 @@ class NotificationSendCommand extends CronScript {
         ];
 
         $usersProcessed = 0;
-        while ($users = $this->getUsers(500)) {
+        while ($users = $this->getUsers(300)) {
 
             $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
 
@@ -213,7 +215,7 @@ class NotificationSendCommand extends CronScript {
             }
 
             $this->log("Fetching online data (API)..");
-            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
+            if ($onlineCheckResult = $this->getMamba()->exec(25)) {
                 $this->log("OK", 64);
 
                 foreach ($onlineCheckResult as $onlineCheckResultChunk) {
@@ -235,7 +237,7 @@ class NotificationSendCommand extends CronScript {
             }
 
             $this->log("Fetching profile data (API)..");
-            if ($anketaResult = $this->getMamba()->exec(10)) {
+            if ($anketaResult = $this->getMamba()->exec(25)) {
                 $this->log("OK", 64);
 
                 foreach ($anketaResult as $anketaResultChunk) {
@@ -249,8 +251,6 @@ class NotificationSendCommand extends CronScript {
             } else {
                 $this->log("FAILED", 16);
             }
-
-            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_INSERT_ROW_INTO_NOTIFICATIONS);
 
             $this->log("Writing data to database..");
             foreach ($dataArray as $userId => $variables) {

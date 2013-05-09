@@ -187,7 +187,7 @@ abstract class Script extends ContainerAwareCommand {
      * @return Redis
      */
     public function getRedis() {
-        return $this->getContainer()->get('redis');
+        return $this->getContainer()->get('redis')->setMetricsEnabled(false);
     }
 
     /**
@@ -196,7 +196,7 @@ abstract class Script extends ContainerAwareCommand {
      * @return Leveldb
      */
     public function getLeveldb() {
-        return $this->getContainer()->get('leveldb');
+        return $this->getContainer()->get('leveldb')->setMetricsEnabled(false)->setCronStrategy();
     }
 
     /**
@@ -214,7 +214,7 @@ abstract class Script extends ContainerAwareCommand {
      * @return Mamba
      */
     public function getMamba() {
-        return $this->getContainer()->get('mamba');
+        return $this->getContainer()->get('mamba')->setMetricsEnabled(false);
     }
 
     /**

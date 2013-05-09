@@ -433,9 +433,6 @@ abstract class ApplicationController extends Controller {
 
         $webUser = $Mamba->Anketa()->getInfo($webUserId);
 
-//        var_dump($searchPreferences);
-//        exit();
-//
         $dataArray['webuser'] = array(
             'anketa'      => $webUser[0],
             'popularity'  => $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($webUserId)),
