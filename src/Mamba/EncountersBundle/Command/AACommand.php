@@ -37,13 +37,6 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $this->getGearman()->getClient()->doLowBackground(
-            EncountersBundle::GEARMAN_MUTUAL_ICEBREAKER_FUNCTION_NAME,
-            serialize(array(
-                'webUserId'     => 1065914322,
-                'currentUserId' => 560015854,
-                'time'          => time(),
-            ))
-        );
+        print_r($this->getMamba()->nocache()->Anketa()->getInfo(560015854, ['location']));
     }
 }

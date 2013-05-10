@@ -86,6 +86,7 @@ class AdminEventsController extends ApplicationController {
                 'info'  => array(
                     'messages-sent'   => 0,
                     'contacts-created' => 0,
+                    'mutual-messages-sent' => 0,
 
                     'limit' => $limit,
                 ),
@@ -286,7 +287,8 @@ class AdminEventsController extends ApplicationController {
         foreach ($data as $key=>$item) {
             foreach ($requiredKeys = array(
                 'messages-sent',
-                'contacts-created') as $_key) {
+                'contacts-created',
+                'mutual-messages-sent') as $_key) {
                 if (!isset($item[$_key])) {
                     $item[$_key] = null;
                 } else {

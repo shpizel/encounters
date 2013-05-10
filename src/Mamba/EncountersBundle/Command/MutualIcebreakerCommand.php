@@ -80,46 +80,50 @@ class MutualIcebreakerCommand extends CronScript {
         $ContactsHelper = $this->getContactsHelper();
         $MessagesHelper = $this->getMessagesHelper();
 
+        if ($ContactsHelper->getContact($currentUserId, $webUserId)) {
+            $this->log("Contact already exists", 48);
+        } else {
+            if ($apiData = $this->getMamba()->Anketa()->getInfo((int) $webUserId)) {
+                $userData = $apiData[0];
 
+                if ($userData['info']['gender'] == 'F') {
+                    $message = "{$userData['info']['name']}, с которой вы хотели встретиться, ответила, что тоже не против встретиться с вами! Она ждет вашего сообщения, чтобы договориться о встрече!";
+                } else {
+                    $message = "{$userData['info']['name']}, с которым вы хотели встретиться, ответил, что тоже не против встретиться с вами! Он ждет вашего сообщения, чтобы договориться о встрече!";
+                }
 
-        if ($apiData = $this->getMamba()->Anketa()->getInfo((int) $webUserId)) {
-            $userData = $apiData[0];
-
-            if ($userData['info']['gender'] == 'F') {
-                $message = "{$userData['info']['name']}, с которой вы хотели встретиться, ответила, что тоже не против встретиться с вами! Она ждет вашего сообщения, чтобы договориться о встрече!";
-            } else {
-                $message = "{$userData['info']['name']}, с которым вы хотели встретиться, ответил, что тоже не против встретиться с вами! Он ждет вашего сообщения, чтобы договориться о встрече!";
-            }
-
-            if ($Contact = $ContactsHelper->getContact($currentUserId, $webUserId, true)) {
-                $Message = (new Message)
-                    ->setContactId($Contact->getId())
-                    ->setType('text')
-                    ->setDirection('inbox')
-                    ->setMessage($message)
-                    ->setTimestamp(time())
-                ;
-
-                if ($MessagesHelper->addMessage($Message)) {
-                    $Contact
-                        ->setChanged(time())
-                        ->setInboxCount($Contact->getInboxCount() + 1)
-                        ->setUnreadCount($Contact->getUnreadCount() + 1)
+                if ($Contact = $ContactsHelper->getContact($currentUserId, $webUserId, true)) {
+                    $Message = (new Message)
+                        ->setContactId($Contact->getId())
+                        ->setType('text')
+                        ->setDirection('inbox')
+                        ->setMessage($message)
+                        ->setTimestamp(time())
                     ;
 
-                    $ContactsHelper->updateContact($Contact);
+                    if ($MessagesHelper->addMessage($Message)) {
+                        $this->getStatsHelper()->incr('mutual-messages-sent');
 
-                    $this->getCountersHelper()->incr($Contact->getSenderId(), 'messages_unread');
+                        $Contact
+                            ->setChanged(time())
+                            ->setInboxCount($Contact->getInboxCount() + 1)
+                            ->setUnreadCount($Contact->getUnreadCount() + 1)
+                        ;
 
-                    $this->log($message, 64);
+                        $ContactsHelper->updateContact($Contact);
+
+                        $this->getCountersHelper()->incr($Contact->getSenderId(), 'messages_unread');
+
+                        $this->log($message, 64);
+                    } else {
+                        $this->log("Could not send message", 16);
+                    }
                 } else {
-                    $this->log("Could not send message", 16);
+                    $this->log("Could not get contact", 16);
                 }
             } else {
-                $this->log("Could not get contact", 16);
+                $this->log("Could not get user info from platform");
             }
-        } else {
-            $this->log("Could not get user info from platform");
         }
     }
 }

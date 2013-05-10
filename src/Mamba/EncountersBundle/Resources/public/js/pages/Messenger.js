@@ -15,7 +15,11 @@ $Messenger = {
     initUI: function() {
         $(document).click(function(){
             $Messenger.$userInfo.$gifts.hideLayer();
-        }).keydown(function() {
+        }).keydown(function($event) {
+            if ($event.ctrlKey || $event.metaKey) {
+                return;
+            }
+
             if ($Messenger.$userInfo.$gifts.active) {
                 var $texarea = $("div.drop_down-present textarea");
                 if (!$texarea.is(":focus")) {
