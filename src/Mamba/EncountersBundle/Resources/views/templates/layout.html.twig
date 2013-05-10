@@ -76,9 +76,22 @@
                         <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
                     {% endif %}
 
-                    {#{% if app.debug or webuser.anketa.info.oid == 560015854 or webuser.anketa.info.oid == 751072037 or webuser.anketa.info.oid == 728011279 or webuser.anketa.info.oid == 742241457 %}#}
-                    <li class="item-messages"><a target="_blank" href="/messenger"><b>Сообщения</b>  <i class="plus"><b>{% if webuser.stats.messages_unread %}+{{ webuser.stats.messages_unread }}{% endif %}</b></i></a></li>
-                    {#{% endif %}#}
+                    {#<li class="item-messages"><a target="_blank" href="/messenger"><b>Сообщения</b>  <i class="plus"><b>{% if webuser.stats.messages_unread %}+{{ webuser.stats.messages_unread }}{% endif %}</b></i></a></li>#}
+                    {% if webuser.stats.messages_unread %}
+                        <li class="item-messages"><a target="_top" href="/messages"><b class="messages_unread">
+                            {% if webuser.stats.messages_unread % 10 == 0 %}
+                                {{ webuser.stats.messages_unread }} новых сообщений
+                            {% elseif webuser.stats.messages_unread % 10 == 1 %}
+                                {{ webuser.stats.messages_unread }} новая сообщение
+                            {% elseif webuser.stats.messages_unread % 10 < 5 %}
+                                {{ webuser.stats.messages_unread }} новые сообщения
+                            {% else %}
+                                {{ webuser.stats.messages_unread }} новых сообщений
+                            {% endif %}
+                        </b></a></li>
+                    {% else %}
+                        <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b>Взаимные</b> <i class="heart">{% if webuser.stats.mutual %}{{ webuser.stats.mutual }}{% endif %}</i></a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

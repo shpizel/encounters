@@ -86,7 +86,8 @@
     text-decoration: underline;
 }
 
-.info-meet li b.mutual_unread {
+.info-meet li b.mutual_unread,
+.info-meet li b.messages_unread{
     color: #FF6800;
     font-weight: bold;
     font-size: 15px;

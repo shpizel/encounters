@@ -29,6 +29,9 @@ use Mamba\EncountersBundle\Helpers\Account;
 use Mamba\EncountersBundle\Helpers\Photoline;
 use Mamba\EncountersBundle\Helpers\Gifts;
 
+use Mamba\EncountersBundle\Helpers\Messenger\Messages;
+use Mamba\EncountersBundle\Helpers\Messenger\Contacts;
+
 /**
  * ScriptTrait
  *
@@ -152,6 +155,19 @@ trait ScriptTrait {
     }
 
     /**
+     * Contacts helper getter
+     *
+     * @return Contacts
+     */
+    public function getContactsHelper() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Contacts($this->getContainer());
+    }
+
+    /**
      * Photoline getter
      *
      * @return Photoline
@@ -214,6 +230,19 @@ trait ScriptTrait {
         }
 
         return self::$Instances[__FUNCTION__] = new ContactsQueue($this->getContainer());
+    }
+
+    /**
+     * Messages helper getter
+     *
+     * @return Messages
+     */
+    public function getMessagesHelper() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Messages($this->getContainer());
     }
 
     /**

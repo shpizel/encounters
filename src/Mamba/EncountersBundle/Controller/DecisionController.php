@@ -137,13 +137,7 @@ class DecisionController extends ApplicationController {
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision + 1 > 0) {
-
-                /**
-                 * @todo: Сделать это через крон-скрипт, учитывая пол, возраст, страну итд
-                 *
-                 * @author shpizel
-                 */
-                if (($currentUserSearchPreferences = $this->getSearchPreferencesHelper()->get($this->currentUserId)) && ($webUserInfo = $Mamba->Anketa()->getInfo($this->webUserId, array()))) {
+                if (($currentUserSearchPreferences = $this->getSearchPreferencesHelper()->get($this->currentUserId)) && ($webUserInfo = $Mamba->Anketa()->getInfo($this->webUserId))) {
                     $webUserInfo = array_shift($webUserInfo);
                     $webUserInfo = $webUserInfo['info'];
 
@@ -155,6 +149,10 @@ class DecisionController extends ApplicationController {
                             $this->getPriorityQueueHelper()->put($this->currentUserId, $this->webUserId);
                         }
                     }
+                }
+
+                if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId) && !$this->getVariablesHelper()->get($this->currentUserId, 'lastaccess')) {
+                    $this->json['data']['is_contact'] = true;
                 }
             }
 
@@ -170,23 +168,6 @@ class DecisionController extends ApplicationController {
                 EncountersBundle::GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME,
                 serialize($dataArray)
             );
-
-            if ($this->decision + 1 > 0) {
-
-                /**
-                 * Проверим, есть ли currentUser юзера в списке контактов у webUser'a
-                 *
-                 * @author shpizel
-                 */
-                if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId)) {
-                    if (($appUser = $Mamba->Anketa()->isAppUser($this->currentUserId)) && (!$appUser[0]['is_app_user'])) {
-                        $lastMessageSent = (int) $this->getVariablesHelper()->get($this->currentUserId, 'last_message_sent');
-                        if (!$lastMessageSent || (time() - $lastMessageSent > 7*24*3600)) {
-                            $this->json['data']['is_contact'] = true;
-                        }
-                    }
-                }
-            }
 
             /** Ставим задачу на установку ачивки */
             $this->getGearman()->getClient()->doLowBackground(
@@ -220,8 +201,16 @@ class DecisionController extends ApplicationController {
 
                     $this->getCountersHelper()->incr($this->webUserId, 'mutual');
                     $this->getCountersHelper()->incr($this->currentUserId, 'mutual');
-
                     $this->getCountersHelper()->incr($this->currentUserId, 'mutual_unread');
+
+                    $this->getGearman()->getClient()->doLowBackground(
+                        EncountersBundle::GEARMAN_MUTUAL_ICEBREAKER_FUNCTION_NAME,
+                        serialize(array(
+                            'webUserId'     => $this->webUserId,
+                            'currentUserId' => $this->currentUserId,
+                            'time'          => time(),
+                        ))
+                    );
                 }
             } else {
                 $this->getPurchasedHelper()->remove(intval($this->webUserId), intval($this->currentUserId));

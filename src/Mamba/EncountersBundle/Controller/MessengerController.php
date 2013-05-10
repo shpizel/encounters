@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Controller;
 
 use Mamba\EncountersBundle\Controller\ApplicationController;
+use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Helpers\Gifts;
 use Mamba\EncountersBundle\Helpers\Messenger\Message;
 use Symfony\Component\HttpFoundation\Response;
@@ -283,6 +284,16 @@ class MessengerController extends ApplicationController {
                         } else {
                             $CountersHelper->set($webUserId, 'messages_unread', 0);
                         }
+
+                        $this->getGearman()->getClient()->doLowBackground(
+                            EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                            serialize(
+                                array(
+                                    'user_id' => $webUserId,
+                                    'time'    => time(),
+                                )
+                            )
+                        );
                     }
 
                     if ($lastMessageId = intval($this->getRequest()->request->get('first_message_id'))) {
@@ -399,6 +410,16 @@ class MessengerController extends ApplicationController {
                                 } else {
                                     $CountersHelper->set($webUserId, 'messages_unread', 0);
                                 }
+
+                                $this->getGearman()->getClient()->doLowBackground(
+                                    EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                                    serialize(
+                                        array(
+                                            'user_id' => $webUserId,
+                                            'time'    => time(),
+                                        )
+                                    )
+                                );
                             }
 
                             if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
@@ -566,6 +587,16 @@ class MessengerController extends ApplicationController {
                                     } else {
                                         $CountersHelper->set($webUserId, 'messages_unread', 0);
                                     }
+
+                                    $this->getGearman()->getClient()->doLowBackground(
+                                        EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                                        serialize(
+                                            array(
+                                                'user_id' => $webUserId,
+                                                'time'    => time(),
+                                            )
+                                        )
+                                    );
                                 }
 
                                 if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
@@ -747,6 +778,16 @@ class MessengerController extends ApplicationController {
                 return $tag;
             }
         }, $message);
+
+        $message = str_ireplace(["<br>", "<br/>"], "\n", $message);
+        $message = str_replace("&nbsp;", " ", $message);
+
+        while (strpos($message, "  ") !== false) {
+            $message = str_replace("  ", " ", $message);
+        }
+
+        $message = trim($message);
+        $message = str_replace("\n", "<br>", $message);
 
         return $message;
     }

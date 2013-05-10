@@ -247,11 +247,11 @@ $Search = {
                         $('li.item-mutual a i').eq(0).text($data['counters']['mutual']);
                     }
 
-                    if ($data['counters']['messages_unread'] > 0) {
+                    /*if ($data['counters']['messages_unread'] > 0) {
                         $('li.item-messages a i.plus b').text('+' + $data['counters']['messages_unread']);
                     } else {
                         $('li.item-messages a i.plus b').text('');
-                    }
+                    }*/
 
                     if ($data['counters']['events_unread'] > 0) {
                         $('li.item-profile a i.plus b').text('+' + $data['counters']['events_unread']);

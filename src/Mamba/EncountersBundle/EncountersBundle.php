@@ -87,6 +87,20 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME = 'database:lastaccess:update'
+        GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME = 'database:lastaccess:update',
+
+        /**
+         * Имя функции для обновления счетчиков непрочитанных сообщений
+         *
+         * @var str
+         */
+        GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME = 'database:messenger:counters:update',
+
+        /**
+         * Имя функции-обработчика взаимной симпатии (отправка сообщения)
+         *
+         * @var str
+         */
+        GEARMAN_MUTUAL_ICEBREAKER_FUNCTION_NAME = 'database:mutual:icebreaker'
     ;
 }
