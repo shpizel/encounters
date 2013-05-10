@@ -972,9 +972,7 @@ $Messenger = {
                     $interestsBlock.append($('<li class="tags-list_item">' + $mutualInterests[$i] + '</li>'));
                 }
             } else {
-
-
-                if ($webUserInterests.length == 0) {
+                if ($currentUserInterests.length == 0) {
                     $interestsBlock.hide();
                     $text.html("У нас есть подсказка:<br>" + $userInfo.info.name + ' еще не написал' + ($userInfo.info.gender == 'F' ? 'а' : '') + ' о своих увлечениях,<br>спросите чем он'+($userInfo.info.gender == 'F' ? 'а' : '')+' увлекается');
                 } else {
