@@ -100,7 +100,8 @@ class MessengerCountersUpdateCommand extends CronScript {
             throw new \Core\ScriptBundle\CronScriptException('Could not execute query');
         } else {
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                if ($this->getCountersHelper()->set($userId, 'messages_unread', $row['messages_unread'])) {
+                $this->log($this->getCountersHelper()->get($userId, 'messages_unread') . "=>" . $row['messages_unread'], 32);
+                if ($this->getCountersHelper()->set($userId, 'messages_unread', (int) $row['messages_unread'])) {
                     $this->log('SUCCESS', 64);
                 } else {
                     $this->log('FAILED', 16);
