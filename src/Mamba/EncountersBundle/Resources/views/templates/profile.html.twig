@@ -150,4 +150,7 @@
 {% endblock %}
 {% block pagejs %}
 $Config.set('current_user_id', {{ current_user_id }});
+{% autoescape false %}
+$Config.set('photos', {{ profile.photos|json_encode() }});
+{% endautoescape %}
 {% endblock %}

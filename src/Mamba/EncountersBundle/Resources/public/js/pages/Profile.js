@@ -12,15 +12,6 @@ $Profile = {
      */
     initUI: function() {
 
-        /**
-         * 1) клик по фотке
-         * 2) клик по кнопке "отправить подарок"
-         * 3) наведение курсора на гифты
-         * 4)
-         *
-         * @author shpizel
-         */
-
         $(document).click(function(){
             $(".orange-menu .drop-down").hide();
         });
@@ -31,7 +22,9 @@ $Profile = {
 //        });
 
         $(".profile-picture").click(function() {
-            //$Layers.showProfilePhotosLayer();
+            if ($Config.get('photos').length > 0) {
+                $Layers.showProfilePhotosLayer();
+            }
         });
 
         $(".button-present").click(function() {

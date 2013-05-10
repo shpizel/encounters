@@ -16,11 +16,13 @@ div.notification {
     padding-top: 10px;
     padding-bottom: 10px;
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
 div.notification div.text {
     text-align: center;
+    line-height: 18px;
 }
 
 div.notification a.close {

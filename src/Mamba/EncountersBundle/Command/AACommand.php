@@ -37,6 +37,7 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        print_r($this->getMamba()->nocache()->Anketa()->getInfo(560015854, ['location']));
+        //print_r($this->getMamba()->nocache()->Anketa()->getInfo(560015854, ['location']));
+        $this->getNotificationsHelper()->add(560015854, 'Ура! Теперь можно просматривать фотографии в анкетах внутри приложения!');
     }
 }

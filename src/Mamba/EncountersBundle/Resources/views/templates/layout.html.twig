@@ -102,7 +102,9 @@
         {% if variables.notification_hidden != 1 %}
             <div class="notification">
                 <a href="#" class="close"></a>
+                {% autoescape false %}
                 <div class="text">{{ notification.message }}</div>
+                {% endautoescape%}
             </div>
         {% endif %}
     {% endif %}

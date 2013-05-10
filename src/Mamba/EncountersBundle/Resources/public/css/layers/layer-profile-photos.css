@@ -5,7 +5,7 @@
  */
 
 .layer-profile-photos {
-    width: 655px;
+    /*width: 655px;*/
     padding-bottom: 30px
 }
 
@@ -50,5 +50,11 @@
 }
 
 .layer-profile-photos .photo-image .photo-image_in {
-    white-space: nowrap
+    white-space: nowrap;
+    cursor:pointer;
+}
+
+.app-layer-profile-photolayer {
+    width: 657px !important;
+    left: 43% !important;
 }
