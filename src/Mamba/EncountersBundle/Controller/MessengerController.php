@@ -284,17 +284,17 @@ class MessengerController extends ApplicationController {
                         } else {
                             $CountersHelper->set($webUserId, 'messages_unread', 0);
                         }
-
-                        $this->getGearman()->getClient()->doLowBackground(
-                            EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
-                            serialize(
-                                array(
-                                    'user_id' => $webUserId,
-                                    'time'    => time(),
-                                )
-                            )
-                        );
                     }
+
+                    $this->getGearman()->getClient()->doLowBackground(
+                        EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                        serialize(
+                            array(
+                                'user_id' => $webUserId,
+                                'time'    => time(),
+                            )
+                        )
+                    );
 
                     if ($lastMessageId = intval($this->getRequest()->request->get('first_message_id'))) {
                         $sort = 'ASC';
@@ -395,6 +395,7 @@ class MessengerController extends ApplicationController {
                         $messages = [$Message->toArray()];
                         $messages[0]['date'] = $this->getHumanDate($messages[0]['timestamp']);
 
+
                         if ($lastMessageId = (int) $this->getRequest()->request->get('last_message_id')) {
 
                             if ($unreadCount = $WebUserContact->getUnreadCount()) {
@@ -410,16 +411,6 @@ class MessengerController extends ApplicationController {
                                 } else {
                                     $CountersHelper->set($webUserId, 'messages_unread', 0);
                                 }
-
-                                $this->getGearman()->getClient()->doLowBackground(
-                                    EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
-                                    serialize(
-                                        array(
-                                            'user_id' => $webUserId,
-                                            'time'    => time(),
-                                        )
-                                    )
-                                );
                             }
 
                             if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
@@ -438,6 +429,16 @@ class MessengerController extends ApplicationController {
                                 }
                             }
                         }
+
+                        $this->getGearman()->getClient()->doLowBackground(
+                            EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                            serialize(
+                                array(
+                                    'user_id' => $webUserId,
+                                    'time'    => time(),
+                                )
+                            )
+                        );
 
                         $this->json['data']['messages'] = $messages;
 
@@ -587,16 +588,6 @@ class MessengerController extends ApplicationController {
                                     } else {
                                         $CountersHelper->set($webUserId, 'messages_unread', 0);
                                     }
-
-                                    $this->getGearman()->getClient()->doLowBackground(
-                                        EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
-                                        serialize(
-                                            array(
-                                                'user_id' => $webUserId,
-                                                'time'    => time(),
-                                            )
-                                        )
-                                    );
                                 }
 
                                 if ($messages = $MessagesHelper->getMessages($WebUserContact, $lastMessageId, 'DESC')) {
@@ -615,6 +606,16 @@ class MessengerController extends ApplicationController {
                                     }
                                 }
                             }
+
+                            $this->getGearman()->getClient()->doLowBackground(
+                                EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                                serialize(
+                                    array(
+                                        'user_id' => $webUserId,
+                                        'time'    => time(),
+                                    )
+                                )
+                            );
 
                             $this->json['data']['messages'] = $messages;
 
