@@ -27,7 +27,7 @@ class AdminFinancesController extends ApplicationController {
             FROM
                 Billing
             WHERE
-                `date` >= date_format(DATE_SUB(NOW(), INTERVAL %LIMIT% DAY), '%Y-%m-%d 00:00:00')
+                `changed` >= date_format(DATE_SUB(NOW(), INTERVAL %LIMIT% DAY), '%Y-%m-%d 00:00:00')
             GROUP BY
                 `date`
             ORDER BY
