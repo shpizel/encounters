@@ -82,7 +82,7 @@
                             {% if webuser.stats.messages_unread % 10 == 0 %}
                                 {{ webuser.stats.messages_unread }} новых сообщений
                             {% elseif webuser.stats.messages_unread % 10 == 1 %}
-                                {{ webuser.stats.messages_unread }} новая сообщение
+                                {{ webuser.stats.messages_unread }} новое сообщение
                             {% elseif webuser.stats.messages_unread % 10 < 5 %}
                                 {{ webuser.stats.messages_unread }} новые сообщения
                             {% else %}
