@@ -70,6 +70,13 @@ class Leveldb {
         return $this->metrics;
     }
 
+    public function clearMetrics() {
+        $this->metrics = array(
+            'requests' => array(),
+            'timeout'  => 0,
+        );
+    }
+
     /**
      * Request unique id getter
      *

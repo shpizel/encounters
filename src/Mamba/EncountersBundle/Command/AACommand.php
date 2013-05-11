@@ -41,14 +41,21 @@ class AACommand extends Script {
         $VariablesHelper = $this->getVariablesHelper();
         $NotificationsHelper = $this->getNotificationsHelper();
         $Redis = $this->getRedis();
+        $Leveldb = $this->getLeveldb();
 
         $counter = 0;
         while ($users = $this->getUsers(1024)) {
+            $notificationsHidden = $VariablesHelper->getMulti($users, ['notifications_hidden']);
+            $Leveldb->clearMetrics();
+
+            var_dump($notificationsHidden);
+            exit();
             foreach ($users as $userId) {
-                if ($VariablesHelper->get((int) $userId, 'notification_hidden') == 1) {
+                if (isset($notificationsHidden[$userId]) && ($notificationsHidden[$userId] == 1)) {
                     $NotificationsHelper->add((int) $userId, 'Ура! Теперь можно просматривать фотографии в анкетах внутри приложения!');
-                    $this->log(++$counter, -1);
                     $Redis->clearMetrics();
+
+                    $this->log(++$counter, -1);
                 }
             }
         }
