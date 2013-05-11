@@ -94,6 +94,13 @@ class Redis {
         return $this->metrics;
     }
 
+    public function clearMetrics() {
+        $this->metrics = array(
+            'requests' => array(),
+            'timeout'  => 0,
+        );
+    }
+
     /**
      * Redis nodes getter
      *

@@ -38,11 +38,18 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        $VariablesHelper = $this->getVariablesHelper();
+        $NotificationsHelper = $this->getNotificationsHelper();
+        $Redis = $this->getRedis();
+
         $counter = 0;
-        while ($users = $this->getUsers(500)) {
+        while ($users = $this->getUsers(1024)) {
             foreach ($users as $userId) {
-                $this->getNotificationsHelper()->add((int) $userId, 'Ура! Теперь можно просматривать фотографии в анкетах внутри приложения!');
-                $this->log(++$counter, -1);
+                if ($VariablesHelper->get((int) $userId, 'notification_hidden') == 1) {
+                    $NotificationsHelper->add((int) $userId, 'Ура! Теперь можно просматривать фотографии в анкетах внутри приложения!');
+                    $this->log(++$counter, -1);
+                    $Redis->clearMetrics();
+                }
             }
         }
     }
