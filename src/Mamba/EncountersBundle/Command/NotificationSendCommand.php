@@ -33,13 +33,22 @@ class NotificationSendCommand extends CronScript {
         SCRIPT_NAME = "cron:notification:send",
 
         /**
-         * SQL-запрос на получение данных для нотифицирования
+         * SQL-запрос на получение данных для нотифицированияё
+         *
          *
          * @var str
          */
         GET_NOTIFICATIONS_SQL = "
             SELECT
-                n.*,
+                n.user_id,
+                FROM_UNIXTIME(n.lastaccess) as `lastaccess`,
+                FROM_UNIXTIME(n.last_online) as `last_online`,
+                FROM_UNIXTIME(n.last_outgoing_decision) as `last_outgoing_decision`,
+                FROM_UNIXTIME(n.last_notification_sent) as `last_notification_sent`,
+                n.last_notification_metrics,
+                n.visitors_unread,
+                n.mutual_unread,
+                n.messages_unread,
                 e.energy as `energy`,
                 sum(b.amount) as `amount`
             FROM
@@ -49,48 +58,24 @@ class NotificationSendCommand extends CronScript {
             LEFT JOIN Billing b
                 ON b.user_id = n.user_id
             WHERE
-                (NOT n.last_notification_sent OR UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*60*60) AND
-                n.visitors_unread > 0 AND
-                n.last_notification_metrics <> concat('v:', n.visitors_unread, ',m:', n.mutual_unread)
+                n.last_online AND
+                (NOT n.last_notification_sent OR n.last_notification_sent < n.last_online) AND
+                (NOT n.lastaccess OR n.lastaccess < n.last_online) AND
+                (NOT n.last_notification_sent OR UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*3600) AND
+                (n.visitors_unread > 0 OR n.messages_unread > 0)
             GROUP BY
-                user_id
+                `user_id`
             ORDER BY
-                last_online DESC,
-                lastaccess DESC, -- оч странная хуйня пиздец (было ASC)
-                last_notification_sent ASC,
-                visitors_unread DESC,
-                mutual_unread DESC",
-
-        /**
-         * SQL-запрос на получение данных для добавления энергии
-         *
-         * @var str
-         */
-        GET_ENERGY_SQL = "
-            SELECT
-                n.*,
-                e.energy as `energy`,
-                sum(b.amount) as `amount`
-            FROM
-                `Notifications` n
-            LEFT JOIN Energy e
-                ON e.user_id = n.user_id
-            LEFT JOIN Billing b
-                ON b.user_id = n.user_id
-            WHERE
-                (NOT n.lastaccess OR
-                UNIX_TIMESTAMP(NOW()) - n.lastaccess > 7*24*60*60) AND
-                NOT n.visitors_unread AND
-                NOT energy
-            GROUP BY
-                user_id",
+                `lastaccess` DESC,
+                `last_notification_sent` ASC,
+                `visitors_unread` ASC",
 
         /**
          * SQL-запрос на получение данных о последних голосованиях за пользователя
          *
          * @var str
          */
-        GET_LAST_DECISIONS = "
+        SQL_GET_LAST_DECISIONS = "
             SELECT
                 *
             FROM
@@ -100,7 +85,34 @@ class NotificationSendCommand extends CronScript {
             ORDER BY
                 changed DESC
             LIMIT
-                2"
+                2",
+
+        /**
+         * SQL-запрос на вставку строки в таблицу нотификаций
+         *
+         * @var str
+         */
+        SQL_INSERT_ROW_INTO_NOTIFICATIONS = "
+            INSERT INTO
+                `Notifications`
+            SET
+                `user_id`    = :user_id,
+                `lastaccess` = :lastaccess,
+                `last_online` = :last_online,
+                `last_outgoing_decision` = :last_outgoing_decision,
+                `last_notification_sent` = :last_notification_sent,
+                `last_notification_metrics` = :last_notification_metrics,
+                `visitors_unread` = :visitors_unread,
+                `mutual_unread` = :mutual_unread
+            ON DUPLICATE KEY UPDATE
+                `lastaccess` = :lastaccess,
+                `last_online` = :last_online,
+                `last_outgoing_decision` = :last_outgoing_decision,
+                `last_notification_sent` = :last_notification_sent,
+                `last_notification_metrics` = :last_notification_metrics,
+                `visitors_unread` = :visitors_unread,
+                `mutual_unread` = :mutual_unread,
+                `messages_unread` = :messages_unread"
     ;
 
     /**
@@ -132,13 +144,13 @@ class NotificationSendCommand extends CronScript {
         $usedCounters = [
             'visitors_unread',
             'mutual_unread',
+            'messages_unread'
         ];
 
         $usersProcessed = 0;
         while ($users = $this->getUsers(500)) {
 
             $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
-
 
             $dataArray = [];
             foreach ($users as $userId) {
@@ -187,29 +199,29 @@ class NotificationSendCommand extends CronScript {
             }
 
             $anketaChunk = array_chunk($users, 100);
-//            $lastOnlineChunk = array_chunk($users, 30);
-//
-//            $Mamba->multi();
-//            foreach ($lastOnlineChunk as $chunk) {
-//                $Mamba->Anketa()->isOnline(array_map(function($i) {
-//                    return (int) $i;
-//                }, $chunk));
-//            }
-//
-//            $this->log("Fetching online data (API)..");
-//            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
-//                $this->log("OK", 64);
-//
-//                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-//                    foreach ($onlineCheckResultChunk as $_anketa) {
-//                        if (isset($dataArray[$_anketa['anketa_id']])) {
-//                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
-//                        }
-//                    }
-//                }
-//            } else {
-//                $this->log("FAILED", 16);
-//            }
+            $lastOnlineChunk = array_chunk($users, 30);
+
+            $Mamba->multi();
+            foreach ($lastOnlineChunk as $chunk) {
+                $Mamba->Anketa()->isOnline(array_map(function($i) {
+                    return (int) $i;
+                }, $chunk));
+            }
+
+            $this->log("Fetching online data (API)..");
+            if ($onlineCheckResult = $this->getMamba()->exec(10)) {
+                $this->log("OK", 64);
+
+                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
+                    foreach ($onlineCheckResultChunk as $_anketa) {
+                        if (isset($dataArray[$_anketa['anketa_id']])) {
+                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
+                        }
+                    }
+                }
+            } else {
+                $this->log("FAILED", 16);
+            }
 
             $this->getMamba()->multi();
             foreach ($anketaChunk as $chunk) {
@@ -234,6 +246,8 @@ class NotificationSendCommand extends CronScript {
                 $this->log("FAILED", 16);
             }
 
+            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_INSERT_ROW_INTO_NOTIFICATIONS);
+
             $this->log("Writing data to database..");
             foreach ($dataArray as $userId => $variables) {
                 if (!(isset($variables['is_app_user']) && $variables['is_app_user'])) {
@@ -242,70 +256,33 @@ class NotificationSendCommand extends CronScript {
 
                 $variables['last_online'] = isset($variables['last_online']) ? $variables['last_online'] : null;
 
-                $sql = "INSERT INTO
-                        Notifications
-                    SET
-                        user_id    = ':user_id',
-                        lastaccess = ':lastaccess',
-                        last_online = ':last_online',
-                        last_outgoing_decision = ':last_outgoing_decision',
-                        last_notification_sent = ':last_notification_sent',
-                        last_notification_metrics = ':last_notification_metrics',
-                        visitors_unread = ':visitors_unread',
-                        mutual_unread = ':mutual_unread'
-                    ON DUPLICATE KEY UPDATE
-                        lastaccess = ':lastaccess',
-                        last_online = ':last_online',
-                        last_outgoing_decision = ':last_outgoing_decision',
-                        last_notification_sent = ':last_notification_sent',
-                        last_notification_metrics = ':last_notification_metrics',
-                        visitors_unread = ':visitors_unread',
-                        mutual_unread = ':mutual_unread'"
-                ;
+                $stmt->bindParam('user_id',  $variables['user_id'], PDO::PARAM_INT);
+                $stmt->bindParam('lastaccess',  $variables['lastaccess'], PDO::PARAM_INT);
+                $stmt->bindParam('last_online',  $variables['last_online'], PDO::PARAM_INT);
+                $stmt->bindParam('last_outgoing_decision', $variables['last_outgoing_decision'], PDO::PARAM_INT);
+                $stmt->bindParam('last_notification_sent', $variables['last_notification_sent'], PDO::PARAM_INT);
+                $stmt->bindParam('last_notification_metrics', $variables['last_notification_metrics'], PDO::PARAM_INT);
+                $stmt->bindParam('visitors_unread', $variables['visitors_unread'], PDO::PARAM_INT);
+                $stmt->bindParam('mutual_unread', $variables['mutual_unread'], PDO::PARAM_INT);
+                $stmt->bindParam('messages_unread', $variables['messages_unread'], PDO::PARAM_INT);
 
-                $sql = str_replace(':user_id', $variables['user_id'], $sql);
-                $sql = str_replace(':lastaccess', $variables['lastaccess'], $sql);
-                $sql = str_replace(':last_online', $variables['last_online'], $sql);
-                $sql = str_replace(':last_outgoing_decision', $variables['last_outgoing_decision'], $sql);
-                $sql = str_replace(':last_notification_sent', $variables['last_notification_sent'], $sql);
-                $sql = str_replace(':last_notification_metrics', $variables['last_notification_metrics'], $sql);
-                $sql = str_replace(':visitors_unread', $variables['visitors_unread'], $sql);
-                $sql = str_replace(':mutual_unread', $variables['mutual_unread'], $sql);
-
-                //$this->log($sql);
-                $DB->exec($sql);
+                if (!$stmt->execute()) {
+                    $this->log("FAILED", 16);
+                    return;
+                }
             }
+
             $this->log("OK", 64);
 
             $usersProcessed+= count($users);
             $this->log("Processed <comment>{$usersProcessed}</comment> users..");
+
+            if ($usersProcessed > 10000) {
+                break;
+            }
         }
 
         $dataArray = $result = null;
-
-        $this->log("Performing energy", 48);
-        $stmt = $DB->prepare(self::GET_ENERGY_SQL);
-        if ($stmt->execute()) {
-            while ($task = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $task['user_id'] = (int) $task['user_id'];
-                $task['lastaccess'] = (int) $task['lastaccess'];
-                $task['last_outgoing_decision'] = (int) $task['last_outgoing_decision'];
-                $task['last_notification_sent'] = (int) $task['last_notification_sent'];
-                $task['visitors_unread'] = (int) $task['visitors_unread'];
-                $task['mutual_unread'] = (int) $task['mutual_unread'];
-
-                $task['energy'] = (int) $task['energy'];
-                $task['amount'] = (int) $task['amount'];
-
-                try {
-                    $this->processEnergyUpdate($task);
-                } catch (\Exception $e) {
-                    $this->log($e->getCode() . ": " . $e->getMessage(), 16);
-                }
-            }
-        } else {
-            $this->log("SQL error", 16);
-        }
 
         $this->log("Performing notifications", 48);
         $stmt = $DB->prepare(self::GET_NOTIFICATIONS_SQL);
@@ -313,11 +290,13 @@ class NotificationSendCommand extends CronScript {
             while ($task = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
                 $task['user_id'] = (int) $task['user_id'];
-                $task['lastaccess'] = (int) $task['lastaccess'];
-                $task['last_outgoing_decision'] = (int) $task['last_outgoing_decision'];
-                $task['last_notification_sent'] = (int) $task['last_notification_sent'];
+                $task['lastaccess'] = $task['lastaccess'];
+                $task['last_online'] = $task['last_online'];
+                $task['last_outgoing_decision'] = $task['last_outgoing_decision'];
+                $task['last_notification_sent'] = $task['last_notification_sent'];
                 $task['visitors_unread'] = (int) $task['visitors_unread'];
                 $task['mutual_unread'] = (int) $task['mutual_unread'];
+                $task['messages_unread'] = (int) $task['messages_unread'];
 
                 $task['energy'] = (int) $task['energy'];
                 $task['amount'] = (int) $task['amount'];
@@ -372,12 +351,6 @@ class NotificationSendCommand extends CronScript {
         }
     }
 
-    private function processEnergyUpdate($task) {
-        $this->log(var_export($task, true), 48);
-        $this->getEnergyHelper()->set($task['user_id'], Popularity::$levels[4]);
-        $this->log("Added energy to {$task['user_id']}", 64);
-    }
-
     /**
      * Процессит таск
      *
@@ -390,26 +363,30 @@ class NotificationSendCommand extends CronScript {
         $currentNotificationMetrics = "v:{$task['visitors_unread']},m:{$task['mutual_unread']}";
         $lastNotificationMetrics = $task['last_notification_metrics'];
 
-        if ($task['visitors_unread'] && ($currentNotificationMetrics != $lastNotificationMetrics || (time() - $task['last_notification_sent'] >= 7*86400))) {
+        if ($task['visitors_unread'] && ($currentNotificationMetrics != $lastNotificationMetrics || (time() - $task['last_notification_sent'] >= 3*86400))) {
             if ($message = $this->getNotifyMessage($task['user_id'], $task['visitors_unread'], $task['mutual_unread'])) {
-                if ($result = $this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')) {
+                $this->log("Trying to send notification for user_id={$task['user_id']}");
+                $this->log($message);
+                if ($result = /*$this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')*/[]) {
                     if (isset($result['count']) && $result['count']) {
                         $this->log($message, 64);
                         $this->getStatsHelper()->incr('notify');
 
                         $this->getVariablesHelper()->set($task['user_id'], 'last_notification_sent', time());
                         $this->getVariablesHelper()->set($task['user_id'], 'last_notification_metrics', $currentNotificationMetrics);
+
+                        $this->log("Notification send SUCCESS", 64);
                     } else {
-                        $this->log($message, 16);
+                        $this->log("Notification send FAILED", 16);
                     }
                 } else {
-                    $this->log($message, 16);
+                    $this->log("Notification send FAILED", 16);
                 }
             } else {
-                $this->log("Could not get notification message");
+                $this->log("Could not get notification message for user_id={$task['user_id']}", 16);
             }
         } else {
-            $this->log("Notification metrics is equal or no visitors unread");
+            $this->log("Notification metrics is equal or no visitors unread for user_id={$task['user_id']}");
         }
     }
 
@@ -430,6 +407,7 @@ class NotificationSendCommand extends CronScript {
             if ($visitorsUnread && !$mutualUnread) {
                 if ($visitorsUnread == 1 || count($webUsers) < 2) {
                     //Марина (25) оценила вас в приложении «Выбиратор»!
+
                     $webUser = array_shift($webUsers);
                     $message = $webUser['name'];
                     if ($webUser['age']) {
@@ -492,6 +470,8 @@ class NotificationSendCommand extends CronScript {
                         $message .= " и еще " . ($visitorsUnread - 2) . " " . Declensions::get($visitorsUnread - 2, "пользователь", "пользователя", "пользователей");
                         $message .= " оценили вас в приложении «Выбиратор»!";
                     }
+
+                    var_dump($message);
                 }
             } elseif ($mutualUnread && !$visitorsUnread) {
                 $message = "У вас $mutualUnread " . Declensions::get($mutualUnread, "новая взаимная симпатия", "новые взаимные симпатии", "новых взаимных симпатий") . " в приложении «Выбиратор»!";
@@ -525,7 +505,7 @@ class NotificationSendCommand extends CronScript {
     }
 
     private function getWebUsersInfo($currentUserId) {
-        $stmt = $this->getDoctrine()->getConnection()->prepare(self::GET_LAST_DECISIONS);
+        $stmt = $this->getDoctrine()->getConnection()->prepare(self::SQL_GET_LAST_DECISIONS);
         $stmt->bindParam('current_user_id', $currentUserId);
         if ($stmt->execute()) {
             $webUsers = array();

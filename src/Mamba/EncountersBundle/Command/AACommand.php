@@ -38,6 +38,14 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        foreach (range(0, 10) as $i) {
+            $this->log($i, 1, -1);
+            usleep(10*1000);
+        }
+        $this->log( "OK". PHP_EOL, -1);
+        exit();
+        print_r($this->getMamba()->Anketa()->isOnline(1117415127));
+        exit();
         $VariablesHelper = $this->getVariablesHelper();
         $NotificationsHelper = $this->getNotificationsHelper();
         $Redis = $this->getRedis();
