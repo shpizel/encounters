@@ -837,3 +837,7 @@ div.app-block-no-popular a.close {
     right: 7px;
     top: 7px;
 }
+
+body.wait {
+    cursor: wait !important;
+}

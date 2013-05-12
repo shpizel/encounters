@@ -38,6 +38,10 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        $html = "<div>a <textarea cols=\"aaa\"></textarea>aaa" . '<br><img   class="smile s-1" src=\'/bundles/encounters/images/pixel.gif\'><img><br /></div>';
+        echo MessengerController::cleanHTMLMessage($html);
+
+        exit();
         foreach (range(0, 10) as $i) {
             $this->log($i, 1, -1);
             usleep(10*1000);

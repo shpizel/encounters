@@ -744,18 +744,18 @@ class MessengerController extends ApplicationController {
         return $date;
     }
 
-    private function cleanHTMLMessage($message) {
+    /*public static*/ private function cleanHTMLMessage($message) {
         if (!strip_tags($message)) return;
 
-        $message = preg_replace_callback("!<(?P<tagname>\w+)(?P<attributes>[^>]*?)>!", function($data) {
-            $tagname = $data['tagname'];
+        $message = preg_replace_callback("!</?(?P<tagname>\w+)(?P<attributes>[^>]*?)/?>!", function($data) {
+            $tagname = strtolower($data['tagname']);
             $attributes = $data['attributes'];
 
             if ($tagname != 'img') {
-                return "<{$tagname}>";
+                return (in_array($tagname, ['br'])) ? "<br>" : '';
             } else {
                 $allowedAttrs = [];
-                if (($attributes = trim($attributes)) && preg_match_all("!(?P<attrs>\w+)\s*?=\s*?\"+(?P<values>[^\"]+?)\"+!is", $attributes, $result)) {
+                if (($attributes = trim($attributes)) && preg_match_all("!(?P<attrs>\w+)\s*?=\s*?[\"']+(?P<values>[^\"]+?)[\"']+!is", $attributes, $result)) {
                     $attrs = $result['attrs'];
                     $values = $result['values'];
 
@@ -768,13 +768,19 @@ class MessengerController extends ApplicationController {
                             $allowedAttrs[$attr] = $value;
                         }
                     }
+                } else {
+                    return "";
                 }
 
-                $tag = "<{$tagname}";
-                foreach ($allowedAttrs as $attr=>$val) {
-                    $tag .= " {$attr}=\"{$val}\"";
+                if (count($allowedAttrs) == 2) {
+                    $tag = "<{$tagname}";
+                    foreach ($allowedAttrs as $attr=>$val) {
+                        $tag .= " {$attr}=\"{$val}\"";
+                    }
+                    $tag.=">";
+                } else {
+                    $tag = "";
                 }
-                $tag.=">";
 
                 return $tag;
             }
@@ -782,6 +788,8 @@ class MessengerController extends ApplicationController {
 
         $message = str_ireplace(["<br>", "<br/>"], "\n", $message);
         $message = str_replace("&nbsp;", " ", $message);
+
+
 
         while (strpos($message, "  ") !== false) {
             $message = str_replace("  ", " ", $message);

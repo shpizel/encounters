@@ -50,7 +50,9 @@ class NotificationSendCommand extends CronScript {
                 n.mutual_unread,
                 n.messages_unread,
                 e.energy as `energy`,
-                sum(b.amount) as `amount`
+                sum(b.amount) as `amount`,
+                (UNIX_TIMESTAMP(NOW()) - IFNULL(`last_online`, 0))/86400 as `last-online-was-ago`,
+				(UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400 as `lastaccess-was-ago`
             FROM
                 `Notifications` n
             LEFT JOIN Energy e
@@ -60,11 +62,13 @@ class NotificationSendCommand extends CronScript {
             WHERE
                 n.last_online AND
                 (NOT n.last_notification_sent OR n.last_notification_sent < n.last_online) AND
-                (NOT n.lastaccess OR n.lastaccess < n.last_online) AND
-                (NOT n.last_notification_sent OR UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*3600) AND
+                (n.lastaccess AND n.lastaccess < n.last_online) AND
+                (NOT n.last_notification_sent OR UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*3600*CEIL((UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400)) AND
                 (n.visitors_unread > 0 OR n.messages_unread > 0)
             GROUP BY
                 `user_id`
+            HAVING
+                `last-online-was-ago` < 2
             ORDER BY
                 `lastaccess` DESC,
                 `last_notification_sent` ASC,
@@ -277,8 +281,8 @@ class NotificationSendCommand extends CronScript {
             $usersProcessed+= count($users);
             $this->log("Processed <comment>{$usersProcessed}</comment> users..");
 
-            if ($usersProcessed > 10000) {
-                break;
+            if ($usersProcessed > 2000) {
+//                break;
             }
         }
 
@@ -363,13 +367,15 @@ class NotificationSendCommand extends CronScript {
         $currentNotificationMetrics = "v:{$task['visitors_unread']},m:{$task['mutual_unread']}";
         $lastNotificationMetrics = $task['last_notification_metrics'];
 
-        if ($task['visitors_unread'] && ($currentNotificationMetrics != $lastNotificationMetrics || (time() - $task['last_notification_sent'] >= 3*86400))) {
+        $lastAccessWasAgo = ceil((float) $task['lastaccess-was-ago']);
+
+        if ($task['visitors_unread'] && ($currentNotificationMetrics != $lastNotificationMetrics || (time() - $task['last_notification_sent'] >= 86400*($lastAccessWasAgo < 3 ? 3 : $lastAccessWasAgo)))) {
             if ($message = $this->getNotifyMessage($task['user_id'], $task['visitors_unread'], $task['mutual_unread'])) {
                 $this->log("Trying to send notification for user_id={$task['user_id']}");
                 $this->log($message);
-                if ($result = /*$this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')*/[]) {
+                if ($result = $this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')) {
                     if (isset($result['count']) && $result['count']) {
-                        $this->log($message, 64);
+                        //$this->log($message, 64);
                         $this->getStatsHelper()->incr('notify');
 
                         $this->getVariablesHelper()->set($task['user_id'], 'last_notification_sent', time());
