@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
+use Core\LeveldbBundle\LeveldbException;
 use Mamba\EncountersBundle\Script\CronScript;
 
 use Mamba\EncountersBundle\EncountersBundle;
@@ -154,7 +155,18 @@ class NotificationSendCommand extends CronScript {
         ];
 
         $usersProcessed = 0;
-        while ($users = $this->getUsers(300)) {
+        while (true) {
+
+            do {
+                try {
+                    $users = $this->getUsers(500);
+                    break;
+                } catch (LeveldbException $e) {
+                    // попробуем еще раз через 3 сек
+                    $this->log("Leveldb error while getting users", 16);
+                    sleep(3);
+                }
+            } while (true);
 
             $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
 
@@ -164,7 +176,19 @@ class NotificationSendCommand extends CronScript {
             }
 
             $this->log("Fetching variables..");
-            $variables = $Variables->getMulti($users, $usedVariables);
+
+            do {
+                try {
+                    $variables = $Variables->getMulti($users, $usedVariables);
+                    break;
+                } catch (LeveldbException $e) {
+                    // попробуем еще раз через 3 сек
+                    $this->log("Leveldb error while getting variables", 16);
+                    sleep(3);
+                }
+
+            } while (true);
+
             $this->log("OK", 64);
 
             foreach ($variables as $userId=>$userVariables) {
@@ -174,7 +198,16 @@ class NotificationSendCommand extends CronScript {
             }
 
             $this->log("Fetching counters..");
-            $counters = $Counters->getMulti($users, $usedCounters);
+            do {
+                try {
+                    $counters = $Counters->getMulti($users, $usedCounters);
+                    break;
+                } catch (LeveldbException $e) {
+                    // попробуем еще раз через 3 сек
+                    $this->log("Leveldb error while getting counters", 16);
+                    sleep(3);
+                }
+            } while (true);
             $this->log("OK", 64);
 
             foreach ($counters as $userId=>$userCounters) {
@@ -281,8 +314,8 @@ class NotificationSendCommand extends CronScript {
             $usersProcessed+= count($users);
             $this->log("Processed <comment>{$usersProcessed}</comment> users..");
 
-            if ($usersProcessed > 2000) {
-//                break;
+            if (!$users) {
+                break;
             }
         }
 
@@ -315,7 +348,7 @@ class NotificationSendCommand extends CronScript {
             $this->log("SQL error", 16);
         }
 
-        $this->log('Preparation completed');
+        $this->log("Bye");
     }
 
     /**
@@ -476,8 +509,6 @@ class NotificationSendCommand extends CronScript {
                         $message .= " и еще " . ($visitorsUnread - 2) . " " . Declensions::get($visitorsUnread - 2, "пользователь", "пользователя", "пользователей");
                         $message .= " оценили вас в приложении «Выбиратор»!";
                     }
-
-                    var_dump($message);
                 }
             } elseif ($mutualUnread && !$visitorsUnread) {
                 $message = "У вас $mutualUnread " . Declensions::get($mutualUnread, "новая взаимная симпатия", "новые взаимные симпатии", "новых взаимных симпатий") . " в приложении «Выбиратор»!";

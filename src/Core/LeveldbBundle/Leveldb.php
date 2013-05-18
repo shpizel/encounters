@@ -224,7 +224,7 @@ class Leveldb {
 
         while (count($masterQueue) > 0) {
             if (!($data = trim(fgets($this->getMasterConnection())))) {
-                throw new LeveldbException("No data recieved");
+                throw new LeveldbException("No data recieved from master");
             }
 
             $data = json_decode($data, true);
@@ -234,7 +234,7 @@ class Leveldb {
             } elseif (!isset($data['id'])) {
                 throw new LeveldbException("Id not found");
             } elseif (!isset($masterQueue[$data['id']])) {
-                throw new LeveldbException("Invalid data recieved");
+                throw new LeveldbException("Invalid data recieved from master");
             }
 
             $masterQueue[$data['id']]->setResult($data['result']);
@@ -243,7 +243,7 @@ class Leveldb {
 
         while (count($slaveQueue) > 0) {
             if (!($data = trim(fgets($this->getSlaveConnection())))) {
-                throw new LeveldbException("No data recieved");
+                throw new LeveldbException("No data recieved from slave");
             }
 
             $data = json_decode($data, true);
@@ -253,7 +253,7 @@ class Leveldb {
             } elseif (!isset($data['id'])) {
                 throw new LeveldbException("Id not found");
             } elseif (!isset($slaveQueue[$data['id']])) {
-                throw new LeveldbException("Invalid data recieved");
+                throw new LeveldbException("Invalid data recieved from slave");
             }
 
             $slaveQueue[$data['id']]->setResult($data['result']);

@@ -603,7 +603,7 @@ abstract class ApplicationController extends Controller {
 
         return
             new Response(
-                json_encode($JSON),
+                json_encode($JSON, JSON_PRETTY_PRINT),
                 200,
                 array(
                     "content-type" => "application/json",
