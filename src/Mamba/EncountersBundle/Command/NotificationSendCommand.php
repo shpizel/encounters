@@ -168,6 +168,10 @@ class NotificationSendCommand extends CronScript {
                 }
             } while (true);
 
+            if (!$users) {
+                break;
+            }
+
             $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
 
             $dataArray = [];
@@ -313,10 +317,6 @@ class NotificationSendCommand extends CronScript {
 
             $usersProcessed+= count($users);
             $this->log("Processed <comment>{$usersProcessed}</comment> users..");
-
-            if (!$users) {
-                break;
-            }
         }
 
         $dataArray = $result = null;
@@ -538,6 +538,9 @@ class NotificationSendCommand extends CronScript {
             if (isset($message)) {
                 return $message;
             }
+        } else {
+            $this->getCountersHelper()->set($currentUserId, 'visitors_unread', 0);
+            $this->getCountersHelper()->set($currentUserId, 'mutual_unread', 0);
         }
     }
 

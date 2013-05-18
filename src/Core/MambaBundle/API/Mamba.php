@@ -1126,6 +1126,8 @@ final class Mamba {
      * )
      */
     private function urlMultiFetch(array $urls, $chunkSize = self::MULTI_FETCH_CHUNK_SIZE) {
+        $startTime = microtime(true);
+
         $result = array();
 
         if (!count($urls)) {
@@ -1174,6 +1176,16 @@ final class Mamba {
                 curl_multi_remove_handle($mh, $ch);
             }
             curl_multi_close($mh);
+            if ($this->metricsEnabled) {
+                $this->metrics['requests'][] = array(
+                    'method'  => 'urlMultiFetch',
+                    'params'  => $urls,
+                    'timeout' => $timeout = microtime(true) - $startTime,
+                );
+
+                $this->metrics['timeout']+=$timeout;
+            }
+
             return $result;
         }
 
@@ -1183,6 +1195,7 @@ final class Mamba {
                 $result[$url] = $content;
             }
         }
+
         return $result;
     }
 
