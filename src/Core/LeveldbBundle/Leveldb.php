@@ -157,7 +157,7 @@ class Leveldb {
         }
 
         $errorNumber = $errorString = null;
-        if ($masterConnection = fsockopen($this->master['host'], (int) $this->master['port'], $errorNumber, $errorString, $this->master['timeout'])) {
+        if ($masterConnection = @fsockopen($this->master['host'], (int) $this->master['port'], $errorNumber, $errorString, $this->master['timeout'])) {
             return $this->master['connection'] = $masterConnection;
         } else {
             throw new LeveldbException("Could not connect to master {$this->master['host']}:{$this->master['port']}, '{$errorString}'", $errorNumber);
@@ -170,7 +170,7 @@ class Leveldb {
         }
 
         $errorNumber = $errorString = null;
-        if ($slaveConnection = fsockopen($this->slave['host'], (int) $this->slave['port'], $errorNumber, $errorString, $this->slave['timeout'])) {
+        if ($slaveConnection = @fsockopen($this->slave['host'], (int) $this->slave['port'], $errorNumber, $errorString, $this->slave['timeout'])) {
             return $this->slave['connection'] = $slaveConnection;
         } elseif ($masterConnection = $this->getMasterConnection()) {
             return $this->slave['connection'] = $masterConnection;
