@@ -106,6 +106,22 @@ class Leveldb {
     }
 
     /**
+     * Reconnect helper
+     *
+     */
+    public function closeConnections() {
+        if (isset($this->master['connection']) && $this->master['connection']) {
+            @fclose($this->master['connection']);
+            unset($this->master['connection']);
+        }
+
+        if (isset($this->slave['connection']) && $this->slave['connection']) {
+            @fclose($this->slave['connection']);
+            unset($this->slave['connection']);
+        }
+    }
+
+    /**
      * Metrics enabler
      *
      * @param bool $enabled

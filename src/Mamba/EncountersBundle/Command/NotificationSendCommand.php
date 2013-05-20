@@ -164,6 +164,7 @@ class NotificationSendCommand extends CronScript {
                 } catch (LeveldbException $e) {
                     // попробуем еще раз через 3 сек
                     $this->log("Leveldb error while getting users", 16);
+                    $this->getLeveldb()->closeConnections();
                     sleep(3);
                 }
             } while (true);
@@ -188,6 +189,7 @@ class NotificationSendCommand extends CronScript {
                 } catch (LeveldbException $e) {
                     // попробуем еще раз через 3 сек
                     $this->log("Leveldb error while getting variables", 16);
+                    $this->getLeveldb()->closeConnections();
                     sleep(3);
                 }
 
@@ -209,6 +211,7 @@ class NotificationSendCommand extends CronScript {
                 } catch (LeveldbException $e) {
                     // попробуем еще раз через 3 сек
                     $this->log("Leveldb error while getting counters", 16);
+                    $this->getLeveldb()->closeConnections();
                     sleep(3);
                 }
             } while (true);
