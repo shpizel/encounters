@@ -155,8 +155,8 @@ class BillingController extends ApplicationController {
                 );
 
                 $extra = '';
-                if (isset($billingParams['extra'])) {
-                    $extra = $billingParams['extra'];
+                if (isset($postParams['extra'])) {
+                    $extra = $postParams['extra'];
                 }
 
                 $extraJSON = @json_decode($extra, true);
