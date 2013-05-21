@@ -21,7 +21,10 @@ $Layers.$EnergyLayer = {
                     $("div#overflow").hide();
                     $("div.app-layer").hide();
                 } else if ($data.status == 3) {
-                    $Layers.showAccountLayer({'status': $data.status});
+                    //$Layers.showAccountLayer({'status': $data.status});
+                    var $extra = {service: {id: 1}};
+                    mamba.method('pay', 1, $.toJSON($extra));
+                    location.href = $Routing.getPath("billing");
                 }
             });
 
@@ -42,6 +45,13 @@ $Layers.$EnergyLayer = {
         } else {
             $("div.layer-energy div.info-block img").attr('src', $data['small_photo_url']);
             $("div.layer-energy span.name").text($data['name']);
+        }
+
+        var $account = $Account.getAccount();
+        if ($account >= 10) {
+            $("div.layer-energy form p a").html("Получить 100% энергии за 10<i class=\"account-heart\"></i>");
+        } else {
+            $("div.layer-energy form p a").html("Получить 100% энергии за 1<i class=\"coint\"></i>");
         }
 
         $("div.layer-energy").show();

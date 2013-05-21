@@ -58,7 +58,10 @@
                 </ul>
                 <ul class="info-meet">
                     <li class="item-game{% if controller == 'search' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=search"><b>Поиск</b></a></li>
-                    {#<li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>#}
+
+                        {# Возвращаем пункт главного меню "Я выбрал" #}
+                        <li class="item-mychoice{% if controller == 'mychoice' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mychoice"><b>Я выбрал{% if webuser.anketa.info.gender == 'F' %}а{% endif %}</b>  <i>{% if webuser.stats.mychoice %}{{ webuser.stats.mychoice }}{% endif %}</i></a></li>
+
                     <li class="item-visitors{% if controller == 'visitors' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=visitors"><b>Меня смотрели</b> <i class="plus"> <b>{% if webuser.stats.visitors_unread %}+{{ webuser.stats.visitors_unread }}{% endif %}</b></i> <i>{% if webuser.stats.visitors %}{{ webuser.stats.visitors }}{% endif %}</i></a></li>
                     {% if webuser.stats.mutual_unread %}
                         <li class="item-mutual{% if controller == 'mutual' %} active{% endif %}"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=mutual"><b class="mutual_unread">

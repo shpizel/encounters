@@ -231,6 +231,10 @@ $Search = {
 
                 $data = $data.data;
                 if ($data.hasOwnProperty('counters')) {
+                    if ($data['counters']['mychoice'] > 0 ) {
+                        $('li.item-mychoice a i').eq(0).text($data['counters']['mychoice']);
+                    }
+
                     if ($data['counters']['visitors'] > 0 ) {
                         $('li.item-visitors a i').eq(1).text($data['counters']['visitors']);
                     }

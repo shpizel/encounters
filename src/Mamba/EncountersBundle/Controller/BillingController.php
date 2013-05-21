@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Controller;
 
+use Mamba\EncountersBundle\Helpers\Battery;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Core\MambaBundle\API\Mamba;
@@ -153,7 +154,17 @@ class BillingController extends ApplicationController {
                     false
                 );
 
-                if (array_key_exists((int) $amount, self::$rates)) {
+                $extra = '';
+                if (isset($billingParams['extra'])) {
+                    $extra = $billingParams['extra'];
+                }
+
+                $extraJSON = @json_decode($extra, true);
+                if ($extraJSON && $extraJSON['service']['id'] == 1 && intval($amount) == 1) {
+                    $this->getBatteryHelper()->set($webUserId, Battery::MAXIMUM_CHARGE);
+                    $this->getNotificationsHelper()->add($webUserId, "Ура! Ваша батарейка полностью заряжена!");
+                    $billed = true;
+                } elseif (array_key_exists((int) $amount, self::$rates)) {
                     $this->getAccountHelper()->incr($webUserId, $incr = self::$rates[(int) $amount]);
                     $this->getNotificationsHelper()->add($webUserId, "Ура! Ваш счет пополнен на {$incr} сердечек!");
                     $billed = true;

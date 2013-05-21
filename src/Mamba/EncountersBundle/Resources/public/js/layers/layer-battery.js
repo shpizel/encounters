@@ -21,7 +21,10 @@ $Layers.$BatteryLayer = {
                     $("div#overflow").hide();
                     $("div.app-layer").hide();
                 } else if ($data.status == 3) {
-                    $Layers.showAccountLayer({'status': $data.status});
+                    //$Layers.showAccountLayer({'status': $data.status});
+                    var $extra = {service: {id: 1}};
+                    mamba.method('pay', 1, $.toJSON($extra));
+                    location.href = $Routing.getPath("billing");
                 }
             });
 
@@ -36,16 +39,28 @@ $Layers.$BatteryLayer = {
      */
     showLayer: function($data) {
         var $charge = $Battery.getCharge();
+
         if ($charge == 0) {
             $("div.layer-battery div.battery-big").attr('class', 'battery-big empty');
             $("div.layer-battery .title").attr('class', 'title');
-            $("div.layer-battery p.center a.ui-btn").html("Получить 100% энергии за " + (5 - $Battery.getCharge())*2 + "<i class=\"account-heart\"></i>");
+
+            var $account = $Account.getAccount();
+            var $heartsNeeded = (5 - $Battery.getCharge())*2;
+            if ($account >= $heartsNeeded) {
+                $("div.layer-battery p.center a.ui-btn").html("Получить 100% энергии за " + $heartsNeeded + "<i class=\"account-heart\"></i>");
+            } else {
+                $("div.layer-battery p.center a.ui-btn").html("Получить 100% энергии за 1<i class=\"coint\"></i>");
+            }
+
             $("div.layer-battery p.center a.close").hide();
             $("div.layer-battery p.center a.ui-btn").show();
         } else if ($charge >= 0 && $charge < 5 ) {
             $("div.layer-battery div.battery-big").attr('class', 'battery-big middle');
             $("div.layer-battery .title").attr('class', 'title');
+
+            /** на потом */
             $("div.layer-battery p.center a.ui-btn").html("Пополнить до 100% за " + (5 - $Battery.getCharge())*2 + "<i class=\"account-heart\"></i>");
+
             $("div.layer-battery p.center a.close").hide();
             $("div.layer-battery p.center a.ui-btn").show();
         } else {

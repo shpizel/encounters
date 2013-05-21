@@ -230,6 +230,7 @@ class DecisionController extends ApplicationController {
             );
 
             $this->json['data']['counters'] = $this->getCountersHelper()->getMulti([$this->webUserId], [
+                'mychoice',
                 'visitors',
                 'visitors_unread',
                 'mutual',
@@ -264,7 +265,6 @@ class DecisionController extends ApplicationController {
     public function getDecisionAction() {
         if ($currentUserId = (int) $this->getRequest()->request->get('user_id')) {
             if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-
                 if ($this->getPurchasedHelper()->exists($webUserId, $currentUserId)) {
                     if ($decision = $this->getViewedQueueHelper()->get($currentUserId, $webUserId)) {
                         $decision = $decision['decision'];
@@ -277,8 +277,8 @@ class DecisionController extends ApplicationController {
                     );
 
                     $this->getStatsHelper()->incr('decision.get-battery.notrequired');
-                } elseif (($charge = (int) $this->getBatteryHelper()->get($webUserId)) || (2 <= $account = $this->getAccountHelper()->get($webUserId))) {
-                    if (!$charge) {
+                } elseif (($charge = (int) $this->getBatteryHelper()->get($webUserId))/* || (2 <= $account = $this->getAccountHelper()->get($webUserId))*/) {
+                    /*if (!$charge) {
                         $multiply = intval($account / 2);
                         if ($multiply > 5) {
                             $multiply = 5;
@@ -288,7 +288,7 @@ class DecisionController extends ApplicationController {
                         $this->getBatteryHelper()->incr($webUserId, $multiply);
 
                         $this->getStatsHelper()->incr('decision.get-battery.charge');
-                    }
+                    }*/
 
                     if ($decision = $this->getViewedQueueHelper()->get($currentUserId, $webUserId)) {
                         $decision = $decision['decision'];
