@@ -165,7 +165,7 @@ $Search = {
 //            });
 //
 //            return false;
-            var $extra = {service: {id: 1}};
+            var $extra = {service: {id: 2}};
             mamba.method('pay', 1, $.toJSON($extra));
             location.href = $Routing.getPath("billing");
 
