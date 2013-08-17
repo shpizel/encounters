@@ -164,6 +164,11 @@ class BillingController extends ApplicationController {
                     $this->getBatteryHelper()->set($webUserId, Battery::MAXIMUM_CHARGE);
                     $this->getNotificationsHelper()->add($webUserId, "Ура! Ваша батарейка полностью заряжена!");
                     $billed = true;
+                } elseif ($extraJSON && $extraJSON['service']['id'] == 2 && intval($amount) == 1) {
+                    /** покупка показов */
+                    $this->getEnergyHelper()->set($webUserId, Popularity::$levels[9]);
+                    $this->getNotificationsHelper()->add($webUserId, "Ура! Вы получите 50 внеочередных показов!");
+                    $billed = true;
                 } elseif (array_key_exists((int) $amount, self::$rates)) {
                     $this->getAccountHelper()->incr($webUserId, $incr = self::$rates[(int) $amount]);
                     $this->getNotificationsHelper()->add($webUserId, "Ура! Ваш счет пополнен на {$incr} сердечек!");

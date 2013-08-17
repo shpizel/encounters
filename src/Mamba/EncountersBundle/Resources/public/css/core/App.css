@@ -353,7 +353,11 @@
 }
 
 .info-block .message .message-help a {
-    background: url('/bundles/encounters/images/message-help.png') no-repeat left top;
+    /*background: url('/bundles/encounters/images/message-help.png') no-repeat left top;*/
+    background: #f1f1f1;
+    border-radius: 9px;
+    -moz-border-radius: 9px;
+    -webkit-border-radius: 9px;
     padding: 6px 12px;
     color: #444;
     text-decoration: none;
