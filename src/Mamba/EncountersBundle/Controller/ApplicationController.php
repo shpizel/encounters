@@ -625,6 +625,14 @@ abstract class ApplicationController extends Controller {
         $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
         $Response = $this->render($view, $parameters, $response);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+
+        $Logger = $this->get('logger');
+        if ($timeout = $parameters['generation_time'] > 1) {
+            $Logger->warn('Generation time', ['view'=>$view, 'timeout'=>round($parameters['generation_time'], 2)]);
+        } else {
+            $Logger->info('Generation time', ['view'=>$view, 'timeout'=>round($parameters['generation_time'], 4)]);
+        }
+
         return $Response;
     }
 }
