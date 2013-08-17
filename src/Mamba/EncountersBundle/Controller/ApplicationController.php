@@ -622,15 +622,16 @@ abstract class ApplicationController extends Controller {
     public function TwigResponse($view, array $parameters = array(), Response $response = null) {
         $this->updateLastAccess();
 
-        $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+        $timeout = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
         $Response = $this->render($view, $parameters, $response);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
 
-        $Logger = $this->get('logger');
-        if ($timeout = $parameters['generation_time'] > 1) {
-            $Logger->warn('Generation time', ['view'=>$view, 'timeout'=>round($parameters['generation_time'], 2)]);
-        } else {
-            $Logger->info('Generation time', ['view'=>$view, 'timeout'=>round($parameters['generation_time'], 4)]);
+        if ($timeout > 1.0 && isset($parameters['metrics'])) {
+            file_put_contents(
+                "/home/shpizel/encounters/app/logs/generation.log",
+                "View: {$view}\nGeneration time: {$parameters['generation_time']}\n-----\nMySQL: {$parameters['metrics']['mysql']['timeout']}\nRedis: {$parameters['metrics']['redis']['timeout']}\nLevelDB: {$parameters['metrics']['leveldb']['timeout']}\nMamba: {$parameters['metrics']['mamba']['timeout']}\n\n",
+                FILE_APPEND
+            );
         }
 
         return $Response;
