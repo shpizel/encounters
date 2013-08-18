@@ -18,7 +18,7 @@
                 <span class="profile-picture_col"><i>{{ profile.photos|length }}</i></span>
             </div>
 
-            {% if  profile.myself %}
+            {% if not profile.myself %}
                 <div style="position:absolute;top:260px;">
                     <a id="anketa-open" profile_id="{{ profile.info.oid }}" href="{% if purchased %}{{ platform.partner_url }}anketa.phtml?oid={{ profile.info.oid }}{% else %}#{% endif %}" class="ui-btn ui-btn-big">Открыть анкету на сайте</a>
                 </div>
