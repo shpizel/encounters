@@ -27,6 +27,35 @@ $Profile = {
             }
         });
 
+        $("a#anketa-open").click(function() {
+            if ($(this).attr('href') != '#') {
+                $(this).attr('target', '_blank');
+                return true;
+            }
+
+            $Tools.ajaxPost('decision.get', { user_id: $(this).attr('profile_id')}, function($data) {
+                if ($data.status == 0 && $data.message == "") {
+                    $data = $data.data;
+                    if ($data.hasOwnProperty('charge')) {
+                        $Battery.setCharge($data.charge);
+                    }
+
+                    if ($data.hasOwnProperty('account')) {
+                        $Account.setAccount($data.account);
+                    }
+
+                    $(this).attr('target', '_blank').attr('href', $Config.get('platform').partner_url + 'anketa.phtml?oid=' + $(this).attr('profile_id'));
+                    alert('Все хорошо. Нажмите на ссылку еще раз :)');
+                } else if ($data.status == 3) {
+                    alert('Услуга стоит 1 ячейку батарейки. Зарядите батарейку за 1 монету!');
+                    mamba.method('pay', 1, $.toJSON({service: {id: 1}}));
+                    location.href = $Routing.getPath("billing");
+                }
+            });
+
+            return false;
+        });
+
         $(".button-present").click(function() {
             $Layers.showSendGiftLayer();
         });

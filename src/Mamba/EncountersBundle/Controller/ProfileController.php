@@ -78,6 +78,7 @@ class ProfileController extends ApplicationController {
         }
 
         $dataArray['current_user_id'] = $currentUserId;
+        $dataArray['purchased'] = $this->getPurchasedHelper()->exists($webUserId, $currentUserId);
 
         $this->getStatsHelper()->incr('profile-hits');
 

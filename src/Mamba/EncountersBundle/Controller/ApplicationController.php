@@ -493,15 +493,12 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['gifts'] = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->toArray();
 
-        if ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {
+        if ($contacts = $this->getMemcache()->get("non_app_users_contacts_{$webUserId}")) {
+            $dataArray['non_app_users_contacts'] = json_decode($contacts, true);
+        } elseif ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {
             $contacts = $this->getRedis()->sMembers($redisContactsKey);
-            foreach ($contacts as $key => $userId) {
+            foreach ($contacts as &$userId) {
                 $userId = (int) $userId;
-                $contacts[$key] = $userId;
-
-//                if ($this->getVariablesObject()->get($userId, 'last_message_sent')) {
-//                    unset($contacts[$key]);
-//                }
             }
 
             $contacts = array_chunk($contacts, 100);
@@ -522,6 +519,7 @@ abstract class ApplicationController extends Controller {
 
                 if ($contacts) {
                     $dataArray['non_app_users_contacts'] = $contacts;
+                    $this->getMemcache()->set("non_app_users_contacts_{$webUserId}", json_encode($contacts), 86400);
                 }
             }
         }

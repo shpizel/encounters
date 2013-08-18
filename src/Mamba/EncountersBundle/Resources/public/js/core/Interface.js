@@ -24,8 +24,17 @@ $Interface = {
 
                 mamba.init(function() {
                     mamba.method("resize", '100%', ($documentHeight > 1000) ? $documentHeight : 1000);
+
                     mamba.on('paymentSuccess', function($data) {
                         location.href = $Routing.getPath("billing");
+                    });
+
+                    mamba.on('paymentCancel', function($data) {
+                        //payment cancelled
+                    });
+
+                    mamba.on('paymentFail', function($data) {
+                        //payment failed
                     });
 
                     var $dimensionsSetterFunction = function ($data) {

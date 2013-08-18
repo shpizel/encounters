@@ -12,9 +12,17 @@
 {% block body %}
 
     <div class="profile">
-        <div class="profile-picture">
-            <img class="user_info-avatar" src="{{ profile.info.square_photo_url }}">
-            <span class="profile-picture_col"><i>{{ profile.photos|length }}</i></span>
+        <div style="position: relative; float:left;width:250px;">
+            <div class="profile-picture">
+                <img class="user_info-avatar" src="{{ profile.info.square_photo_url }}">
+                <span class="profile-picture_col"><i>{{ profile.photos|length }}</i></span>
+            </div>
+
+            {% if  profile.myself %}
+                <div style="position:absolute;top:260px;">
+                    <a id="anketa-open" profile_id="{{ profile.info.oid }}" href="{% if purchased %}{{ platform.partner_url }}anketa.phtml?oid={{ profile.info.oid }}{% else %}#{% endif %}" class="ui-btn ui-btn-big">Открыть анкету на сайте</a>
+                </div>
+            {% endif %}
         </div>
 
         <div class="anketa-content">
