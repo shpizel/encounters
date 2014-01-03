@@ -12,6 +12,8 @@ use Core\MambaBundle\API\Search;
 
 use Core\MambaBundle\Helpers\PlatformSettings;
 
+use Core\RedisBundle\Redis;
+
 /**
  * Mamba
  *
@@ -822,6 +824,9 @@ final class Mamba {
             $method = explode("\\", $method);
             $method = array_pop($method);
         }
+
+        // Запишем метод в статистику
+        $this->getRedis()->hIncrBy('mamba-platform-execution-frequently-' . date("dmy"), $method, 1);
 
         if (!$this->noCacheMode) {
             if ($cacheResult = $this->getCache($method, $params)) {

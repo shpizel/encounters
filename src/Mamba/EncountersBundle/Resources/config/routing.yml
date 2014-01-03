@@ -249,8 +249,8 @@ admin.fpm:
 
 
 admin.platform:
-    pattern: /admin/monitoring/platform
-    defaults: { _controller: EncountersBundle:AdminPlatform:index }
+    pattern: /admin/monitoring/platform/{limit}
+    defaults: { _controller: EncountersBundle:AdminPlatform:index, limit: 10 }
     requirements:
         _method: GET
 

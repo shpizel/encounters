@@ -2,7 +2,30 @@
 {% block title %}Платформа приложений{% endblock %}
 
 {% block content %}
-    <h2>Платформа приложений</h2>
+    <div class="span4">
+        <h3>Платформа приложений</h3>
+        {% if items %}
+            {% for item in items %}
+                <h4>{{ item.date }}</h4>
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <th>Метод</th>
+                    <th>Количество вызовов</th>
+                    </thead>
 
-    in development
-{%  endblock %}
+                    {% for method, counter in item %}
+                        {% if method != 'date' and method != 'ts' %}
+                            <tr>
+                                <td>{{ method }}</td>
+                                <td>{{ counter }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+
+                </table>
+            {% endfor %}
+        {% else %}
+            Информация по платформе недоступна.
+        {% endif %}
+    </div>
+{% endblock %}
