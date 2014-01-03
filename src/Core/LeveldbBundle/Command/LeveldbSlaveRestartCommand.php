@@ -42,7 +42,7 @@ class LeveldbSlaveRestartCommand extends Script {
          * @var array
          */
         $startCommands = array(
-            'prod' => '/home/shpizel/leveldb-daemon/release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=3 --threads_udp=3 --memory=24576 --buffer=128 --replication.host=memory1 --replication.id=memory1 --port=22510',
+            'prod' => '/home/shpizel/leveldb-daemon/release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=3 --threads_udp=3 --memory=8096 --buffer=128 --replication.host=memory1 --replication.id=memory1 --port=22510',
         )
     ;
 

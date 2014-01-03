@@ -42,8 +42,8 @@ class LeveldbMasterRestartCommand extends Script {
          * @var array
          */
         $startCommands = array(
-            'prod' => '/home/shpizel/leveldb-daemon/release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=40960 --port=22510',
-            'dev'  => '/home/shpizel/leveldb-daemon/release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=40960 --port=22510',
+            'prod' => '/home/shpizel/leveldb-daemon/release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=8096 --port=22510',
+            'dev'  => '/home/shpizel/leveldb-daemon/release/leveldb.json --db=/home/shpizel/leveldb.json --log_file=/home/shpizel/leveldb.log --daemonize=1 --threads_tcp=10 --threads_udp=3 --buffer=128 --memory=8096 --port=22510',
         )
     ;
 
