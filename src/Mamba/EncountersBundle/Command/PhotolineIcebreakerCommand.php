@@ -41,7 +41,7 @@ class PhotolineIcebreakerCommand extends CronScript {
             FROM
                 `User` u
             INNER JOIN
-                `Energy` e
+                `UserEnergy` e
             ON
                 u.user_id = e.user_id AND
                 u.region_id = :region_id AND

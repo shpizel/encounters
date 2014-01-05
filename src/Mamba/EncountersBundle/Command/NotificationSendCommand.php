@@ -56,7 +56,7 @@ class NotificationSendCommand extends CronScript {
 				(UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400 as `lastaccess-was-ago`
             FROM
                 `Notifications` n
-            LEFT JOIN Energy e
+            LEFT JOIN UserEnergy e
                 ON e.user_id = n.user_id
             LEFT JOIN Billing b
                 ON b.user_id = n.user_id

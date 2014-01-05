@@ -40,7 +40,7 @@ class SearchQueueUpdateCommand extends CronScript {
             FROM
                 Encounters.User u
             INNER JOIN
-                Encounters.Energy e
+                Encounters.UserEnergy e
             ON
                 e.user_id = u.user_id
             WHERE
@@ -73,7 +73,7 @@ class SearchQueueUpdateCommand extends CronScript {
             FROM
                 Encounters.User u
             INNER JOIN
-                Encounters.Energy e
+                Encounters.UserEnergy e
             ON
                 e.user_id = u.user_id
             WHERE
@@ -104,7 +104,7 @@ class SearchQueueUpdateCommand extends CronScript {
             FROM
                 Encounters.User u
             INNER JOIN
-                Encounters.Energy e
+                Encounters.UserEnergy e
             ON
                 e.user_id = u.user_id
             WHERE

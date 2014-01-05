@@ -69,6 +69,13 @@ class EncountersBundle extends Bundle {
         GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME = 'database:decisions:process',
 
         /**
+         * Имя функции для обновления пользовательских счетчиков
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME = 'database:user:counters:update',
+
+        /**
          * Имя функции для обновления таблицы энергий
          *
          * @var str

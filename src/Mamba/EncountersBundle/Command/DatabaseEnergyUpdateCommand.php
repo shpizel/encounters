@@ -35,7 +35,7 @@ class DatabaseEnergyUpdateCommand extends CronScript {
          */
         SQL_ENERGY_UPDATE = "
             INSERT INTO
-                Encounters.Energy
+                Encounters.UserEnergy
             SET
                 `user_id` = :user_id,
                 `energy`  = :energy

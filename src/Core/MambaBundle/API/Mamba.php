@@ -828,7 +828,7 @@ final class Mamba {
         }
 
         // Запишем метод в статистику
-        $this->getRedis()->hIncrBy('mamba-platform-execution-frequently-' . date("dmy"), $method, 1);
+        /** чушь $this->getRedis()->hIncrBy('mamba-platform-execution-frequently-' . date("dmy"), $method, 1);*/
 
         if (!$this->noCacheMode) {
             if ($cacheResult = $this->getCache($method, $params)) {
