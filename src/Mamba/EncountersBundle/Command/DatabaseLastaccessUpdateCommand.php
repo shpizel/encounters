@@ -30,7 +30,7 @@ class DatabaseLastaccessUpdateCommand extends CronScript {
         SCRIPT_NAME = "cron:database:lastaccess:update",
 
         /**
-         * SQL-запрос обновления таблицы юзеров
+         * SQL-запрос обновления таблицы UserLastAccess
          *
          * @var str
          */
@@ -42,6 +42,21 @@ class DatabaseLastaccessUpdateCommand extends CronScript {
                 `lastaccess` = :lastaccess
             ON DUPLICATE KEY UPDATE
                 `lastaccess` = :lastaccess
+        ",
+
+        /**
+         * SQL-запрос обновления таблицы UserLastOnline
+         *
+         * @var str
+         */
+        SQL_USER_LAST_ONLINE_UPDATE = "
+            INSERT INTO
+                Encounters.UserLastOnline
+            SET
+                `user_id`     = :user_id,
+                `last_online` = :last_online
+            ON DUPLICATE KEY UPDATE
+                `last_online` = :last_online
         "
     ;
 
@@ -95,13 +110,20 @@ class DatabaseLastaccessUpdateCommand extends CronScript {
 
         $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_LASTACCESS_UPDATE);
         $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
-        $stmt->bindValue('lastaccess', $_lastAccess = (int)$this->getVariablesHelper()->get($userId, 'lastaccess'), PDO::PARAM_INT);
+        $stmt->bindValue('lastaccess', $_lastAccess = (int) $this->getVariablesHelper()->get($userId, 'lastaccess'), PDO::PARAM_INT);
 
-        $result = $stmt->execute();
-        if (!$result) {
-            throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
+        if (!($result = $stmt->execute())) {
+            throw new \Core\ScriptBundle\CronScriptException('Unable to store data to UserLastAccess');
         } else {
-            $this->getMemcache()->delete("lastaccess_update_lock_by_user_" . $userId);
+            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_LAST_ONLINE_UPDATE);
+            $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindValue('last_online', $_lastOnline = (int) $this->getVariablesHelper()->get($userId, 'lastaccess'), PDO::PARAM_INT);
+
+            if (!$result = $stmt->execute()) {
+                throw new \Core\ScriptBundle\CronScriptException('Unable to store data to UserLastOnline');
+            } else {
+                $this->getMemcache()->delete("lastaccess_update_lock_by_user_" . $userId);
+            }
         }
     }
 }
