@@ -82,12 +82,12 @@ class DatabaseUserTrafficSourcesUpdateCommand extends CronScript {
             INSERT INTO
                 `Encounters`.`UserTrafficSources`
             SET
-                `user_id`             = :user_id,
-                `from_{$source}`      = 1,
-                `last_from_{$source}` = NOW()
+                `user_id`              = :user_id,
+                `from_{$source}_count` = 1,
+                `last_from_{$source}`  = NOW()
             ON DUPLICATE KEY UPDATE
-                `from_{$source}` = `from_{$source}` + 1,
-                `last_from_{$source}` = NOW()
+                `from_{$source}_count` = `from_{$source}_count` + 1,
+                `last_from_{$source}`  = NOW()
         ");
 
         $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
