@@ -20,7 +20,7 @@ class DatabaseUserCountersUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Updates users counters",
+        SCRIPT_DESCRIPTION = "Update users counters",
 
         /**
          * Имя скрипта

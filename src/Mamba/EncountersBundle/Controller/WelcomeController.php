@@ -102,7 +102,25 @@ class WelcomeController extends ApplicationController {
                     return $Response;
                 } elseif (in_array($extra, ['ref-notifications', 'ref-achievement'])) {
                     $this->getStatsHelper()->incr($extra);
+
+                    $this->getGearman()->getClient()->doLowBackground(
+                        EncountersBundle::GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME,
+                        serialize($dataArray = array(
+                            'user_id' => $webUserId,
+                            'source'  => ($extra == 'ref-notifications') ? 'notifications' : 'achievements',
+                            'time'    => time(),
+                        ))
+                    );
                 }
+            } else {
+                $this->getGearman()->getClient()->doLowBackground(
+                    EncountersBundle::GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME,
+                    serialize($dataArray = array(
+                        'user_id' => $webUserId,
+                        'source'  => 'others',
+                        'time'    => time(),
+                    ))
+                );
             }
 
             return $this->TwigResponse('EncountersBundle:templates:login.html.twig');

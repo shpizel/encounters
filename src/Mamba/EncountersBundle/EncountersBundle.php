@@ -76,6 +76,13 @@ class EncountersBundle extends Bundle {
         GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME = 'database:user:counters:update',
 
         /**
+         * Имя функции для обновления пользовательских источников траффика
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME = 'database:user:traffic:sources:update',
+
+        /**
          * Имя функции для обновления таблицы энергий
          *
          * @var str
