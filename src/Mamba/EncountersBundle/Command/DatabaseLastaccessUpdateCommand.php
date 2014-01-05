@@ -36,12 +36,12 @@ class DatabaseLastaccessUpdateCommand extends CronScript {
          */
         SQL_USER_LASTACCESS_UPDATE = "
             INSERT INTO
-                Encounters.LastAccess
+                Encounters.UserLastAccess
             SET
                 `user_id`     = :user_id,
-                `lastaccess`  = :lastaccess
+                `lastaccess` = :lastaccess
             ON DUPLICATE KEY UPDATE
-                `lastaccess`  = :lastaccess
+                `lastaccess` = :lastaccess
         "
     ;
 

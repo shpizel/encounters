@@ -570,8 +570,8 @@ abstract class ApplicationController extends Controller {
         if ($webUserId = (int) $Session->get(Mamba::SESSION_USER_ID_KEY)) {
             $this->getVariablesHelper()->set($webUserId, 'lastaccess', time());
 
-            $this->getMemcache()->add("lastaccess_update_lock_by_user_" . $webUserId, time(), 750) &&
-                $this->getGearman()->getClient()->doHighBackground(
+            $this->getMemcache()->add("lastaccess_update_lock_by_user_" . $webUserId, time(), 60*15) &&
+                $this->getGearman()->getClient()->do(
                     EncountersBundle::GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME,
                     serialize(
                         array(
@@ -623,14 +623,6 @@ abstract class ApplicationController extends Controller {
         $timeout = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
         $Response = $this->render($view, $parameters, $response);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-
-        if ($timeout > 1.0 && isset($parameters['metrics'])) {
-            file_put_contents(
-                "/home/shpizel/encounters/app/logs/generation.log",
-                "View: {$view}\nGeneration time: {$parameters['generation_time']}\n-----\nMySQL: {$parameters['metrics']['mysql']['timeout']}\nRedis: {$parameters['metrics']['redis']['timeout']}\nLevelDB: {$parameters['metrics']['leveldb']['timeout']}\nMamba: {$parameters['metrics']['mamba']['timeout']}\n\n",
-                FILE_APPEND
-            );
-        }
 
         return $Response;
     }

@@ -20,12 +20,9 @@ class WelcomeController extends ApplicationController {
      * @return \Symfony\Bundle\FrameworkBundle\Controller\RedirectResponse|\Symfony\Bundle\FrameworkBundle\Controller\Response
      */
     public function indexAction() {
-        /** Debug 500 page */
-//        return $this->render('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
-
-        $Request  = $this->getRequest();
-        $Session  = $this->getSession();
-        $Mamba    = $this->getMamba();
+        $Request = $this->getRequest();
+        $Session = $this->getSession();
+        $Mamba   = $this->getMamba();
 
         $getPlatformParams = array();
         $getParams = $Request->query->all();
@@ -57,6 +54,9 @@ class WelcomeController extends ApplicationController {
             $Session->set(Mamba::SESSION_USER_ID_KEY, $webUserId);
             $Session->set('platform_settings', $getPlatformParams);
 
+            /**
+             * @todo: выяснить что это за хуйня
+             */
             $lastAccessTime = $this->getVariablesHelper()->get($webUserId, 'lastaccess');
             if (time() - $lastAccessTime > 8*3600) {
                 $this->getGearman()->getClient()->doLowBackground(EncountersBundle::GEARMAN_ACHIEVEMENT_SET_FUNCTION_NAME, serialize(array(

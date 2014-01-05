@@ -83,7 +83,7 @@ class MessengerCountersUpdateCommand extends CronScript {
     }
 
     /**
-     * Обновление таблицы Lastaccess
+     * Обновление счетчиков
      *
      * @param $job
      */

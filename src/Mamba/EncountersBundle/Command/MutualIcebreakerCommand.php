@@ -69,7 +69,7 @@ class MutualIcebreakerCommand extends CronScript {
     }
 
     /**
-     * Обновление таблицы Lastaccess
+     * Отправка сообщения
      *
      * @param $job
      */

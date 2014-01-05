@@ -30,11 +30,11 @@ assetic:
     filters:
         cssrewrite: ~
         closure:
-            jar: %kernel.root_dir%/Resources/compilers/google-closure-compiler.jar
+            jar: %kernel.root_dir%/Resources/compilers/compiler.jar
         yui_css:
-            jar: %kernel.root_dir%/Resources/compilers/yui-compressor.jar
+            jar: %kernel.root_dir%/Resources/compilers/yuicompressor-2.4.8.jar
         yui_js:
-            jar: %kernel.root_dir%/Resources/compilers/yui-compressor.jar
+            jar: %kernel.root_dir%/Resources/compilers/yuicompressor-2.4.8.jar
 
 # Doctrine Configuration
 doctrine:

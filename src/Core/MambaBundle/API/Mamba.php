@@ -406,14 +406,16 @@ final class Mamba {
          * @var array
          */
         $sidRequiredMethods = array(
+            'anketa.inFavourites',
+            'anketa.getHitlist',
+            'anketa.isAppOwner',
+
+            'achievement.set',
+
             'contacts.sendMessage',
             'contacts.getContactList',
             'contacts.getFolderContactList',
             'contacts.getFolderList',
-            'anketa.inFavourites',
-            'anketa.getHitlist',
-            'achievement.set',
-            'anketa.isAppOwner',
         ),
 
         /**
