@@ -571,7 +571,7 @@ abstract class ApplicationController extends Controller {
             $this->getVariablesHelper()->set($webUserId, 'lastaccess', time());
 
             $this->getMemcache()->add("lastaccess_update_lock_by_user_" . $webUserId, time(), 60*15) &&
-                $this->getGearman()->getClient()->do(
+                $this->getGearman()->getClient()->doLowBackground(
                     EncountersBundle::GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME,
                     serialize(
                         array(

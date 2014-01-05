@@ -185,13 +185,15 @@ class Counters extends Helper {
         if ($Request->getResult() === true) {
 
             /** Ставим задачу на обновление пользовательских счетчиков в БД */
-            $this->getGearman()->getClient()->doLowBackground(
-                EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
-                serialize($dataArray = array(
-                    'user_id' => $userId,
-                    'time'    => time(),
-                ))
-            );
+            $this->getMemcache()->add("user_counters_update_lock_by_user_" . $userId, time(), 60*15) &&
+                $this->getGearman()->getClient()->doLowBackground(
+                    EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
+                    serialize($dataArray = array(
+                        'user_id' => $userId,
+                        'time'    => time(),
+                    ))
+                )
+            ;
 
             return true;
         }
@@ -225,13 +227,15 @@ class Counters extends Helper {
         $LevelDb->execute();
 
         /** Ставим задачу на обновление пользовательских счетчиков в БД */
-        $this->getGearman()->getClient()->doLowBackground(
-            EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
-            serialize($dataArray = array(
-                'user_id' => $userId,
-                'time'    => time(),
-            ))
-        );
+        $this->getMemcache()->add("user_counters_update_lock_by_user_" . $userId, time(), 60*15) &&
+            $this->getGearman()->getClient()->doLowBackground(
+                EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
+                serialize($dataArray = array(
+                    'user_id' => $userId,
+                    'time'    => time(),
+                ))
+            )
+        ;
 
         if (($result = $Request->getResult()) && isset($result[$leveldbKey])) {
             return $result[$leveldbKey];
