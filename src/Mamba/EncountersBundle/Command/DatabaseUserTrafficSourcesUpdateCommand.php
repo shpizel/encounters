@@ -85,10 +85,9 @@ class DatabaseUserTrafficSourcesUpdateCommand extends CronScript {
                 `user_id`             = :user_id,
                 `from_{$source}`      = 1,
                 `last_from_{$source}` = NOW()
-            ON DUPLICATE KEY
+            ON DUPLICATE KEY UPDATE
                 `from_{$source}` = `from_{$source}` + 1,
                 `last_from_{$source}` = NOW()
-
         ");
 
         $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
