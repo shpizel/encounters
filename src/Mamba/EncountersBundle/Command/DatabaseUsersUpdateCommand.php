@@ -79,7 +79,7 @@ class DatabaseUsersUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>" . count($users) . "</info> users");
 
-        $usersData = $this->getUsersHelper()->getInfo($users, true);
+        $usersData = $this->getUsersHelper()->getInfo($users, true, 5);
 
         /** закешируем информацию */
         foreach ($usersData as $userId => $userData) {

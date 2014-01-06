@@ -108,6 +108,7 @@ class Users extends Helper {
     public function getInfo(
         $users,
         $skipDatabase = false,
+        $apiRetryCount = 1,
         $blocks = [
             'info',
             'avatar',
@@ -340,7 +341,16 @@ class Users extends Helper {
 
         if ($users) {
             $Mamba = $this->getMamba();
-            if ($platformResult = $Mamba->Anketa()->getInfo($users)) {
+
+            foreach (range(1, $apiRetryCount) as $try) {
+                try {
+                    $platformResult = $Mamba->Anketa()->getInfo($users);
+                } catch (\Exception $e) {
+                    sleep(1);
+                }
+            }
+
+            if ($platformResult) {
 
                 /**
                  * Multi prefetch albums and photos
