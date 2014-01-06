@@ -102,7 +102,7 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
             }
 
             if ($users) {
-                if ($apiResult = $this->getMamba()->Anketa()->isOnline($users)) {
+                if ($apiResult = $this->getMamba()->nocache()->Anketa()->isOnline($users)) {
                     foreach ($apiResult as $dataArray) {
                         $userId = (int) $dataArray['anketa_id'];
                         $lastOnline = (int) $dataArray['is_online'];

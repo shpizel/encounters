@@ -94,7 +94,7 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME = 'database:user:update',
+        GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME = 'database:users:update',
 
         /**
          * Имя функции для обновления онлайн-юзеров

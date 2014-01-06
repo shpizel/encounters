@@ -24,6 +24,7 @@ use Mamba\EncountersBundle\Helpers\Stats;
 use Mamba\EncountersBundle\Helpers\Variables;
 use Mamba\EncountersBundle\Helpers\Account;
 use Mamba\EncountersBundle\Helpers\Photoline;
+use Mamba\EncountersBundle\Helpers\Users;
 
 use Core\MambaBundle\API\Mamba;
 use Core\GearmanBundle\Gearman;
@@ -120,7 +121,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Battery getter
+     * Battery helper getter
      *
      * @return Battery
      */
@@ -133,7 +134,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Photoline getter
+     * Photoline helper getter
      *
      * @return Photoline
      */
@@ -194,7 +195,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Energy getter
+     * Energy helper getter
      *
      * @return Energy
      */
@@ -207,7 +208,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Search preferences getter
+     * Search preferences helper getter
      *
      * @return SearchPreferences
      */
@@ -220,7 +221,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Platform settings getter
+     * Platform settings helper getter
      *
      * @return PlatformSettings
      */
@@ -233,7 +234,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Contacts queue getter
+     * Contacts queue helper getter
      *
      * @return ContactsQueue
      */
@@ -246,7 +247,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Current queue getter
+     * Current queue helper getter
      *
      * @return CurrentQueue
      */
@@ -259,7 +260,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Hitlist queue getter
+     * Hitlist queue helper getter
      *
      * @return HitlistQueue
      */
@@ -272,7 +273,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Priority queue getter
+     * Priority queue helper getter
      *
      * @return PriorityQueue
      */
@@ -285,7 +286,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Search queue getter
+     * Search queue helper getter
      *
      * @return SearchQueue
      */
@@ -298,7 +299,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Viewed queue getter
+     * Viewed queue helper getter
      *
      * @return ViewedQueue
      */
@@ -311,7 +312,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Counters object getter
+     * Counters helper getter
      *
      * @return Counters
      */
@@ -324,7 +325,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Notifications object getter
+     * Notifications helper getter
      *
      * @return Notifications
      */
@@ -337,7 +338,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Services object getter
+     * Services helper getter
      *
      * @return Services
      */
@@ -350,7 +351,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Purchased object getter
+     * Purchased helper getter
      *
      * @return Purchased
      */
@@ -363,7 +364,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Stats object getter
+     * Stats helper getter
      *
      * @return Stats
      */
@@ -376,7 +377,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Variables object getter
+     * Variables helper getter
      *
      * @return Variables
      */
@@ -389,7 +390,20 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Account object getter
+     * Users helper getter
+     *
+     * @return Users
+     */
+    public function getUsersHelper() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Users($this->container);
+    }
+
+    /**
+     * Account helper getter
      *
      * @return Account
      */
@@ -402,7 +416,7 @@ abstract class ApplicationController extends Controller {
     }
 
     /**
-     * Popularity object getter
+     * Popularity helper getter
      *
      * @return Popularity
      */

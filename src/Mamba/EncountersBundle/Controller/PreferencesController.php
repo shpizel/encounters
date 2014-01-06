@@ -40,16 +40,11 @@ class PreferencesController extends ApplicationController {
             $this->getSearchPreferencesHelper()->set($webUserId, $searchPreferences);
 
             $this->getGearman()->getClient()->doHighBackground(
-                EncountersBundle::GEARMAN_DATABASE_USER_UPDATE_FUNCTION_NAME,
+                EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
-                        'user_id'     => $webUserId,
-                        'gender'      => $webUserAnketa[0]['info']['gender'],
-                        'orientation' => intval($webUserAnketa[0]['info']['gender'] != $searchPreferences['gender']),
-                        'age'         => $webUserAnketa[0]['info']['age'],
-                        'country_id'  => $searchPreferences['geo']['country_id'],
-                        'region_id'   => $searchPreferences['geo']['region_id'],
-                        'city_id'     => $searchPreferences['geo']['city_id'],
+                        'users' => [$webUserId],
+                        'time'  => time(),
                     )
                 )
             );

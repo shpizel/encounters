@@ -5,6 +5,9 @@ use Core\RedisBundle\Redis;
 use Core\MemcacheBundle\Memcache;
 use Core\GearmanBundle\Gearman;
 use Core\LeveldbBundle\Leveldb;
+use Core\MambaBundle\API\Mamba;
+
+use Doctrine\ORM\EntityManager;
 
 /**
  * Helper
@@ -84,5 +87,14 @@ abstract class Helper {
      */
     public function getEntityManager() {
         return $this->getDoctrine()->getEntityManager();
+    }
+
+    /**
+     * Mamba getter
+     *
+     * @return Mamba
+     */
+    public function getMamba() {
+        return $this->Container->get('mamba');
     }
 }

@@ -28,6 +28,7 @@ use Mamba\EncountersBundle\Helpers\Variables;
 use Mamba\EncountersBundle\Helpers\Account;
 use Mamba\EncountersBundle\Helpers\Photoline;
 use Mamba\EncountersBundle\Helpers\Gifts;
+use Mamba\EncountersBundle\Helpers\Users;
 
 use Mamba\EncountersBundle\Helpers\Messenger\Messages;
 use Mamba\EncountersBundle\Helpers\Messenger\Contacts;
@@ -77,7 +78,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Purchased object getter
+     * Purchased helper getter
      *
      * @return Purchased
      */
@@ -90,7 +91,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Variables object getter
+     * Variables helper getter
      *
      * @return Variables
      */
@@ -103,7 +104,20 @@ trait ScriptTrait {
     }
 
     /**
-     * Account object getter
+     * Users helper getter
+     *
+     * @return Users
+     */
+    public function getUsersHelper() {
+        if (isset(self::$Instances[__FUNCTION__])) {
+            return self::$Instances[__FUNCTION__];
+        }
+
+        return self::$Instances[__FUNCTION__] = new Users($this->getContainer());
+    }
+
+    /**
+     * Account helper getter
      *
      * @return Account
      */
@@ -116,7 +130,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Notifications object getter
+     * Notifications helper getter
      *
      * @return Notifications
      */
@@ -129,7 +143,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Popularity object getter
+     * Popularity helper getter
      *
      * @return Popularity
      */
@@ -142,7 +156,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Battery getter
+     * Battery helper getter
      *
      * @return Battery
      */
@@ -168,7 +182,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Photoline getter
+     * Photoline helper getter
      *
      * @return Photoline
      */
@@ -181,7 +195,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Energy getter
+     * Energy helper getter
      *
      * @return Energy
      */
@@ -194,7 +208,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Search preferences getter
+     * Search preferences helper getter
      *
      * @return SearchPreferences
      */
@@ -220,7 +234,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Contacts queue getter
+     * Contacts queue helper getter
      *
      * @return ContactsQueue
      */
@@ -246,7 +260,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Current queue getter
+     * Current queue helper getter
      *
      * @return CurrentQueue
      */
@@ -259,7 +273,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Hitlist queue getter
+     * Hitlist queue helper getter
      *
      * @return HitlistQueue
      */
@@ -272,7 +286,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Priority queue getter
+     * Priority queue helper getter
      *
      * @return PriorityQueue
      */
@@ -285,7 +299,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Search queue getter
+     * Search queue helper getter
      *
      * @return SearchQueue
      */
@@ -298,7 +312,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Viewed queue getter
+     * Viewed queue helper getter
      *
      * @return ViewedQueue
      */
@@ -311,7 +325,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Counters object getter
+     * Counters helper getter
      *
      * @return Counters
      */
@@ -324,7 +338,7 @@ trait ScriptTrait {
     }
 
     /**
-     * Stats object getter
+     * Stats helper getter
      *
      * @return Stats
      */

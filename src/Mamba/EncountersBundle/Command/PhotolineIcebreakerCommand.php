@@ -68,7 +68,7 @@ class PhotolineIcebreakerCommand extends CronScript {
 
                 if (!($photolineKeys = $this->getMemcache()->get('photoline-keys'))) {
                     $photolineKeys = $nodeConnection->keys(str_replace("%d", "*", Photoline::REDIS_PHOTOLINE_KEY));
-                    $this->getMemcache()->set('photoline-keys', $photolineKeys, 3600);
+                    $this->getMemcache()->set('photoline-keys', $photolineKeys, 3600*12);
                 }
 
                 if ($photolineKeys) {

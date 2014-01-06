@@ -8,6 +8,8 @@ use Mamba\EncountersBundle\Helpers\Messenger\Message;
 use Mamba\EncountersBundle\EncountersBundle;
 use Mamba\EncountersBundle\Helpers\SearchPreferences;
 
+use PDO;
+
 /**
  * AACommand
  *
@@ -38,21 +40,39 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        $CountersHelper = $this->getCountersHelper();
+        print_r($this->getUsersHelper()->getInfo([560015854,679658402]));
+        exit();
+        var_dump($this->getMamba()->Anketa()->getInfo('shpizel'));
+
+        exit();
+        $VariablesHepler = $this->getVariablesHelper();
         $counter = 0;
 
         while ($users = $this->getUsers(5000)) {
-            foreach ($users as $userId) {
-                $userId = (int) $userId;
-                $this->getMemcache()->add("user_counters_update_lock_by_user_" . $userId, time(), 60*15) &&
-                    $this->getGearman()->getClient()->doLowBackground(
-                        EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
-                        serialize($dataArray = array(
-                            'user_id' => $userId,
-                            'time'    => time(),
-                        ))
-                    )
-                ;
+            if ($variables = $VariablesHepler->getMulti(
+                $users,
+                ['last_notification_sent', 'last_notification_metrics']
+            )) {
+                $sql = ["INSERT INTO `Encounters`.`UserNotifications`(`user_id`, `last_notification_sent`, `last_notification_metrics`) VALUES"];
+                foreach ($variables as $userId=>$vars) {
+                    $_lastNotificationSent = (int) $vars['last_notification_sent'];
+                    $_lastNotificationMetrics = $vars['last_notification_metrics'];
+
+                    if ($_lastNotificationSent) {
+                        $sql[] = "({$userId}, FROM_UNIXTIME({$_lastNotificationSent}), '{$_lastNotificationMetrics}'),";
+                    }
+                }
+
+                $sql[count($sql) - 1] = substr($sql[count($sql) - 1], 0, -1);
+
+                $sql[] = ";";
+
+                $sql = implode("\n", $sql);
+
+                var_dump($this->getEntityManager()->getConnection()->exec($sql));
+
+                $counter+=5000;
+                $this->log($counter);
             }
         }
     }
