@@ -74,7 +74,7 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
                     FROM
                         `Encounters`.`UserLastOnline`
                     WHERE
-                        `updated` < DATE_SUB(NOW(), INTERVAL 6 HOUR)
+                        `changed` < DATE_SUB(NOW(), INTERVAL 6 HOUR)
                     LIMIT
                         30
                     FOR UPDATE

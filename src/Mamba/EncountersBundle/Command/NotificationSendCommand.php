@@ -41,39 +41,56 @@ class NotificationSendCommand extends CronScript {
          */
         GET_NOTIFICATIONS_SQL = "
             SELECT
-                n.user_id,
-                FROM_UNIXTIME(n.lastaccess) as `lastaccess`,
-                FROM_UNIXTIME(n.last_online) as `last_online`,
-                FROM_UNIXTIME(n.last_outgoing_decision) as `last_outgoing_decision`,
-                FROM_UNIXTIME(n.last_notification_sent) as `last_notification_sent`,
-                n.last_notification_metrics,
-                n.visitors_unread,
-                n.mutual_unread,
-                n.messages_unread,
-                e.energy as `energy`,
-                sum(b.amount) as `amount`,
-                (UNIX_TIMESTAMP(NOW()) - IFNULL(`last_online`, 0))/86400 as `last-online-was-ago`,
-				(UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400 as `lastaccess-was-ago`
-            FROM
-                `Notifications` n
-            LEFT JOIN UserEnergy e
-                ON e.user_id = n.user_id
-            LEFT JOIN Billing b
-                ON b.user_id = n.user_id
-            WHERE
-                n.last_online AND
-                (NOT n.last_notification_sent OR n.last_notification_sent < n.last_online) AND
-                (n.lastaccess AND n.lastaccess < n.last_online) AND
-                (NOT n.last_notification_sent OR UNIX_TIMESTAMP(NOW()) - n.last_notification_sent > 8*3600*CEIL((UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400)) AND
-                (n.visitors_unread > 0 OR n.messages_unread > 0)
-            GROUP BY
-                `user_id`
-            HAVING
-                `last-online-was-ago` < 2
-            ORDER BY
-                `lastaccess` DESC,
-                `last_notification_sent` ASC,
-                `visitors_unread` ASC",
+	u.user_id as `user_id`,
+	info.is_app_user,
+	ula.lastaccess as `lastaccess`,
+	ulo.last_online as `last_online`,
+	un.last_notification_sent as `last_notification_sent`,
+	un.last_notification_metrics as `last_notification_metrics`,
+	uc.visitors_unread as `visitors_unread`,
+	uc.mutual_unread as `mutual_unread`,
+	uc.messages_unread as `messages_unread`,
+	ue.energy as `energy`,
+	uts.from_notifications_count,
+	uts.last_from_notifications,
+	sum(b.amount) as `amount`,
+	ROUND((UNIX_TIMESTAMP(NOW()) - IFNULL(`last_online`, 0))/86400, 0) as `last-online-was-ago`,
+	ROUND((UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400, 0) as `lastaccess-was-ago`,
+	ROUND((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(last_notification_sent))/86400, 0) as `last-notification-was-ago`,
+	avatar.small_photo_url
+FROM
+	User u
+LEFT JOIN UserLastAccess ula ON
+	ula.user_id = u.user_id
+LEFT JOIN UserLastOnline ulo ON
+	ulo.user_id = u.user_id
+LEFT JOIN UserNotifications un ON
+	un.user_id = u.user_id
+LEFT JOIN UserCounters uc ON
+	uc.user_id = u.user_id
+LEFT JOIN UserEnergy ue ON
+	ue.user_id = u.user_id
+LEFT JOIN UserTrafficSources uts ON
+	uts.user_id = u.user_id
+LEFT JOIN Billing b ON
+	b.user_id = u.user_id
+LEFT JOIN UserInfo info ON
+	info.user_id = u.user_id
+LEFT JOIN UserAvatar avatar ON
+	avatar.user_id = u.user_id
+WHERE
+	(visitors_unread > 0 OR mutual_unread > 0)
+GROUP BY
+	`user_id`
+HAVING
+	info.is_app_user = 1 and
+	lastaccess > 0 and
+	small_photo_url is not null
+ORDER BY
+	`lastaccess` DESC,
+    `last_from_notification` ASC,
+    `visitors_unread` ASC
+",
 
         /**
          * SQL-запрос на получение данных о последних голосованиях за пользователя
@@ -90,34 +107,7 @@ class NotificationSendCommand extends CronScript {
             ORDER BY
                 changed DESC
             LIMIT
-                2",
-
-        /**
-         * SQL-запрос на вставку строки в таблицу нотификаций
-         *
-         * @var str
-         */
-        SQL_INSERT_ROW_INTO_NOTIFICATIONS = "
-            INSERT INTO
-                `Notifications`
-            SET
-                `user_id`    = :user_id,
-                `lastaccess` = :lastaccess,
-                `last_online` = :last_online,
-                `last_outgoing_decision` = :last_outgoing_decision,
-                `last_notification_sent` = :last_notification_sent,
-                `last_notification_metrics` = :last_notification_metrics,
-                `visitors_unread` = :visitors_unread,
-                `mutual_unread` = :mutual_unread
-            ON DUPLICATE KEY UPDATE
-                `lastaccess` = :lastaccess,
-                `last_online` = :last_online,
-                `last_outgoing_decision` = :last_outgoing_decision,
-                `last_notification_sent` = :last_notification_sent,
-                `last_notification_metrics` = :last_notification_metrics,
-                `visitors_unread` = :visitors_unread,
-                `mutual_unread` = :mutual_unread,
-                `messages_unread` = :messages_unread"
+                2"
     ;
 
     /**
@@ -136,203 +126,15 @@ class NotificationSendCommand extends CronScript {
             $this->getCountersHelper(),
         ];
 
-        $truncateSql = "TRUNCATE `Encounters`.`Notifications`";
-        $DB->prepare($truncateSql)->execute();
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_INSERT_ROW_INTO_NOTIFICATIONS);
-
-        $usedVariables = [
-            'lastaccess',
-            'last_outgoing_decision',
-            'last_notification_sent',
-            'last_notification_metrics',
-        ];
-
-        $usedCounters = [
-            'visitors_unread',
-            'mutual_unread',
-            'messages_unread'
-        ];
-
-        $usersProcessed = 0;
-        while (true) {
-
-            do {
-                try {
-                    $users = $this->getUsers(500);
-                    break;
-                } catch (LeveldbException $e) {
-                    // попробуем еще раз через 3 сек
-                    $this->log("Leveldb error while getting users", 16);
-                    $this->getLeveldb()->closeConnections();
-                    sleep(61);
-                }
-            } while (true);
-
-            if (!$users) {
-                break;
-            }
-
-            $this->log("Fetching data for <comment>" . count($users) . "</comment> users..");
-
-            $dataArray = [];
-            foreach ($users as $userId) {
-                $dataArray[$userId] = [];
-            }
-
-            $this->log("Fetching variables..");
-
-            do {
-                try {
-                    $variables = $Variables->getMulti($users, $usedVariables);
-                    break;
-                } catch (LeveldbException $e) {
-                    // попробуем еще раз через 3 сек
-                    $this->log("Leveldb error while getting variables", 16);
-                    $this->getLeveldb()->closeConnections();
-                    sleep(61);
-                }
-
-            } while (true);
-
-            $this->log("OK", 64);
-
-            foreach ($variables as $userId=>$userVariables) {
-                foreach ($userVariables as $name=>$value) {
-                    $dataArray[$userId][$name] = $value;
-                }
-            }
-
-            $this->log("Fetching counters..");
-            do {
-                try {
-                    $counters = $Counters->getMulti($users, $usedCounters);
-                    break;
-                } catch (LeveldbException $e) {
-                    // попробуем еще раз через 3 сек
-                    $this->log("Leveldb error while getting counters", 16);
-                    $this->getLeveldb()->closeConnections();
-                    sleep(61);
-                }
-            } while (true);
-            $this->log("OK", 64);
-
-            foreach ($counters as $userId=>$userCounters) {
-                foreach ($userCounters as $name=>$value) {
-                    $dataArray[$userId][$name] = $value;
-                }
-            }
-
-            foreach ($dataArray as $userId=>$variables) {
-                foreach ($usedVariables as $name) {
-                    if (!isset($variables[$name])) {
-                        $dataArray[$userId][$name] = null;
-                    }
-                }
-
-                foreach ($usedCounters as $name) {
-                    if (!isset($variables[$name])) {
-                        $dataArray[$userId][$name] = 0;
-                    }
-                }
-
-                $dataArray[$userId]['lastaccess'] = max(
-                    $dataArray[$userId]['lastaccess'],
-                    $dataArray[$userId]['last_outgoing_decision']
-                );
-
-                $dataArray[$userId]['user_id'] = $userId;
-            }
-
-            $anketaChunk = array_chunk($users, 100);
-            $lastOnlineChunk = array_chunk($users, 30);
-
-            $Mamba->multi();
-            foreach ($lastOnlineChunk as $chunk) {
-                $Mamba->Anketa()->isOnline(array_map(function($i) {
-                    return (int) $i;
-                }, $chunk));
-            }
-
-            $this->log("Fetching online data (API)..");
-            if ($onlineCheckResult = $this->getMamba()->exec(25)) {
-                $this->log("OK", 64);
-
-                foreach ($onlineCheckResult as $onlineCheckResultChunk) {
-                    foreach ($onlineCheckResultChunk as $_anketa) {
-                        if (isset($dataArray[$_anketa['anketa_id']])) {
-                            $dataArray[$_anketa['anketa_id']]['last_online'] = $_anketa['is_online'] == 1 ? time() : $_anketa['is_online'];
-                        }
-                    }
-                }
-            } else {
-                $this->log("FAILED", 16);
-            }
-
-            $this->getMamba()->multi();
-            foreach ($anketaChunk as $chunk) {
-                $this->getMamba()->Anketa()->getInfo(array_map(function($i) {
-                    return (int)$i;
-                }, $chunk));
-            }
-
-            $this->log("Fetching profile data (API)..");
-            if ($anketaResult = $this->getMamba()->exec(25)) {
-                $this->log("OK", 64);
-
-                foreach ($anketaResult as $anketaResultChunk) {
-                    foreach ($anketaResultChunk as $_anketa) {
-
-                        if (isset($_anketa['info']) && isset($_anketa['info']['is_app_user']) && isset($_anketa['info']['oid']) && isset($dataArray[$_anketa['info']['oid']])) {
-                            $dataArray[$_anketa['info']['oid']]['is_app_user'] = $_anketa['info']['is_app_user'];
-                        }
-                    }
-                }
-            } else {
-                $this->log("FAILED", 16);
-            }
-
-            $this->log("Writing data to database..");
-            foreach ($dataArray as $userId => $variables) {
-                if (!(isset($variables['is_app_user']) && $variables['is_app_user'])) {
-                    continue;
-                }
-
-                $variables['last_online'] = isset($variables['last_online']) ? $variables['last_online'] : null;
-
-                $stmt->bindParam('user_id',  $variables['user_id'], PDO::PARAM_INT);
-                $stmt->bindParam('lastaccess',  $variables['lastaccess'], PDO::PARAM_INT);
-                $stmt->bindParam('last_online',  $variables['last_online'], PDO::PARAM_INT);
-                $stmt->bindParam('last_outgoing_decision', $variables['last_outgoing_decision'], PDO::PARAM_INT);
-                $stmt->bindParam('last_notification_sent', $variables['last_notification_sent'], PDO::PARAM_INT);
-                $stmt->bindParam('last_notification_metrics', $variables['last_notification_metrics'], PDO::PARAM_INT);
-                $stmt->bindParam('visitors_unread', $variables['visitors_unread'], PDO::PARAM_INT);
-                $stmt->bindParam('mutual_unread', $variables['mutual_unread'], PDO::PARAM_INT);
-                $stmt->bindParam('messages_unread', $variables['messages_unread'], PDO::PARAM_INT);
-
-                if (!$stmt->execute()) {
-                    $this->log("FAILED", 16);
-                    return;
-                }
-            }
-
-            $this->log("OK", 64);
-
-            $usersProcessed+= count($users);
-            $this->log("Processed <comment>{$usersProcessed}</comment> users..");
-        }
-
-        $dataArray = $result = null;
-
         $this->log("Performing notifications", 48);
         $stmt = $DB->prepare(self::GET_NOTIFICATIONS_SQL);
         if ($stmt->execute()) {
-            while ($task = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $this->log('Selected ' . $stmt->rowCount() . ' rows..', 64);
 
+            while ($task = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $task['user_id'] = (int) $task['user_id'];
                 $task['lastaccess'] = $task['lastaccess'];
                 $task['last_online'] = $task['last_online'];
-                $task['last_outgoing_decision'] = $task['last_outgoing_decision'];
                 $task['last_notification_sent'] = $task['last_notification_sent'];
                 $task['visitors_unread'] = (int) $task['visitors_unread'];
                 $task['mutual_unread'] = (int) $task['mutual_unread'];
@@ -352,43 +154,6 @@ class NotificationSendCommand extends CronScript {
         }
 
         $this->log("Bye");
-    }
-
-    /**
-     * Возвращает айдишники пользователей у который есть поисковые предпочтения (т.е. активные)
-     *
-     * @param $count
-     * @return array
-     */
-    private function getUsers($count) {
-        $defaultLastGetUsersKey =
-            sprintf(
-                str_replace('%d', '%s', SearchPreferences::LEVELDB_USER_SEARCH_PREFERENCES),
-                null
-            )
-        ;
-
-        if (!isset($this->lastGetUsersKey)) {
-            $this->lastGetUsersKey = $defaultLastGetUsersKey;
-        }
-
-        $Leveldb = $this->getLeveldb();
-        $Request = $Leveldb->get_range($this->lastGetUsersKey, null, $count);
-        $Leveldb->execute();
-
-        $users = array();
-        if ($result = $Request->getResult()) {
-            foreach ($result as $key=>$val) {
-                if (strpos($key, $defaultLastGetUsersKey) !== false && $key != $this->lastGetUsersKey) {
-                    $users[] = (int) substr($key, strlen($defaultLastGetUsersKey));
-                }
-            }
-
-            if ($users) {
-                $this->lastGetUsersKey = $defaultLastGetUsersKey . $users[count($users) - 1];
-                return $users;
-            }
-        }
     }
 
     /**
