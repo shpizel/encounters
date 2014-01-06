@@ -25,7 +25,7 @@ class Users extends Helper {
                 info.about as `info.about`,
                 info.is_app_user as `info.is_app_user`,
                 info.lang as `info.lang`,
-                from_unixtime(info.changed) as `info.changed`,
+                UNIX_TIMESTAMP(info.changed) as `info.changed`,
 
                 orientation.orientation as `orientation`,
 
