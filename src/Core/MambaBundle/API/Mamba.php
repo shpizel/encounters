@@ -921,6 +921,9 @@ final class Mamba {
                     $this->metrics['timeout']+=$timeout;
 
                     return $JSON['data'];
+                } elseif ($JSON['status'] == 4) {
+                    /** запрашиваемые данные не найдены */
+                    return [];
                 } else {
                     throw new MambaException($JSON['message'], $JSON["status"]);
                 }
