@@ -921,7 +921,7 @@ final class Mamba {
                     $this->metrics['timeout']+=$timeout;
 
                     return $JSON['data'];
-                } elseif ($JSON['status'] == 4) {
+                } elseif (in_array($JSON['status'], [4])) {
                     /** запрашиваемые данные не найдены */
                     return [];
                 } else {
@@ -1094,6 +1094,9 @@ final class Mamba {
 
                     if ($JSON && $JSON['status'] === 0 && !$JSON['message']) {
                         $this->setCache($item['method'], $item['params'], $JSON['data']);
+                    } elseif (in_array($JSON['status'], [4])) {
+                        /** запрашиваемые данные не найдены */
+                        $JSON['data'] = [];
                     } elseif ($strict) {
                         throw new MambaException($JSON['message'], $JSON['code']);
                     }

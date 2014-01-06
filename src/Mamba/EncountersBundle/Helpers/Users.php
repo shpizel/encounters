@@ -341,6 +341,38 @@ class Users extends Helper {
         if ($users) {
             $Mamba = $this->getMamba();
             if ($platformResult = $Mamba->Anketa()->getInfo($users)) {
+
+                /**
+                 * Multi prefetch albums and photos
+                 *
+                 * @author shpizel
+                 */
+                $photosPrefetched = $albumsPrefetched = [];
+
+                $Mamba->multi();
+                foreach ($users as $userId) {
+                    $Mamba->Photos()->get($userId);
+                }
+
+                if ($photosResults = $Mamba->exec()) {
+                    foreach ($photosResults as $photosResultKey => $photosResult) {
+                        $photosPrefetched[$users[$photosResultKey]] = $photosResult;
+                    }
+                }
+
+                $Mamba->multi();
+                foreach ($users as $userId) {
+                    $Mamba->Photos()->getAlbums($userId);
+                }
+
+                if ($albumsResults = $Mamba->exec()) {
+                    foreach ($albumsResults as $albumsResultKey => $albumsResult) {
+                        $albumsPrefetched[$users[$albumsResultKey]] = $albumsResult;
+                    }
+                }
+
+                /** prefetch completed */
+
                 foreach ($platformResult as $dataArray) {
                     $result[$userId = $dataArray['info']['oid']] = [];
 
@@ -477,7 +509,7 @@ class Users extends Helper {
                     /** albums block */
                     if (in_array('albums', $blocks)) {
                         $result[$userId]['albums'] = [];
-                        if ($albums = $Mamba->Photos()->getAlbums($userId)) {
+                        if ($albums = /*$Mamba->Photos()->getAlbums*/$albumsPrefetched[$userId]) {
                             foreach ($albums['albums'] as $album) {
                                 $result[$userId]['albums'][] = [
                                     'album_id' => $album['album_id'],
@@ -491,7 +523,7 @@ class Users extends Helper {
                     /** photos block */
                     if (in_array('photos', $blocks)) {
                         $result[$userId]['photos'] = [];
-                        if ($photos = $Mamba->Photos()->get($userId)) {
+                        if ($photos = /*$Mamba->Photos()->get*/$photosPrefetched[$userId]) {
                             foreach ($photos['photos'] as $photo) {
                                 $result[$userId]['photos'][] = [
                                     'photo_id'         => $photo['photo_id'],

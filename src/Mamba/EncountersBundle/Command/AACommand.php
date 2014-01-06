@@ -40,40 +40,47 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        print_r($this->getUsersHelper()->getInfo([560015854,679658402]));
-        exit();
-        var_dump($this->getMamba()->Anketa()->getInfo('shpizel'));
+        print_r($this->getUsersHelper()->getInfo(1, true));
 
-        exit();
         $VariablesHepler = $this->getVariablesHelper();
         $counter = 0;
 
         while ($users = $this->getUsers(5000)) {
-            if ($variables = $VariablesHepler->getMulti(
-                $users,
-                ['last_notification_sent', 'last_notification_metrics']
-            )) {
-                $sql = ["INSERT INTO `Encounters`.`UserNotifications`(`user_id`, `last_notification_sent`, `last_notification_metrics`) VALUES"];
-                foreach ($variables as $userId=>$vars) {
-                    $_lastNotificationSent = (int) $vars['last_notification_sent'];
-                    $_lastNotificationMetrics = $vars['last_notification_metrics'];
-
-                    if ($_lastNotificationSent) {
-                        $sql[] = "({$userId}, FROM_UNIXTIME({$_lastNotificationSent}), '{$_lastNotificationMetrics}'),";
-                    }
-                }
-
-                $sql[count($sql) - 1] = substr($sql[count($sql) - 1], 0, -1);
-
-                $sql[] = ";";
-
-                $sql = implode("\n", $sql);
-
-                var_dump($this->getEntityManager()->getConnection()->exec($sql));
-
-                $counter+=5000;
-                $this->log($counter);
+            $users = array_chunk($users, 100);
+            foreach ($users as $chunk) {
+                $this->getGearman()->getClient()->doLowBackground(
+                    EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
+                    serialize($dataArray = array(
+                        'users' => $chunk,
+                        'time'  => time(),
+                    ))
+                );
             }
+//            if ($variables = $VariablesHepler->getMulti(
+//                $users,
+//                ['last_notification_sent', 'last_notification_metrics']
+//            )) {
+//                $sql = ["INSERT INTO `Encounters`.`UserNotifications`(`user_id`, `last_notification_sent`, `last_notification_metrics`) VALUES"];
+//                foreach ($variables as $userId=>$vars) {
+//                    $_lastNotificationSent = (int) $vars['last_notification_sent'];
+//                    $_lastNotificationMetrics = $vars['last_notification_metrics'];
+//
+//                    if ($_lastNotificationSent) {
+//                        $sql[] = "({$userId}, FROM_UNIXTIME({$_lastNotificationSent}), '{$_lastNotificationMetrics}'),";
+//                    }
+//                }
+//
+//                $sql[count($sql) - 1] = substr($sql[count($sql) - 1], 0, -1);
+//
+//                $sql[] = ";";
+//
+//                $sql = implode("\n", $sql);
+//
+//                var_dump($this->getEntityManager()->getConnection()->exec($sql));
+//
+//                $counter+=5000;
+//                $this->log($counter);
+//            }
         }
     }
 
