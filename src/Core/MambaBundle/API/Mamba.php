@@ -1112,7 +1112,6 @@ final class Mamba {
         foreach ($this->multiQueue as &$item) {
             if (isset($item['cached'])) {
                 $item = $item['cached'];
-                echo 'cache';
             } elseif (isset($item['content'])) {
                 $method = $item['method'];
                 $item = $item['content'];
