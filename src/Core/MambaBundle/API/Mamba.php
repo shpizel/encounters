@@ -1110,11 +1110,23 @@ final class Mamba {
         $this->mode = self::SINGLE_MODE;
 
         foreach ($this->multiQueue as &$item) {
-
             if (isset($item['cached'])) {
                 $item = $item['cached'];
+                echo 'cache';
             } elseif (isset($item['content'])) {
+                $method = $item['method'];
                 $item = $item['content'];
+                if (!$item) {
+                    if ($method == 'photos.getAlbums') {
+                        $item = [
+                            'albums' => [],
+                        ];
+                    } elseif ($method == 'photos.get') {
+                        $item = [
+                            'photos' => [],
+                        ];
+                    }
+                }
             } else {
                 $item = null;
             }

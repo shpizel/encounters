@@ -40,13 +40,11 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        print_r($this->getUsersHelper()->getInfo(1, true));
-
         $VariablesHepler = $this->getVariablesHelper();
         $counter = 0;
 
         while ($users = $this->getUsers(5000)) {
-            $users = array_chunk($users, 100);
+            $users = array_chunk($users, 16);
             foreach ($users as $chunk) {
                 $this->getGearman()->getClient()->doLowBackground(
                     EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,

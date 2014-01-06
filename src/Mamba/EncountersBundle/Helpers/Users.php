@@ -351,7 +351,7 @@ class Users extends Helper {
 
                 $Mamba->multi();
                 foreach ($users as $userId) {
-                    $Mamba->Photos()->get($userId);
+                    $Mamba->nocache()->Photos()->get($userId);
                 }
 
                 if ($photosResults = $Mamba->exec()) {
@@ -563,7 +563,9 @@ class Users extends Helper {
             }
         }
 
-        return $result;
+        return array_filter($result, function($item) {
+            return (bool) $item;
+        });
     }
 }
 

@@ -24,7 +24,15 @@ class Photos {
             'oid' => $oid,
         );
 
-        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        $result = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        if (!$result) {
+            $result = [
+                'albums' => [
+
+                ]
+            ];
+        }
+        return $result;
     }
 
     /**
@@ -52,7 +60,15 @@ class Photos {
             $arguments['album_id'] = $albumId;
         }
 
-        return Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        $result = Mamba::remoteExecute(strtolower(__CLASS__) . "." . __FUNCTION__, $arguments);
+        if (!$result) {
+            $result = [
+                'photos' => [
+
+                ]
+            ];
+        }
+        return $result;
     }
 }
 
