@@ -341,15 +341,16 @@ class Users extends Helper {
 
         if ($users) {
             $Mamba = $this->getMamba();
-
+            $platformResult = null;
             foreach (range(1, $apiRetryCount) as $try) {
                 try {
                     $platformResult = $Mamba->Anketa()->getInfo($users);
                     break;
                 } catch (\Exception $e) {
-                    sleep(mt_rant(1,5));
+                    sleep(mt_rand(1,5));
                 }
             }
+
 
             if ($platformResult) {
 
@@ -549,6 +550,8 @@ class Users extends Helper {
                     }
                 }
             }
+
+
 
             $cacheKeys = [];
             foreach ($users as $userId) {
