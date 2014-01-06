@@ -551,21 +551,13 @@ class Users extends Helper {
                 }
             }
 
-
-
-            $cacheKeys = [];
-            foreach ($users as $userId) {
-                $cacheKeys[] = "user_{$userId}_info";
-            }
-
-            if ($memcacheResult = $this->getMemcache()->getMulti($cacheKeys)) {
-                foreach ($memcacheResult as $cacheKey=>$cacheResult) {
-                    $userId = (int) substr($cacheKey, 5, -5);
-                    unset($users[array_search($userId, $users)]);
-                }
-            }
-
-            if ($users) {
+            /**
+             * Задачу добавляем только в случае когда в базе инфы нету
+             * В случае если запрашивается пропуск базы — мы не знаем есть в базе или нет
+             *
+             * @author shpizel
+             */
+            if ($users && !$skipDatabase) {
                 /** Отправим задачу в очередь на заполнение БД */
                 $this->getGearman()->getClient()->doLowBackground(
                     EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
