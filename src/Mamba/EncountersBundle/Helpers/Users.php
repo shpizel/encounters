@@ -345,6 +345,7 @@ class Users extends Helper {
             foreach (range(1, $apiRetryCount) as $try) {
                 try {
                     $platformResult = $Mamba->Anketa()->getInfo($users);
+                    break;
                 } catch (\Exception $e) {
                     sleep(1);
                 }
