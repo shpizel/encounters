@@ -198,7 +198,7 @@ class MessengerController extends ApplicationController {
                         "select
                             la.user_id
                         from
-                            Encounters.LastAccess la, Encounters.User u
+                            Encounters.UserLastAccess la, Encounters.User u
                         where
                             u.user_id = la.user_id and
                             u.gender = :gender and
