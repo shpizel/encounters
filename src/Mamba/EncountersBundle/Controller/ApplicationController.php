@@ -605,12 +605,45 @@ abstract class ApplicationController extends Controller {
         $this->updateLastAccess();
 
         $JSON['metrics'] = array(
-            'generation_time' => microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
+            'generation_time' => $generationTime = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
 
             'mysql'   => self::$metrics,
             'redis'   => $this->getRedis()->getMetrics(),
             'leveldb' => $this->getLeveldb()->getMetrics(),
             'mamba'   => $this->getMamba()->getMetrics(),
+        );
+
+        /**
+         * Запишем данные по производительности в базу
+         *
+         * @author shpizel
+         */
+        $this->getGearman()->getClient()->doLowBackground(
+            EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
+            serialize(
+                array(
+                    'route' => $this->getRequest()->get('_route'),
+                    'generation_time' => ceil($generationTime*1000),
+
+                    'mysql_requests_count' => count($JSON['metrics']['mysql']['requests']),
+                    'mysql_timeout'        => ceil($JSON['metrics']['mysql']['timeout']*1000),
+                    'mysql_requests'       => $JSON['metrics']['mysql']['requests'],
+
+                    'redis_requests_count' => count($JSON['metrics']['redis']['requests']),
+                    'redis_timeout'        => ceil($JSON['metrics']['redis']['timeout']*1000),
+                    'redis_requests'       => $JSON['metrics']['redis']['requests'],
+
+                    'leveldb_requests_count' => count($JSON['metrics']['leveldb']['requests']),
+                    'leveldb_timeout'        => ceil($JSON['metrics']['leveldb']['timeout']*1000),
+                    'leveldb_requests'       => $JSON['metrics']['leveldb']['requests'],
+
+                    'mamba_requests_count' => count($JSON['metrics']['mamba']['requests']),
+                    'mamba_timeout'        => ceil($JSON['metrics']['mamba']['timeout']*1000),
+                    'mamba_requests'       => $JSON['metrics']['mamba']['requests'],
+
+                    'time'  => time(),
+                )
+            )
         );
 
         return
@@ -634,7 +667,41 @@ abstract class ApplicationController extends Controller {
     public function TwigResponse($view, array $parameters = array(), Response $response = null) {
         $this->updateLastAccess();
 
-        $timeout = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+        $generationTime = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+
+        /**
+         * Запишем данные по производительности в базу
+         *
+         * @author shpizel
+         */
+        $this->getGearman()->getClient()->doLowBackground(
+            EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
+            serialize(
+                array(
+                    'route' => $this->getRequest()->get('_route'),
+                    'generation_time' => ceil($generationTime*1000),
+
+                    'mysql_requests_count' => count($parameters['metrics']['mysql']['requests']),
+                    'mysql_timeout'        => ceil($parameters['metrics']['mysql']['timeout']*1000),
+                    'mysql_requests'       => $parameters['metrics']['mysql']['requests'],
+
+                    'redis_requests_count' => count($parameters['metrics']['redis']['requests']),
+                    'redis_timeout'        => ceil($parameters['metrics']['redis']['timeout']*1000),
+                    'redis_requests'       => $parameters['metrics']['redis']['requests'],
+
+                    'leveldb_requests_count' => count($parameters['metrics']['leveldb']['requests']),
+                    'leveldb_timeout'        => ceil($parameters['metrics']['leveldb']['timeout']*1000),
+                    'leveldb_requests'       => $parameters['metrics']['leveldb']['requests'],
+
+                    'mamba_requests_count' => count($parameters['metrics']['mamba']['requests']),
+                    'mamba_timeout'        => ceil($parameters['metrics']['mamba']['timeout']*1000),
+                    'mamba_requests'       => $parameters['metrics']['mamba']['requests'],
+
+                    'time'  => time(),
+                )
+            )
+        );
+
         $Response = $this->render($view, $parameters, $response);
         $Response->headers->set('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
 

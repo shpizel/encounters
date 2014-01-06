@@ -115,6 +115,13 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_MUTUAL_ICEBREAKER_FUNCTION_NAME = 'database:mutual:icebreaker'
+        GEARMAN_MUTUAL_ICEBREAKER_FUNCTION_NAME = 'database:mutual:icebreaker',
+
+        /**
+         * Имя функции-обработчика оценки производительности софта
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME = 'database:perfomance:update'
     ;
 }
