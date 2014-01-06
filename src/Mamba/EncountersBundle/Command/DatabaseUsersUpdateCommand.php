@@ -79,7 +79,7 @@ class DatabaseUsersUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>" . count($users) . "</info> users");
 
-        $usersData = $this->getUsersHelper()->getInfo($users, true, 5);
+        if ($usersData = $this->getUsersHelper()->getInfo($users, true, 5)) {
 
         /** закешируем информацию */
         foreach ($usersData as $userId => $userData) {
@@ -395,5 +395,8 @@ EOL;
         $sql = implode("\n", $sql);
 
         $result = $this->getEntityManager()->getConnection()->exec($sql);
+        } else {
+            throw new \CronScriptException("Could not get user info");
+        }
     }
 }
