@@ -88,7 +88,7 @@ HAVING
 	small_photo_url is not null
 ORDER BY
 	`lastaccess` DESC,
-    `last_from_notification` ASC,
+    `last_from_notifications` ASC,
     `visitors_unread` ASC
 ",
 
@@ -107,7 +107,23 @@ ORDER BY
             ORDER BY
                 changed DESC
             LIMIT
-                2"
+                2",
+
+        SQL_USER_NOTIFICATIONS_UPDATE = "
+            INSERT INTO
+                UserNotifications
+            SET
+                user_id = :user_id,
+                last_notification_sent = NOW(),
+                last_notification_message = :message,
+                last_notification_metrics = :metrics,
+                notifications_count = 1
+            ON DUPLICATE KEY UPDATE
+                last_notification_sent = NOW(),
+                last_notification_message = :message,
+                last_notification_metrics = :metrics,
+                notifications_count = notifications_count+1
+        "
     ;
 
     /**
@@ -128,6 +144,7 @@ ORDER BY
 
         $this->log("Performing notifications", 48);
         $stmt = $DB->prepare(self::GET_NOTIFICATIONS_SQL);
+        $this->updateUserNotificationsStatement = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_NOTIFICATIONS_UPDATE);
         if ($stmt->execute()) {
             $this->log('Selected ' . $stmt->rowCount() . ' rows..', 64);
 
@@ -176,11 +193,23 @@ ORDER BY
                 $this->log($message);
                 if ($result = $this->getMamba()->Notify()->sendMessage($task['user_id'], $message, $extra = 'ref-notifications')) {
                     if (isset($result['count']) && $result['count']) {
-                        //$this->log($message, 64);
                         $this->getStatsHelper()->incr('notify');
 
                         $this->getVariablesHelper()->set($task['user_id'], 'last_notification_sent', time());
                         $this->getVariablesHelper()->set($task['user_id'], 'last_notification_metrics', $currentNotificationMetrics);
+
+                        /**
+                         * Нужно записать для юзера инфу в табличку:
+                         * 1) когда нотификация ушла
+                         * 2) ее текст
+                         * 3) увеличить счетчик нотификаций
+                         *
+                         * @author shpizel
+                         */
+                        $this->updateUserNotificationsStatement->bindParam('user_id', $task['user_id'], PDO::PARAM_INT);
+                        $this->updateUserNotificationsStatement->bindParam('message', $message, PDO::PARAM_STR);
+                        $this->updateUserNotificationsStatement->bindParam('metrics', $currentNotificationMetrics, PDO::PARAM_LOB);
+                        $this->updateUserNotificationsStatement->execute();
 
                         $this->log("Notification send SUCCESS", 64);
                     } else {
