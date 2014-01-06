@@ -347,7 +347,7 @@ class Users extends Helper {
                     $platformResult = $Mamba->Anketa()->getInfo($users);
                     break;
                 } catch (\Exception $e) {
-                    sleep(1);
+                    sleep(mt_rant(1,5));
                 }
             }
 

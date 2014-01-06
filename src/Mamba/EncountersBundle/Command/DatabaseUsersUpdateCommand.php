@@ -1,6 +1,7 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
+use Core\ScriptBundle\CronScriptException;
 use Mamba\EncountersBundle\Helpers\Users;
 use Mamba\EncountersBundle\Script\CronScript;
 
@@ -396,7 +397,7 @@ EOL;
 
         $result = $this->getEntityManager()->getConnection()->exec($sql);
         } else {
-            throw new \CronScriptException("Could not get user info");
+            throw new CronScriptException("Could not get user info");
         }
     }
 }
