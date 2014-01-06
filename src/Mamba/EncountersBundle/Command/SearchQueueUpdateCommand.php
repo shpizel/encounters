@@ -285,8 +285,7 @@ class SearchQueueUpdateCommand extends CronScript {
                     !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                     !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                 ) {
-                    try {
-                        $this->getMamba()->Photos()->get($currentUserId);
+                    if ($this->getMamba()->Photos()->get($currentUserId)) {
                         $this->getSearchQueueHelper()->put(
                             $webUserId,
                             $currentUserId,
@@ -296,7 +295,7 @@ class SearchQueueUpdateCommand extends CronScript {
                         if ($usersAddedCount >= self::LIMIT) {
                             break;
                         }
-                    } catch (\Exception $e) {
+                    } else {
                         $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
                     }
                 }
@@ -392,8 +391,7 @@ class SearchQueueUpdateCommand extends CronScript {
                         !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                         !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                     ) {
-                        try {
-                            $this->getMamba()->Photos()->get($currentUserId);
+                        if ($this->getMamba()->Photos()->get($currentUserId)) {
                             $this->getSearchQueueHelper()->put(
                                 $webUserId,
                                 $currentUserId,
@@ -403,7 +401,7 @@ class SearchQueueUpdateCommand extends CronScript {
                             if ($usersAddedCount >= self::LIMIT) {
                                 break;
                             }
-                        } catch (\Exception $e) {
+                        } else {
                             $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
                         }
                     }
@@ -499,8 +497,7 @@ class SearchQueueUpdateCommand extends CronScript {
                         !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                         !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                     ) {
-                        try {
-                            $this->getMamba()->Photos()->get($currentUserId);
+                        if ($this->getMamba()->Photos()->get($currentUserId)) {
                             $this->getSearchQueueHelper()->put(
                                 $webUserId,
                                 $currentUserId,
@@ -510,7 +507,7 @@ class SearchQueueUpdateCommand extends CronScript {
                             if ($usersAddedCount >= self::LIMIT) {
                                 break;
                             }
-                        } catch (\Exception $e) {
+                        } else {
                             $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
                         }
                     }

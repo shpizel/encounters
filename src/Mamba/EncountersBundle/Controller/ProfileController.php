@@ -48,11 +48,7 @@ class ProfileController extends ApplicationController {
             $dataArray['profile']['rated'] = $this->getViewedQueueHelper()->exists($webUserId, $currentUserId);
         }
 
-        try {
-            $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
-        } catch (\Exception $e) {
-            $dataArray['profile']['photos'] = [];
-        }
+        $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
 
         /** перемешаем интересы */
         if (isset($dataArray['profile']['interests'])) {

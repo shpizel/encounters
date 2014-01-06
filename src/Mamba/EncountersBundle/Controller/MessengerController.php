@@ -686,12 +686,9 @@ class MessengerController extends ApplicationController {
             $profilesData = [];
             foreach ($apiData as $userData) {
                 $profilesData[$userData['info']['oid']] = $userData;
-                try {
-                    $userPhotos = $this->getMamba()->Photos()->get($userData['info']['oid']);
-                    $profilesData[$userData['info']['oid']]['info']['photos_count'] = count($userPhotos['photos']);
-                } catch (\Exception $e) {
 
-                }
+                $userPhotos = $this->getMamba()->Photos()->get($userData['info']['oid']);
+                $profilesData[$userData['info']['oid']]['info']['photos_count'] = count($userPhotos['photos']);
             }
 
             unset($apiData);

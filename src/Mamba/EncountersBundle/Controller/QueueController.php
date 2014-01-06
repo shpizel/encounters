@@ -90,7 +90,15 @@ class QueueController extends ApplicationController {
             foreach ($anketaInfoArray as $chunk) {
                 foreach ($chunk as $dataArray) {
 
-                    if (!(isset($dataArray['location']) && isset($dataArray['flags']) && isset($dataArray['familiarity']))) {
+                    if
+                    (
+                        !(
+                            isset($dataArray['location']) &&
+                            isset($dataArray['flags']) &&
+                            isset($dataArray['familiarity']) &&
+                            $dataArray['info']['small_photo_url'] // без фотки нах
+                        )
+                    ) {
                         $currentUserId = $dataArray['info']['oid'];
 
                         $this->getCurrentQueueHelper()->remove($webUserId, (int)$currentUserId);
