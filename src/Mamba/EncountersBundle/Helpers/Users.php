@@ -132,10 +132,12 @@ class Users extends Helper {
         if (is_int($users)) {
             $users = [$users];
         } elseif (is_array($users)) {
-            foreach ($users as $userId) {
-                if (!is_int($userId)) {
+            foreach ($users as $k=>$userId) {
+                if (!is_int($userId) && !is_numeric($userId)) {
                     throw new UsersException("Invalid user id: " . var_export(gettype($userId), true));
-                }
+                } else {
+$users[$k] = (int) $userId;
+}
             }
         } elseif (is_numeric($users)) {
             $users = [(int) $users];
