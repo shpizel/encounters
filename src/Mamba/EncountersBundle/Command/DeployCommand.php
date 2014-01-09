@@ -124,7 +124,6 @@ class DeployCommand extends Script {
                 'git pull',
                 //'git stash apply', -- намеренно пропускаем, т.к. синк делаем с гитом
                 'cp /tmp/parameters.ini /home/shpizel/encounters/app/config/',
-                ''
             ),
         );
 
