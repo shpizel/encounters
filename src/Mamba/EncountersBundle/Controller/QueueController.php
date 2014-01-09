@@ -143,11 +143,9 @@ class QueueController extends ApplicationController {
                     }
                 }
             } else {
-                foreach ($currentQueue as $chunk) {
-                    foreach ($chunk as $currentUserId) {
-                        $this->getCurrentQueueHelper()->remove($webUserId, (int)$currentUserId);
-                        $this->getViewedQueueHelper()->put($webUserId, (int)$currentUserId, array('error' => 1));
-                    }
+                foreach ($currentQueue as $currentUserId) {
+                    $this->getCurrentQueueHelper()->remove($webUserId, (int)$currentUserId);
+                    $this->getViewedQueueHelper()->put($webUserId, (int)$currentUserId, array('error' => 1));
                 }
             }
         }

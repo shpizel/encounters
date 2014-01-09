@@ -206,7 +206,7 @@ class Users extends Helper {
                          */
                         if (in_array('info', $blocks)) {
                             $result[$userId]['info'] = [
-                                'user_id'     => $row['user_id'],
+                                'user_id'     => (int) $row['user_id'],
                                 'name'        => $row['info.name'],
                                 'gender'      => $row['info.gender'],
                                 'age'         => (int) $row['info.age'],
@@ -398,7 +398,7 @@ class Users extends Helper {
                      */
                     if (in_array('info', $blocks)) {
                         $result[$userId]['info'] = [
-                            'user_id'     => $dataArray['info']['oid'],
+                            'user_id'     => (int) $dataArray['info']['oid'],
                             'name'        => $dataArray['info']['name'],
                             'gender'      => $dataArray['info']['gender'],
                             'age'         => (int) $dataArray['info']['age'],
