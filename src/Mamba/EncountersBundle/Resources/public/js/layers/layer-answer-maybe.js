@@ -70,7 +70,7 @@ $Layers.$AnswerMaybeLayer = {
             $("div.layer-maybe div.info div.name i").addClass('male');
         }
 
-        $("div.layer-maybe div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-maybe div.info div.location").html(currentQueueElement['info']['location']['country']['name'] + ", " + currentQueueElement['info']['location']['city']['name']);
         $("div.layer-maybe div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-maybe div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 

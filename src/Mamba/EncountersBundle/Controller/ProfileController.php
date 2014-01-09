@@ -37,18 +37,18 @@ class ProfileController extends ApplicationController {
             $this->getCountersHelper()->set($webUserId, 'events_unread', 0);
         }
 
-        if (!($profile = $Mamba->Anketa()->getInfo($currentUserId))) {
+        if (!($profile = $this->getUsersHelper()->getInfo($currentUserId)[$currentUserId])) {
             return $this->redirect($this->generateUrl('welcome'));
         }
 
         $dataArray = $this->getInitialData();
 
-        $dataArray['profile'] = $profile[0];
+        $dataArray['profile'] = $profile;
         if (!($dataArray['profile']['myself'] = $currentUserId == $webUserId)) {
             $dataArray['profile']['rated'] = $this->getViewedQueueHelper()->exists($webUserId, $currentUserId);
         }
 
-        $dataArray['profile']['photos'] = $Mamba->Photos()->get($currentUserId)['photos'];
+        $dataArray['profile']['photos'] = $this->getUsersHelper()->getInfo($currentUserId)['photos'];
 
         /** перемешаем интересы */
         if (isset($dataArray['profile']['interests'])) {
@@ -57,10 +57,10 @@ class ProfileController extends ApplicationController {
 
         if ($dataArray['profile']['gifts'] = $this->getGiftsHelper()->get($currentUserId)) {
             $userData = array();
-            foreach ($this->getMamba()->Anketa()->getInfo(array_unique(array_map(function($item) {
+            foreach ($this->getUsersHelper()->getInfo(array_unique(array_map(function($item) {
                 return (int) $item['web_user_id'];
             }, $dataArray['profile']['gifts']))) as $userInfo) {
-                $userData[$userInfo['info']['oid']] = $userInfo;
+                $userData[$userInfo['info']['user_id']] = $userInfo;
             }
 
             foreach ($dataArray['profile']['gifts'] as $giftKey=>$giftData) {
@@ -68,7 +68,7 @@ class ProfileController extends ApplicationController {
                 $dataArray['profile']['gifts'][$giftKey]['sender'] = array(
                     'name' => $userData[$giftData['web_user_id']]['info']['name'],
                     'age' => $userData[$giftData['web_user_id']]['info']['age'],
-                    'city' => $userData[$giftData['web_user_id']]['location']['city'],
+                    'city' => $userData[$giftData['web_user_id']]['location']['city']['name'],
                 );
             }
         }

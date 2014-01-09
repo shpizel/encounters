@@ -73,7 +73,19 @@ class WelcomeController extends ApplicationController {
         } elseif ($Session->has(Mamba::SESSION_USER_ID_KEY)) {
             $webUserId = $Session->get(Mamba::SESSION_USER_ID_KEY);
         } else {
-            return $this->TwigResponse('EncountersBundle:templates:500.html.twig', array('routes' => json_encode($this->getRoutes())));
+            return
+                $this->TwigResponse(
+                    'EncountersBundle:templates:500.html.twig',
+                    [
+                        'routes' => json_encode($this->getRoutes()),
+                        'metrics' => [
+                            'mysql'   => self::$metrics,
+                            'redis'   => $this->getRedis()->getMetrics(),
+                            'leveldb' => $this->getLeveldb()->getMetrics(),
+                            'mamba'   => $this->getMamba()->getMetrics(),
+                        ]
+                    ]
+                );
         }
 
         if ($this->getRequest()->getMethod() == 'GET') {
@@ -123,7 +135,18 @@ class WelcomeController extends ApplicationController {
                 );
             }
 
-            return $this->TwigResponse('EncountersBundle:templates:login.html.twig');
+            return
+                $this->TwigResponse
+                    (
+                        'EncountersBundle:templates:login.html.twig',
+                        ['metrics' => [
+                            'mysql'   => self::$metrics,
+                            'redis'   => $this->getRedis()->getMetrics(),
+                            'leveldb' => $this->getLeveldb()->getMetrics(),
+                            'mamba'   => $this->getMamba()->getMetrics(),
+                        ]]
+            );
+
         } elseif ($this->getRequest()->getMethod() == 'POST') {
             if (!$this->getSearchPreferencesHelper()->get($webUserId)) {
                 $Response = $this->redirect($this->generateUrl('preferences'));

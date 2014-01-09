@@ -14,29 +14,29 @@
         <div class="title">Вы хотите с ними встретиться</div>
     {% for item in data %}
         {% if item.decision.1 == -2 %}
-        <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem closed">
+        <div user_id="{{ item.info.user_id }}" small_photo_url="{{ item.avatar.small_photo_url }}" medium_photo_url="{{ item.avatar.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem closed">
                 <div class="background"></div>
-                <img src="{{ item.info.medium_photo_url }}"><br>
+                <img src="{{ item.avatar.medium_photo_url }}"><br>
                 <div class="info"><span class="name">{{ item.info.name }}</span> <i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i> {% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
                 {#<div class="answer">Ваш ответ: &laquo;{% if item.decision.0 == -1 %}нет{% endif %}{% if item.decision.0 == 0 %}возможно{% endif %}{% if item.decision.0 == 1 %}да{% endif %}&raquo;</div>#}
                 <div class="link"><a class="ln {{item.info.gender|lower}}" href="#"></a></div>
                 {#Он{% if item.info.gender == 'F' %}а{%endif%} видел{% if item.info.gender == 'F' %}а{%endif%} меня?</a>#}
             </div>
         {% elseif item.decision.1 == -3 %}
-            <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem waiting">
+            <div user_id="{{ item.info.user_id }}" small_photo_url="{{ item.avatar.small_photo_url }}" medium_photo_url="{{ item.avatar.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem waiting">
                 <div class="background"></div>
-                <a class="profile-link" target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.oid }}"></a>
-                <img src="{{ item.info.medium_photo_url }}"><br>
-                <div class="info"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
+                <a class="profile-link" target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.user_id }}"></a>
+                <img src="{{ item.avatar.medium_photo_url }}"><br>
+                <div class="info"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.user_id }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
                 <div class="link"><a class="ln {{item.info.gender|lower}}" href="#"></a></div>
                 {#<div class="answer">Ваш ответ: &laquo;{% if item.decision.0 == -1 %}нет{% endif %}{% if item.decision.0 == 0 %}возможно{% endif %}{% if item.decision.0 == 1 %}да{% endif %}&raquo;</div>#}
             </div>
         {% else %}
-            <div user_id="{{ item.info.oid }}" small_photo_url="{{ item.info.small_photo_url }}" medium_photo_url="{{ item.info.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
+            <div user_id="{{ item.info.user_id }}" small_photo_url="{{ item.avatar.small_photo_url }}" medium_photo_url="{{ item.avatar.medium_photo_url }}" name="{{ item.info.name }}" class="photoListItem{% if item.decision.1 == 0 %} maybe{% endif %}{% if item.decision.1 == 1 %} yes{% endif %}{% if item.decision.1 == -1 %} no{% endif %}">
                 <div class="background"></div>
-                <a class="profile-link" target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.oid }}"></a>
-                <img src="{{ item.info.medium_photo_url }}"><br>
-                <div class="info"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.oid }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
+                <a class="profile-link" target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.user_id }}"></a>
+                <img src="{{ item.avatar.medium_photo_url }}"><br>
+                <div class="info"><a target="_top" href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ item.info.user_id }}">{{ item.info.name }}</a>&nbsp;<i class="ico {% if item.info.gender == 'F' %}female{% else %}male{% endif %}"></i>&nbsp;{% if item.info.age %}<b>{{ item.info.age }}</b>{% endif %}</div>
                 <div class="link"><a class="ln {{item.info.gender|lower}}" href="#"></a></div>
             </div>
         {% endif %}

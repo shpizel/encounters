@@ -80,9 +80,9 @@ class MessengerController extends ApplicationController {
 
             if ($this->getRequest()->request->get('online')) {
                  if ($onlineUsers = $this->getOnlineUsers()) {
-                     if ($platformData = $Mamba->Anketa()->getInfo($onlineUsers, ['location'])) {
+                     if ($platformData = $this->getUsersHelper()->getInfo($onlineUsers, ['avatar'])) {
                          $platformData = array_filter($platformData, function($item) {
-                             if (!$item['info']['square_photo_url']) {
+                             if (!$item['avatar']['square_photo_url']) {
                                  return false;
                              }
 
@@ -517,7 +517,7 @@ class MessengerController extends ApplicationController {
 
                     $this->getStatsHelper()->incr('gifts-sent');
 
-                    $userInfo = $this->getMamba()->Anketa()->getInfo($webUserId);
+                    $userInfo = $this->getUsersHelper()->getInfo($webUserId);
 
                     $this->json['data'] = array(
                         'account' => $account,
@@ -525,10 +525,10 @@ class MessengerController extends ApplicationController {
                             'url' => $Gift->getUrl(),
                             'comment' => $comment,
                             'sender' => array(
-                                'user_id' => $userInfo[0]['info']['oid'],
-                                'name' => $userInfo[0]['info']['name'],
-                                'age' => $userInfo[0]['info']['age'],
-                                'city' => $userInfo[0]['location']['city'],
+                                'user_id' => $userInfo['info']['user_id'],
+                                'name' => $userInfo['info']['name'],
+                                'age' => $userInfo['info']['age'],
+                                'city' => $userInfo['location']['city']['name'],
                             ),
                         ),
                     );
@@ -682,13 +682,13 @@ class MessengerController extends ApplicationController {
             $userIds = array_map(function($item){return $item->getRecieverId();}, $Contacts);
             $userIds[] = $this->webUserId;
 
-            $apiData = $this->getMamba()->Anketa()->getInfo($userIds);
+            $apiData = $this->getUsersHelper()->getInfo($userIds);
             $profilesData = [];
             foreach ($apiData as $userData) {
-                $profilesData[$userData['info']['oid']] = $userData;
+                $profilesData[$userData['info']['user_id']] = $userData;
 
-                $userPhotos = $this->getMamba()->Photos()->get($userData['info']['oid']);
-                $profilesData[$userData['info']['oid']]['info']['photos_count'] = count($userPhotos['photos']);
+                $userPhotos = $this->getUsersHelper()->get($userData['info']['user_id']);
+                $profilesData[$userData['info']['user_id']]['info']['photos_count'] = count($userPhotos['photos']);
             }
 
             unset($apiData);

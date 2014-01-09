@@ -137,8 +137,7 @@ class DecisionController extends ApplicationController {
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
             if ($this->decision + 1 > 0) {
-                if (($currentUserSearchPreferences = $this->getSearchPreferencesHelper()->get($this->currentUserId)) && ($webUserInfo = $Mamba->Anketa()->getInfo($this->webUserId))) {
-                    $webUserInfo = array_shift($webUserInfo);
+                if (($currentUserSearchPreferences = $this->getSearchPreferencesHelper()->get($this->currentUserId)) && ($webUserInfo = $this->getUsersHelper()->getInfo($this->webUserId))) {
                     $webUserInfo = $webUserInfo['info'];
 
                     if ($webUserInfo['gender'] == $currentUserSearchPreferences['gender'] &&

@@ -50,7 +50,12 @@ class HitlistQueue extends Helper {
             throw new HitlistQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->sPop($this->getRedisQueueKey($userId));
+        if ($result = $this->getRedis()->sPop($this->getRedisQueueKey($userId))) {
+            return (int) $result;
+        }
+
+        return $result;
+
     }
 
     /**

@@ -68,7 +68,7 @@ $Layers.$AnswerNotSeeYetLayer = {
             $("div.layer-not-see-yet div.info div.name i").addClass('male');
         }
 
-        $("div.layer-not-see-yet div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-not-see-yet div.info div.location").html(currentQueueElement['info']['location']['country']['name'] + ", " + currentQueueElement['info']['location']['city']['name']);
         $("div.layer-not-see-yet div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-not-see-yet div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 

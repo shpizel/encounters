@@ -270,10 +270,10 @@ $Messenger = {
 
             var $contact = $Config.get('contacts')[$contactId];
 
-            $Messenger.$userInfo.setProfileInfo($contact.platform.info.oid, $contact.platform.info.name);
+            $Messenger.$userInfo.setProfileInfo($contact.platform.info.user_id, $contact.platform.info.name);
             $Messenger.$userInfo.setAvatar($contact.platform.info.square_photo_url);
             $Messenger.$userInfo.setAge($contact.platform.info.age);
-            $Messenger.$userInfo.setCity($contact.platform.location.city);
+            $Messenger.$userInfo.setCity($contact.platform.location.city.name);
             $Messenger.$userInfo.setPhotosCount($contact.platform.info.photos_count);
             $Messenger.$userInfo.setInterests($contact.platform.interests);
             $Messenger.$userInfo.setMeetButtonVisible(!$contact.rated);
@@ -601,8 +601,8 @@ $Messenger = {
 
                         $("img", $html).attr('src', $onlineUsers[$i]['info']['square_photo_url']);
                         $("div.user-name", $html).html($onlineUsers[$i]['info']['name']);
-                        $("div.user-location", $html).html($onlineUsers[$i]['info']['age'] + ', ' + $onlineUsers[$i]['location']['city']);
-                        $("a.button", $html).attr('href', '/messenger?id=' + $onlineUsers[$i]['info']['oid']);
+                        $("div.user-location", $html).html($onlineUsers[$i]['info']['age'] + ', ' + $onlineUsers[$i]['location']['city']['name']);
+                        $("a.button", $html).attr('href', '/messenger?id=' + $onlineUsers[$i]['info']['user_id']);
                         $html.appendTo($select);
                     }
 
@@ -861,7 +861,7 @@ $Messenger = {
             if ($visible) {
                 if ($("div.window-user_info ul.orange-menu li.item.meet").length == 0) {
                     var $html = $('<li class="item meet"><a target="_blank"><span>Встретиться</span></a></li>');
-                    $('a', $html).attr('href', $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + "&extra=meet" + $Config.get('contacts')[$Config.get('contact_id')].platform.info.oid);
+                    $('a', $html).attr('href', $Config.get('platform').partner_url + 'app_platform/?action=view&app_id=' + $Config.get('platform').app_id + "&extra=meet" + $Config.get('contacts')[$Config.get('contact_id')].platform.info.user_id);
                     $html.insertBefore($giftButton);
                 }
             } else {

@@ -144,9 +144,11 @@ class CurrentQueueUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>current_user_id</info> = {$webUserId}, <info>timestamp</info> = {$timestamp}");
 
+        /** Наполняем текущую очередь только если она меньше 16 позиций */
         while ($this->getCurrentQueueHelper()->getSize($webUserId) <= 16) {
             $searchQueueChunk = $this->getSearchQueueHelper()->getRange($webUserId, 0, self::$balance['search'] - 1);
             $usersAddedCount = 0;
+
             foreach ($searchQueueChunk as $currentUserId) {
                 $this->getSearchQueueHelper()->remove($webUserId, $currentUserId = (int) $currentUserId);
                 if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId)) {
@@ -236,21 +238,20 @@ class CurrentQueueUpdateCommand extends CronScript {
             }
         }
 
+        $dataArray = serialize(
+            array(
+                'user_id'   => $webUserId,
+                'timestamp' => time(),
+            )
+        );
+
         $GearmanClient = $this->getGearmanClient();
 
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-            'user_id'   => $webUserId,
-            'timestamp' => time(),
-        )));
-
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-            'user_id'   => $webUserId,
-            'timestamp' => time(),
-        )));
-
-        $GearmanClient->doHighBackground(EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME, serialize(array(
-            'user_id'   => $webUserId,
-            'timestamp' => time(),
-        )));
+        foreach ([EncountersBundle::GEARMAN_SEARCH_QUEUE_UPDATE_FUNCTION_NAME,
+            EncountersBundle::GEARMAN_HITLIST_QUEUE_UPDATE_FUNCTION_NAME,
+            EncountersBundle::GEARMAN_CONTACTS_QUEUE_UPDATE_FUNCTION_NAME,
+        ] as $functionName) {
+            $GearmanClient->doHighBackground($functionName, $dataArray);
+        }
     }
 }

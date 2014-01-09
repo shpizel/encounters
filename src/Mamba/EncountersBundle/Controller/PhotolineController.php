@@ -38,7 +38,7 @@ class PhotolineController extends ApplicationController {
         $Mamba = $this->getMamba();
 
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $webUser = $Mamba->Anketa()->getInfo($webUserId);
+            $webUser = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
 
             $from = null;
             if ($_from = $this->getRequest()->request->get('from')) {
@@ -53,28 +53,28 @@ class PhotolineController extends ApplicationController {
                 $photolineItems =
                     (
                         (!$from)
-                            ? $this->getPhotolineHelper()->get($webUser[0]['location']['region_id'])
-                            : $this->getPhotolineHelper()->getbyRange($webUser[0]['location']['region_id'], microtime(true), $from)
+                            ? $this->getPhotolineHelper()->get($webUser['location']['region']['id'])
+                            : $this->getPhotolineHelper()->getbyRange($webUser['location']['region']['id'], microtime(true), $from)
                     )
             ) {
-                $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
+                $photoLinePhotos = $this->getUsersHelper()->getInfo($photolineIds = array_map(function($item) {
                     return (int) $item['user_id'];
-                }, $photolineItems), array('location'));
+                }, $photolineItems));
 
                 $photoline = array();
                 $n = 0;
                 foreach ($photolineIds as $userId) {
                     foreach ($photoLinePhotos as $photoLinePhotosItem) {
-                        if ($photoLinePhotosItem['info']['oid'] == $userId) {
-                            if ($photoLinePhotosItem['info']['square_photo_url']) {
+                        if ($photoLinePhotosItem['info']['user_id'] == $userId) {
+                            if ($photoLinePhotosItem['avatar']['square_photo_url']) {
                                 $photoline[] = array(
                                     'user_id'   => $userId,
 
                                     'name'      => $photoLinePhotosItem['info']['name'],
                                     'age'       => $photoLinePhotosItem['info']['age'],
-                                    'city'      => $photoLinePhotosItem['location']['city'],
+                                    'city'      => $photoLinePhotosItem['location']['city']['name'],
 
-                                    'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
+                                    'photo_url' => $photoLinePhotosItem['avatar']['square_photo_url'],
                                     'comment'   => isset($photolineItems[$n]['comment']) ? htmlspecialchars($photolineItems[$n]['comment']) : null,
                                 );
                             }
@@ -111,13 +111,13 @@ class PhotolineController extends ApplicationController {
             $Account = $this->getAccountHelper();
             $account = $Account->get($webUserId);
 
-            $webUser = $this->getMamba()->Anketa()->getInfo($webUserId);
+            $webUser = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
 
             $cost = 1;
             if ($account >= $cost) {
                 $account = $Account->decr($webUserId, $cost);
 
-                $this->getPhotolineHelper()->add($webUser[0]['location']['region_id'], $webUserId, $this->getRequest()->request->get('comment'));
+                $this->getPhotolineHelper()->add($webUser['location']['region']['id'], $webUserId, $this->getRequest()->request->get('comment'));
 
                 $this->json['data'] = array(
                     'account' => $account
@@ -146,10 +146,10 @@ class PhotolineController extends ApplicationController {
                 if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId)) {
                     if ($webUserId != $currentUserId) {
 
-                        $_data = $this->getMamba()->Anketa()->getInfo($webUserId);
+                        $_data = $this->getUsersHelper()->getInfo($webUserId);
                         $_searchPreferences = $this->getSearchPreferencesHelper()->get($currentUserId);
 
-                        if ($_data[0]['info']['gender'] == $_searchPreferences['gender']) {
+                        if ($_data[$webUserId]['info']['gender'] == $_searchPreferences['gender']) {
                             $this->getCurrentQueueHelper()->put($webUserId, $currentUserId);
                         } else {
                             list($this->json['status'], $this->json['message']) = array(5, "Gender error");

@@ -204,6 +204,7 @@ class Users extends Helper {
                          */
                         if (in_array('info', $blocks)) {
                             $result[$userId]['info'] = [
+                                'user_id'     => $row['user_id'],
                                 'name'        => $row['info.name'],
                                 'gender'      => $row['info.gender'],
                                 'age'         => (int) $row['info.age'],
@@ -321,7 +322,7 @@ class Users extends Helper {
                 }
 
                 /** Отправим задачу в очередь на заполнение БД */
-                $this->getGearman()->getClient()->doLowBackground(
+                $usersToUpdate && $this->getGearman()->getClient()->doLowBackground(
                     EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
                     serialize($dataArray = array(
                         'users' => $usersToUpdate,
@@ -395,6 +396,7 @@ class Users extends Helper {
                      */
                     if (in_array('info', $blocks)) {
                         $result[$userId]['info'] = [
+                            'user_id'     => $dataArray['info']['oid'],
                             'name'        => $dataArray['info']['name'],
                             'gender'      => $dataArray['info']['gender'],
                             'age'         => (int) $dataArray['info']['age'],

@@ -40,6 +40,9 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        var_dump($this->getRedis()->zRange('sss', 1,2));
+        exit();
+
         $VariablesHepler = $this->getVariablesHelper();
         $counter = 0;
 

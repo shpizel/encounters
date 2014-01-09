@@ -30,12 +30,12 @@ class PreferencesController extends ApplicationController {
             $webUserAnketa = $this->getMamba()->Anketa()->getInfo($webUserId);
 
             $searchPreferences['geo'] = array(
-                'country_id' => (isset($webUserAnketa[0]['location']['country_id'])) ? $webUserAnketa[0]['location']['country_id'] : null,
-                'region_id'  => (isset($webUserAnketa[0]['location']['region_id'])) ? $webUserAnketa[0]['location']['region_id'] : null,
-                'city_id'    => (isset($webUserAnketa[0]['location']['city_id'])) ? $webUserAnketa[0]['location']['city_id'] : null,
+                'country_id' => (isset($webUserAnketa['location']['country']['id'])) ? $webUserAnketa['location']['country']['id'] : null,
+                'region_id'  => (isset($webUserAnketa['location']['region']['id'])) ? $webUserAnketa['location']['region']['id'] : null,
+                'city_id'    => (isset($webUserAnketa['location']['city']['id'])) ? $webUserAnketa['location']['city']['id'] : null,
             );
 
-            $searchPreferences['orientation'] = intval($webUserAnketa[0]['info']['gender'] != $searchPreferences['gender']);
+            $searchPreferences['orientation'] = intval($webUserAnketa['info']['gender'] != $searchPreferences['gender']);
 
             $this->getSearchPreferencesHelper()->set($webUserId, $searchPreferences);
 

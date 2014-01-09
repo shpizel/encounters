@@ -39,7 +39,7 @@ $Layers.$UserInfoLayer = {
             $("div.layer-user-info div.info div.name i").addClass('male');
         }
 
-        $("div.layer-user-info div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-user-info div.info div.location").html(currentQueueElement['info']['location']['country']['name'] + ", " + currentQueueElement['info']['location']['city']['name']);
         $("div.layer-user-info div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-user-info div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 

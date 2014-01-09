@@ -46,8 +46,8 @@
             <div class="app-menu-bar-inner">
                 <ul class="info-meet" style="float:right;">
                     <li class="item-profile">
-                        <img src="{{ webuser.anketa.info.square_photo_url }}"/>
-                        <a href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ webuser.anketa.info.oid }}" target="_top"><b>{{ webuser.anketa.info.name }}</b> <i class="plus"><b>{% if webuser.stats.events_unread %}+{{ webuser.stats.events_unread }}{% endif %}</b></i></a>
+                        <img src="{{ webuser.anketa.avatar.square_photo_url }}"/>
+                        <a href="{{ platform.partner_url }}app_platform/?action=view&app_id=355&extra=profile{{ webuser.anketa.info.user_id }}" target="_top"><b>{{ webuser.anketa.info.name }}</b> <i class="plus"><b>{% if webuser.stats.events_unread %}+{{ webuser.stats.events_unread }}{% endif %}</b></i></a>
                     </li>
 
                     <li class="item-account">
@@ -120,7 +120,7 @@
 {% endif %}
 
 {% if controller != 'messenger' %}
-    <div id="debug" style="font-size:13px;{% if not app.debug and webuser.anketa.info.oid != 560015854 and webuser.anketa.info.oid != 751072037 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
+    <div id="debug" style="font-size:13px;{% if not app.debug and webuser.anketa.info.user_id != 560015854 and webuser.anketa.info.user_id != 751072037 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
         <span>Generation time: {{ (generation_time*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
 
         <div class="metrics" style="display:none;">

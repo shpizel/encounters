@@ -94,8 +94,7 @@ class AdminUsersController extends ApplicationController {
                 'account' => $this->getAccountHelper()->get($userId),
             );
 
-            $userInfo = $this->getMamba()->Anketa()->getInfo($userId);
-            $userInfo = array_shift($userInfo);
+            $userInfo = $this->getUsersHelper($userId)[$userId];
 
             $dataArray['user']['info'] = $userInfo;
             if ($dataArray['user']['info_dump'] = $userInfo) {

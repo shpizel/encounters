@@ -14,20 +14,20 @@
     <div class="profile">
         <div style="position: relative; float:left;width:250px;">
             <div class="profile-picture">
-                <img class="user_info-avatar" src="{{ profile.info.square_photo_url }}">
+                <img class="user_info-avatar" src="{{ profile.avatar.square_photo_url }}">
                 <span class="profile-picture_col"><i>{{ profile.photos|length }}</i></span>
             </div>
 
             {% if not profile.myself %}
                 <div style="position:absolute;top:260px;">
-                    <a id="anketa-open" profile_id="{{ profile.info.oid }}" href="{% if purchased %}{{ platform.partner_url }}anketa.phtml?oid={{ profile.info.oid }}{% else %}#{% endif %}" class="ui-btn ui-btn-big">Открыть анкету на сайте</a>
+                    <a id="anketa-open" profile_id="{{ profile.info.user_id }}" href="{% if purchased %}{{ platform.partner_url }}anketa.phtml?oid={{ profile.info.user_id }}{% else %}#{% endif %}" class="ui-btn ui-btn-big">Открыть анкету на сайте</a>
                 </div>
             {% endif %}
         </div>
 
         <div class="anketa-content">
             <div class="anketa-content_user">
-                <span class="big">{{ profile.info.name }}</span> {% if profile.info.age > 0 %}<b>{{ profile.info.age }}</b>,{% endif %} <span class="small">{{ profile.location.city }}</span>
+                <span class="big">{{ profile.info.name }}</span> {% if profile.info.age > 0 %}<b>{{ profile.info.age }}</b>,{% endif %} <span class="small">{{ profile.location.city.name }}</span>
             </div>
 
             {%  if not profile.myself or profile.gifts|length > 0 %}

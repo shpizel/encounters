@@ -74,7 +74,14 @@ class SearchQueue extends Helper {
             throw new SearchQueueException("Invalid to parameter: \n" . var_export($to, true));
         }
 
-        return $this->getRedis()->zRange($this->getRedisQueueKey($userId), $from, $to);
+        return
+            array_map(
+                function($element) {
+                    return (int) $element;
+                },
+                $this->getRedis()->zRange($this->getRedisQueueKey($userId), $from, $to)
+            )
+        ;
     }
 
     /**

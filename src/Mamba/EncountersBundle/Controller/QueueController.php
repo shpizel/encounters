@@ -74,55 +74,41 @@ class QueueController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } elseif (($webUserId = $this->getMamba()->getWebUserId()) && ($currentQueue = $this->getCurrentQueueHelper()->getAll($webUserId))) {
-            $currentQueue = array_reverse($currentQueue);
-            $currentQueue = array_chunk($currentQueue, 100);
-            foreach ($currentQueue as $key=>$subQueue) {
-                $currentQueue[$key] = array_reverse($subQueue);
-            }
-            $currentQueue = array_reverse($currentQueue);
+            $anketaInfoArray = $this->getUsersHelper()->getInfo($currentQueue);
 
-            $Mamba->multi();
-            foreach ($currentQueue as $subQueue) {
-                $Mamba->Anketa()->getInfo($subQueue);
-            }
-            $anketaInfoArray = $Mamba->exec();
-
-            foreach ($anketaInfoArray as $chunk) {
-                foreach ($chunk as $dataArray) {
-
+            foreach ($anketaInfoArray as $_userId => $dataArray) {
                     if
                     (
                         !(
                             isset($dataArray['location']) &&
                             isset($dataArray['flags']) &&
                             isset($dataArray['familiarity']) &&
-                            $dataArray['info']['small_photo_url'] // без фотки нах
+                            $dataArray['avatar']['small_photo_url'] // без фотки нах
                         )
                     ) {
-                        $currentUserId = $dataArray['info']['oid'];
+                        $currentUserId = $dataArray['info']['user_id'];
 
-                        $this->getCurrentQueueHelper()->remove($webUserId, (int)$currentUserId);
-                        $this->getViewedQueueHelper()->put($webUserId, (int)$currentUserId, array('error' => 1));
+                        $this->getCurrentQueueHelper()->remove($webUserId, (int) $currentUserId);
+                        $this->getViewedQueueHelper()->put($webUserId, (int) $currentUserId, array('error' => 1));
 
                         continue;
                     }
 
-                    $this->json['data'][] = array(
+                    $this->json['data'][$dataArray['info']['user_id']] = array(
                         'info' => array(
-                            'id'               => $dataArray['info']['oid'],
+                            'id'               => $dataArray['info']['user_id'],
                             'name'             => $dataArray['info']['name'],
                             'gender'           => $dataArray['info']['gender'],
                             'age'              => $dataArray['info']['age'],
                             'sign'             => $dataArray['info']['sign'],
-                            'small_photo_url'  => $dataArray['info']['small_photo_url'],
-                            'medium_photo_url' => $dataArray['info']['medium_photo_url'],
+                            'small_photo_url'  => $dataArray['avatar']['small_photo_url'],
+                            'medium_photo_url' => $dataArray['avatar']['medium_photo_url'],
                             'is_app_user'      => $dataArray['info']['is_app_user'],
                             'location'         => $dataArray['location'],
                             'flags'            => $dataArray['flags'],
                             'familiarity'      => $dataArray['familiarity'],
                         ),
                     );
-                }
             }
 
             /**
@@ -138,19 +124,13 @@ class QueueController extends ApplicationController {
             }
 
             if ($currentUsers) {
-                $Mamba->multi();
-                foreach ($currentUsers as $currentUserId) {
-                    $Mamba->Photos()->get($currentUserId);
-                }
-                $dataArray = $Mamba->exec();
+                $dataArray = $this->getUsersHelper()->getInfo($currentUsers);
 
-                foreach ($dataArray as $key=>$dataArray) {
-                    if (isset($dataArray['photos'])) {
-                        $this->json['data'][$key]['photos'] = $dataArray['photos'];
-                    }
+                foreach ($dataArray as $_userId => $dataArray) {
+                    $this->json['data'][$_userId]['photos'] = $dataArray['photos'];
                 }
 
-                foreach ($this->json['data'] as $key=>$dataArray) {
+                foreach ($this->json['data'] as $key => $dataArray) {
                     $currentUserId = $dataArray['info']['id'];
                     if (!isset($dataArray['photos'])) {
                         unset($this->json['data'][$key]);

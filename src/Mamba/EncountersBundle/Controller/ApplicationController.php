@@ -30,6 +30,7 @@ use Core\MambaBundle\API\Mamba;
 use Core\GearmanBundle\Gearman;
 use Core\ServersBundle\Servers;
 use Core\RedisBundle\Redis;
+use Core\LeveldbBundle\Leveldb;
 use Symfony\Component\HttpFoundation\Session;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
@@ -175,7 +176,7 @@ abstract class ApplicationController extends Controller {
     /**
      * Leveldb getter
      *
-     * @return Contacts
+     * @return Leveldb
      */
     public function getLeveldb() {
         return $this->get('leveldb');
@@ -445,10 +446,14 @@ abstract class ApplicationController extends Controller {
         $Mamba = $this->getMamba();
         $Mamba->set('oid', $webUserId);
 
-        $webUser = $Mamba->Anketa()->getInfo($webUserId);
+        $webUser = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
+
+
+//        var_dump($webUser);
+//        exit();
 
         $dataArray['webuser'] = array(
-            'anketa'      => $webUser[0],
+            'anketa'      => $webUser,
             'popularity'  => $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($webUserId)),
             'battery'     => $this->getBatteryHelper()->get($webUserId),
             'account'     => $this->getAccountHelper()->get($webUserId),
@@ -459,25 +464,25 @@ abstract class ApplicationController extends Controller {
             $dataArray['webuser']['stats'] = $counters[$webUserId];
         }
 
-        if ($photolineItems = $this->getPhotolineHelper()->get($webUser[0]['location']['region_id'])) {
-            $photoLinePhotos = $Mamba->Anketa()->getInfo($photolineIds = array_map(function($item) {
+        if ($photolineItems = $this->getPhotolineHelper()->get($webUser['location']['region']['id'])) {
+            $photoLinePhotos = $this->getUsersHelper()->getInfo($photolineIds = array_map(function($item) {
                 return (int) $item['user_id'];
-            }, $photolineItems), array('location'));
+            }, $photolineItems));
 
             $photoline = array();
             $n = 0;
             foreach ($photolineIds as $userId) {
                 foreach ($photoLinePhotos as $photoLinePhotosItem) {
-                    if ($photoLinePhotosItem['info']['oid'] == $userId) {
-                        if ($photoLinePhotosItem['info']['square_photo_url']) {
+                    if ($photoLinePhotosItem['info']['user_id'] == $userId) {
+                        if ($photoLinePhotosItem['avatar']['square_photo_url']) {
                             $photoline[] = array(
                                 'user_id'   => $userId,
 
                                 'name'      => $photoLinePhotosItem['info']['name'],
                                 'age'       => $photoLinePhotosItem['info']['age'],
-                                'city'      => $photoLinePhotosItem['location']['city'],
+                                'city'      => $photoLinePhotosItem['location']['city']['name'],
 
-                                'photo_url' => $photoLinePhotosItem['info']['square_photo_url'],
+                                'photo_url' => $photoLinePhotosItem['avatar']['square_photo_url'],
                                 'comment'   => isset($photolineItems[$n]['comment']) ? htmlspecialchars($photolineItems[$n]['comment']) : null,
                             );
                         }
@@ -516,25 +521,25 @@ abstract class ApplicationController extends Controller {
             }
 
             $contacts = array_chunk($contacts, 100);
-            $Mamba->multi();
-            foreach ($contacts as $chunk) {
-                $Mamba->Anketa()->getInfo($chunk, array());
-            }
+            foreach ($contacts as $contactsChunkId=>$chunk) {
+                $userInfo = $this->getUsersHelper()->getInfo($chunk);
 
-            if ($result = $Mamba->exec()) {
-                $contacts = array();
-                foreach ($result as $chunk) {
-                    foreach ($chunk as $item) {
-                        if ($item['info']['is_app_user'] == 0) {
-                            $contacts[] = $item['info']['oid'];
-                        }
+                foreach ($chunk as $chunkUserId) {
+                    if (!(isset($userInfo[$chunkUserId]['info']['is_app_user']) && $userInfo[$chunkUserId]['info']['is_app_user'] == 1)) {
+                        unset($contacts[$contactsChunkId][array_search($chunkUserId, $contacts[$contactsChunkId])]);
                     }
                 }
+            }
 
-                if ($contacts) {
-                    $dataArray['non_app_users_contacts'] = $contacts;
-                    $this->getMemcache()->set("non_app_users_contacts_{$webUserId}", json_encode($contacts), 86400);
-                }
+            $_contacts = $contacts;
+            $contacts = [];
+            foreach ($_contacts as $_contactsChunk) {
+                $contacts = array_merge($chunk, $_contactsChunk);
+            }
+
+            if ($contacts) {
+                $dataArray['non_app_users_contacts'] = $contacts;
+                $this->getMemcache()->set("non_app_users_contacts_{$webUserId}", json_encode($contacts), 86400);
             }
         }
 
@@ -668,13 +673,12 @@ abstract class ApplicationController extends Controller {
         $this->updateLastAccess();
 
         $generationTime = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
-
         /**
          * Запишем данные по производительности в базу
          *
          * @author shpizel
          */
-        $this->getGearman()->getClient()->doLowBackground(
+        isset($parameters['metrics']) && $this->getGearman()->getClient()->doLowBackground(
             EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
             serialize(
                 array(

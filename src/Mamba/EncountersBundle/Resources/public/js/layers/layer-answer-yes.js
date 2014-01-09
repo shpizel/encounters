@@ -70,7 +70,7 @@ $Layers.$AnswerYesLayer = {
             $("div.layer-yes div.info div.name i").addClass('male');
         }
 
-        $("div.layer-yes div.info div.location").html(currentQueueElement['info']['location']['country'] + ", " + currentQueueElement['info']['location']['city']);
+        $("div.layer-yes div.info div.location").html(currentQueueElement['info']['location']['country']['name'] + ", " + currentQueueElement['info']['location']['city']['name']);
         $("div.layer-yes div.info div.age").html((currentQueueElement['info']['age'] ? (currentQueueElement['info']['age'] + ', ' + currentQueueElement['info']/*['other']*/['sign']) : '&nbsp;'));
         $("div.layer-yes div.info div.lookingfor span").html(currentQueueElement['info']['familiarity']['lookfor']);
 

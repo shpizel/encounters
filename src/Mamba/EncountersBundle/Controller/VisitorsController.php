@@ -89,23 +89,23 @@ class VisitorsController extends ApplicationController {
             }
 
             if ($usersArray) {
-                $anketasArray = $Mamba->Anketa()->getInfo(array_keys($usersArray));
+                $anketasArray = $this->getUsersHelper()->getInfo(array_keys($usersArray));
 
                 foreach ($anketasArray as &$anketa) {
 
-                    if (!isset($usersArray[$anketa['info']['oid']])) {
+                    if (!isset($usersArray[$anketa['info']['user_id']])) {
                         continue;
                     }
 
-                    $json[$anketa['info']['oid']] = array(
+                    $json[$anketa['info']['user_id']] = array(
                         'info' => array(
-                            'id'               => $anketa['info']['oid'],
+                            'id'               => $anketa['info']['user_id'],
                             'name'             => $anketa['info']['name'],
                             'gender'           => $anketa['info']['gender'],
                             'age'              => $anketa['info']['age'],
                             'sign'             => $anketa['info']['sign'],
-                            'small_photo_url'  => $anketa['info']['small_photo_url'],
-                            'medium_photo_url' => $anketa['info']['medium_photo_url'],
+                            'small_photo_url'  => $anketa['avatar']['small_photo_url'],
+                            'medium_photo_url' => $anketa['avatar']['medium_photo_url'],
                             'is_app_user'      => $anketa['info']['is_app_user'],
                             'location'         => $anketa['location'],
                             'flags'            => $anketa['flags'],
@@ -114,10 +114,10 @@ class VisitorsController extends ApplicationController {
                         ),
                     );
 
-                    $anketa['decision'] = array($usersArray[$anketa['info']['oid']]);
+                    $anketa['decision'] = array($usersArray[$anketa['info']['user_id']]);
 
-                    if ($this->getPurchasedHelper()->exists($webUserId, $anketa['info']['oid'])) {
-                        if ($tmp = $this->getViewedQueueHelper()->get($anketa['info']['oid'], $webUserId)) {
+                    if ($this->getPurchasedHelper()->exists($webUserId, $anketa['info']['user_id'])) {
+                        if ($tmp = $this->getViewedQueueHelper()->get($anketa['info']['user_id'], $webUserId)) {
                             $anketa['decision'][] = $tmp['decision'];
                             $anketa['decision'][] = 0;
 
@@ -134,7 +134,6 @@ class VisitorsController extends ApplicationController {
                     $data[] = $anketa;
                 }
             }
-
         }
 
         $dataArray = array_merge($dataArray, $this->getInitialData());

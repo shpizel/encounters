@@ -69,7 +69,14 @@ class CurrentQueue extends Helper {
             throw new CurrentQueueException("Invalid user id: \n" . var_export($userId, true));
         }
 
-        return $this->getRedis()->sMembers($this->getRedisQueueKey($userId));
+        return
+            array_map(
+                function($element) {
+                    return (int) $element;
+                },
+                $this->getRedis()->sMembers($this->getRedisQueueKey($userId))
+            )
+        ;
     }
 
     /**

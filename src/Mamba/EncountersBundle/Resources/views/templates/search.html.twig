@@ -8,7 +8,7 @@
             <a class="close"></a>
             {#<i class="arrow"></i>#}
             <div class="info-block">
-                <div class="photo">{% if webuser.anketa.info.small_photo_url %}<img src="{{ webuser.anketa.info.small_photo_url }}">{%else%}<img src="/bundles/encounters/images/photo_little_na.gif">{% endif %}</div>
+                <div class="photo">{% if webuser.anketa.avatar.small_photo_url %}<img src="{{ webuser.anketa.avatar.small_photo_url }}">{%else%}<img src="/bundles/encounters/images/photo_little_na.gif">{% endif %}</div>
                 <div class="message">
                     <div class="message-alert">Пусть ваше фото показывают {% if webuser.preferences.gender == 'M' %}мужчинам{% else %}девушкам{% endif %} чаще!</div>
                     <div class="message-help">Ваша популярность взлетит до небес &mdash; <a id="getmore" href="#">показать мое фото еще 50 раз</a></div>

@@ -78,6 +78,10 @@ class DatabaseUsersUpdateCommand extends CronScript {
         $workload = unserialize($job->workload());
         $users = $workload['users'];
 
+        if (!count($users)) {
+            return;
+        }
+
         $this->log("Got task for <info>" . count($users) . "</info> users");
 
         if ($usersData = $this->getUsersHelper()->getInfo($users, true, 5)) {
