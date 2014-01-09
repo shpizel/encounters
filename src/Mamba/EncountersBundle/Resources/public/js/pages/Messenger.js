@@ -271,7 +271,7 @@ $Messenger = {
             var $contact = $Config.get('contacts')[$contactId];
 
             $Messenger.$userInfo.setProfileInfo($contact.platform.info.user_id, $contact.platform.info.name);
-            $Messenger.$userInfo.setAvatar($contact.platform.info.square_photo_url);
+            $Messenger.$userInfo.setAvatar($contact.platform.avatar.square_photo_url);
             $Messenger.$userInfo.setAge($contact.platform.info.age);
             $Messenger.$userInfo.setCity($contact.platform.location.city.name);
             $Messenger.$userInfo.setPhotosCount($contact.platform.info.photos_count);
@@ -423,8 +423,8 @@ $Messenger = {
                 $("span.list-users_message", $html).html($contact.unread_count);
             }
 
-            if ($contact.platform.info.square_photo_url) {
-                $("img.list-users_avatars", $html).attr('src', $contact.platform.info.square_photo_url);
+            if ($contact.platform.avatar.square_photo_url) {
+                $("img.list-users_avatars", $html).attr('src', $contact.platform.avatar.square_photo_url);
             }
 
             if ($contact.platform.info.name) {
@@ -460,8 +460,8 @@ $Messenger = {
                 $("span.list-users_message", $html).html($contact.unread_count);
             }
 
-            if ($contact.platform.info.square_photo_url) {
-                $("img.list-users_avatars", $html).attr('src', $contact.platform.info.square_photo_url);
+            if ($contact.platform.avatar.square_photo_url) {
+                $("img.list-users_avatars", $html).attr('src', $contact.platform.avatar.square_photo_url);
             }
 
             if ($contact.platform.info.name) {
@@ -556,7 +556,7 @@ $Messenger = {
 
                     for (var $i=0;$i<$onlineUsers.length;$i++) {
                         $html = $('<li class="list_users_item"><img height="28" width="28" class="list_users_item-img"></li>');
-                        $("img", $html).attr('src', $onlineUsers[$i]['info']['square_photo_url']);
+                        $("img", $html).attr('src', $onlineUsers[$i]['avatar']['square_photo_url']);
                         $html.appendTo($menu);
                     }
                 }
@@ -599,7 +599,7 @@ $Messenger = {
                             '</li>'
                         );
 
-                        $("img", $html).attr('src', $onlineUsers[$i]['info']['square_photo_url']);
+                        $("img", $html).attr('src', $onlineUsers[$i]['avatar']['square_photo_url']);
                         $("div.user-name", $html).html($onlineUsers[$i]['info']['name']);
                         $("div.user-location", $html).html($onlineUsers[$i]['info']['age'] + ', ' + $onlineUsers[$i]['location']['city']['name']);
                         $("a.button", $html).attr('href', '/messenger?id=' + $onlineUsers[$i]['info']['user_id']);
