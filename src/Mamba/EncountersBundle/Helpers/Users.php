@@ -137,6 +137,8 @@ class Users extends Helper {
                     throw new UsersException("Invalid user id: " . var_export(gettype($userId), true));
                 }
             }
+        } else {
+            throw new UsersException("Invalid user id: " . var_export(gettype($users), true));
         }
 
         if (count($users) > 100) {
