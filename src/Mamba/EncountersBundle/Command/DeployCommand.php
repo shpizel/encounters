@@ -90,7 +90,7 @@ class DeployCommand extends Script {
                 $commands[] = array(
                     'description' => "Stopping cron daemon at $server server",
                     'command'     => array(
-                        ($server != 'www1') ? "ssh $server 'sudo service cron stop'" : 'sudo service cron stop',
+                        ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/cron stop'" : 'sudo /etc/init.d/cron stop',
                     ),
                 );
             }
