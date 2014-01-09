@@ -45,7 +45,6 @@ class PhotolineController extends ApplicationController {
                 if ($_from = (float) $_from) {
                     $from = $_from;
                 }
-
             }
 
             if

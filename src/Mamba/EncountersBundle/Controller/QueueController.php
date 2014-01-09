@@ -74,7 +74,11 @@ class QueueController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } elseif (($webUserId = $this->getMamba()->getWebUserId()) && ($currentQueue = $this->getCurrentQueueHelper()->getAll($webUserId))) {
-            $anketaInfoArray = $this->getUsersHelper()->getInfo($currentQueue);
+            $anketaInfoArray = $this->getUsersHelper()->getInfo(
+                array_map(function($el) {
+                    return (int) $el;
+                }, $currentQueue
+            ));
 
             foreach ($anketaInfoArray as $_userId => $dataArray) {
                     if
@@ -119,7 +123,7 @@ class QueueController extends ApplicationController {
             $currentUsers = array();
             foreach ($this->json['data'] as $userInfo) {
                 if (isset($userInfo['info']['id'])) {
-                    $currentUsers[] = $userInfo['info']['id'];
+                    $currentUsers[] = (int) $userInfo['info']['id'];
                 }
             }
 
