@@ -193,7 +193,7 @@ class Users extends Helper {
                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         $result[$userId = $row['user_id']] = [];
 
-                        if (time() - $row['changed'] > self::USER_INFO_LIFETIME) {
+                        if (time() - $row['info.changed'] > self::USER_INFO_LIFETIME) {
                             $usersToUpdate[] = $userId;
                         }
 

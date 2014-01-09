@@ -90,7 +90,7 @@ class DeployCommand extends Script {
                 $commands[] = array(
                     'description' => "Stopping cron daemon at $server server",
                     'command'     => array(
-                        ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/cron stop'" : 'sudo /etc/init.d/cron stop',
+                        ($server != 'www1') ? "ssh $server 'sudo service cron stop'" : 'sudo service cron stop',
                     ),
                 );
             }
@@ -108,8 +108,8 @@ class DeployCommand extends Script {
             $commands[] = array(
                 'description' => "Stopping nginx and php5-fpm at $server server",
                 'command'     => array(
-                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/nginx stop'" : 'sudo /etc/init.d/nginx stop',
-                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/php5-fpm stop'" : 'sudo /etc/init.d/php5-fpm stop',
+                    ($server != 'www1') ? "ssh $server 'sudo service nginx stop'" : 'sudo service nginx stop',
+                    ($server != 'www1') ? "ssh $server 'sudo service php5-fpm stop'" : 'sudo service php5-fpm stop',
                 ),
             );
         }
@@ -171,8 +171,8 @@ class DeployCommand extends Script {
                 $serverCommands[$server] = array(
                     'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*',
                     'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/ > /dev/null',
-                    '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug > /dev/null',
-                    '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug > /dev/null',
+                    (substr($server, 0, 3) == 'www') ? '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug > /dev/null' : 'pwd',
+                    (substr($server, 0, 3) == 'www') ? '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug > /dev/null' : 'pwd',
                     'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs',
                 );
 
@@ -240,8 +240,8 @@ class DeployCommand extends Script {
             $commands[] = array(
                 'description' => "Starting nginx and php5-fpm at $server server",
                 'command'     => array(
-                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/nginx start'" : 'sudo /etc/init.d/nginx start',
-                    ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/php5-fpm start'" : 'sudo /etc/init.d/php5-fpm start',
+                    ($server != 'www1') ? "ssh $server 'sudo service nginx start'" : 'sudo service nginx start',
+                    ($server != 'www1') ? "ssh $server 'sudo service php5-fpm start'" : 'sudo service php5-fpm start',
                 ),
             );
         }
@@ -252,7 +252,7 @@ class DeployCommand extends Script {
                 $commands[] = array(
                     'description' => "Starting cron daemon at $server server",
                     'command' => array(
-                        ($server != 'www1') ? "ssh $server 'sudo /etc/init.d/cron start'" : 'sudo /etc/init.d/cron start',
+                        ($server != 'www1') ? "ssh $server 'sudo service cron start'" : 'sudo service cron start',
                     ),
                 );
             }

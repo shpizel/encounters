@@ -48,7 +48,7 @@ class ProfileController extends ApplicationController {
             $dataArray['profile']['rated'] = $this->getViewedQueueHelper()->exists($webUserId, $currentUserId);
         }
 
-        $dataArray['profile']['photos'] = $this->getUsersHelper()->getInfo($currentUserId)['photos'];
+        $dataArray['profile']['photos'] = $this->getUsersHelper()->getInfo($currentUserId)[$currentUserId]['photos'];
 
         /** перемешаем интересы */
         if (isset($dataArray['profile']['interests'])) {
