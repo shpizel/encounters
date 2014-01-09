@@ -137,6 +137,8 @@ class Users extends Helper {
                     throw new UsersException("Invalid user id: " . var_export(gettype($userId), true));
                 }
             }
+        } elseif (is_numeric($users)) {
+            $users = [(int) $users];
         } else {
             throw new UsersException("Invalid user id: " . var_export(gettype($users), true));
         }
