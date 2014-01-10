@@ -173,8 +173,8 @@ class DeployCommand extends Script {
                     'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/ > /dev/null',
                     '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug > /dev/null',
                     '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug > /dev/null',
-                    'find /home/shpizel/encounters/web/js -type f | while read -r x; do   gzip -c "$x" > "$x.gz"; done',
-                    'find /home/shpizel/encounters/web/css -type f | while read -r x; do   gzip -c "$x" > "$x.gz"; done',
+                    'find /home/shpizel/encounters/web/js -type f | while read -r x; do   gzip -9 -c "$x" > "$x.gz"; done',
+                    'find /home/shpizel/encounters/web/css -type f | while read -r x; do   gzip -9 -c "$x" > "$x.gz"; done',
                     'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs;sudo chmod -R 777 web/css;sudo chmod -R 777 web/js',
                 );
 
