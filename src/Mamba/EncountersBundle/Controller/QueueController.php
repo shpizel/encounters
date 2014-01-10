@@ -85,7 +85,7 @@ class QueueController extends ApplicationController {
                             isset($dataArray['location']) &&
                             isset($dataArray['flags']) &&
                             isset($dataArray['familiarity']) &&
-                            $dataArray['avatar']['small_photo_url'] // без фотки нах
+                            count($dataArray['photos'])
                         )
                     ) {
                         $currentUserId = $dataArray['info']['user_id'];
