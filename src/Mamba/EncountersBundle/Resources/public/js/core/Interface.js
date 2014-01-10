@@ -52,7 +52,13 @@ $Interface = {
                     mamba.on('dimensions', $dimensionsSetterFunction);
 
                     mamba.on('messageComplete', function($data) {
-                        console.log($data);
+                        $Tools.ajaxPost(
+                            'platform.spam.save',
+                            {
+                                'ids': $data.data.data.sended.split(","),
+                                'limit': $data.data.data.limit
+                            }
+                        );
                     });
 
                     mamba.on('messageCancel', function($data) {

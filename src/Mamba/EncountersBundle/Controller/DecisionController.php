@@ -103,30 +103,6 @@ class DecisionController extends ApplicationController {
             }
 
             /** Уменьшить энергию CurrentUser'a */
-            /*if ($this->getSearchPreferencesObject()->exists($this->currentUserId)) {
-                if (($currentUserEnergy = $this->getEnergyObject()->get($this->currentUserId)) > 0) {
-                    $currentUserLevel = $this->getPopularityObject()->getLevel($currentUserEnergy);
-
-                    $levels = $this->getPopularityObject()->getLevels();
-                    if (isset($levels[$currentUserLevel + 1])) {
-                        $energiesInterval = array(
-                            'from' => $levels[$currentUserLevel],
-                            'to'   => $levels[$currentUserLevel + 1],
-                        );
-                    } else {
-                        $energiesInterval = array(
-                            'from' => $levels[$currentUserLevel - 1],
-                            'to'   => $levels[$currentUserLevel],
-                        );
-                    }
-
-                    $points = intval(($energiesInterval['to'] - $energiesInterval['from']) / $currentUserLevel);
-                    $this->getEnergyObject()->decr($this->currentUserId, $points*2);
-                }
-            }*/
-
-            /** откатились на старую версию */
-            /** Уменьшить энергию CurrentUser'a */
             if ($this->getSearchPreferencesHelper()->exists($this->currentUserId)) {
                 $currentUserEnergy = $this->getEnergyHelper()->get($this->currentUserId);
                 $currentUserLevel = $this->getPopularityHelper()->getLevel($currentUserEnergy);
@@ -241,15 +217,6 @@ class DecisionController extends ApplicationController {
                 'messages_unread',
                 'events_unread'
             ])[$this->webUserId];
-
-            /*$this->json['data']['counters'] = array(
-                'visitors' => mt_rand(0, 100),
-                'visitors_unread' => mt_rand(0, 100),
-                'mutual' => mt_rand(0, 100),
-                'mutual_unread' => mt_rand(0, 100),
-                'messages_unread' => mt_rand(0, 100),
-                'events_unread' => mt_rand(0, 100),
-            );*/
 
             $this->json['data']['popularity'] = array_merge(
                 $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($this->webUserId)),

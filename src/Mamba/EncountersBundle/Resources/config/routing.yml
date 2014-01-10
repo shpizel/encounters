@@ -168,6 +168,13 @@ variable.set:
     requirements:
         _method: POST
 
+# Отправка ответа
+platform.spam.save:
+    pattern: /ajax/platform.spam.save
+    defaults: { _controller: EncountersBundle:PlatformSpam:save }
+    requirements:
+        _method: POST
+
 # Добавление заказа
 service.add:
     pattern: /ajax/service.add

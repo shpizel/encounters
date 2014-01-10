@@ -36,8 +36,15 @@ class PlatformSpamController extends ApplicationController {
      */
     public function saveAction() {
         if ($webUserId = $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $ids  = $this->getRequest()->request->get('ids');
-            
+            if ($ids = array_map(function($item){return (int)$item;}, $this->getRequest()->request->get('ids'))) {
+                $limit = (int) $this->getRequest()->request->get('limit');
+
+                $this->getStatsHelper()->incr("mambaspam", count($ids));
+                $this->getRedis()->hIncrBy("mambaspam-by-{$webUserId}", date("dmy"), count($ids));
+
+            } else {
+                list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
+            }
         } else {
             list($this->json['status'], $this->json['message']) = array(1, "Invalid session");
         }
