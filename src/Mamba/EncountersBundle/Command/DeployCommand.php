@@ -173,7 +173,7 @@ class DeployCommand extends Script {
                     'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/ > /dev/null',
                     '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug > /dev/null',
                     '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug > /dev/null',
-                    'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs;sudo chmod -R 777 web/css;sudo chmod -R 777 js',
+                    'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs;sudo chmod -R 777 web/css;sudo chmod -R 777 web/js',
                 );
 
                 if ($server != 'www1') {
