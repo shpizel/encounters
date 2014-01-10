@@ -401,6 +401,7 @@ EOL;
 
         $result = $this->getEntityManager()->getConnection()->exec($sql);
         } else {
+return;
             throw new CronScriptException("Could not get user info");
         }
     }
