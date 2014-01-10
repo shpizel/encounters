@@ -80,7 +80,7 @@ class MessengerController extends ApplicationController {
 
             if ($this->getRequest()->request->get('online')) {
                  if ($onlineUsers = $this->getOnlineUsers()) {
-                     if ($platformData = $this->getUsersHelper()->getInfo($onlineUsers, ['avatar'])) {
+                     if ($platformData = $this->getUsersHelper()->getInfo($onlineUsers)) {
                          $platformData = array_filter($platformData, function($item) {
                              if (!$item['avatar']['square_photo_url']) {
                                  return false;
