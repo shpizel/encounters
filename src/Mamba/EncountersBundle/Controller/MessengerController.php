@@ -122,11 +122,8 @@ class MessengerController extends ApplicationController {
 
     private function getOnlineUsers() {
         if ($searchPreferences = $this->getSearchPreferencesHelper()->get($this->webUserId)) {
-            $Connection = $this->getDoctrine()->getEntityManager()->getConnection();
-
-            $stmt = $Connection
-                ->prepare(
-                    "select
+            $Query = $this->getMySQL()->getQuery("
+                    select
                         la.user_id
                     from
                         Encounters.UserLastAccess la, Encounters.User u
@@ -148,43 +145,43 @@ class MessengerController extends ApplicationController {
             $ageMax = $searchPreferences['age_to'];
             $cityId = $searchPreferences['geo']['city_id'];
 
-            $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
-            $stmt->bindParam('age_min', $ageMin, PDO::PARAM_STR);
-            $stmt->bindParam('age_max', $ageMax, PDO::PARAM_STR);
-            $stmt->bindParam('city_id', $cityId, PDO::PARAM_STR);
+            $Query->bindArray([
+                ['gender', $gender, PDO::PARAM_STR],
+                ['age_min', $ageMin, PDO::PARAM_STR],
+                ['age_max', $ageMax, PDO::PARAM_STR],
+                ['city_id', $cityId, PDO::PARAM_STR],
+            ]);
 
             $users = [];
-            if ($result = $stmt->execute()) {
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($result = $Query->execute()->getResult()) {
+                while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                     $users[] = (int) $row['user_id'];
                 }
             }
 
             if (count($users) < 100) {
-                $stmt = $Connection
-                    ->prepare(
-                        "select
-                            la.user_id
-                        from
-                            Encounters.UserLastAccess la, Encounters.User u
-                        where
-                            u.user_id = la.user_id and
-                            u.gender = :gender and
-                            u.age >= :age_min and
-                            u.age <= :age_max and
-                            la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*60
-                        order by
-                            la.lastaccess desc
-                        limit 100"
-                    )
-                ;
+                $Query = $this->getMySQL()->getQuery("
+                    select
+                        la.user_id
+                    from
+                        Encounters.UserLastAccess la, Encounters.User u
+                    where
+                        u.user_id = la.user_id and
+                        u.gender = :gender and
+                        u.age >= :age_min and
+                        u.age <= :age_max and
+                        la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*60
+                    order by
+                        la.lastaccess desc
+                    limit 100"
+                )->bindArray([
+                        ['gender', $gender, PDO::PARAM_STR],
+                        ['age_min', $ageMin, PDO::PARAM_STR],
+                        ['age_max', $ageMax, PDO::PARAM_STR],
+                ]);
 
-                $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
-                $stmt->bindParam('age_min', $ageMin, PDO::PARAM_STR);
-                $stmt->bindParam('age_max', $ageMax, PDO::PARAM_STR);
-
-                if ($result = $stmt->execute()) {
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if ($result = $Query->execute()->getResult()) {
+                    while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $users[] = (int) $row['user_id'];
                     }
                 }
@@ -193,26 +190,22 @@ class MessengerController extends ApplicationController {
             $users = array_unique($users);
 
             if (count($users) < 100) {
-                $stmt = $Connection
-                    ->prepare(
-                        "select
-                            la.user_id
-                        from
-                            Encounters.UserLastAccess la, Encounters.User u
-                        where
-                            u.user_id = la.user_id and
-                            u.gender = :gender and
-                            la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*60
-                        order by
-                            la.lastaccess desc
-                        limit 100"
-                    )
-                ;
+                $Query = $this->getMySQL()->getQuery(
+                    "select
+                        la.user_id
+                    from
+                        Encounters.UserLastAccess la, Encounters.User u
+                    where
+                        u.user_id = la.user_id and
+                        u.gender = :gender and
+                        la.lastaccess > UNIX_TIMESTAMP(NOW()) - 15*60
+                    order by
+                        la.lastaccess desc
+                    limit 100"
+                )->bind('gender', $gender, PDO::PARAM_STR);
 
-                $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
-
-                if ($result = $stmt->execute()) {
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if ($result = $Query->execute()->getResult()) {
+                    while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $users[] = (int) $row['user_id'];
                     }
                 }
@@ -221,24 +214,21 @@ class MessengerController extends ApplicationController {
             $users = array_unique($users);
 
             if (count($users) < 100) {
-                $stmt = $Connection
-                    ->prepare(
-                        "select
-                            la.user_id
-                        from
-                            Encounters.UserLastAccess la, Encounters.User u
-                        where
-                            u.user_id = la.user_id and
-                            u.gender = :gender
-                        order by
-                            la.lastaccess desc
-                        limit 100"
-                    )
-                ;
+                $Query = $this->getMySQL()->getQuery(
+                    "select
+                        la.user_id
+                    from
+                        Encounters.UserLastAccess la, Encounters.User u
+                    where
+                        u.user_id = la.user_id and
+                        u.gender = :gender
+                    order by
+                        la.lastaccess desc
+                    limit 100"
+                )->bind('gender', $gender, PDO::PARAM_STR);
 
-                $stmt->bindParam('gender', $gender, PDO::PARAM_STR);
-                if ($result = $stmt->execute()) {
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if ($result = $Query->execute()->getResult()) {
+                    while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $users[] = (int) $row['user_id'];
                     }
                 }
@@ -517,7 +507,7 @@ class MessengerController extends ApplicationController {
 
                     $this->getStatsHelper()->incr('gifts-sent');
 
-                    $userInfo = $this->getUsersHelper()->getInfo($webUserId);
+                    $userInfo = $this->getUsersHelper()->getInfo($webUserId, ['info', 'location'])[$webUserId];
 
                     $this->json['data'] = array(
                         'account' => $account,
@@ -682,12 +672,12 @@ class MessengerController extends ApplicationController {
             $userIds = array_map(function($item){return $item->getRecieverId();}, $Contacts);
             $userIds[] = $this->webUserId;
 
-            $apiData = $this->getUsersHelper()->getInfo($userIds);
+            $apiData = $this->getUsersHelper()->getInfo($userIds, ['info', 'photos']);
             $profilesData = [];
             foreach ($apiData as $userData) {
                 $profilesData[$userData['info']['user_id']] = $userData;
 
-                $userPhotos = $this->getUsersHelper()->getInfo($userData['info']['user_id'])[$userData['info']['user_id']];
+                $userPhotos = $this->getUsersHelper()->getInfo($userData['info']['user_id'], ['info', 'photos'])[$userData['info']['user_id']];
                 $profilesData[$userData['info']['user_id']]['info']['photos_count'] = count($userPhotos['photos']);
             }
 

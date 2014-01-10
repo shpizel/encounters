@@ -1,16 +1,18 @@
 <?php
 namespace Mamba\EncountersBundle\Command;
 
+use Core\ScriptBundle\CronScriptException;
+use Mamba\EncountersBundle\Helpers\Users;
 use Mamba\EncountersBundle\Script\CronScript;
 
 use Mamba\EncountersBundle\EncountersBundle;
 
 /**
- * EnergyUpdateCommand
+ * DatabaseUsersSearchPreferencesUpdateCommand
  *
  * @package EncountersBundle
  */
-class DatabaseEnergyUpdateCommand extends CronScript {
+class DatabaseUsersSearchPreferencesUpdateCommand extends CronScript {
 
     const
 
@@ -19,28 +21,32 @@ class DatabaseEnergyUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_DESCRIPTION = "Updates users energies",
+        SCRIPT_DESCRIPTION = "Updates users",
 
         /**
          * Имя скрипта
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:energy:update",
+        SCRIPT_NAME = "cron:database:users:search:preferences:update",
 
         /**
-         * SQL-запрос обновления таблицы энергий
+         * SQL-запрос
          *
          * @var str
          */
-        SQL_ENERGY_UPDATE = "
+        SQL_INSERT_INTO_USER_SEARCH_PREFERENCES = "
             INSERT INTO
-                Encounters.UserEnergy
+                UserSearchPreferences
             SET
-                `user_id` = :user_id,
-                `energy`  = :energy
+                `user_id`  = :user_id,
+                `gender`   = :gender,
+                `age_from` = :age_from,
+                `age_to`   = :age_to
             ON DUPLICATE KEY UPDATE
-                `energy` = :energy
+                `gender`   = :gender,
+                `age_from` = :age_from,
+                `age_to`   = :age_to
         "
     ;
 
@@ -53,8 +59,8 @@ class DatabaseEnergyUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME, function($job) use($class) {
-            return $class->updateEnergy($job);
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USERS_SEARCH_PREFERENCES_UPDATE_FUNCTION_NAME, function($job) use($class) {
+            return $class->updateUsersSearchPreferences($job);
         });
 
         $iterations = $this->iterations;
@@ -87,22 +93,24 @@ class DatabaseEnergyUpdateCommand extends CronScript {
      *
      * @param $job
      */
-    public function updateEnergy($job) {
-        list($userId, $energy) = array_values(unserialize($job->workload()));
+    public function updateUsersSearchPreferences($job) {
+        list($userId, ) = array_values(unserialize($job->workload()));
 
-        $this->log("Got task for <info>current_user_id</info> = {$userId}, <info>energy</info> = {$energy}");
+        $this->log("Got task for <info>{$userId}</info> user");
 
-        if ($this->getSearchPreferencesHelper()->exists($userId)) {
-            $Query = $this->getMySQL()->getQuery(self::SQL_ENERGY_UPDATE)->bindArray([
-                ['user_id', $userId],
-                ['energy', $energy = $this->getEnergyHelper()->get($userId)],
-            ]);
-
-            $result = $Query->execute()->getResult();
-            $this->getMemcache()->delete("energy_update_lock_by_user_" . $userId);
-            if (!$result) {
-                throw new \Core\ScriptBundle\CronScriptException('Unable to store data to DB.');
-            }
+        if ($searchPreferences = $this->getSearchPreferencesHelper()->get($userId)) {
+            return
+                $this
+                    ->getMySQL()
+                        ->getQuery(self::SQL_INSERT_INTO_USER_SEARCH_PREFERENCES)
+                        ->bindArray([
+                            ['user_id', (int) $userId],
+                            ['gender', $searchPreferences['gender']],
+                            ['age_from', (int) $searchPreferences['age_from']],
+                            ['age_to', (int) $searchPreferences['age_to']],
+                        ])
+                        ->run()
+            ;
         }
     }
 }

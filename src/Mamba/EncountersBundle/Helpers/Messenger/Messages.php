@@ -70,37 +70,25 @@ class Messages extends Helper {
 
         $startTime = microtime(true);
 
-        $stmt = $this->getDoctrine()
-            ->getEntityManager()
-            ->getConnection()
-            ->prepare(
-                $sql = sprintf(
-                    self::SQL_GET_MESSAGES,
-                    ($direction == 'ASC') ? '<' : '>',
-                    $limit,
-                    $offset
-                )
+        $Query = $this->getMySQL()->getQuery(
+            $sql = sprintf(
+                self::SQL_GET_MESSAGES,
+                ($direction == 'ASC') ? '<' : '>',
+                $limit,
+                $offset
             )
-        ;
+        );
 
         $_contactId = $Contact->getId();
         $_lastMessageId = $lastMessageId ?: PHP_INT_MAX;
-        $stmt->bindParam('contact_id', $_contactId, PDO::PARAM_INT);
-        $stmt->bindParam('last_message_id', $_lastMessageId, PDO::PARAM_INT);
+        $Query->bindArray([
+            ['contact_id', $_contactId, PDO::PARAM_INT],
+            ['last_message_id', $_lastMessageId, PDO::PARAM_INT]
+        ]);
 
-        if ($result = $stmt->execute()) {
-
-            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
-                'method'  => $sql,
-                'args'  => ['contact_id' => $_contactId, 'last_message_id' => $_lastMessageId],
-                'timeout' => $timeout = microtime(true) - $startTime,
-            );
-
-            \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
-
+        if ($result = $Query->execute()->getResult()) {
             $return = array();
-
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                 $return[] =
                     (new Message)
                         ->setId((int) $row['message_id'])
@@ -126,8 +114,7 @@ class Messages extends Helper {
     public function addMessage(Message $Message, $delayed = false) {
         $startTime = microtime(true);
 
-        $Connection = $this->getDoctrine()->getEntityManager()->getConnection();
-        $stmt = $Connection->prepare($sql = self::SQL_ADD_MESSAGE);
+        $Query = $this->getMySQL()->getQuery($sql = self::SQL_ADD_MESSAGE);
 
         if (!$delayed) {
             $_contactId = $Message->getContactId();
@@ -139,30 +126,18 @@ class Messages extends Helper {
 
             $_timestamp = $Message->getTimestamp();
 
-            $stmt->bindParam('contact_id',  $_contactId, PDO::PARAM_INT);
-            $stmt->bindParam('type', $_type, PDO::PARAM_STR);
-            $stmt->bindParam('direction', $_direction, PDO::PARAM_STR);
-            $stmt->bindParam('message', $_message, PDO::PARAM_LOB);
-            $stmt->bindParam('timestamp', $_timestamp, PDO::PARAM_INT);
+            $Query->bindArray([
+                ['contact_id',  $_contactId, PDO::PARAM_INT],
+                ['type', $_type, PDO::PARAM_STR],
+                ['direction', $_direction, PDO::PARAM_STR],
+                ['message', $_message, PDO::PARAM_LOB],
+                ['timestamp', $_timestamp, PDO::PARAM_INT],
+            ]);
 
-            if ($stmt->execute()) {
-
-                \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['requests'][] = array(
-                    'method'  => $sql,
-                    'args'  => ['contact_id' => $_contactId,
-                        'type' => $_type,
-                        'direction' => $_direction,
-                        'message' => $_message,
-                        'timestamp' => $_timestamp
-                    ],
-                    'timeout' => $timeout = microtime(true) - $startTime,
-                );
-
-                \Mamba\EncountersBundle\Controller\ApplicationController::$metrics['timeout']+=$timeout;
-
+            if ($Query->execute()->getResult()) {
                 return
                     $Message
-                        ->setId((int) $Connection->lastInsertId())
+                        ->setId((int) $this->getMySQL()->getLastInsertId())
                 ;
             }
         } else {

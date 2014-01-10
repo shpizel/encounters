@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Core\GearmanBundle\Gearman;
 use Core\RedisBundle\Redis;
+use Core\MySQLBundle\MySQL;
 use Core\LeveldbBundle\Leveldb;
 use Core\MemcacheBundle\Memcache;
 use Core\MambaBundle\API\Mamba;
@@ -220,7 +221,7 @@ abstract class Script extends ContainerAwareCommand {
     /**
      * Gearman getter
      *
-     * @return \Core\GearmanBundle\Gearman
+     * @return Gearman
      */
     public function getGearman() {
         return $this->getContainer()->get('gearman');
@@ -233,6 +234,15 @@ abstract class Script extends ContainerAwareCommand {
      */
     public function getDoctrine() {
         return $this->getContainer()->get('doctrine');
+    }
+
+    /**
+     * MySQL getter
+     *
+     * @return MySQL
+     */
+    public function getMySQL() {
+        return $this->getContainer()->get('mysql')->setMetricsEnabled(false);
     }
 
     /**

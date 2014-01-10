@@ -38,7 +38,7 @@ class PhotolineController extends ApplicationController {
         $Mamba = $this->getMamba();
 
         if ($webUserId = (int) $this->getSession()->get(Mamba::SESSION_USER_ID_KEY)) {
-            $webUser = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
+            $webUser = $this->getUsersHelper()->getInfo($webUserId, ['info', 'location'])[$webUserId];
 
             $from = null;
             if ($_from = $this->getRequest()->request->get('from')) {
@@ -56,9 +56,10 @@ class PhotolineController extends ApplicationController {
                             : $this->getPhotolineHelper()->getbyRange($webUser['location']['region']['id'], microtime(true), $from)
                     )
             ) {
-                $photoLinePhotos = $this->getUsersHelper()->getInfo($photolineIds = array_map(function($item) {
-                    return (int) $item['user_id'];
-                }, $photolineItems));
+                $photoLinePhotos = $this->getUsersHelper()->getInfo(
+                    $photolineIds = array_map(function($item){return (int) $item['user_id'];}, $photolineItems),
+                    ['info', 'avatar', 'location']
+                );
 
                 $photoline = array();
                 $n = 0;
@@ -110,7 +111,7 @@ class PhotolineController extends ApplicationController {
             $Account = $this->getAccountHelper();
             $account = $Account->get($webUserId);
 
-            $webUser = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
+            $webUser = $this->getUsersHelper()->getInfo($webUserId, ['location'])[$webUserId];
 
             $cost = 1;
             if ($account >= $cost) {
@@ -145,7 +146,7 @@ class PhotolineController extends ApplicationController {
                 if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId)) {
                     if ($webUserId != $currentUserId) {
 
-                        $_data = $this->getUsersHelper()->getInfo($webUserId);
+                        $_data = $this->getUsersHelper()->getInfo($webUserId, ['info']);
                         $_searchPreferences = $this->getSearchPreferencesHelper()->get($currentUserId);
 
                         if ($_data[$webUserId]['info']['gender'] == $_searchPreferences['gender']) {

@@ -1,0 +1,7 @@
+parameters:
+    mysql.class: Core\MySQLBundle\MySQL
+
+services:
+    mysql:
+        class: %mysql.class%
+        arguments: [@doctrine, @memcache, @redis, @leveldb]

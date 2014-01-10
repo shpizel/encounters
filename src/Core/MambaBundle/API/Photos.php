@@ -32,6 +32,7 @@ class Photos {
                 ]
             ];
         }
+
         return $result;
     }
 

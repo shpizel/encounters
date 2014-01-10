@@ -108,18 +108,20 @@ class DatabaseLastaccessUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>user_id</info> = {$userId}");
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_LASTACCESS_UPDATE);
-        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
-        $stmt->bindValue('lastaccess', $_lastAccess = (int) $this->getVariablesHelper()->get($userId, 'lastaccess'), PDO::PARAM_INT);
+        $Query = $this->getMySQL()->getQuery(self::SQL_USER_LASTACCESS_UPDATE)->bindArray([
+            ['user_id', $userId],
+            ['lastaccess', (int) $this->getVariablesHelper()->get($userId, 'lastaccess')],
+        ]);
 
-        if (!($result = $stmt->execute())) {
+        if (!($result = $Query->execute()->getResult())) {
             throw new \Core\ScriptBundle\CronScriptException('Unable to store data to UserLastAccess');
         } else {
-            $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_LAST_ONLINE_UPDATE);
-            $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
-            $stmt->bindValue('last_online', $_lastOnline = (int) $this->getVariablesHelper()->get($userId, 'lastaccess'), PDO::PARAM_INT);
+            $Query = $this->getMySQL()->getQuery(self::SQL_USER_LAST_ONLINE_UPDATE)->bindArray([
+                ['user_id', $userId],
+                ['last_online', (int) $this->getVariablesHelper()->get($userId, 'lastaccess')]
+            ]);
 
-            if (!$result = $stmt->execute()) {
+            if (!$result = $Query->execute()->getResult()) {
                 throw new \Core\ScriptBundle\CronScriptException('Unable to store data to UserLastOnline');
             } else {
                 $this->getMemcache()->delete("lastaccess_update_lock_by_user_" . $userId);

@@ -73,21 +73,21 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME = 'database:user:counters:update',
+        GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME = 'database:users:counters:update',
 
         /**
          * Имя функции для обновления пользовательских источников траффика
          *
          * @var str
          */
-        GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME = 'database:user:traffic:sources:update',
+        GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME = 'database:users:traffic:sources:update',
 
         /**
          * Имя функции для обновления таблицы энергий
          *
          * @var str
          */
-        GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME = 'database:energy:update',
+        GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME = 'database:users:energy:update',
 
         /**
          * Имя функции для обновления таблицы пользователей
@@ -97,11 +97,18 @@ class EncountersBundle extends Bundle {
         GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME = 'database:users:update',
 
         /**
+         * Имя функции для обновления таблицы пользовательских предпочтений
+         *
+         * @var str
+         */
+        GEARMAN_DATABASE_USERS_SEARCH_PREFERENCES_UPDATE_FUNCTION_NAME = 'database:users:search:preferences:update',
+
+        /**
          * Имя функции для обновления онлайн-юзеров
          *
          * @var str
          */
-        GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME = 'database:lastaccess:update',
+        GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME = 'database:users:lastaccess:update',
 
         /**
          * Имя функции для обновления счетчиков непрочитанных сообщений

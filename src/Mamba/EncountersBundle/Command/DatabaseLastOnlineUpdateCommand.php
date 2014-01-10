@@ -64,40 +64,31 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
      */
     public function updateUsersLastOnline() {
         $count = 0;
-        $Connection = $this->getEntityManager()->getConnection();
 
-        $selectStatement = $Connection
-            ->prepare(
-                "
-                    SELECT
-                        `user_id`
-                    FROM
-                        `Encounters`.`UserLastOnline`
-                    WHERE
-                        `changed` < DATE_SUB(NOW(), INTERVAL 6 HOUR)
-                    LIMIT
-                        30
-                    FOR UPDATE
-                "
-            )
-        ;
+        $selectQuery = $this->getMySQL()->getQuery("
+            SELECT
+                `user_id`
+            FROM
+                `Encounters`.`UserLastOnline`
+            WHERE
+                `changed` < DATE_SUB(NOW(), INTERVAL 6 HOUR)
+            LIMIT
+                30
+            FOR UPDATE
+        ");
 
-        $updateStatement = $Connection
-            ->prepare(
-                "
-                    UPDATE
-                        `Encounters`.`UserLastOnline`
-                    SET
-                        `last_online` = :last_online
-                    WHERE
-                        `user_id` = :user_id
-                "
-            )
-        ;
+        $updateQuery = $this->getMySQL()->getQuery("
+            UPDATE
+                `Encounters`.`UserLastOnline`
+            SET
+                `last_online` = :last_online
+            WHERE
+                `user_id` = :user_id
+        ");
 
         $users = [];
-        if ($result = $selectStatement->execute()) {
-            while ($row = $selectStatement->fetch(PDO::FETCH_ASSOC)) {
+        if ($result = $selectQuery->execute()->getResult()) {
+            while ($row = $selectQuery->fetch()) {
                 $users[] = (int) $row['user_id'];
             }
 
@@ -111,10 +102,12 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
                                 $lastOnline = time();
                             }
 
-                            $updateStatement->bindParam('user_id', $userId, PDO::PARAM_INT);
-                            $updateStatement->bindParam('last_online', $lastOnline, PDO::PARAM_INT);
+                            $updateQuery->bindArray([
+                                ['user_id', $userId],
+                                ['last_online', $lastOnline],
+                            ]);
 
-                            if ($updateStatement->execute()) {
+                            if ($updateQuery->execute()->getResult()) {
                                 $count++;
                             }
                         }

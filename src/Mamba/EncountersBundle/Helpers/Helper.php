@@ -5,6 +5,7 @@ use Core\RedisBundle\Redis;
 use Core\MemcacheBundle\Memcache;
 use Core\GearmanBundle\Gearman;
 use Core\LeveldbBundle\Leveldb;
+use Core\MySQLBundle\MySQL;
 use Core\MambaBundle\API\Mamba;
 
 use Doctrine\ORM\EntityManager;
@@ -78,6 +79,15 @@ abstract class Helper {
      */
     public function getDoctrine() {
         return $this->Container->get('doctrine');
+    }
+
+    /**
+     * MySQL getter
+     *
+     * @return MySQL
+     */
+    public function getMySQL() {
+        return $this->Container->get('mysql');
     }
 
     /**

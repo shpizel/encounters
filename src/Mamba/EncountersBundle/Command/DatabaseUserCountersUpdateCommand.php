@@ -110,17 +110,18 @@ class DatabaseUserCountersUpdateCommand extends CronScript {
             ['mychoice', 'visitors', 'visitors_unread', 'mutual', 'mutual_unread', 'messages_unread', 'events_unread']
         );
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_COUNTERS_UPDATE);
-        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
-        $stmt->bindValue($key = 'mychoice', $_mychoice = $counters[(int) $userId][$key], PDO::PARAM_INT);
-        $stmt->bindValue($key = 'visitors', $_visitors = $counters[(int) $userId][$key], PDO::PARAM_INT);
-        $stmt->bindValue($key = 'visitors_unread', $_visitorsUnread = $counters[(int) $userId][$key], PDO::PARAM_INT);
-        $stmt->bindValue($key = 'mutual', $_mutual = $counters[(int) $userId][$key], PDO::PARAM_INT);
-        $stmt->bindValue($key = 'mutual_unread', $_mutualUnread = $counters[(int) $userId][$key], PDO::PARAM_INT);
-        $stmt->bindValue($key = 'messages_unread', $_messagesUnread = $counters[(int) $userId][$key], PDO::PARAM_INT);
-        $stmt->bindValue($key = 'events_unread', $_eventsUnread = $counters[(int) $userId][$key], PDO::PARAM_INT);
+        $Query = $this->getMySQL()->getQuery(self::SQL_USER_COUNTERS_UPDATE)->bindArray([
+            ['user_id', $userId, PDO::PARAM_INT],
+            [$key = 'mychoice', $_mychoice = $counters[(int) $userId][$key], PDO::PARAM_INT],
+            [$key = 'visitors', $_visitors = $counters[(int) $userId][$key], PDO::PARAM_INT],
+            [$key = 'visitors_unread', $_visitorsUnread = $counters[(int) $userId][$key], PDO::PARAM_INT],
+            [$key = 'mutual', $_mutual = $counters[(int) $userId][$key], PDO::PARAM_INT],
+            [$key = 'mutual_unread', $_mutualUnread = $counters[(int) $userId][$key], PDO::PARAM_INT],
+            [$key = 'messages_unread', $_messagesUnread = $counters[(int) $userId][$key], PDO::PARAM_INT],
+            [$key = 'events_unread', $_eventsUnread = $counters[(int) $userId][$key], PDO::PARAM_INT],
+        ]);
 
-        if (!($result = $stmt->execute())) {
+        if (!($result = $Query->execute()->getResult())) {
             throw new \Core\ScriptBundle\CronScriptException('Unable to store data to UserCounters');
         } else {
             $this->getMemcache()->delete("user_counters_update_lock_by_user_" . $userId);

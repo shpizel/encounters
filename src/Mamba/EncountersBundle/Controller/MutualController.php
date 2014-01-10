@@ -78,22 +78,13 @@ class MutualController extends ApplicationController {
 
         $data = $json = array();
         $offset = $dataArray['paginator']['current'] > 0 ? ($dataArray['paginator']['current'] -1) * $perPage : 0;
-        $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare($sql = self::MUTUAL_SQL . " LIMIT $perPage OFFSET {$offset}");
+        $Query = $this->getMySQL()->getQuery($sql = self::MUTUAL_SQL . " LIMIT $perPage OFFSET {$offset}");
         $_webUserId = $webUserId;
-        $stmt->bindParam('web_user_id',  $_webUserId);
+        $Query->bind('web_user_id',  $_webUserId);
 
-        if ($result = $stmt->execute()) {
-
-            self::$metrics['requests'][] = array(
-                'method'  => $sql,
-                'args'  => ['web_user_id' => $webUserId],
-                'timeout' => $timeout = microtime(true) - $startTime,
-            );
-
-            self::$metrics['timeout']+=$timeout;
-
+        if ($result = $Query->execute()->getResult()) {
             $usersArray = array();
-            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
                 $usersArray[(int) $item['current_user_id']] = 1;
             }
 

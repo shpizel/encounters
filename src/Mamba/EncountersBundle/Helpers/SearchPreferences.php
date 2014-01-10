@@ -2,6 +2,7 @@
 namespace Mamba\EncountersBundle\Helpers;
 
 use Core\RedisBundle\Redis;
+use Mamba\EncountersBundle\EncountersBundle;
 
 /**
  * Preferences
@@ -55,6 +56,16 @@ class SearchPreferences extends Helper {
 
             $LevelDb->execute();
             if ($Request->getResult() === true) {
+                $this->getGearman()->getClient()->doLowBackground(
+                    EncountersBundle::GEARMAN_DATABASE_USERS_SEARCH_PREFERENCES_UPDATE_FUNCTION_NAME,
+                    serialize(
+                        array(
+                            'user_id' => $userId,
+                            'time'    => time(),
+                        )
+                    )
+                );
+
                 return true;
             } else {
                 throw new SearchPreferencesException("Could not set {$leveldbKey}");

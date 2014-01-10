@@ -29,6 +29,7 @@ class AppKernel extends Kernel
             new Core\LeveldbBundle\LeveldbBundle(),
 
             new Mamba\EncountersBundle\EncountersBundle(),
+            new Core\MySQLBundle\MySQLBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

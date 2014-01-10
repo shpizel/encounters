@@ -99,14 +99,14 @@ class DatabaseDecisionsUpdateCommand extends CronScript {
             $time = time();
         }
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_UPDATE_DECISION);
-        $stmt->bindParam('web_user_id', $webUserId);
-        $stmt->bindParam('current_user_id', $currentUserId);
-        $stmt->bindParam('decision', $decision);
-        $stmt->bindParam('changed', $time);
+        $Query = $this->getMySQL()->getQuery(self::SQL_UPDATE_DECISION)->bindArray([
+            ['web_user_id', $webUserId],
+            ['current_user_id', $currentUserId],
+            ['decision', $decision],
+            ['changed', $time],
+        ]);
 
-        $result = $stmt->execute();
-        if ($result) {
+        if ($Query->execute()->getResult()) {
 
             /**
              * Если запись в таблицу вставлена успешно — надо обновить счетчики

@@ -92,14 +92,13 @@ class MessengerCountersUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>user_id</info> = {$userId}");
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL_GET_USER_UNREAD_MESSAGES);
-        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
+        $Query = $this->getMySQL()->getQuery(self::SQL_GET_USER_UNREAD_MESSAGES)->bind('user_id', $userId, PDO::PARAM_INT);
 
-        $result = $stmt->execute();
+        $result = $Query->execute();
         if (!$result) {
             throw new \Core\ScriptBundle\CronScriptException('Could not execute query');
         } else {
-            if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($row = $Query->fetch()) {
                 $this->log($this->getCountersHelper()->get($userId, 'messages_unread') . "=>" . $row['messages_unread'], 32);
                 if ($this->getCountersHelper()->set($userId, 'messages_unread', (int) $row['messages_unread'])) {
                     $this->log('SUCCESS', 64);

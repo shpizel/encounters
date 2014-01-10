@@ -143,12 +143,12 @@ ORDER BY
         ];
 
         $this->log("Performing notifications", 48);
-        $stmt = $DB->prepare(self::GET_NOTIFICATIONS_SQL);
-        $this->updateUserNotificationsStatement = $this->getEntityManager()->getConnection()->prepare(self::SQL_USER_NOTIFICATIONS_UPDATE);
-        if ($stmt->execute()) {
-            $this->log('Selected ' . $stmt->rowCount() . ' rows..', 64);
+        $Query = $DB->prepare(self::GET_NOTIFICATIONS_SQL);
 
-            while ($task = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if ($Query->execute()->getResult()) {
+            $this->log('Selected ' . $Query->rowCount() . ' rows..', 64);
+
+            while ($task = $Query->fetch()) {
                 $task['user_id'] = (int) $task['user_id'];
                 $task['lastaccess'] = $task['lastaccess'];
                 $task['last_online'] = $task['last_online'];
@@ -206,10 +206,11 @@ ORDER BY
                          *
                          * @author shpizel
                          */
-                        $this->updateUserNotificationsStatement->bindParam('user_id', $task['user_id'], PDO::PARAM_INT);
-                        $this->updateUserNotificationsStatement->bindParam('message', $message, PDO::PARAM_STR);
-                        $this->updateUserNotificationsStatement->bindParam('metrics', $currentNotificationMetrics, PDO::PARAM_LOB);
-                        $this->updateUserNotificationsStatement->execute();
+                        $this->getMySQL()->getQuery(self::SQL_USER_NOTIFICATIONS_UPDATE)->bindArray([
+                            ['user_id', $task['user_id'], PDO::PARAM_INT],
+                            ['message', $message, PDO::PARAM_STR],
+                            ['metrics', $currentNotificationMetrics, PDO::PARAM_LOB],
+                        ])->execute();
 
                         $this->log("Notification send SUCCESS", 64);
                     } else {
@@ -350,11 +351,11 @@ ORDER BY
                 $webUsers[] = (int) $item['web_user_id'];
             }
 
-            if ($webUsers && ($result = $this->getMamba()->Anketa()->getInfo($webUsers))) {
+            if ($webUsers && ($result = $this->getUsersHelper()->getInfo($webUsers, ['info']))) {
                 $ret = array();
 
                 foreach ($result as $item) {
-                    $ret[$item['info']['oid']] = array(
+                    $ret[$item['info']['user_id']] = array(
                         'name'   => $item['info']['name'],
                         'age'    => $item['info']['age'],
                         'gender' => $item['info']['gender'],
@@ -373,8 +374,8 @@ ORDER BY
      * @return string|null
      */
     private function getUserNameById($userId) {
-        if ($anketa = $this->getMamba()->Anketa()->getInfo($userId)) {
-            $name = $anketa[0]['info']['name'];
+        if ($anketa = $this->getUsersHelper()->getInfo($userId, ['info'])) {
+            $name = $anketa['info']['name'];
 
             return $name;
         }

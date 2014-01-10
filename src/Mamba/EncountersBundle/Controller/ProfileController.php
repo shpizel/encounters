@@ -48,7 +48,7 @@ class ProfileController extends ApplicationController {
             $dataArray['profile']['rated'] = $this->getViewedQueueHelper()->exists($webUserId, $currentUserId);
         }
 
-        $dataArray['profile']['photos'] = $this->getUsersHelper()->getInfo($currentUserId)[$currentUserId]['photos'];
+        $dataArray['profile']['photos'] = $this->getUsersHelper()->getInfo($currentUserId, ['photos'])[$currentUserId]['photos'];
 
         /** перемешаем интересы */
         if (isset($dataArray['profile']['interests'])) {
@@ -57,9 +57,7 @@ class ProfileController extends ApplicationController {
 
         if ($dataArray['profile']['gifts'] = $this->getGiftsHelper()->get($currentUserId)) {
             $userData = array();
-            foreach ($this->getUsersHelper()->getInfo(array_unique(array_map(function($item) {
-                return (int) $item['web_user_id'];
-            }, $dataArray['profile']['gifts']))) as $userInfo) {
+            foreach ($this->getUsersHelper()->getInfo(array_unique(array_map(function($item) {return (int) $item['web_user_id'];}, $dataArray['profile']['gifts']))) as $userInfo) {
                 $userData[$userInfo['info']['user_id']] = $userInfo;
             }
 

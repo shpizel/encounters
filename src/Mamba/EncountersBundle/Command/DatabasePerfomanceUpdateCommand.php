@@ -27,23 +27,12 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
          *
          * @var str
          */
-        SCRIPT_NAME = "cron:database:perfomance:update"
-    ;
+        SCRIPT_NAME = "cron:database:perfomance:update",
 
-    /**
-     * Processor
-     *
-     * @return null
-     */
-    protected function process() {
-        $worker = $this->getGearmanWorker();
-
-        $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME, function($job) use($class) {
-            return $class->updateUserTrafficSources($job);
-        });
-
-        $this->insertStatement = $this->getEntityManager()->getConnection()->prepare("
+        /**
+         * @var str
+         */
+        SQL_INSERT_INTO_PERFOMANCE = "
             INSERT INTO
                 `Encounters`.`Perfomance`
             SET
@@ -66,7 +55,21 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
                 `mamba_requests_count` = :mamba_requests_count,
                 `mamba_timeout` = :mamba_timeout,
                 `mamba_requests` = :mamba_requests
-        ");
+        "
+    ;
+
+    /**
+     * Processor
+     *
+     * @return null
+     */
+    protected function process() {
+        $worker = $this->getGearmanWorker();
+
+        $class = $this;
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME, function($job) use($class) {
+            return $class->updateUserTrafficSources($job);
+        });
 
         $iterations = $this->iterations;
         while
@@ -147,27 +150,25 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
             $dataArray['time']
         ];
 
-        $this->insertStatement->bindValue('route', $route, PDO::PARAM_STR);
-        $this->insertStatement->bindValue('generation_time', $generationTime, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('requested_time', $requestedTime, PDO::PARAM_INT);
+        $Query = $this->getMySQL()->getQuery(self::SQL_INSERT_INTO_PERFOMANCE)->bindArray([
+            ['route', $route, PDO::PARAM_STR],
+            ['generation_time', $generationTime, PDO::PARAM_INT],
+            ['requested_time', $requestedTime, PDO::PARAM_INT],
+            ['mysql_requests_count', $mysqlRequestsCount, PDO::PARAM_INT],
+            ['mysql_timeout', $mysqlTimeout, PDO::PARAM_INT],
+            ['mysql_requests', $mysqlResuests, PDO::PARAM_LOB],
+            ['redis_requests_count', $redisRequestsCount, PDO::PARAM_INT],
+            ['redis_timeout', $redisTimeout, PDO::PARAM_INT],
+            ['redis_requests', $redisResuests, PDO::PARAM_LOB],
+            ['leveldb_requests_count', $leveldbRequestsCount, PDO::PARAM_INT],
+            ['leveldb_timeout', $leveldbTimeout, PDO::PARAM_INT],
+            ['leveldb_requests', $leveldbResuests, PDO::PARAM_LOB],
+            ['mamba_requests_count', $mambaRequestsCount, PDO::PARAM_INT],
+            ['mamba_timeout', $mambaTimeout, PDO::PARAM_INT],
+            ['mamba_requests', $mambaResuests, PDO::PARAM_LOB],
+        ]);
 
-        $this->insertStatement->bindValue('mysql_requests_count', $mysqlRequestsCount, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('mysql_timeout', $mysqlTimeout, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('mysql_requests', $mysqlResuests, PDO::PARAM_LOB);
-
-        $this->insertStatement->bindValue('redis_requests_count', $redisRequestsCount, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('redis_timeout', $redisTimeout, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('redis_requests', $redisResuests, PDO::PARAM_LOB);
-
-        $this->insertStatement->bindValue('leveldb_requests_count', $leveldbRequestsCount, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('leveldb_timeout', $leveldbTimeout, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('leveldb_requests', $leveldbResuests, PDO::PARAM_LOB);
-
-        $this->insertStatement->bindValue('mamba_requests_count', $mambaRequestsCount, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('mamba_timeout', $mambaTimeout, PDO::PARAM_INT);
-        $this->insertStatement->bindValue('mamba_requests', $mambaResuests, PDO::PARAM_LOB);
-
-        if (!($result = $this->insertStatement->execute())) {
+        if (!($result = $Query->execute()->getResult())) {
             throw new \Core\ScriptBundle\CronScriptException('Unable to store data to Perfomance');
         }
     }

@@ -175,19 +175,18 @@ class BillingController extends ApplicationController {
                     $billed = true;
                 }
 
-                $stmt = $this->getDoctrine()->getEntityManager()->getConnection()->prepare(self::BILLING_ADD_ITEM_SQL);
-
                 $billed = intval($billed);
-                $stmt->bindParam('user_id', $webUserId);
-                $stmt->bindParam('operation_id', $operationId);
-                $stmt->bindParam('amount', $amount);
-                $stmt->bindParam('amount_developer', $amountDeveloper);
-                $stmt->bindParam('validation_id', $validationId);
-                $stmt->bindParam('extra', $extra);
-                $stmt->bindParam('time', $time);
-                $stmt->bindParam('billed', $billed);
 
-                $result = $stmt->execute();
+                $this->getMySQL()->getQuery(self::BILLING_ADD_ITEM_SQL)->bindArray([
+                    ['user_id', $webUserId],
+                    ['operation_id', $operationId],
+                    ['amount', $amount],
+                    ['amount_developer', $amountDeveloper],
+                    ['validation_id', $validationId],
+                    ['extra', $extra],
+                    ['time', $time],
+                    ['billed', $billed],
+                ])->execute();
             }
 
             return new Response(/** null */);

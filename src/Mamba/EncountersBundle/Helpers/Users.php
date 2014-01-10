@@ -11,10 +11,35 @@ use PDO;
  */
 class Users extends Helper {
 
+    private
+
+        /**
+         * Сколько раз пытаться получить ответ от Мамбы если обнаружена проблема с получением данных
+         *
+         * @var int
+         */
+        $apiRetryCount = 1,
+
+        /**
+         * @var bool
+         */
+        $skipDatabase = false
+    ;
+
     const
 
+        /**
+         * Через сколько времени нужно обновить запись в БД
+         *
+         * @var int
+         */
         USER_INFO_LIFETIME = 86400,
 
+        /**
+         * SQL-запрос для получения данных из хранилища
+         *
+         * @var str
+         */
         SQL_USERS_GET_INFO = "
             SELECT
                 info.user_id as `user_id`,
@@ -93,23 +118,44 @@ class Users extends Helper {
     ;
 
     /**
-     * Return info about user:
-     * 1) info = [^user_id, name, gender, age, sign, about, is_app_user, lang, ^changed]
-     * 2) avatar = [^user_id, small_photo_url, medium_photo_url, square_photo_url]
-     * 3) location = [^user_id, country_id, country_name, region_id, region_name, city_id, city_name]
-     * 4) interests = [^user_id, interests]
-     * 5) flags = [^user_id, is_vip, is_real, is_leader, maketop, is_online]
-     * 6) type = [^user_id, height, weight, circumstance, constitution, smoke, drink, home, language^json, race]
-     * 7) familiarity = [lookfor, waitingfor, targets, marital, children]
-     * 8) albums = [^user_id, albums]
-     * 9) photos = [^user_id, photos]
-     * x) orientation = [orientation]
+     * Api retry count setter
+     *
+     * @param int $apiRetryCount
+     */
+    public function setApiRetryCount($apiRetryCount) {
+        if (!is_int($apiRetryCount)) {
+            throw new UsersException("Invalid api retry count");
+        }
+
+        $this->apiRetryCount = $apiRetryCount;
+        return $this;
+    }
+
+    /**
+     * Skip database setter
+     *
+     * @param bool $skipDatabase
+     */
+    public function setSkipDatabase($skipDatabase) {
+        if (!is_bool($skipDatabase)) {
+            throw new UsersException("Invalid skip database param");
+        }
+
+        $this->skipDatabase = $skipDatabase;
+        return $this;
+    }
+
+    /**
+     * User info getter
+     *
+     * @param $users
+     * @param array $blocks
+     * @return array
+     * @throws UsersException
      */
     public function getInfo(
         $users,
-        $skipDatabase = false,
-        $apiRetryCount = 1,
-        $blocks = [
+        array $blocks = [
             'info',
             'avatar',
             'location',
@@ -136,8 +182,8 @@ class Users extends Helper {
                 if (!is_int($userId) && !is_numeric($userId)) {
                     throw new UsersException("Invalid user id: " . var_export(gettype($userId), true));
                 } else {
-$users[$k] = (int) $userId;
-}
+                    $users[$k] = (int) $userId;
+                }
             }
         } elseif (is_numeric($users)) {
             $users = [(int) $users];
@@ -161,7 +207,7 @@ $users[$k] = (int) $userId;
          *
          * @author shpizel
          */
-        if (!$skipDatabase) {
+        if (!$this->skipDatabase) {
 
             /** Работа с кешем */
             $cacheKeys = [];
@@ -187,7 +233,7 @@ $users[$k] = (int) $userId;
 
 
             if ($users) {
-                $stmt = $this->getEntityManager()->getConnection()->prepare(
+                $Query = $this->getMySQL()->getQuery(
                     sprintf(
                         self::SQL_USERS_GET_INFO,
                         implode(", ", $users)
@@ -195,8 +241,8 @@ $users[$k] = (int) $userId;
                 );
 
                 $usersToUpdate = [];
-                if ($stmt->execute()) {
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if ($Query->execute()->getResult()) {
+                    while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $result[$userId = $row['user_id']] = [];
 
                         if (time() - $row['info.changed'] > self::USER_INFO_LIFETIME) {
@@ -349,12 +395,12 @@ $users[$k] = (int) $userId;
         if ($users) {
             $Mamba = $this->getMamba();
             $platformResult = null;
-            foreach (range(1, $apiRetryCount) as $try) {
+            foreach (range(1, $this->apiRetryCount) as $try) {
                 try {
                     $platformResult = $Mamba->Anketa()->getInfo($users);
                     break;
                 } catch (\Exception $e) {
-                    sleep(mt_rand(1,5));
+                    sleep(mt_rand(1, 5));
                 }
             }
 
@@ -368,25 +414,33 @@ $users[$k] = (int) $userId;
                  */
                 $photosPrefetched = $albumsPrefetched = [];
 
-                $Mamba->multi();
-                foreach ($users as $userId) {
-                    $Mamba->nocache()->Photos()->get($userId);
-                }
+                if (in_array('photos', $blocks)) {
+                    $Mamba->multi();
 
-                if ($photosResults = $Mamba->exec()) {
-                    foreach ($photosResults as $photosResultKey => $photosResult) {
-                        $photosPrefetched[$users[$photosResultKey]] = $photosResult;
+                    foreach ($platformResult as $resultItem) {
+                        $userId = (int) $resultItem['info']['oid'];
+                        $Mamba->Photos()->get($userId);
+                    }
+
+                    if ($photosResults = $Mamba->exec()) {
+                        foreach ($photosResults as $photosResultKey => $photosResult) {
+                            $photosPrefetched[$users[$photosResultKey]] = $photosResult;
+                        }
                     }
                 }
 
-                $Mamba->multi();
-                foreach ($users as $userId) {
-                    $Mamba->Photos()->getAlbums($userId);
-                }
+                if (in_array('albums', $blocks)) {
+                    $Mamba->multi();
 
-                if ($albumsResults = $Mamba->exec()) {
-                    foreach ($albumsResults as $albumsResultKey => $albumsResult) {
-                        $albumsPrefetched[$users[$albumsResultKey]] = $albumsResult;
+                    foreach ($platformResult as $resultItem) {
+                        $userId = (int) $resultItem['info']['oid'];
+                        $Mamba->Photos()->getAlbums($userId);
+                    }
+
+                    if ($albumsResults = $Mamba->exec()) {
+                        foreach ($albumsResults as $albumsResultKey => $albumsResult) {
+                            $albumsPrefetched[$users[$albumsResultKey]] = $albumsResult;
+                        }
                     }
                 }
 
@@ -529,7 +583,7 @@ $users[$k] = (int) $userId;
                     /** albums block */
                     if (in_array('albums', $blocks)) {
                         $result[$userId]['albums'] = [];
-                        if ($albums = /*$Mamba->Photos()->getAlbums*/$albumsPrefetched[$userId]) {
+                        if (isset($albumsPrefetched[$userId]) && ($albums = $albumsPrefetched[$userId])) {
                             foreach ($albums['albums'] as $album) {
                                 $result[$userId]['albums'][] = [
                                     'album_id' => $album['album_id'],
@@ -543,7 +597,7 @@ $users[$k] = (int) $userId;
                     /** photos block */
                     if (in_array('photos', $blocks)) {
                         $result[$userId]['photos'] = [];
-                        if ($photos = /*$Mamba->Photos()->get*/$photosPrefetched[$userId]) {
+                        if (isset($photosPrefetched[$userId]) && ($photos = $photosPrefetched[$userId])) {
                             foreach ($photos['photos'] as $photo) {
                                 $result[$userId]['photos'][] = [
                                     'photo_id'         => $photo['photo_id'],
@@ -565,7 +619,7 @@ $users[$k] = (int) $userId;
              *
              * @author shpizel
              */
-            if ($users && !$skipDatabase) {
+            if ($users && !$this->skipDatabase) {
                 /** Отправим задачу в очередь на заполнение БД */
                 $this->getGearman()->getClient()->doLowBackground(
                     EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,

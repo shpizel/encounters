@@ -31,6 +31,7 @@ use Core\GearmanBundle\Gearman;
 use Core\ServersBundle\Servers;
 use Core\RedisBundle\Redis;
 use Core\LeveldbBundle\Leveldb;
+use Core\MySQLBundle\MySQL;
 use Symfony\Component\HttpFoundation\Session;
 
 use Mamba\EncountersBundle\Helpers\Queues\ContactsQueue;
@@ -48,14 +49,6 @@ use Symfony\Component\HttpFoundation\Response;
  * @package EncountersBundle
  */
 abstract class ApplicationController extends Controller {
-
-    public static
-
-        $metrics = array(
-            'requests' => array(),
-            'timeout'  => 0,
-        )
-    ;
 
     protected static
 
@@ -110,6 +103,15 @@ abstract class ApplicationController extends Controller {
      */
     public function getGearman() {
         return $this->get('gearman');
+    }
+
+    /**
+     * MySQL getter
+     *
+     * @return MySQL
+     */
+    public function getMySQL() {
+        return $this->get('mysql');
     }
 
     /**
@@ -448,10 +450,6 @@ abstract class ApplicationController extends Controller {
 
         $webUser = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
 
-
-//        var_dump($webUser);
-//        exit();
-
         $dataArray['webuser'] = array(
             'anketa'      => $webUser,
             'popularity'  => $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($webUserId)),
@@ -465,9 +463,10 @@ abstract class ApplicationController extends Controller {
         }
 
         if ($photolineItems = $this->getPhotolineHelper()->get($webUser['location']['region']['id'])) {
-            $photoLinePhotos = $this->getUsersHelper()->getInfo($photolineIds = array_map(function($item) {
-                return (int) $item['user_id'];
-            }, $photolineItems));
+            $photoLinePhotos = $this->getUsersHelper()->getInfo(
+                $photolineIds = array_map(function($item){return (int) $item['user_id'];}, $photolineItems),
+                ['info', 'avatar', 'location']
+            );
 
             $photoline = array();
             $n = 0;
@@ -522,7 +521,7 @@ abstract class ApplicationController extends Controller {
 
             $contacts = array_chunk($contacts, 100);
             foreach ($contacts as $contactsChunkId=>$chunk) {
-                $userInfo = $this->getUsersHelper()->getInfo($chunk);
+                $userInfo = $this->getUsersHelper()->getInfo($chunk, ['info']);
 
                 foreach ($chunk as $chunkUserId) {
                     if (!(isset($userInfo[$chunkUserId]['info']['is_app_user']) && $userInfo[$chunkUserId]['info']['is_app_user'] == 1)) {
@@ -542,13 +541,6 @@ abstract class ApplicationController extends Controller {
                 $this->getMemcache()->set("non_app_users_contacts_{$webUserId}", json_encode($contacts), 86400);
             }
         }
-
-        $dataArray['metrics'] = array(
-            'mysql'   => self::$metrics,
-            'redis'   => $this->getRedis()->getMetrics(),
-            'leveldb' => $this->getLeveldb()->getMetrics(),
-            'mamba'   => $this->getMamba()->getMetrics(),
-        );
 
         $dataArray['controller'] = strtolower($this->getControllerName(get_called_class()));
         $dataArray['time'] = time();
@@ -612,7 +604,7 @@ abstract class ApplicationController extends Controller {
         $JSON['metrics'] = array(
             'generation_time' => $generationTime = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
 
-            'mysql'   => self::$metrics,
+            'mysql'   => $this->getMySQL()->getMetrics(),
             'redis'   => $this->getRedis()->getMetrics(),
             'leveldb' => $this->getLeveldb()->getMetrics(),
             'mamba'   => $this->getMamba()->getMetrics(),
@@ -672,7 +664,15 @@ abstract class ApplicationController extends Controller {
     public function TwigResponse($view, array $parameters = array(), Response $response = null) {
         $this->updateLastAccess();
 
+        $parameters['metrics'] = array(
+            'mysql'   => $this->getMySQL()->getMetrics(),
+            'redis'   => $this->getRedis()->getMetrics(),
+            'leveldb' => $this->getLeveldb()->getMetrics(),
+            'mamba'   => $this->getMamba()->getMetrics(),
+        );
+
         $generationTime = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+
         /**
          * Запишем данные по производительности в базу
          *

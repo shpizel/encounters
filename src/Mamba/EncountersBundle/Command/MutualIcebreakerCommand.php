@@ -83,8 +83,8 @@ class MutualIcebreakerCommand extends CronScript {
         if ($ContactsHelper->getContact($currentUserId, $webUserId)) {
             $this->log("Contact already exists", 48);
         } else {
-            if ($apiData = $this->getMamba()->Anketa()->getInfo((int) $webUserId)) {
-                $userData = $apiData[0];
+            if ($apiData = $this->getUsersHelper()->getInfo((int) $webUserId)) {
+                $userData = $apiData[(int)$webUserId];
 
                 if ($userData['info']['gender'] == 'F') {
                     $message = "{$userData['info']['name']}, с которой вы хотели встретиться, ответила, что тоже не против встретиться с вами! Она ждет вашего сообщения, чтобы договориться о встрече!";

@@ -264,21 +264,22 @@ class SearchQueueUpdateCommand extends CronScript {
         $usersAddedCount = 0;
 
         $this->log("Searching by DB with country, region, city..", 64);
-        $stmt = $this->getEntityManager()->getConnection()->prepare(self::FULL_SEARCH_SQL);
 
-        $stmt->bindParam('gender', $searchPreferences['gender']);
-        $stmt->bindParam('orientation', $searchPreferences['orientation']);
-        $stmt->bindParam('age_from', $searchPreferences['age_from']);
-        $stmt->bindParam('age_to', $searchPreferences['age_to']);
-        $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
-        $stmt->bindParam('region_id', $searchPreferences['geo']['region_id']);
-        $stmt->bindParam('city_id', $searchPreferences['geo']['city_id']);
-        $stmt->bindParam('web_user_id', $_webUserId);
+        $Query = $this->getMySQL()->getQuery(self::FULL_SEARCH_SQL)->bindArray([
+            ['gender', $searchPreferences['gender']],
+            ['orientation', $searchPreferences['orientation']],
+            ['age_from', $searchPreferences['age_from']],
+            ['age_to', $searchPreferences['age_to']],
+            ['country_id', $searchPreferences['geo']['country_id']],
+            ['region_id', $searchPreferences['geo']['region_id']],
+            ['city_id', $searchPreferences['geo']['city_id']],
+            ['web_user_id', $_webUserId],
+        ]);
 
-        if ($result = $stmt->execute()) {
+        if ($result = $Query->execute()->getResult()) {
             $this->log("SQL query OK", 64);
 
-            while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
                 $currentUserId = (int) $item['user_id'];
 
                 if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
@@ -372,20 +373,20 @@ class SearchQueueUpdateCommand extends CronScript {
 
         if ($usersAddedCount < self::LIMIT) {
             $this->log("Searching by DB with country and region..", 64);
-            $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_AND_REGION_SEARCH_SQL);
+            $Query = $this->getMySQL()->getQuery(self::COUNTRY_AND_REGION_SEARCH_SQL)->bindArray([
+                ['gender', $searchPreferences['gender']],
+                ['orientation', $searchPreferences['orientation']],
+                ['age_from', $searchPreferences['age_from']],
+                ['age_to', $searchPreferences['age_to']],
+                ['country_id', $searchPreferences['geo']['country_id']],
+                ['region_id', $searchPreferences['geo']['region_id']],
+                ['web_user_id', $_webUserId],
+            ]);
 
-            $stmt->bindParam('gender', $searchPreferences['gender']);
-            $stmt->bindParam('orientation', $searchPreferences['orientation']);
-            $stmt->bindParam('age_from', $searchPreferences['age_from']);
-            $stmt->bindParam('age_to', $searchPreferences['age_to']);
-            $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
-            $stmt->bindParam('region_id', $searchPreferences['geo']['region_id']);
-            $stmt->bindParam('web_user_id', $_webUserId);
-
-            if ($result = $stmt->execute()) {
+            if ($result = $Query->execute()->getResult()) {
                 $this->log("SQL query OK", 64);
 
-                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
                     $currentUserId = (int) $item['user_id'];
                     if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
                         !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
@@ -479,19 +480,19 @@ class SearchQueueUpdateCommand extends CronScript {
 
         if ($usersAddedCount < self::LIMIT) {
             $this->log("Searching by DB with country..", 64);
-            $stmt = $this->getEntityManager()->getConnection()->prepare(self::COUNTRY_SEARCH_SQL);
+            $Query = $this->getMySQL()->getQuery(self::COUNTRY_SEARCH_SQL)->bindArray([
+                ['gender', $searchPreferences['gender']],
+                ['orientation', $searchPreferences['orientation']],
+                ['age_from', $searchPreferences['age_from']],
+                ['age_to', $searchPreferences['age_to']],
+                ['country_id', $searchPreferences['geo']['country_id']],
+                ['web_user_id', $_webUserId],
+            ]);
 
-            $stmt->bindParam('gender', $searchPreferences['gender']);
-            $stmt->bindParam('orientation', $searchPreferences['orientation']);
-            $stmt->bindParam('age_from', $searchPreferences['age_from']);
-            $stmt->bindParam('age_to', $searchPreferences['age_to']);
-            $stmt->bindParam('country_id', $searchPreferences['geo']['country_id']);
-            $stmt->bindParam('web_user_id', $_webUserId);
-
-            if ($result = $stmt->execute()) {
+            if ($result = $Query->execute()->getResult()) {
                 $this->log("SQL query OK", 64);
 
-                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
                     $currentUserId = (int) $item['user_id'];
                     if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
                         !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&

@@ -2,7 +2,6 @@
 namespace Mamba\EncountersBundle\Command;
 
 use Mamba\EncountersBundle\Script\CronScript;
-use PDO;
 
 /**
  * DatabaseDecisionsCleanCommand
@@ -46,6 +45,6 @@ class DatabaseDecisionsCleanCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $this->getEntityManager()->getConnection()->prepare(self::DECISIONS_CLEAN_SQL)->execute();
+        $this->getMySQL()->getQuery(self::DECISIONS_CLEAN_SQL)->execute();
     }
 }

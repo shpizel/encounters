@@ -79,7 +79,7 @@ class WelcomeController extends ApplicationController {
                     [
                         'routes' => json_encode($this->getRoutes()),
                         'metrics' => [
-                            'mysql'   => self::$metrics,
+                            'mysql'   => $this->getMySQL()->getMetrics(),
                             'redis'   => $this->getRedis()->getMetrics(),
                             'leveldb' => $this->getLeveldb()->getMetrics(),
                             'mamba'   => $this->getMamba()->getMetrics(),
@@ -140,7 +140,7 @@ class WelcomeController extends ApplicationController {
                     (
                         'EncountersBundle:templates:login.html.twig',
                         ['metrics' => [
-                            'mysql'   => self::$metrics,
+                            'mysql'   => $this->getMySQL()->getMetrics(),
                             'redis'   => $this->getRedis()->getMetrics(),
                             'leveldb' => $this->getLeveldb()->getMetrics(),
                             'mamba'   => $this->getMamba()->getMetrics(),

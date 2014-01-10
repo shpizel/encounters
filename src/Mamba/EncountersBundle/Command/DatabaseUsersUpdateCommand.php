@@ -84,11 +84,11 @@ class DatabaseUsersUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>" . count($users) . "</info> users");
 
-        if ($usersData = $this->getUsersHelper()->getInfo($users, true, 5)) {
+        if ($usersData = $this->getUsersHelper()->setApiRetryCount(5)->setSkipDatabase(true)->getInfo($users)) {
 
         /** закешируем информацию */
         foreach ($usersData as $userId => $userData) {
-            $this->getMemcache()->set('user_' . $userId . "_info", json_encode($userData), Users::USER_INFO_LIFETIME);
+            $this->getMemcache()->set('user_' . $userId . "_info", json_encode($userData, JSON_PRETTY_PRINT), Users::USER_INFO_LIFETIME);
         }
 
         $DB = $this->getEntityManager()->getConnection();
@@ -213,7 +213,7 @@ EOL;
              *     'interests'
              * }
              */
-            $dataArray['interests'] = $DB->quote(json_encode($dataArray['interests']));
+            $dataArray['interests'] = $DB->quote(json_encode($dataArray['interests'], JSON_PRETTY_PRINT));
 
             $sql[] = <<<EOL
 INSERT INTO
@@ -275,7 +275,7 @@ EOL;
                 $item = $DB->quote($item);
             }
 
-            $dataArray['type']['language'] = json_encode($dataArray['type']['language']);
+            $dataArray['type']['language'] = json_encode($dataArray['type']['language'], JSON_PRETTY_PRINT);
 
             $sql[] = <<<EOL
 INSERT INTO
@@ -314,7 +314,7 @@ EOL;
              *     'children',
              * }
              */
-            $dataArray['familiarity']['targets'] = json_encode($dataArray['familiarity']['targets']);
+            $dataArray['familiarity']['targets'] = json_encode($dataArray['familiarity']['targets'], JSON_PRETTY_PRINT);
             foreach ($dataArray['familiarity'] as &$item) {
                 $item = $DB->quote($item);
             }
@@ -343,7 +343,7 @@ EOL;
              *     'albums',
              * }
              */
-            $dataArray['albums'] = $DB->quote(json_encode($dataArray['albums']));
+            $dataArray['albums'] = $DB->quote(json_encode($dataArray['albums'], JSON_PRETTY_PRINT));
 
             $sql[] = <<<EOL
 INSERT INTO
@@ -361,7 +361,7 @@ EOL;
              *     'photos',
              * }
              */
-            $dataArray['photos'] = $DB->quote(json_encode($dataArray['photos']));
+            $dataArray['photos'] = $DB->quote(json_encode($dataArray['photos'], JSON_PRETTY_PRINT));
 
             $sql[] = <<<EOL
 INSERT INTO
@@ -399,7 +399,7 @@ EOL;
 
         $sql = implode("\n", $sql);
 
-        $result = $this->getEntityManager()->getConnection()->exec($sql);
+        $result = $DB->exec($sql);
         } else {
 return;
             throw new CronScriptException("Could not get user info");

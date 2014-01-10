@@ -83,15 +83,14 @@ class PhotolineIcebreakerCommand extends CronScript {
                                 //список пустой, нужно его заполнить
                                 $this->log("Empty cache at regionId = {$regionId}, regenerating..", 64);
 
-                                $stmt = $this->getEntityManager()->getConnection()->prepare(self::SQL);
-                                $stmt->bindParam('region_id', $regionId);
+                                $Query = $this->getMySQL()->getQuery(self::SQL)->bind('region_id', $regionId);
 
-                                if ($result = $stmt->execute()) {
+                                if ($result = $Query->execute()->getResult()) {
                                     $this->log("SQL query OK", 64);
 
                                     $counter = 0;
                                     $users = array();
-                                    while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                    while ($item = $Query->fetch()) {
                                         $users[] = (int) $item['user_id'];
                                     }
 

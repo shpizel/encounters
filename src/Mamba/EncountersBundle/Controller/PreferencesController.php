@@ -27,7 +27,7 @@ class PreferencesController extends ApplicationController {
 
         if ($searchPreferences = $this->getSearchPreferencesFromRequest()) {
 
-            $webUserAnketa = $this->getUsersHelper()->getInfo($webUserId)[$webUserId];
+            $webUserAnketa = $this->getUsersHelper()->getInfo($webUserId, ['info', 'location'])[$webUserId];
 
             $searchPreferences['geo'] = array(
                 'country_id' => (isset($webUserAnketa['location']['country']['id'])) ? $webUserAnketa['location']['country']['id'] : null,

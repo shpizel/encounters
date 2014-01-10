@@ -40,6 +40,24 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        print_r($Mamba = $this->getMamba()->Anketa()->getInfo([1131022170, 560015854], ['about']));
+        exit();
+        $Mamba->multi();
+        $ids = [1131022170, 547075878, 1100187593, 1157528928, 1107723185, 967122486, 958635043, 1157174077, 1051193886, 959872398, 940694966, 578018918, 1089864512, 949371453, 1045380262, 1168672072];
+        foreach ($ids as $id) {
+            $Mamba->Photos()->getAlbums($id);
+        }
+        print_r($Mamba->exec());
+        exit();
+        print_r($this->getMamba()->Anketa()->getInfo(
+            [1131022170,547075878,1100187593,1157528928,1107723185,967122486,958635043,1157174077,1051193886,959872398,940694966,578018918,1089864512,949371453,1045380262,1168672072,935481298,965846775,1098669906,1165721049,1077770892,751586309,1160045763,1092205447,665551695,1118913277,600245177,753794805,698619057,685580314,1160932924,1088820506],
+            ['about'])
+        );
+        exit();
+        var_dump(
+            $this->getMySQL()->getQuery('select * from UserInfo where user_id = :user_id')->bind("user_id", 560015854)->execute()->fetch()
+        );
+        exit();
         var_dump($this->getRedis()->zRange('sss', 1,2));
         exit();
 

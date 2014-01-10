@@ -78,7 +78,7 @@ class DatabaseUserTrafficSourcesUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>user_id</info> = {$userId}");
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare("
+        $Query = $this->getMySQL()->getQuery("
             INSERT INTO
                 `Encounters`.`UserTrafficSources`
             SET
@@ -88,11 +88,9 @@ class DatabaseUserTrafficSourcesUpdateCommand extends CronScript {
             ON DUPLICATE KEY UPDATE
                 `from_{$source}_count` = `from_{$source}_count` + 1,
                 `last_from_{$source}`  = NOW()
-        ");
+        ")->bind('user_id', $userId, PDO::PARAM_INT);
 
-        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
-
-        if (!($result = $stmt->execute())) {
+        if (!($result = $Query->execute()->getResult())) {
             throw new \Core\ScriptBundle\CronScriptException('Unable to store data to UserTrafficSources');
         }
     }
