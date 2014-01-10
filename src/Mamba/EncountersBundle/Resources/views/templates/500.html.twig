@@ -4,19 +4,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{% block title %}Welcome!{% endblock %}</title>
     {% block stylesheets %}{% endblock %}
-    {% stylesheets
-        '@EncountersBundle/Resources/public/css/tools/reset.css'
-        '@EncountersBundle/Resources/public/css/elements/*'
-        '@EncountersBundle/Resources/public/css/layers/*'
-        '@EncountersBundle/Resources/public/css/pages/*'
-        '@EncountersBundle/Resources/public/css/core/*'
-        output="css/compiled/base.css"
-        filter="?yui_css"
-    %}
-    <link rel="stylesheet" href="{{ asset_url }}" />
-    {% endstylesheets %}
-    {% stylesheets '@EncountersBundle/Resources/public/css/tools/ie.css' output="css/compiled/tools/ie.css" filter="?yui_css" %}
-    <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
+    <link rel="stylesheet" href="/css/compiled/base.css" />
+    <!--[if lt IE 9 ]><link rel="stylesheet" href="/css/compiled//tools/ie.css" type="text/css"  /><![endif]-->
     {% endstylesheets %}
 </head>
 <body>
@@ -84,16 +73,8 @@
 {% endif %}
 </div>
 {% block javascripts %}{% endblock %}
-{% javascripts
-    '@EncountersBundle/Resources/public/js/core/*'
-    '@EncountersBundle/Resources/public/js/tools/*'
-    '@EncountersBundle/Resources/public/js/pages/*'
-    '@EncountersBundle/Resources/public/js/elements/*'
-    output="js/compiled/core.js"
-    filter="?closure"
-%}
-<script src="{{ asset_url }}"></script>
-{% endjavascripts %}
+<script src="/js/compiled/jQuery.js"></script>
+<script src="/js/compiled/core.js"></script>
 <script src="http://js.aplatform.ru/app.js"></script>
 <script>
     $Config.set('debug', {% if app.debug %} 1 {% else %} 0 {% endif %});

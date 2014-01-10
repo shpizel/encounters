@@ -170,13 +170,13 @@ class DeployCommand extends Script {
         foreach (self::$servers as $role => $servers) {
             foreach ($servers as $server) {
                 $serverCommands[$server] = array(
-                    'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*',
+                    'cd /home/shpizel/encounters/;rm -fr app/cache/*;rm -fr app/logs/*;rm -fr web/js/*;rm -fr web/css/*',
                     'cd /home/shpizel/encounters/;/usr/bin/php /home/shpizel/encounters/app/console assets:install web/ > /dev/null',
 //                    (substr($server, 0, 3) == 'www')
 //                        ? '/usr/bin/php /home/shpizel/encounters/app/console assetic:dump --env=prod --no-debug > /dev/null'
 //                        : "pwd",
                     '/usr/bin/php /home/shpizel/encounters/app/console cache:warmup --env=prod --no-debug > /dev/null',
-                    'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs',
+                    'cd /home/shpizel/encounters/;sudo chmod -R 777 app/cache;sudo chmod -R 777 app/logs;sudo chmod -R 777 web/css;sudo chmod -R 777 js',
                 );
 
                 if ($server != 'www1') {

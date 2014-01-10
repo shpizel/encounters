@@ -1,13 +1,7 @@
 {% extends 'EncountersBundle:templates:layout.html.twig' %}
 {% block title %}Профиль{% endblock %}
 {% block stylesheets %}
-    {% stylesheets
-    '@EncountersBundle/Resources/public/css/pages/messenger/*'
-    output="css/compiled/messenger.css"
-    filter="?yui_css"
-    %}
-    <link rel="stylesheet" href="{{ asset_url }}" />
-    {% endstylesheets %}
+    <link rel="stylesheet" href="/css/compiled/messenger.css" />
 {% endblock %}
 {% block body %}
 

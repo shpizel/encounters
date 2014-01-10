@@ -7,7 +7,6 @@
     '@EncountersBundle/Resources/public/css/bootstrap/bootstrap.css'
     '@EncountersBundle/Resources/public/css/bootstrap/bootstrap-responsive.css'
     output="css/compiled/bootstrap.css"
-    filter="?yui_css"
 %}
 <link rel="stylesheet" href="{{ asset_url }}" />
 {% endstylesheets %}
@@ -106,10 +105,9 @@
 
 {% block javascripts %}{% endblock %}
 {% javascripts
-'@EncountersBundle/Resources/public/js/core/jQuery/*'
-'@EncountersBundle/Resources/public/js/bootstrap/bootstrap.js'
-output="js/compiled/bootstrap.js"
-filter="?closure"
+    '@EncountersBundle/Resources/public/js/jQuery/*'
+    '@EncountersBundle/Resources/public/js/bootstrap/bootstrap.js'
+    output="js/compiled/bootstrap.js"
 %}
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}

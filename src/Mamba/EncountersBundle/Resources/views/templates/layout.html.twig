@@ -10,11 +10,10 @@
     '@EncountersBundle/Resources/public/css/pages/*'
     '@EncountersBundle/Resources/public/css/core/*'
     output="css/compiled/base.css"
-    filter="?yui_css"
 %}
 <link rel="stylesheet" href="{{ asset_url }}" />
 {% endstylesheets %}
-{% stylesheets '@EncountersBundle/Resources/public/css/tools/ie.css' output="css/compiled/tools/ie.css" filter="?yui_css" %}
+{% stylesheets '@EncountersBundle/Resources/public/css/tools/ie.css' output="css/compiled/tools/ie.css" %}
 <!--[if lt IE 9 ]><link rel="stylesheet" href="{{ asset_url }}" type="text/css"  /><![endif]-->
 {% endstylesheets %}
 {% block stylesheets %}{% endblock %}
@@ -163,14 +162,18 @@
 
 {% block javascripts %}{% endblock %}
 {% javascripts
-    '@EncountersBundle/Resources/public/js/core/jQuery/*'
+    '@EncountersBundle/Resources/public/js/jQuery/*'
+    output="js/compiled/jQuery.js"
+%}
+<script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+{% javascripts
     '@EncountersBundle/Resources/public/js/core/*'
     '@EncountersBundle/Resources/public/js/tools/*'
     '@EncountersBundle/Resources/public/js/pages/*'
     '@EncountersBundle/Resources/public/js/layers/*'
     '@EncountersBundle/Resources/public/js/elements/*'
     output="js/compiled/core.js"
-    filter="?closure"
 %}
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}

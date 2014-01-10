@@ -2,9 +2,8 @@
 {% block title %}Мессенджер{% endblock %}
 {% block stylesheets %}
     {% stylesheets
-    '@EncountersBundle/Resources/public/css/pages/messenger/*'
-    output="css/compiled/messenger.css"
-    filter="?yui_css"
+        '@EncountersBundle/Resources/public/css/pages/messenger/*'
+        output="css/compiled/messenger.css"
     %}
     <link rel="stylesheet" href="{{ asset_url }}" />
     {% endstylesheets %}
