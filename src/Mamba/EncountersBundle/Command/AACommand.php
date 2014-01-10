@@ -40,7 +40,24 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
-        print_r($this->getMySQL()->getQuery("set @web_user_id := 560015854;")->execute()->fetch());
+        $counter = 0;
+        $filename = '/home/shpizel/interests.sql';
+        @unlink($filename);
+        $Query = $this->getMySQL()->getQuery("select * from UserInterests");
+        if ($Query->execute()->getResult()) {
+            while ($row = $Query->fetch()) {
+                $userId = (int) $row['user_id'];
+                $albums = json_decode($row['interests'], true);
+                $interests = count($albums);
+
+                $sql = "update `UserInterests` set `count`={$interests} where `user_id`={$userId} limit 1;\n";
+                file_put_contents($filename, $sql, FILE_APPEND);
+
+                $counter++;
+                $this->log($counter, -1);
+            }
+        }
+
         exit();
         while ($users = $this->getUsers(5000)) {
             foreach ($users as $userId) {

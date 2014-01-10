@@ -52,7 +52,7 @@ $Interface = {
                     mamba.on('dimensions', $dimensionsSetterFunction);
 
                     mamba.on('messageComplete', function($data) {
-
+                        console.log($data);
                     });
 
                     mamba.on('messageCancel', function($data) {
