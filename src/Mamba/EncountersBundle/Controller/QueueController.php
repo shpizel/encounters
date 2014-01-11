@@ -74,20 +74,10 @@ class QueueController extends ApplicationController {
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
         } elseif (($webUserId = $this->getMamba()->getWebUserId()) && ($currentQueue = $this->getCurrentQueueHelper()->getAll($webUserId))) {
-            $anketaInfoArray = $this->getUsersHelper()->getInfo(
-                array_map(function($el){return (int) $el;},  $currentQueue)
-            );
+            $anketaInfoArray = $this->getUsersHelper()->getInfo(array_map(function($el){return (int)$el;},$currentQueue));
 
             foreach ($anketaInfoArray as $_userId => $dataArray) {
-                    if
-                    (
-                        !(
-                            isset($dataArray['location']) &&
-                            isset($dataArray['flags']) &&
-                            isset($dataArray['familiarity']) &&
-                            count($dataArray['photos'])
-                        )
-                    ) {
+                    if (!(isset($dataArray['location']) && isset($dataArray['flags']) && isset($dataArray['familiarity']) && count($dataArray['photos']))) {
                         $currentUserId = $dataArray['info']['user_id'];
 
                         $this->getCurrentQueueHelper()->remove($webUserId, (int) $currentUserId);

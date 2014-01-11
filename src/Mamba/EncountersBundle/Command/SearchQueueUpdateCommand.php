@@ -34,98 +34,173 @@ class SearchQueueUpdateCommand extends CronScript {
          */
         SCRIPT_NAME = "cron:queue:search:update",
 
+        SQL_PREPARE_WEB_USER_VARIABLES = "
+            set @web_user_id := %d;
+            select @web_user_age := `age` from UserInfo where user_id = @web_user_id;
+            select @web_user_gender := `gender` from UserInfo where user_id = @web_user_id;
+            select @web_user_orientation := `orientation` from UserOrientation where user_id = @web_user_id;
+            select @web_user_country_id := `country_id` from UserLocation where user_id = @web_user_id;
+            select @web_user_region_id := `region_id` from UserLocation where user_id = @web_user_id;
+            select @web_user_city_id := `city_id` from UserLocation where user_id = @web_user_id;
+            select @web_user_preferences_age_from := `age_from` from UserSearchPreferences where user_id = @web_user_id;
+            select @web_user_preferences_age_to := `age_to` from UserSearchPreferences where user_id = @web_user_id;
+            select @web_user_preferences_gender:= `gender` from UserSearchPreferences where user_id = @web_user_id;
+        ",
+
         FULL_SEARCH_SQL = "
             SELECT
-                u.user_id, e.energy
+                info.user_id as user_id,
+                energy.energy as energy
             FROM
-                Encounters.User u
-            INNER JOIN
-                Encounters.UserEnergy e
+                UserInfo info
+            LEFT JOIN
+                UserLocation location
             ON
-                e.user_id = u.user_id
+                location.user_id = info.user_id
+            LEFT JOIN
+                UserOrientation orientation
+            ON
+                orientation.user_id = info.user_id
+            LEFT JOIN
+                UserPhotos photos
+            ON
+                photos.user_id = info.user_id
+            LEFT JOIN
+                UserEnergy energy
+            ON
+                energy.user_id = info.user_id
+            LEFT JOIN
+                UserSearchPreferences preferences
+            ON
+                preferences.user_id = info.user_id
+            LEFT JOIN
+                UserAvatar avatar
+            ON
+                avatar.user_id = info.user_id
+            LEFT JOIN
+                Decisions decisions
+            ON
+                (decisions.web_user_id = @web_user_id AND decisions.current_user_id = info.user_id)
             WHERE
-                u.gender = :gender AND
-                u.orientation = :orientation AND
-                e.energy >= 0 AND
-                (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
-
-                u.country_id = :country_id AND
-                u.region_id = :region_id AND
-                u.city_id = :city_id AND
-                u.user_id NOT IN (
-                    SELECT
-                        current_user_id
-                    FROM
-                        Decisions
-                    WHERE
-                        web_user_id = :web_user_id
-                )
-
+                info.is_app_user = 1 AND
+                info.gender = @web_user_preferences_gender AND
+                location.country_id = @web_user_country_id AND
+                location.region_id = @web_user_region_id AND
+                (@web_user_city_id IS NULL OR location.city_id = @web_user_city_id) AND
+                (info.age = 0 OR (info.age >= @web_user_preferences_age_from AND info.age <= @web_user_preferences_age_to)) AND
+                decision IS NULL AND
+                (photos.count != 0) AND
+                orientation.orientation = @web_user_orientation AND
+                (preferences.age_from IS NULL or @web_user_age IS NULL or @web_user_age >= preferences.age_from) AND
+                (preferences.age_to IS NULL or @web_user_age IS NULL or @web_user_age <= preferences.age_to) AND
+                (preferences.gender IS NULL or @web_user_gender = preferences.gender)
             ORDER BY
-                e.energy DESC
+                energy DESC
             LIMIT
-                2048
+                256
         ",
 
         COUNTRY_AND_REGION_SEARCH_SQL = "
             SELECT
-                u.user_id, e.energy
+                info.user_id as user_id,
+                energy.energy as energy
             FROM
-                Encounters.User u
-            INNER JOIN
-                Encounters.UserEnergy e
+                UserInfo info
+            LEFT JOIN
+                UserLocation location
             ON
-                e.user_id = u.user_id
+                location.user_id = info.user_id
+            LEFT JOIN
+                UserOrientation orientation
+            ON
+                orientation.user_id = info.user_id
+            LEFT JOIN
+                UserPhotos photos
+            ON
+                photos.user_id = info.user_id
+            LEFT JOIN
+                UserEnergy energy
+            ON
+                energy.user_id = info.user_id
+            LEFT JOIN
+                UserSearchPreferences preferences
+            ON
+                preferences.user_id = info.user_id
+            LEFT JOIN
+                UserAvatar avatar
+            ON
+                avatar.user_id = info.user_id
+            LEFT JOIN
+                Decisions decisions
+            ON
+                (decisions.web_user_id = @web_user_id AND decisions.current_user_id = info.user_id)
             WHERE
-                u.gender = :gender AND
-                u.orientation = :orientation AND
-                e.energy >= 0 AND
-                (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
-
-                u.country_id = :country_id AND
-                u.region_id = :region_id AND
-                u.user_id NOT IN (
-                    SELECT
-                        current_user_id
-                    FROM
-                        Decisions
-                    WHERE
-                        web_user_id = :web_user_id
-                )
+                info.is_app_user = 1 AND
+                info.gender = @web_user_preferences_gender AND
+                location.country_id = @web_user_country_id AND
+                location.region_id = @web_user_region_id AND
+                (info.age = 0 OR (info.age >= @web_user_preferences_age_from AND info.age <= @web_user_preferences_age_to)) AND
+                decision IS NULL AND
+                (photos.count != 0) AND
+                orientation.orientation = @web_user_orientation AND
+                (preferences.age_from IS NULL or @web_user_age IS NULL or @web_user_age >= preferences.age_from) AND
+                (preferences.age_to IS NULL or @web_user_age IS NULL or @web_user_age <= preferences.age_to) AND
+                (preferences.gender IS NULL or @web_user_gender = preferences.gender)
             ORDER BY
-                e.energy DESC
+                energy DESC
             LIMIT
-                2048
+                256;
         ",
 
         COUNTRY_SEARCH_SQL = "
             SELECT
-                u.user_id, e.energy
+                info.user_id as user_id,
+                energy.energy as energy
             FROM
-                Encounters.User u
-            INNER JOIN
-                Encounters.UserEnergy e
+                UserInfo info
+            LEFT JOIN
+                UserLocation location
             ON
-                e.user_id = u.user_id
+                location.user_id = info.user_id
+            LEFT JOIN
+                UserOrientation orientation
+            ON
+                orientation.user_id = info.user_id
+            LEFT JOIN
+                UserPhotos photos
+            ON
+                photos.user_id = info.user_id
+            LEFT JOIN
+                UserEnergy energy
+            ON
+                energy.user_id = info.user_id
+            LEFT JOIN
+                UserSearchPreferences preferences
+            ON
+                preferences.user_id = info.user_id
+            LEFT JOIN
+                UserAvatar avatar
+            ON
+                avatar.user_id = info.user_id
+            LEFT JOIN
+                Decisions decisions
+            ON
+                (decisions.web_user_id = @web_user_id AND decisions.current_user_id = info.user_id)
             WHERE
-                u.gender = :gender AND
-                u.orientation = :orientation AND
-                e.energy >= 0 AND
-                (u.age = 0 OR (u.age >= :age_from AND u.age <= :age_to)) AND
-
-                u.country_id = :country_id AND
-                u.user_id NOT IN (
-                    SELECT
-                        current_user_id
-                    FROM
-                        Decisions
-                    WHERE
-                        web_user_id = :web_user_id
-                )
+                info.is_app_user = 1 AND
+                info.gender = @web_user_preferences_gender AND
+                location.country_id = @web_user_country_id AND
+                (info.age = 0 OR (info.age >= @web_user_preferences_age_from AND info.age <= @web_user_preferences_age_to)) AND
+                decision IS NULL AND
+                (photos.count != 0) AND
+                orientation.orientation = @web_user_orientation AND
+                (preferences.age_from IS NULL or @web_user_age IS NULL or @web_user_age >= preferences.age_from) AND
+                (preferences.age_to IS NULL or @web_user_age IS NULL or @web_user_age <= preferences.age_to) AND
+                (preferences.gender IS NULL or @web_user_gender = preferences.gender)
             ORDER BY
-                e.energy DESC
+                energy DESC
             LIMIT
-                2048
+                256;
         ",
 
         /**
@@ -230,7 +305,6 @@ class SearchQueueUpdateCommand extends CronScript {
     public function updateSearchQueue($job) {
         $Mamba = $this->getMamba();
         list($webUserId, $timestamp) = array_values(unserialize($job->workload()));
-        $_webUserId = $webUserId; //copy for PDO
 
         $this->log("Got task for user_id = $webUserId", 64);
 
@@ -263,7 +337,9 @@ class SearchQueueUpdateCommand extends CronScript {
 
         $usersAddedCount = 0;
 
-        $this->log("Searching by DB with country, region, city..", 64);
+        $this->getMySQL()->exec(sprintf(self::SQL_PREPARE_WEB_USER_VARIABLES, $webUserId));
+
+        $this->log("Searching by DB with country, region and city..", 64);
 
         $Query = $this->getMySQL()->getQuery(self::FULL_SEARCH_SQL)->bindArray([
             ['gender', $searchPreferences['gender']],
@@ -273,31 +349,25 @@ class SearchQueueUpdateCommand extends CronScript {
             ['country_id', $searchPreferences['geo']['country_id']],
             ['region_id', $searchPreferences['geo']['region_id']],
             ['city_id', $searchPreferences['geo']['city_id']],
-            ['web_user_id', $_webUserId],
+            ['web_user_id', $webUserId],
         ]);
 
         if ($result = $Query->execute()->getResult()) {
             $this->log("SQL query OK", 64);
 
-            while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
+            while ($item = $Query->fetch()) {
                 $currentUserId = (int) $item['user_id'];
 
                 if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
                     !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
                     !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
                 ) {
-                    if ($this->getMamba()->Photos()->get($currentUserId)) {
-                        $this->getSearchQueueHelper()->put(
-                            $webUserId,
-                            $currentUserId,
-                            $this->getEnergyHelper()->get($currentUserId)
-                        ) && $usersAddedCount++;
+                    if ($this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))) {
+                        $usersAddedCount++;
+                    }
 
-                        if ($usersAddedCount >= self::LIMIT) {
-                            break;
-                        }
-                    } else {
-                        $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
+                    if ($usersAddedCount >= self::LIMIT) {
+                        break;
                     }
                 }
             }
@@ -305,6 +375,81 @@ class SearchQueueUpdateCommand extends CronScript {
             $this->log("<error>$usersAddedCount</error> users were added to search queue for <info>user_id</info> = {$webUserId}");
         } else {
             $this->log("SQL query FAILED", 64);
+        }
+
+        if ($usersAddedCount < self::LIMIT) {
+            $this->log("Searching by DB with country and region..", 64);
+
+            $Query = $this->getMySQL()->getQuery(self::COUNTRY_AND_REGION_SEARCH_SQL)->bindArray([
+                ['gender', $searchPreferences['gender']],
+                ['orientation', $searchPreferences['orientation']],
+                ['age_from', $searchPreferences['age_from']],
+                ['age_to', $searchPreferences['age_to']],
+                ['country_id', $searchPreferences['geo']['country_id']],
+                ['region_id', $searchPreferences['geo']['region_id']],
+                ['web_user_id', $webUserId],
+            ]);
+
+            if ($result = $Query->execute()->getResult()) {
+                $this->log("SQL query OK", 64);
+
+                while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
+                    $currentUserId = (int) $item['user_id'];
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
+                        !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
+                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
+                    ) {
+                        if ($this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))) {
+                            $usersAddedCount++;
+                        }
+
+                        if ($usersAddedCount >= self::LIMIT) {
+                            break;
+                        }
+                    }
+                }
+
+                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            } else {
+                $this->log("SQL query FAILED", 16);
+            }
+        }
+
+        if ($usersAddedCount < self::LIMIT) {
+            $this->log("Searching by DB with country..", 64);
+
+            $Query = $this->getMySQL()->getQuery(self::COUNTRY_SEARCH_SQL)->bindArray([
+                ['gender', $searchPreferences['gender']],
+                ['orientation', $searchPreferences['orientation']],
+                ['age_from', $searchPreferences['age_from']],
+                ['age_to', $searchPreferences['age_to']],
+                ['country_id', $searchPreferences['geo']['country_id']],
+                ['web_user_id', $webUserId],
+            ]);
+
+            if ($result = $Query->execute()->getResult()) {
+                $this->log("SQL query OK", 64);
+
+                while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
+                    $currentUserId = (int) $item['user_id'];
+                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
+                        !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
+                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
+                    ) {
+                        if ($this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))) {
+                            $usersAddedCount++;
+                        }
+
+                        if ($usersAddedCount >= self::LIMIT) {
+                            break;
+                        }
+                    }
+                }
+
+                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
+            } else {
+                $this->log("SQL query FAILED", 16);
+            }
         }
 
         if ($usersAddedCount < self::LIMIT) {
@@ -352,7 +497,7 @@ class SearchQueueUpdateCommand extends CronScript {
                             foreach ($result['users'] as $currentUserId) {
                                 if (is_int($currentUserId) && !$this->getSearchPreferencesHelper()->exists($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
                                     $this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))
-                                        && $usersAddedCount++;
+                                    && $usersAddedCount++;
 
                                     if ($usersAddedCount >= self::LIMIT) {
                                         break;
@@ -368,50 +513,8 @@ class SearchQueueUpdateCommand extends CronScript {
                         break;
                     }
                 }
-            } while (true);
-        }
-
-        if ($usersAddedCount < self::LIMIT) {
-            $this->log("Searching by DB with country and region..", 64);
-            $Query = $this->getMySQL()->getQuery(self::COUNTRY_AND_REGION_SEARCH_SQL)->bindArray([
-                ['gender', $searchPreferences['gender']],
-                ['orientation', $searchPreferences['orientation']],
-                ['age_from', $searchPreferences['age_from']],
-                ['age_to', $searchPreferences['age_to']],
-                ['country_id', $searchPreferences['geo']['country_id']],
-                ['region_id', $searchPreferences['geo']['region_id']],
-                ['web_user_id', $_webUserId],
-            ]);
-
-            if ($result = $Query->execute()->getResult()) {
-                $this->log("SQL query OK", 64);
-
-                while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
-                    $currentUserId = (int) $item['user_id'];
-                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
-                        !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
-                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
-                    ) {
-                        if ($this->getMamba()->Photos()->get($currentUserId)) {
-                            $this->getSearchQueueHelper()->put(
-                                $webUserId,
-                                $currentUserId,
-                                $this->getEnergyHelper()->get($currentUserId)
-                            ) && $usersAddedCount++;
-
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
-                            }
-                        } else {
-                            $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
-                        }
-                    }
-                }
-
-                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-            } else {
-                $this->log("SQL query FAILED", 16);
             }
+            while (true);
         }
 
         if ($usersAddedCount < self::LIMIT) {
@@ -459,7 +562,7 @@ class SearchQueueUpdateCommand extends CronScript {
                             foreach ($result['users'] as $currentUserId) {
                                 if (is_int($currentUserId) && !$this->getSearchPreferencesHelper()->exists($currentUserId) && !$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) && !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId)) {
                                     $this->getSearchQueueHelper()->put($webUserId, $currentUserId, $this->getEnergyHelper()->get($currentUserId))
-                                        && $usersAddedCount++;
+                                    && $usersAddedCount++;
 
                                     if ($usersAddedCount >= self::LIMIT) {
                                         break;
@@ -475,49 +578,8 @@ class SearchQueueUpdateCommand extends CronScript {
                         break;
                     }
                 }
-            } while (true);
-        }
-
-        if ($usersAddedCount < self::LIMIT) {
-            $this->log("Searching by DB with country..", 64);
-            $Query = $this->getMySQL()->getQuery(self::COUNTRY_SEARCH_SQL)->bindArray([
-                ['gender', $searchPreferences['gender']],
-                ['orientation', $searchPreferences['orientation']],
-                ['age_from', $searchPreferences['age_from']],
-                ['age_to', $searchPreferences['age_to']],
-                ['country_id', $searchPreferences['geo']['country_id']],
-                ['web_user_id', $_webUserId],
-            ]);
-
-            if ($result = $Query->execute()->getResult()) {
-                $this->log("SQL query OK", 64);
-
-                while ($item = $Query->fetch(PDO::FETCH_ASSOC)) {
-                    $currentUserId = (int) $item['user_id'];
-                    if (!$this->getViewedQueueHelper()->exists($webUserId, $currentUserId) &&
-                        !$this->getCurrentQueueHelper()->exists($webUserId, $currentUserId) &&
-                        !$this->getMemcache()->get("invalid_photos_by_{$currentUserId}")
-                    ) {
-                        if ($this->getMamba()->Photos()->get($currentUserId)) {
-                            $this->getSearchQueueHelper()->put(
-                                $webUserId,
-                                $currentUserId,
-                                $this->getEnergyHelper()->get($currentUserId)
-                            ) && $usersAddedCount++;
-
-                            if ($usersAddedCount >= self::LIMIT) {
-                                break;
-                            }
-                        } else {
-                            $this->getMemcache()->set("invalid_photos_by_{$currentUserId}", 1, 86400);
-                        }
-                    }
-                }
-
-                $this->log("[Search queue for user_id=<info>$webUserId</info>] <error>$usersAddedCount</error> users were added;");
-            } else {
-                $this->log("SQL query FAILED", 16);
             }
+            while (true);
         }
 
         if ($usersAddedCount < self::LIMIT) {
@@ -581,7 +643,8 @@ class SearchQueueUpdateCommand extends CronScript {
                         break;
                     }
                 }
-            } while (true);
+            }
+            while (true);
         }
 
         if ($usersAddedCount < self::LIMIT) {
@@ -634,7 +697,8 @@ class SearchQueueUpdateCommand extends CronScript {
                         break;
                     }
                 }
-            } while (true);
+            }
+            while (true);
         }
     }
 }

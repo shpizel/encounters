@@ -40,6 +40,10 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        $MySQL = $this->getMySQL();
+        $MySQL->exec("set @web_user_id := 560015854;select @web_user_age := `age` from UserInfo where user_id = @web_user_id;");
+        print_r($MySQL->getQuery("select @web_user_age;")->execute()->fetch());
+        exit();
         $counter = 0;
         $filename = '/home/shpizel/interests.sql';
         @unlink($filename);

@@ -94,7 +94,7 @@ class AdminUsersController extends ApplicationController {
                 'account' => $this->getAccountHelper()->get($userId),
             );
 
-            $userInfo = $this->getUsersHelper($userId)[$userId];
+            $userInfo = $this->getUsersHelper()->getInfo($userId)[$userId];
 
             $dataArray['user']['info'] = $userInfo;
             if ($dataArray['user']['info_dump'] = $userInfo) {
@@ -103,10 +103,10 @@ class AdminUsersController extends ApplicationController {
                 }
             }
 
-            $stmt = $this->getDoctrine()->getConnection()->prepare("select * from Billing where user_id = :user_id order by changed desc");
-            $stmt->bindParam('user_id', $userId);
-            if ($stmt->execute()) {
-                while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $Query = $this->getMySQL()->getQuery("select * from Billing where user_id = :user_id order by changed desc");
+            $Query->bind('user_id', $userId);
+            if ($Query->execute()->getResult()) {
+                while ($item = $Query->fetch()) {
                     $dataArray['billing'][] = $item;
                 }
             }

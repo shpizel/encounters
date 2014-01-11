@@ -148,6 +148,10 @@ class MySQL {
         ;
     }
 
+    public function exec($sql) {
+        return $this->getConnection()->exec($sql);
+    }
+
     public function getLastInsertId() {
         $this->Connection->lastInsertId();
     }

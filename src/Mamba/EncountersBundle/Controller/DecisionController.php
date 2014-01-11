@@ -77,7 +77,6 @@ class DecisionController extends ApplicationController {
             /** Инкрементируем счетчик просмотров у currentUser'a */
             $this->getCountersHelper()->incr($this->currentUserId, 'visitors');
             $this->getCountersHelper()->incr($this->currentUserId, 'visitors_unread');
-
             $this->getCountersHelper()->set($this->currentUserId, 'updated', time());
 
             /** Увеличить энергию WebUser'a */

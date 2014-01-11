@@ -168,6 +168,10 @@ class ContactsQueueUpdateCommand extends CronScript {
             $usersAddedCount = 0;
 
             foreach ($contactsFolders['folders'] as $folder) {
+                if (in_array($folder['title'], ['TOP-100','Игнорируемые'])) {
+                    continue;
+                }
+
                 if ($contactList = $Mamba->Contacts()->getFolderContactList($folder['folder_id'])) {
                     foreach ($contactList['contacts'] as $contact) {
                         $contactInfo = $contact['info'];
@@ -178,6 +182,10 @@ class ContactsQueueUpdateCommand extends CronScript {
             }
 
             foreach ($contactsFolders['folders'] as $folder) {
+                if (in_array($folder['title'], ['TOP-100','Игнорируемые'])) {
+                    continue;
+                }
+
                 if ($contactList = $Mamba->Contacts()->getFolderContactList($folder['folder_id'])) {
                     foreach ($contactList['contacts'] as $contact) {
                         $contactInfo = $contact['info'];
