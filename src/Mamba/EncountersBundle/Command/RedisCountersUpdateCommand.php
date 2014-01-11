@@ -55,7 +55,7 @@ class RedisCountersUpdateCommand extends CronScript {
             GROUP BY
                 d1.web_user_id
             HAVING
-                new_mutual != old_mutual",
+                new_mutual <> old_mutual",
 
         /**
          * SQL-запрос для получения данных у кого сколько просмотров
@@ -76,7 +76,7 @@ class RedisCountersUpdateCommand extends CronScript {
             GROUP BY
                 decisions.current_user_id
             HAVING
-                new_visitors != old_visitors",
+                new_visitors <> old_visitors",
 
         /**
          * SQL-запрос для получения данных у кого сколько просмотренных
@@ -99,7 +99,7 @@ class RedisCountersUpdateCommand extends CronScript {
             GROUP BY
                 decisions.web_user_id
             HAVING
-                new_mychoice != old_mychoice"
+                new_mychoice <> old_mychoice"
     ;
 
     /**
@@ -110,31 +110,79 @@ class RedisCountersUpdateCommand extends CronScript {
     protected function process() {
         $CountersHelper = $this->getCountersHelper();
 
-        while ($item = $this->getMySQL()->getQuery(self::SQL_GET_MUTUALS_COUNT)->execute()->fetch()) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['new_mutual'];
+        $this->log("Querying mutuals counts..", 64);
+        $Query = $this->getMySQL()->getQuery(self::SQL_GET_MUTUALS_COUNT);
+        if ($Query->execute()->getResult()) {
+            $this->log("SQL query completed with " . ($rowCount = $Query->getStatement()->rowCount()) . " results", 64);
 
-            $CountersHelper->set($userId, 'mutual', $counter);
-            if ($CountersHelper->get($userId, 'mutual_unread') > $counter) {
-                $CountersHelper->set($userId, 'mutual_unread', $counter);
+            $processedCount = $progress = $prevProgress = 0;
+            while ($row = $Query->fetch()) {
+                $userId  = (int) $row['user_id'];
+                $counter = (int) $row['new_mutual'];
+
+                $CountersHelper->set($userId, 'mutual', $counter);
+                if ($CountersHelper->get($userId, 'mutual_unread') > $counter) {
+                    $CountersHelper->set($userId, 'mutual_unread', $counter);
+                }
+
+                $processedCount++;
+                $progress = round($processedCount*100/$rowCount, 0);
+                if ($progress > $prevProgress) {
+                    $prevProgress = $progress;
+                    $this->log("{$progress} %");
+                }
             }
+        } else {
+            $this->log("SQL query not returned results", 16);
         }
 
-        while ($item = $this->getMySQL()->getQuery(self::SQL_GET_VISITORS_COUNT)->execute()->fetch()) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['new_visitors'];
+        $this->log("Querying visitors counts..", 64);
+        $Query = $this->getMySQL()->getQuery(self::SQL_GET_VISITORS_COUNT);
+        if ($Query->execute()->getResult()) {
+            $this->log("SQL query completed with " . ($rowCount = $Query->getStatement()->rowCount()) . " results", 64);
 
-            $CountersHelper->set($userId, 'visitors', $counter);
-            if ($CountersHelper->get($userId, 'visitors_unread') > $counter) {
-                $CountersHelper->set($userId, 'visitors_unread', $counter);
+            $processedCount = $progress = $prevProgress = 0;
+            while ($row = $Query->fetch()) {
+                $userId  = (int) $row['user_id'];
+                $counter = (int) $row['new_visitors'];
+
+                $CountersHelper->set($userId, 'visitors', $counter);
+                if ($CountersHelper->get($userId, 'visitors_unread') > $counter) {
+                    $CountersHelper->set($userId, 'visitors_unread', $counter);
+                }
+
+                $processedCount++;
+                $progress = round($processedCount*100/$rowCount, 0);
+                if ($progress > $prevProgress) {
+                    $prevProgress = $progress;
+                    $this->log("{$progress} %");
+                }
             }
+        } else {
+            $this->log("SQL query not returned results", 16);
         }
 
-        while ($item = $this->getMySQL()->getQuery(self::SQL_GET_MYCHOICE_COUNT)->execute()->fetch()) {
-            $userId  = (int) $item['user_id'];
-            $counter = (int) $item['new_mychoice'];
+        $this->log("Querying my choice counts..", 64);
+        $Query = $this->getMySQL()->getQuery(self::SQL_GET_MYCHOICE_COUNT);
+        if ($Query->execute()->getResult()) {
+            $this->log("SQL query completed with " . ($rowCount = $Query->getStatement()->rowCount()) . " results", 64);
 
-            $CountersHelper->set($userId, 'mychoice', $counter);
+            $processedCount = $progress = $prevProgress = 0;
+            while ($row = $Query->fetch()) {
+                $userId  = (int) $row['user_id'];
+                $counter = (int) $row['new_mychoice'];
+
+                $CountersHelper->set($userId, 'mychoice', $counter);
+
+                $processedCount++;
+                $progress = round($processedCount*100/$rowCount, 0);
+                if ($progress > $prevProgress) {
+                    $prevProgress = $progress;
+                    $this->log("{$progress} %");
+                }
+            }
+        } else {
+            $this->log("SQL query not returned results", 16);
         }
     }
 }
