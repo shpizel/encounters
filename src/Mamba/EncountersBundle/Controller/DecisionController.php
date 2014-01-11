@@ -152,7 +152,7 @@ class DecisionController extends ApplicationController {
                      *
                      * @author shpizel
                      */
-                    $Redis->lPush($spamQueueKey = "spamqueue-by-{$this->webUserId}", $this->webUserId);
+                    $Redis->lPush($spamQueueKey = "spamqueue-by-{$this->webUserId}", $this->currentUserId);
                     $spamQueueLength = $Redis->lSize($spamQueueKey);
                     if (($spamLimit = 10 - intval($this->getRedis()->hGet("mambaspam-by-{$this->webUserId}", date("dmy"))))) {
                         if ($spamQueueLength >= 5) {
