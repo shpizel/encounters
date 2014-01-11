@@ -130,7 +130,24 @@ class DecisionController extends ApplicationController {
                 }
 
                 if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId) && !$this->getVariablesHelper()->get($this->currentUserId, 'lastaccess')) {
-                    $this->json['data']['is_contact'] = true;
+
+                    /**
+                     * Тут нужно складывать айдишники таких пользователей в список
+                     * если этот список больше 5 то при наличии лимита спама у пользователя - показывать до 10 контактов
+                     *
+                     *
+                     * @author shpizel
+                     */
+                    $Redis->lPush($spamQueueKey = "spamqueue-by-{$this->webUserId}", $this->webUserId);
+                    $spamQueueLength = $Redis->lSize($spamQueueKey);
+                    if (($spamLimit = 10 - intval($this->getRedis()->hGet("mambaspam-by-{$this->webUserId}", date("dmy"))))) {
+                        if ($spamQueueLength >= 5) {
+                            if ($spamQueue = $Redis->lRange($spamQueueKey, 0, 5)) {
+                                $this->json['data']['is_contact'] = true;
+                                $this->json['data']['spam_queue'] = array_map(function($el){return(int)$el;}, $spamQueue);
+                            }
+                        }
+                    }
                 }
             }
 

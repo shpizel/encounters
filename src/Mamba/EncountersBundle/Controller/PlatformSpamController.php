@@ -42,6 +42,10 @@ class PlatformSpamController extends ApplicationController {
                 $this->getStatsHelper()->incr("mambaspam", count($ids));
                 $this->getRedis()->hIncrBy("mambaspam-by-{$webUserId}", date("dmy"), count($ids));
 
+                foreach ($ids as $id) {
+                    $this->getRedis()->lRem("spamqueue-by-{$webUserId}", $id, 0);
+                }
+
             } else {
                 list($this->json['status'], $this->json['message']) = array(2, "Invalid params");
             }
