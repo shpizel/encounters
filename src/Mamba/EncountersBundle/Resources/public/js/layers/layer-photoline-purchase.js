@@ -18,7 +18,6 @@ $Layers.$PhotolinePurchaseLayer = {
                 $comment = $comment.substr(0, 79) + "…";
             }
 
-
             $Tools.ajaxPost('photoline.purchase', {'comment': $comment}, function($data) {
                 if ($data.status == 0 && $data.message == "") {
                     $Account.setAccount($data.data['account']);
@@ -40,7 +39,7 @@ $Layers.$PhotolinePurchaseLayer = {
      * @show layer
      */
     showLayer: function($data) {
-        $(".layer-photoline-purchase .title img").attr('src', $Config.get('webuser')['anketa']['info']['square_photo_url']);
+        $(".layer-photoline-purchase .title img").attr('src', $Config.get('webuser')['anketa']['avatar']['square_photo_url']);
         $("div.layer-photoline-purchase").show();
     }
 };

@@ -277,7 +277,7 @@ class MessengerController extends ApplicationController {
                     }
 
                     $this->getGearman()->getClient()->doLowBackground(
-                        EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                        EncountersBundle::GEARMAN_MESSENGER_COUNTERS_UPDATE_FUNCTION_NAME,
                         serialize(
                             array(
                                 'user_id' => $webUserId,
@@ -421,7 +421,7 @@ class MessengerController extends ApplicationController {
                         }
 
                         $this->getGearman()->getClient()->doLowBackground(
-                            EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                            EncountersBundle::GEARMAN_MESSENGER_COUNTERS_UPDATE_FUNCTION_NAME,
                             serialize(
                                 array(
                                     'user_id' => $webUserId,
@@ -598,7 +598,7 @@ class MessengerController extends ApplicationController {
                             }
 
                             $this->getGearman()->getClient()->doLowBackground(
-                                EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME,
+                                EncountersBundle::GEARMAN_MESSENGER_COUNTERS_UPDATE_FUNCTION_NAME,
                                 serialize(
                                     array(
                                         'user_id' => $webUserId,

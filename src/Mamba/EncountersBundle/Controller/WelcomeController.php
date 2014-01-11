@@ -116,7 +116,7 @@ class WelcomeController extends ApplicationController {
                     $this->getStatsHelper()->incr($extra);
 
                     $this->getGearman()->getClient()->doLowBackground(
-                        EncountersBundle::GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME,
+                        EncountersBundle::GEARMAN_DATABASE_USERS_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME,
                         serialize($dataArray = array(
                             'user_id' => $webUserId,
                             'source'  => ($extra == 'ref-notifications') ? 'notifications' : 'achievements',
@@ -126,7 +126,7 @@ class WelcomeController extends ApplicationController {
                 }
             } else {
                 $this->getGearman()->getClient()->doLowBackground(
-                    EncountersBundle::GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME,
+                    EncountersBundle::GEARMAN_DATABASE_USERS_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME,
                     serialize($dataArray = array(
                         'user_id' => $webUserId,
                         'source'  => 'others',

@@ -187,7 +187,7 @@ class Counters extends Helper {
             /** Ставим задачу на обновление пользовательских счетчиков в БД */
             $this->getMemcache()->add("user_counters_update_lock_by_user_" . $userId, time(), 60*15) &&
                 $this->getGearman()->getClient()->doLowBackground(
-                    EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
+                    EncountersBundle::GEARMAN_DATABASE_USERS_COUNTERS_UPDATE_FUNCTION_NAME,
                     serialize($dataArray = array(
                         'user_id' => $userId,
                         'time'    => time(),
@@ -229,7 +229,7 @@ class Counters extends Helper {
         /** Ставим задачу на обновление пользовательских счетчиков в БД */
         $this->getMemcache()->add("user_counters_update_lock_by_user_" . $userId, time(), 60*15) &&
             $this->getGearman()->getClient()->doLowBackground(
-                EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME,
+                EncountersBundle::GEARMAN_DATABASE_USERS_COUNTERS_UPDATE_FUNCTION_NAME,
                 serialize($dataArray = array(
                     'user_id' => $userId,
                     'time'    => time(),

@@ -53,7 +53,7 @@ class MessengerCountersUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_MESSENGER_COUNTERS_UPDATE_FUNCTION_NAME, function($job) use($class) {
             return $class->updateUserUnreadMessagesCounter($job);
         });
 

@@ -69,7 +69,7 @@ class DatabaseLastaccessUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USERS_LASTACCESS_UPDATE_FUNCTION_NAME, function($job) use($class) {
             return $class->updateUserLastaccess($job);
         });
 

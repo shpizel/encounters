@@ -62,7 +62,7 @@ class Energy extends Helper {
             $this->set($userId, $energy = self::DEFAULT_ENERGY);
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) && $this->getGearman()->getClient()->doHighBackground(
-                EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
+                EncountersBundle::GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
                         'user_id' => $userId,
@@ -101,7 +101,7 @@ class Energy extends Helper {
             $result = $Request->getResult();
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) &&  $this->getGearman()->getClient()->doHighBackground(
-                EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
+                EncountersBundle::GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
                         'user_id' => $userId,
@@ -157,7 +157,7 @@ class Energy extends Helper {
             $result =  $this->set($userId, $incrementResult = self::MINIMUM_ENERGY);
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) &&  $this->getGearman()->getClient()->doHighBackground(
-                EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
+                EncountersBundle::GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
                         'user_id' => $userId,
@@ -171,7 +171,7 @@ class Energy extends Helper {
             $result = $this->set($userId, $incrementResult = $max);
 
             $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) && $this->getGearman()->getClient()->doHighBackground(
-                EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
+                EncountersBundle::GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME,
                 serialize(
                     array(
                         'user_id' => $userId,
@@ -184,7 +184,7 @@ class Energy extends Helper {
         }
 
         $this->getMemcache()->add("energy_update_lock_by_user_" . $userId, time(), 750) &&  $this->getGearman()->getClient()->doHighBackground(
-            EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME,
+            EncountersBundle::GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME,
             serialize(
                 array(
                     'user_id' => $userId,

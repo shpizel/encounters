@@ -66,28 +66,28 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME = 'database:decisions:process',
+        GEARMAN_DATABASE_DECISIONS_UPDATE_FUNCTION_NAME = 'database:decisions:update',
 
         /**
          * Имя функции для обновления пользовательских счетчиков
          *
          * @var str
          */
-        GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME = 'database:users:counters:update',
+        GEARMAN_DATABASE_USERS_COUNTERS_UPDATE_FUNCTION_NAME = 'database:users:counters:update',
 
         /**
          * Имя функции для обновления пользовательских источников траффика
          *
          * @var str
          */
-        GEARMAN_DATABASE_USER_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME = 'database:users:traffic:sources:update',
+        GEARMAN_DATABASE_USERS_TRAFFIC_SOURCES_UPDATE_FUNCTION_NAME = 'database:users:traffic:sources:update',
 
         /**
          * Имя функции для обновления таблицы энергий
          *
          * @var str
          */
-        GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME = 'database:users:energy:update',
+        GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME = 'database:users:energy:update',
 
         /**
          * Имя функции для обновления таблицы пользователей
@@ -108,14 +108,14 @@ class EncountersBundle extends Bundle {
          *
          * @var str
          */
-        GEARMAN_DATABASE_LASTACCESS_FUNCTION_NAME = 'database:users:lastaccess:update',
+        GEARMAN_DATABASE_USERS_LASTACCESS_UPDATE_FUNCTION_NAME = 'database:users:lastaccess:update',
 
         /**
          * Имя функции для обновления счетчиков непрочитанных сообщений
          *
          * @var str
          */
-        GEARMAN_MESSENGER_UPDATE_COUNTERS_FUNCTION_NAME = 'database:messenger:counters:update',
+        GEARMAN_MESSENGER_COUNTERS_UPDATE_FUNCTION_NAME = 'database:messenger:counters:update',
 
         /**
          * Имя функции-обработчика взаимной симпатии (отправка сообщения)

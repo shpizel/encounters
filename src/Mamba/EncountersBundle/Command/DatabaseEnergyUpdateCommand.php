@@ -53,7 +53,7 @@ class DatabaseEnergyUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_ENERGY_UPDATE_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USERS_ENERGY_UPDATE_FUNCTION_NAME, function($job) use($class) {
             return $class->updateEnergy($job);
         });
 

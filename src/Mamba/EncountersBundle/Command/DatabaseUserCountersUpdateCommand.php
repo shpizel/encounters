@@ -66,7 +66,7 @@ class DatabaseUserCountersUpdateCommand extends CronScript {
         $worker = $this->getGearmanWorker();
 
         $class = $this;
-        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USER_COUNTERS_UPDATE_FUNCTION_NAME, function($job) use($class) {
+        $worker->addFunction(EncountersBundle::GEARMAN_DATABASE_USERS_COUNTERS_UPDATE_FUNCTION_NAME, function($job) use($class) {
             return $class->updateUserCounters($job);
         });
 
