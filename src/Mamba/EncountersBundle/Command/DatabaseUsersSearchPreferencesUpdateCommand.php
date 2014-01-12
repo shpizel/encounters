@@ -109,7 +109,8 @@ class DatabaseUsersSearchPreferencesUpdateCommand extends CronScript {
                             ['age_from', (int) $searchPreferences['age_from']],
                             ['age_to', (int) $searchPreferences['age_to']],
                         ])
-                        ->run()
+                        ->execute()
+                        ->getResult()
             ;
         }
     }
