@@ -25,6 +25,60 @@ class Gearman {
         $connections = array()
     ;
 
+    private static
+
+        /**
+         * Instance
+         *
+         * @var Gearman
+         */
+        $Instance = null
+    ;
+
+    public
+
+        /**
+         * Метрики использования
+         *
+         * @var array
+         */
+        $metrics = array(
+            'requests' => array(),
+            'timeout'  => 0,
+        ),
+
+        /**
+         * Метрики использования включены?
+         *
+         * @var bool
+         */
+        $metricsEnabled = false
+    ;
+
+    /**
+     * Returns usage metrics
+     *
+     * @return array
+     */
+    public function getMetrics() {
+        return $this->metrics;
+    }
+
+    /**
+     * Metrics enabler
+     *
+     * @param bool $enabled
+     * @throws GearmanException
+     */
+    public function setMetricsEnabled($enabled) {
+        if (!is_bool($enabled)) {
+            throw new GearmanException("Invalid param");
+        }
+
+        $this->metricsEnabled = $enabled;
+        return $this;
+    }
+
     /**
      * Конструктор
      *
@@ -34,6 +88,12 @@ class Gearman {
         $this->nodes = array_map(function($nodeArray) {
             return GearmanDSN::getDSNFromArray($nodeArray);
         }, $nodes);
+
+        self::$Instance = $this;
+    }
+
+    public static function getInstance() {
+        return self::$Instance;
     }
 
     /**
@@ -62,7 +122,7 @@ class Gearman {
             return $this->connections[$dsn];
         }
 
-        $Client = new \GearmanClient();
+        $Client = new GearmanClient();
         $Client->addServer($node->getHost(), $node->getPort());
         $Client->setTimeout($node->getClientTimeout());
 
@@ -86,7 +146,7 @@ class Gearman {
             return $this->connections[$dsn];
         }
 
-        $Worker = new \GearmanWorker();
+        $Worker = new GearmanWorker();
         $Worker->addServer($node->getHost(), $node->getPort());
         $Worker->setTimeout($node->getWorkerTimeout());
 

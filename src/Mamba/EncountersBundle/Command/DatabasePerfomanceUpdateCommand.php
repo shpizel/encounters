@@ -44,6 +44,14 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
                 `mysql_timeout` = :mysql_timeout,
                 `mysql_requests` = :mysql_requests,
 
+                `memcache_requests_count` = :memcache_requests_count,
+                `memcache_timeout` = :memcache_timeout,
+                `memcache_requests` = :memcache_requests,
+
+                `gearman_requests_count` = :gearman_requests_count,
+                `gearman_timeout` = :gearman_timeout,
+                `gearman_requests` = :gearman_requests,
+
                 `redis_requests_count` = :redis_requests_count,
                 `redis_timeout` = :redis_timeout,
                 `redis_requests` = :redis_requests,
@@ -114,6 +122,14 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
             $mysqlTimeout,
             $mysqlResuests,
 
+            $memcacheRequestsCount,
+            $memcacheTimeout,
+            $memcacheResuests,
+
+            $gearmanRequestsCount,
+            $gearmanTimeout,
+            $gearmanResuests,
+
             $redisRequestsCount,
             $redisTimeout,
             $redisResuests,
@@ -135,6 +151,14 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
             $dataArray['mysql_timeout'],
             json_encode($dataArray['mysql_requests'], JSON_PRETTY_PRINT),
 
+            $dataArray['memcache_requests_count'],
+            $dataArray['memcache_timeout'],
+            json_encode($dataArray['memcache_requests'], JSON_PRETTY_PRINT),
+
+            $dataArray['gearman_requests_count'],
+            $dataArray['gearman_timeout'],
+            json_encode($dataArray['gearman_requests'], JSON_PRETTY_PRINT),
+
             $dataArray['redis_requests_count'],
             $dataArray['redis_timeout'],
             json_encode($dataArray['redis_requests'], JSON_PRETTY_PRINT),
@@ -154,9 +178,19 @@ class DatabasePerfomanceUpdateCommand extends CronScript {
             ['route', $route, PDO::PARAM_STR],
             ['generation_time', $generationTime, PDO::PARAM_INT],
             ['requested_time', $requestedTime, PDO::PARAM_INT],
+
             ['mysql_requests_count', $mysqlRequestsCount, PDO::PARAM_INT],
             ['mysql_timeout', $mysqlTimeout, PDO::PARAM_INT],
             ['mysql_requests', $mysqlResuests, PDO::PARAM_LOB],
+
+            ['memcache_requests_count', $memcacheRequestsCount, PDO::PARAM_INT],
+            ['memcache_timeout', $memcacheTimeout, PDO::PARAM_INT],
+            ['memcache_requests', $memcacheResuests, PDO::PARAM_LOB],
+
+            ['gearman_requests_count', $gearmanRequestsCount, PDO::PARAM_INT],
+            ['gearman_timeout', $gearmanTimeout, PDO::PARAM_INT],
+            ['gearman_requests', $gearmanResuests, PDO::PARAM_LOB],
+
             ['redis_requests_count', $redisRequestsCount, PDO::PARAM_INT],
             ['redis_timeout', $redisTimeout, PDO::PARAM_INT],
             ['redis_requests', $redisResuests, PDO::PARAM_LOB],

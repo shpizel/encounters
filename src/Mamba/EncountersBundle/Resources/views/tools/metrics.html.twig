@@ -1,0 +1,67 @@
+{% if controller != 'messenger' %}
+    <div id="debug" style="font-size:13px;{% if not app.debug and webuser.anketa.info.user_id != 560015854 and webuser.anketa.info.user_id != 751072037 %}display:none;{% else %}background:#fff1d2;border:transparent 2px solid;border-radius: 8px;{% endif %};margin:2px;padding:2px;">
+        <span>Generation time: {{ (generation_time*1000)|number_format(2) }} ms</span> <a href="#" onclick="$('#debug .metrics').show();$(this).hide();return false;">details</a><br>
+
+        <div class="metrics" style="display:none;">
+
+            {% if metrics.mysql.requests|length > 0 %}
+            <strong>mysql {{ (metrics.mysql.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="redis-metrics">
+                {% for item in metrics.mysql.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.args|json_encode() }}</pre>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if metrics.memcache.requests|length > 0 %}
+            <strong>redis {{ (metrics.memcache.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="redis-metrics">
+                {% for item in metrics.memcache.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.args|json_encode() }}</pre>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if metrics.redis.requests|length > 0 %}
+            <strong>redis {{ (metrics.redis.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="redis-metrics">
+                {% for item in metrics.redis.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.args|json_encode() }}</pre>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if metrics.mamba.requests|length > 0 %}
+            <strong>mamba {{ (metrics.mamba.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="mamba-metrics">
+                {% for item in metrics.mamba.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.params|json_encode(128) }}</pre>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if metrics.gearman.requests|length > 0 %}
+            <strong>gearman {{ (metrics.gearman.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="redis-metrics">
+                {% for item in metrics.gearman.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.args|json_encode() }}</pre>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if metrics.leveldb.requests|length > 0 %}
+            <strong>leveldb {{ (metrics.leveldb.timeout*1000)|number_format(2) }} ms</strong>
+            <div class="leveldb-metrics">
+                {% for item in metrics.leveldb.requests %}
+                    <strong>{{ loop.index }}</strong>) {{ item.request.method }}:
+                    {% for key, val in item.request.data %}
+                        {% if item.request.method != 'get' %}'<u>{{ key }}</u>' => {% endif %} {{ val }};
+                    {% endfor %}<br>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+    </div>
+{% endif %}

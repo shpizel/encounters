@@ -206,7 +206,7 @@ abstract class Script extends ContainerAwareCommand {
      * @return Memcache
      */
     public function getMemcache() {
-        return $this->getContainer()->get('memcache');
+        return $this->getContainer()->get('memcache')->setMetricsEnabled(false);;
     }
 
     /**
@@ -224,7 +224,11 @@ abstract class Script extends ContainerAwareCommand {
      * @return Gearman
      */
     public function getGearman() {
-        return $this->getContainer()->get('gearman');
+        return $this->getContainer()->get('gearman')->setMetricsEnabled(false);
+    }
+
+    public function getGearmanClient() {
+        return $this->getGearman()->getClient();
     }
 
     /**

@@ -125,11 +125,11 @@ class MySQL {
      * Metrics enabler
      *
      * @param bool $enabled
-     * @throws MambaException
+     * @throws MySQLException
      */
     public function setMetricsEnabled($enabled) {
         if (!is_bool($enabled)) {
-            throw new MambaException("Invalid param");
+            throw new MySQLException("Invalid param");
         }
 
         $this->metricsEnabled = $enabled;
@@ -155,4 +155,12 @@ class MySQL {
     public function getLastInsertId() {
         $this->Connection->lastInsertId();
     }
+}
+
+/**
+ * Class MySQLException
+ * @package Core\MySQLBundle
+ */
+class MySQLException extends \Exception {
+
 }

@@ -30,6 +30,7 @@ use Core\MambaBundle\API\Mamba;
 use Core\GearmanBundle\Gearman;
 use Core\ServersBundle\Servers;
 use Core\RedisBundle\Redis;
+use Core\MemcacheBundle\Memcache;
 use Core\LeveldbBundle\Leveldb;
 use Core\MySQLBundle\MySQL;
 use Symfony\Component\HttpFoundation\Session;
@@ -102,7 +103,16 @@ abstract class ApplicationController extends Controller {
      * @return Gearman
      */
     public function getGearman() {
-        return $this->get('gearman');
+        return $this->get('gearman')->setMetricsEnabled(true);
+    }
+
+    /**
+     * GearmanClient getter
+     *
+     * @return GearmanClient
+     */
+    public function getGearmanClient() {
+        return $this->getGearman()->getClient();
     }
 
     /**
@@ -604,10 +614,13 @@ abstract class ApplicationController extends Controller {
         $JSON['metrics'] = array(
             'generation_time' => $generationTime = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"],
 
-            'mysql'   => $this->getMySQL()->getMetrics(),
-            'redis'   => $this->getRedis()->getMetrics(),
-            'leveldb' => $this->getLeveldb()->getMetrics(),
-            'mamba'   => $this->getMamba()->getMetrics(),
+            'mysql'    => $this->getMySQL()->getMetrics(),
+            'memcache' => $this->getMemcache()->getMetrics(),
+            'redis'    => $this->getRedis()->getMetrics(),
+            'mamba'    => $this->getMamba()->getMetrics(),
+            'gearman'  => $this->getGearman()->getMetrics(),
+            'leveldb'  => $this->getLeveldb()->getMetrics(),
+
         );
 
         /**
@@ -625,6 +638,14 @@ abstract class ApplicationController extends Controller {
                     'mysql_requests_count' => count($JSON['metrics']['mysql']['requests']),
                     'mysql_timeout'        => ceil($JSON['metrics']['mysql']['timeout']*1000),
                     'mysql_requests'       => $JSON['metrics']['mysql']['requests'],
+
+                    'memcache_requests_count' => count($JSON['metrics']['memcache']['requests']),
+                    'memcache_timeout'        => ceil($JSON['metrics']['memcache']['timeout']*1000),
+                    'memcache_requests'       => $JSON['metrics']['memcache']['requests'],
+
+                    'gearman_requests_count' => count($JSON['metrics']['gearman']['requests']),
+                    'gearman_timeout'        => ceil($JSON['metrics']['gearman']['timeout']*1000),
+                    'gearman_requests'       => $JSON['metrics']['gearman']['requests'],
 
                     'redis_requests_count' => count($JSON['metrics']['redis']['requests']),
                     'redis_timeout'        => ceil($JSON['metrics']['redis']['timeout']*1000),
@@ -665,10 +686,12 @@ abstract class ApplicationController extends Controller {
         $this->updateLastAccess();
 
         $parameters['metrics'] = array(
-            'mysql'   => $this->getMySQL()->getMetrics(),
-            'redis'   => $this->getRedis()->getMetrics(),
-            'leveldb' => $this->getLeveldb()->getMetrics(),
-            'mamba'   => $this->getMamba()->getMetrics(),
+            'mysql'    => $this->getMySQL()->getMetrics(),
+            'memcache' => $this->getMemcache()->getMetrics(),
+            'redis'    => $this->getRedis()->getMetrics(),
+            'mamba'    => $this->getMamba()->getMetrics(),
+            'gearman'  => $this->getGearman()->getMetrics(),
+            'leveldb'  => $this->getLeveldb()->getMetrics(),
         );
 
         $generationTime = $parameters['generation_time'] = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
@@ -688,6 +711,14 @@ abstract class ApplicationController extends Controller {
                     'mysql_requests_count' => count($parameters['metrics']['mysql']['requests']),
                     'mysql_timeout'        => ceil($parameters['metrics']['mysql']['timeout']*1000),
                     'mysql_requests'       => $parameters['metrics']['mysql']['requests'],
+
+                    'memcache_requests_count' => count($parameters['metrics']['memcache']['requests']),
+                    'memcache_timeout'        => ceil($parameters['metrics']['memcache']['timeout']*1000),
+                    'memcache_requests'       => $parameters['metrics']['memcache']['requests'],
+
+                    'gearman_requests_count' => count($parameters['metrics']['gearman']['requests']),
+                    'gearman_timeout'        => ceil($parameters['metrics']['gearman']['timeout']*1000),
+                    'gearman_requests'       => $parameters['metrics']['gearman']['requests'],
 
                     'redis_requests_count' => count($parameters['metrics']['redis']['requests']),
                     'redis_timeout'        => ceil($parameters['metrics']['redis']['timeout']*1000),
