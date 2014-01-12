@@ -114,6 +114,15 @@ class Query {
     }
 
     /**
+     * Row count getter
+     *
+     * @return int
+     */
+    public function getRowCount() {
+        return $this->Statement->rowCount();
+    }
+
+    /**
      * Result getter
      *
      * @return bool|null
