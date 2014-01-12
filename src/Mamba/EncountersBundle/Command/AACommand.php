@@ -40,6 +40,8 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        print_r($this->getMySQL()->getQuery("set @web_user_id := 560015854;")->execute()->fetch());
+        exit();
         while ($users = $this->getUsers(5000)) {
             foreach ($users as $userId) {
                 $this->getGearman()->getClient()->doLowBackground(

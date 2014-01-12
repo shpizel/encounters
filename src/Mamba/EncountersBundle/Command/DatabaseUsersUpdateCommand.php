@@ -213,6 +213,7 @@ EOL;
              *     'interests'
              * }
              */
+            $interestsCount = count($dataArray['interests']);
             $dataArray['interests'] = $DB->quote(json_encode($dataArray['interests'], JSON_PRETTY_PRINT));
 
             $sql[] = <<<EOL
@@ -220,9 +221,11 @@ INSERT INTO
     `Encounters`.`UserInterests`
 SET
     `user_id`   = {$userId},
-    `interests` = {$dataArray['interests']}
+    `interests` = {$dataArray['interests']},
+    `count`     = {$interestsCount}
 ON DUPLICATE KEY UPDATE
-    `interests` = {$dataArray['interests']}
+    `interests` = {$dataArray['interests']},
+    `count`     = {$interestsCount}
 ;
 EOL;
 
@@ -343,6 +346,7 @@ EOL;
              *     'albums',
              * }
              */
+            $albumsCount = count($dataArray['albums']);
             $dataArray['albums'] = $DB->quote(json_encode($dataArray['albums'], JSON_PRETTY_PRINT));
 
             $sql[] = <<<EOL
@@ -350,9 +354,11 @@ INSERT INTO
     `Encounters`.`UserAlbums`
 SET
     `user_id` = {$userId},
-    `albums`  = {$dataArray['albums']}
+    `albums`  = {$dataArray['albums']},
+    `count`   = {$albumsCount}
 ON DUPLICATE KEY UPDATE
-    `albums`  = {$dataArray['albums']}
+    `albums`  = {$dataArray['albums']},
+    `count`   = {$albumsCount}
 ;
 EOL;
 
@@ -361,6 +367,7 @@ EOL;
              *     'photos',
              * }
              */
+            $photosCount = $dataArray['photos'];
             $dataArray['photos'] = $DB->quote(json_encode($dataArray['photos'], JSON_PRETTY_PRINT));
 
             $sql[] = <<<EOL
@@ -368,9 +375,11 @@ INSERT INTO
     `Encounters`.`UserPhotos`
 SET
     `user_id` = {$userId},
-    `photos`  = {$dataArray['photos']}
+    `photos`  = {$dataArray['photos']},
+    `count`   = {$photosCount}
 ON DUPLICATE KEY UPDATE
-    `photos`  = {$dataArray['photos']}
+    `photos`  = {$dataArray['photos']},
+    `count`   = {$photosCount}
 ;
 EOL;
             /**
