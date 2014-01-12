@@ -672,7 +672,7 @@ class MessengerController extends ApplicationController {
             $userIds = array_map(function($item){return $item->getRecieverId();}, $Contacts);
             $userIds[] = $this->webUserId;
 
-            $apiData = $this->getUsersHelper()->getInfo($userIds, ['info', 'photos']);
+            $apiData = $this->getUsersHelper()->getInfo($userIds);
             $profilesData = [];
             foreach ($apiData as $userData) {
                 $profilesData[$userData['info']['user_id']] = $userData;
