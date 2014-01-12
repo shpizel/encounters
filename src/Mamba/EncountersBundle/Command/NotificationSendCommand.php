@@ -41,56 +41,67 @@ class NotificationSendCommand extends CronScript {
          */
         GET_NOTIFICATIONS_SQL = "
             SELECT
-	u.user_id as `user_id`,
-	info.is_app_user,
-	ula.lastaccess as `lastaccess`,
-	ulo.last_online as `last_online`,
-	un.last_notification_sent as `last_notification_sent`,
-	un.last_notification_metrics as `last_notification_metrics`,
-	uc.visitors_unread as `visitors_unread`,
-	uc.mutual_unread as `mutual_unread`,
-	uc.messages_unread as `messages_unread`,
-	ue.energy as `energy`,
-	uts.from_notifications_count,
-	uts.last_from_notifications,
-	sum(b.amount) as `amount`,
-	ROUND((UNIX_TIMESTAMP(NOW()) - IFNULL(`last_online`, 0))/86400, 0) as `last-online-was-ago`,
-	ROUND((UNIX_TIMESTAMP(NOW()) - IFNULL(`lastaccess`, 0))/86400, 0) as `lastaccess-was-ago`,
-	ROUND((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(last_notification_sent))/86400, 0) as `last-notification-was-ago`,
-	avatar.small_photo_url
-FROM
-	User u
-LEFT JOIN UserLastAccess ula ON
-	ula.user_id = u.user_id
-LEFT JOIN UserLastOnline ulo ON
-	ulo.user_id = u.user_id
-LEFT JOIN UserNotifications un ON
-	un.user_id = u.user_id
-LEFT JOIN UserCounters uc ON
-	uc.user_id = u.user_id
-LEFT JOIN UserEnergy ue ON
-	ue.user_id = u.user_id
-LEFT JOIN UserTrafficSources uts ON
-	uts.user_id = u.user_id
-LEFT JOIN Billing b ON
-	b.user_id = u.user_id
-LEFT JOIN UserInfo info ON
-	info.user_id = u.user_id
-LEFT JOIN UserAvatar avatar ON
-	avatar.user_id = u.user_id
-WHERE
-	(visitors_unread > 0 OR mutual_unread > 0)
-GROUP BY
-	`user_id`
-HAVING
-	info.is_app_user = 1 and
-	lastaccess > 0 and
-	small_photo_url is not null
-ORDER BY
-	`lastaccess` DESC,
-    `last_from_notifications` ASC,
-    `visitors_unread` ASC
-",
+                info.user_id as user_id,
+                lastaccess.lastaccess as lastaccess,
+                lastonline.last_online as last_online,
+                notifications.last_notification_sent as last_notification_sent,
+                notifications.last_notification_metrics as last_notification_metrics,
+                counters.visitors_unread as visitors_unread,
+                counters.mutual_unread as mutual_unread,
+                counters.messages_unread as messages_unread,
+                energy.energy as energy,
+                traffic_sources.from_notifications_count,
+                traffic_sources.last_from_notifications,
+                sum(billing.amount) as amount
+            FROM
+                UserInfo info
+            LEFT JOIN
+                UserLastAccess lastaccess
+            ON
+                lastaccess.user_id = info.user_id
+            LEFT JOIN
+                UserLastOnline lastonline
+            ON
+                lastonline.user_id = info.user_id
+            LEFT JOIN
+                UserNotifications notifications
+            ON
+                notifications.user_id = info.user_id
+            LEFT JOIN
+                UserCounters counters
+            ON
+                counters.user_id = info.user_id
+            LEFT JOIN
+                UserEnergy energy
+            ON
+                energy.user_id = info.user_id
+            LEFT JOIN
+                UserTrafficSources traffic_sources
+            ON
+                traffic_sources.user_id = info.user_id
+            LEFT JOIN
+                Billing billing
+            ON
+                billing.user_id = info.user_id
+            LEFT JOIN
+                UserPhotos photos
+            ON
+                photos.user_id = info.user_id
+            WHERE
+                info.is_app_user = 1 AND
+                lastaccess <> 0 AND
+                photos.count <> 0 AND
+                (
+                    counters.visitors_unread <> 0 OR
+                    counters.mutual_unread <> 0
+                )
+                AND
+                (
+                    lastaccess.lastaccess > UNIX_TIMESTAMP() - 1*60*60*24 OR
+                    lastonline.last_online > UNIX_TIMESTAMP() - 1*60*60*24
+                )
+            GROUP BY
+                info.user_id",
 
         /**
          * SQL-запрос на получение данных о последних голосованиях за пользователя
@@ -122,7 +133,7 @@ ORDER BY
                 last_notification_sent = NOW(),
                 last_notification_message = :message,
                 last_notification_metrics = :metrics,
-                notifications_count = notifications_count+1
+                notifications_count = notifications_count + 1
         "
     ;
 

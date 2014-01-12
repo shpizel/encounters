@@ -156,7 +156,7 @@ class DecisionController extends ApplicationController {
                     $spamQueueLength = $Redis->lSize($spamQueueKey);
                     if (($spamLimit = 10 - intval($this->getRedis()->hGet("mambaspam-by-{$this->webUserId}", date("dmy"))))) {
                         if ($spamQueueLength >= 5) {
-                            if ($spamQueue = $Redis->lRange($spamQueueKey, 0, 5)) {
+                            if ($spamQueue = $Redis->lRange($spamQueueKey, 0, $spamLimit)) {
                                 $this->json['data']['is_contact'] = true;
                                 $this->json['data']['spam_queue'] = array_map(function($el){return(int)$el;}, $spamQueue);
                             }

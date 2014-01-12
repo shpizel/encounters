@@ -91,9 +91,9 @@ class SearchQueueUpdateCommand extends CronScript {
                 decision IS NULL AND
                 (photos.count != 0) AND
                 orientation.orientation = @web_user_orientation AND
-                (preferences.age_from IS NULL or @web_user_age IS NULL or @web_user_age >= preferences.age_from) AND
-                (preferences.age_to IS NULL or @web_user_age IS NULL or @web_user_age <= preferences.age_to) AND
-                (preferences.gender IS NULL or @web_user_gender = preferences.gender)
+                (preferences.age_from IS NULL OR @web_user_age IS NULL or @web_user_age >= preferences.age_from) AND
+                (preferences.age_to IS NULL OR @web_user_age IS NULL or @web_user_age <= preferences.age_to) AND
+                (preferences.gender IS NULL OR @web_user_gender = preferences.gender)
             ORDER BY
                 energy DESC
             LIMIT
@@ -208,7 +208,7 @@ class SearchQueueUpdateCommand extends CronScript {
          *
          * @var int
          */
-        LIMIT = 32
+        LIMIT = 128
     ;
 
     protected

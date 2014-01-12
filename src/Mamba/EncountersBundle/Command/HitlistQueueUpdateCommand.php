@@ -37,7 +37,7 @@ class HitlistQueueUpdateCommand extends CronScript {
          *
          * @var int
          */
-        LIMIT = 8
+        LIMIT = 32
     ;
 
     protected

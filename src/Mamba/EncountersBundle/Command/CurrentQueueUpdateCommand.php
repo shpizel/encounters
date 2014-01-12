@@ -144,8 +144,8 @@ class CurrentQueueUpdateCommand extends CronScript {
 
         $this->log("Got task for <info>current_user_id</info> = {$webUserId}, <info>timestamp</info> = {$timestamp}");
 
-        /** Наполняем текущую очередь только если она меньше 16 позиций */
-        while ($this->getCurrentQueueHelper()->getSize($webUserId) <= 16) {
+        /** Наполняем текущую очередь только если она меньше 32 позиций */
+        while ($this->getCurrentQueueHelper()->getSize($webUserId) <= 32) {
             $searchQueueChunk = $this->getSearchQueueHelper()->getRange($webUserId, 0, self::$balance['search'] - 1);
             $usersAddedCount = 0;
 

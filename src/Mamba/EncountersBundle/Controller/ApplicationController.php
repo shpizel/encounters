@@ -611,11 +611,11 @@ abstract class ApplicationController extends Controller {
         );
 
         /**
-         * Запишем данные по производительности в базу
+         * Запишем данные по производительности в базу если время генерации больше 200ms
          *
          * @author shpizel
          */
-        $this->getGearman()->getClient()->doLowBackground(
+        ($generationTime > 100) && $this->getGearman()->getClient()->doLowBackground(
             EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
             serialize(
                 array(
@@ -678,7 +678,7 @@ abstract class ApplicationController extends Controller {
          *
          * @author shpizel
          */
-        isset($parameters['metrics']) && $this->getGearman()->getClient()->doLowBackground(
+        ($generationTime > 100) && $this->getGearman()->getClient()->doLowBackground(
             EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
             serialize(
                 array(
