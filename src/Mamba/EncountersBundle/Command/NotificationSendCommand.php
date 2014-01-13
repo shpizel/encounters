@@ -132,21 +132,11 @@ ORDER BY
      * @return null
      */
     protected function process() {
-        list($Leveldb, $Redis, $Memcache, $DB, $Mamba, $Variables, $Counters) = [
-            $this->getLeveldb(),
-            $this->getRedis(),
-            $this->getMemcache(),
-            $this->getDoctrine()->getConnection(),
-            $this->getMamba(),
-            $this->getVariablesHelper(),
-            $this->getCountersHelper(),
-        ];
-
         $this->log("Performing notifications", 48);
-        $Query = $DB->prepare(self::GET_NOTIFICATIONS_SQL);
+        $Query = $this->getMySQL()->getQuery(self::GET_NOTIFICATIONS_SQL);
 
         if ($Query->execute()->getResult()) {
-            $this->log('Selected ' . $Query->rowCount() . ' rows..', 64);
+            $this->log('Selected ' . $Query->getStatement()->rowCount() . ' rows..', 64);
 
             while ($task = $Query->fetch()) {
                 $task['user_id'] = (int) $task['user_id'];
