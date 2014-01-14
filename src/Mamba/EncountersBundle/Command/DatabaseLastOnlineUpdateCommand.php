@@ -84,11 +84,12 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
 
         $updateQuery = $this->getMySQL()->getQuery("
             UPDATE
-                `Encounters`.`UserLastOnline`
+                Encounters.UserLastOnline
             SET
-                `last_online` = :last_online
+                last_online = :last_online,
+                changed = NOW()
             WHERE
-                `user_id` = :user_id
+                user_id = :user_id
         ");
 
         $users = [];
@@ -103,11 +104,7 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
             $this->log(implode(", ", $users));
 
             if (count($users)) {
-                $this->log("Fetching API result for last online");
                 if ($apiResult = $this->getMamba()->nocache()->Anketa()->isOnline($users)) {
-                    $this->log("API query completed");
-                    $this->log(var_export($apiResult, true));
-
                     foreach ($apiResult as $dataArray) {
                         $userId = (int) $dataArray['anketa_id'];
                         $lastOnline = (int) $dataArray['is_online'];
