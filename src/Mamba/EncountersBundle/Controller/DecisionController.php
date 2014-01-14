@@ -40,7 +40,21 @@ class DecisionController extends ApplicationController {
         $requiredParams = array(
             'user_id',
             'decision',
-        )
+        ),
+
+        /**
+         * Web user id
+         *
+         * @var int
+         */
+        $webUserId,
+
+        /**
+         * Current user id
+         *
+         * @var int
+         */
+        $currentUserId
     ;
 
     /**

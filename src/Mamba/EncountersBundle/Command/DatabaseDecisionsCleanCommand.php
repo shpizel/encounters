@@ -45,6 +45,6 @@ class DatabaseDecisionsCleanCommand extends CronScript {
      * @return null
      */
     protected function process() {
-        $this->getMySQL()->getQuery(self::DECISIONS_CLEAN_SQL)->execute();
+        $this->getMySQL()->exec(self::DECISIONS_CLEAN_SQL);
     }
 }

@@ -69,7 +69,9 @@ class Counters extends Helper {
             }
         }
 
-        if (!$keys) return;
+        if (!$keys) {
+            return;
+        }
 
         $LevelDb = $this->getLeveldb();
         $Request = $LevelDb->get($keys);
@@ -180,8 +182,6 @@ class Counters extends Helper {
         ));
         $LevelDb->execute();
 
-
-
         if ($Request->getResult() === true) {
 
             /** Ставим задачу на обновление пользовательских счетчиков в БД */
@@ -196,6 +196,17 @@ class Counters extends Helper {
             ;
 
             return true;
+        }
+    }
+
+    /**
+     * Counters multi setter
+     *
+     * @param array $dataArray = [userId:int => [key:str => value:int]]
+     */
+    public function setMulti($userId, array $dataArray) {
+        if (!count($dataArray)) {
+            throw new CountersException("Invalid data array");
         }
     }
 
@@ -242,6 +253,17 @@ class Counters extends Helper {
         }
 
         return 0;
+    }
+
+    /**
+     * Counters multi increment
+     *
+     * @param array $dataArray = [userId:int => [key:str => rate:int]]
+     */
+    public function incrMulti($userId, array $dataArray) {
+        if (!count($dataArray)) {
+            throw new CountersException("Invalid data array");
+        }
     }
 
     /**

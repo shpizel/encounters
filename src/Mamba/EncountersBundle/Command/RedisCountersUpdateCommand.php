@@ -35,16 +35,20 @@ class RedisCountersUpdateCommand extends CronScript {
          */
         SQL_GET_MUTUALS_COUNT = "
             SELECT
-                d.web_user_id as `user_id`, count(*) as `counter`
+                d1.web_user_id as `user_id`,
+                count(*) as `counter`
             FROM
-                Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
+                Encounters.Decisions d1
+            INNER JOIN
+                Encounters.Decisions d2
+            ON
+                d1.web_user_id = d2.current_user_id
             WHERE
-                d.current_user_id = d2.web_user_id and
-                d.decision >=0 and
+                d1.current_user_id = d2.web_user_id and
+                d1.decision >= 0 and
                 d2.decision >= 0
             GROUP BY
-                d.web_user_id
-        ",
+                d1.web_user_id",
 
         /**
          * SQL-запрос для получения данных у кого сколько просмотренных
@@ -53,14 +57,14 @@ class RedisCountersUpdateCommand extends CronScript {
          */
         SQL_GET_MYCHOICE_COUNT = "
             SELECT
-              d.web_user_id as `user_id`, count(*) as `counter`
+                decisions.web_user_id as `user_id`,
+                count(*) as `counter`
             FROM
-                Encounters.Decisions d
+                Decisions decisions
             WHERE
-                d.decision >= 0
+                decisions.decision >= 0
             GROUP BY
-                d.web_user_id
-        ",
+                decisions.web_user_id",
 
         /**
          * SQL-запрос для получения данных у кого сколько просмотров
@@ -68,14 +72,13 @@ class RedisCountersUpdateCommand extends CronScript {
          * @var str
          */
         SQL_GET_VISITORS_COUNT = "
-            SELECT DISTINCT
+            SELECT
                 current_user_id as `user_id`,
                 count(*) as `counter`
             FROM
-                Encounters.Decisions
+                Decisions
             GROUP BY
-                current_user_id
-        "
+                current_user_id"
     ;
 
     /**
@@ -84,25 +87,33 @@ class RedisCountersUpdateCommand extends CronScript {
      * @return null
      */
     protected function process() {
+        $CountersHelper = $this->getCountersHelper();
+
         while ($item = $this->getMySQL()->getQuery(self::SQL_GET_MUTUALS_COUNT)->execute()->fetch()) {
             $userId  = (int) $item['user_id'];
             $counter = (int) $item['counter'];
 
-            $this->getCountersHelper()->set($userId, 'mutual', $counter);
+            $CountersHelper->set($userId, 'mutual', $counter);
+            if ($CountersHelper->get($userId, 'mutual_unread') > $counter) {
+                $CountersHelper->set($userId, 'mutual_unread', $counter);
+            }
         }
 
-        while ($item = $this->getMySQL()->getQuery(self::SQL_GET_VISITORS_COUNT)->execute()->fetch(PDO::FETCH_ASSOC)) {
+        while ($item = $this->getMySQL()->getQuery(self::SQL_GET_VISITORS_COUNT)->execute()->fetch()) {
             $userId  = (int) $item['user_id'];
             $counter = (int) $item['counter'];
 
-            $this->getCountersHelper()->set($userId, 'visitors', $counter);
+            $CountersHelper->set($userId, 'visitors', $counter);
+            if ($CountersHelper->get($userId, 'visitors_unread') > $counter) {
+                $CountersHelper->set($userId, 'visitors_unread', $counter);
+            }
         }
 
-        /*while ($item = $this->getMySQL->getQuery(self::SQL_GET_MYCHOICE_COUNT)->execute()->fetch(PDO::FETCH_ASSOC)) {
+        while ($item = $this->getMySQL()->getQuery(self::SQL_GET_MYCHOICE_COUNT)->execute()->fetch()) {
             $userId  = (int) $item['user_id'];
             $counter = (int) $item['counter'];
 
-            $this->getCountersHelper()->set($userId, 'mychoice', $counter);
-        }*/
+            $CountersHelper->set($userId, 'mychoice', $counter);
+        }
     }
 }

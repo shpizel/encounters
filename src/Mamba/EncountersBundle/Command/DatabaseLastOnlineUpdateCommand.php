@@ -50,7 +50,7 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
                 $this->log("No results");
                 sleep(60);
             } else {
-                $this->log($result);
+                $this->log("Updated " . $result . " users");
             }
         }
 
@@ -67,11 +67,16 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
 
         $selectQuery = $this->getMySQL()->getQuery("
             SELECT
-                `user_id`
+                online.user_id
             FROM
-                `Encounters`.`UserLastOnline`
+                Encounters.UserLastOnline online
+            LEFT JOIN
+                Encounters.UserInfo info
+            ON
+                info.user_id = online.user_id
             WHERE
-                `changed` < DATE_SUB(NOW(), INTERVAL 6 HOUR)
+                info.is_app_user = 1 AND
+                online.changed < DATE_SUB(NOW(), INTERVAL 6 HOUR)
             LIMIT
                 30
             FOR UPDATE
@@ -87,13 +92,22 @@ class DatabaseLastOnlineUpdateCommand extends CronScript {
         ");
 
         $users = [];
-        if ($result = $selectQuery->execute()->getResult()) {
+        $this->log("Fetching 30 users ids for update..");
+        if ($selectQuery->execute()->getResult()) {
+            $this->log("SQL-query completed");
             while ($row = $selectQuery->fetch()) {
                 $users[] = (int) $row['user_id'];
             }
 
-            if ($users) {
+            $this->log("Fetched " . count($users) . " users");
+            $this->log(implode(", ", $users));
+
+            if (count($users)) {
+                $this->log("Fetching API result for last online");
                 if ($apiResult = $this->getMamba()->nocache()->Anketa()->isOnline($users)) {
+                    $this->log("API query completed");
+                    $this->log(var_export($apiResult, true));
+
                     foreach ($apiResult as $dataArray) {
                         $userId = (int) $dataArray['anketa_id'];
                         $lastOnline = (int) $dataArray['is_online'];
