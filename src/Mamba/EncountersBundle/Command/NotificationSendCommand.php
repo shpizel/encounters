@@ -186,9 +186,14 @@ class NotificationSendCommand extends CronScript {
         $currentNotificationMetrics = "v:{$task['visitors_unread']},m:{$task['mutual_unread']}";
         $lastNotificationMetrics = $task['last_notification_metrics'];
 
-        $lastAccessWasAgo = ceil((float) $task['lastaccess-was-ago']);
-
-        if ($task['visitors_unread'] && ($currentNotificationMetrics != $lastNotificationMetrics || (time() - $task['last_notification_sent'] >= 86400*($lastAccessWasAgo < 3 ? 3 : $lastAccessWasAgo)))) {
+        if
+        (
+            $task['visitors_unread'] &&
+            (
+                ($currentNotificationMetrics != $lastNotificationMetrics) ||
+                (time() - $task['last_notification_sent'] >= 86400 * 3)
+            )
+        ) {
             if ($message = $this->getNotifyMessage($task['user_id'], $task['visitors_unread'], $task['mutual_unread'])) {
                 $this->log("Trying to send notification for user_id={$task['user_id']}");
                 $this->log($message);
