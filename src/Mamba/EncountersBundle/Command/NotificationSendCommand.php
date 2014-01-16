@@ -151,9 +151,9 @@ class NotificationSendCommand extends CronScript {
 
             while ($task = $Query->fetch()) {
                 $task['user_id'] = (int) $task['user_id'];
-                $task['lastaccess'] = $task['lastaccess'];
-                $task['last_online'] = $task['last_online'];
-                $task['last_notification_sent'] = $task['last_notification_sent'];
+                $task['lastaccess'] = (int) $task['lastaccess'];
+                $task['last_online'] = (int) $task['last_online'];
+                $task['last_notification_sent'] = (int) $task['last_notification_sent'];
                 $task['visitors_unread'] = (int) $task['visitors_unread'];
                 $task['mutual_unread'] = (int) $task['mutual_unread'];
                 $task['messages_unread'] = (int) $task['messages_unread'];
