@@ -628,7 +628,7 @@ abstract class ApplicationController extends Controller {
          *
          * @author shpizel
          */
-        ($generationTime > 100) && $this->getGearman()->getClient()->doLowBackground(
+        $this->getGearman()->getClient()->doLowBackground(
             EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
             serialize(
                 array(
@@ -701,7 +701,7 @@ abstract class ApplicationController extends Controller {
          *
          * @author shpizel
          */
-        ($generationTime > 100) && $this->getGearman()->getClient()->doLowBackground(
+        $this->getGearman()->getClient()->doLowBackground(
             EncountersBundle::GEARMAN_DATABASE_PERFOMANCE_UPDATE_FUNCTION_NAME,
             serialize(
                 array(
