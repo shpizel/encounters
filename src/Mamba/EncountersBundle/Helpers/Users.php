@@ -461,7 +461,7 @@ class Users extends Helper {
             }
         }
 
-        reset($users);
+        $users = array_values($users);
 
         if ($users) {
             $Mamba = $this->getMamba();
