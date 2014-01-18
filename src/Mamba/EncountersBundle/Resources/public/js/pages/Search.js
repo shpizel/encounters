@@ -193,7 +193,7 @@ $Search = {
                 if ($data.data['is_contact']) {
                     var text = 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)';
                     //var ids = $Search.$storage['currentQueueElement']['info']['id'];
-                    var $ids = $data.data['spam_queue'].join(',');
+                    var ids = $data.data['spam_queue'].join(',');
                     mamba.method('message', text, '', ids);
                     $Config.set('message-text', text);
                     $Config.set('message-ids', ids);
