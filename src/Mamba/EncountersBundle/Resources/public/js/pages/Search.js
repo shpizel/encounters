@@ -191,7 +191,17 @@ $Search = {
                 }
 
                 if ($data.data['is_contact']) {
+                    var $texts = [
+                        "Привет! Я отметил" + (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + " тебя в «Выбираторе». У тебя там столько оценок, класс!",
+                        "Я видел" + (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + " твою анкету в «Выбираторе» и она мне понравилась ;)",
+                        "Ух ты! Я наш" +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? 'ел' : 'ла')+ " тебя в «Выбираторе»!",
+                        "Вау! Заходи скорее в «Выбиратор», я отправил" + (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + " тебе сюрприз!",
+                        "У тебя классная анкета в «Выбираторе»!"
+                    ];
+
                     var text = 'Привет! Я отметил' +  (($Config.get('webuser')['anketa']['info']['gender'] == 'M') ? '' : 'а') + ' тебя в приложении «Выбиратор», перейди по ссылке, чтобы посмотреть :)';
+                    text = $texts[$Tools.rand(0, $texts.length - 1)];
+
                     //var ids = $Search.$storage['currentQueueElement']['info']['id'];
                     var ids = $data.data['spam_queue'];
                     mamba.method('message', text, '', ids);
