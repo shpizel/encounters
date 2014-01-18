@@ -24,14 +24,18 @@ class MutualController extends ApplicationController {
                 d2.web_user_id as `current_user_id`
             FROM
                 Encounters.Decisions d INNER JOIN Encounters.Decisions d2 on d.web_user_id = d2.current_user_id
+            LEFT JOIN
+                UserExists `exists`
+            ON
+                `exists`.user_id = d2.web_user_id
             WHERE
                 d.web_user_id = :web_user_id and
                 d.current_user_id = d2.web_user_id and
                 d.decision >=0 and
-                d2.decision >= 0
+                d2.decision >= 0 AND
+                `exists`.`exists` = 1
             ORDER BY
-                d2.changed DESC
-        "
+                d2.changed DESC"
     ;
 
     /**

@@ -21,15 +21,19 @@ class MyChoiceController extends ApplicationController {
          */
         MYCHOICE_SQL = "
             SELECT
-                *
+                decisions.*
             FROM
-                Decisions
+                Decisions decisions
+            LEFT JOIN
+                UserExists `exists`
+            ON
+                `exists`.user_id = decisions.current_user_id
             WHERE
-                web_user_id = :web_user_id AND
-                decision >= 0
+                decisions.web_user_id = :web_user_id AND
+                decisions.decision >= 0 AND
+                `exists`.`exists` = 1
             ORDER BY
-                changed DESC
-        "
+                decisions.changed DESC"
     ;
 
     /**

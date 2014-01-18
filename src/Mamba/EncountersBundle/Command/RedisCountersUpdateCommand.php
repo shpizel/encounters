@@ -48,10 +48,15 @@ class RedisCountersUpdateCommand extends CronScript {
                 UserCounters counters
             ON
                 counters.user_id = d1.web_user_id
+            LEFT JOIN
+                UserExists `exists`
+            ON
+                `exists`.user_id = d1.web_user_id
             WHERE
-                d1.current_user_id = d2.web_user_id and
-                d1.decision >= 0 and
-                d2.decision >= 0
+                d1.current_user_id = d2.web_user_id AND
+                d1.decision >= 0 AND
+                d2.decision >= 0 AND
+                `exists`.`exists` = 1
             GROUP BY
                 d1.web_user_id
             HAVING
@@ -73,8 +78,13 @@ class RedisCountersUpdateCommand extends CronScript {
                 UserCounters counters
             ON
                 counters.user_id = decisions.current_user_id
+            LEFT JOIN
+                UserExists `exists`
+            ON
+                `exists`.user_id = decisions.current_user_id
             GROUP BY
-                decisions.current_user_id
+                decisions.current_user_id AND
+                `exists`.`exists` = 1
             HAVING
                 new_visitors <> old_visitors",
 
@@ -94,8 +104,13 @@ class RedisCountersUpdateCommand extends CronScript {
                 UserCounters counters
             ON
                 counters.user_id = decisions.web_user_id
+            LEFT JOIN
+                UserExists `exists`
+            ON
+                `exists`.user_id = decisions.web_user_id
             WHERE
-                decisions.decision >= 0
+                decisions.decision >= 0 AND
+                `exists`.`exists` = 1
             GROUP BY
                 decisions.web_user_id
             HAVING

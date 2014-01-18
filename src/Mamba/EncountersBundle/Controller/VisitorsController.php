@@ -21,14 +21,18 @@ class VisitorsController extends ApplicationController {
          */
         VISITORS_SQL = "
             SELECT
-                *
+                decisions.*
             FROM
-                Decisions
+                Decisions decisions
+            LEFT JOIN
+                UserExists `exists`
+            ON
+                `exists`.user_id = decisions.web_user_id
             WHERE
-                current_user_id = :web_user_id
+                decisions.current_user_id = :web_user_id AND
+                `exists`.`exists` = 1
             ORDER BY
-                changed DESC
-        "
+                decisions.changed DESC"
     ;
 
     /**

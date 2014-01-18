@@ -65,6 +65,12 @@ class DecisionController extends ApplicationController {
     public function setDecisionAction() {
         $Mamba = $this->getMamba();
         $Redis = $this->getRedis();
+        $Memcache = $this->getMemcache();
+
+        $Energy = $this->getEnergyHelper();
+        $Variables = $this->getVariablesHelper();
+        $Counters = $this->getCountersHelper();
+        $Stats = $this->getStatsHelper();
 
         if (!$Mamba->getReady()) {
             list($this->json['status'], $this->json['message']) = array(1, "Mamba is not ready");
@@ -75,23 +81,25 @@ class DecisionController extends ApplicationController {
 
             /** Инкрементируем счетчик выбора у webUser'a */
             if ($this->decision + 1 > 0) {
-                $this->getCountersHelper()->incr($this->webUserId, 'mychoice');
+                $Counters->incr($this->webUserId, 'mychoice');
             }
 
             /** Обновляем переменные */
-            $this->getVariablesHelper()->set($this->webUserId, 'last_outgoing_decision', time());
-            $this->getVariablesHelper()->set($this->currentUserId, 'last_incoming_decision', time());
+            $Variables->set($this->webUserId, 'last_outgoing_decision', time());
+            $Variables->set($this->currentUserId, 'last_incoming_decision', time());
 
-            /** увеличиваем счетчик дневных голосований в мемкеше */
-            $dailyDecisionsCounter = $this->getMemcache()->increment($dailyDecisionsCounterMemcacheKey = $this->webUserId . '_daily_decisions_counter_by_' . date("Ymd"));
-            if (false == $dailyDecisionsCounter) {
-                $this->getMemcache()->add($dailyDecisionsCounterMemcacheKey, $dailyDecisionsCounter = 1);
-            }
+            /**
+             * увеличиваем счетчик дневных голосований в мемкеше
+             * а нахуя?
+             *
+             * @author shpizel 19.01.14
+             */
+            $dailyDecisionsCounter = $Memcache->increment("{$this->webUserId}_daily_decisions_counter_by_" . date("Ymd"), 1, 1);
 
             /** Инкрементируем счетчик просмотров у currentUser'a */
-            $this->getCountersHelper()->incr($this->currentUserId, 'visitors');
-            $this->getCountersHelper()->incr($this->currentUserId, 'visitors_unread');
-            $this->getCountersHelper()->set($this->currentUserId, 'updated', time());
+            $Counters->incr($this->currentUserId, 'visitors');
+            $Counters->incr($this->currentUserId, 'visitors_unread');
+            $Counters->set($this->currentUserId, 'updated', time());
 
             /** Увеличить энергию WebUser'a */
             $webUserEnergy = $this->getEnergyHelper()->get($this->webUserId);
@@ -103,25 +111,25 @@ class DecisionController extends ApplicationController {
                 $log = 1; //бодрости не будет
             }
 
-            $this->getEnergyHelper()->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
+            $Energy->incr($this->webUserId, (int) /** важно чтобы был инт */round(($this->decision + 2)*100/$log, 0));
 
-            $webUserEnergy = $this->getEnergyHelper()->get($this->webUserId);
+            $webUserEnergy = $Energy->get($this->webUserId);
             if (($newWebUserLevel = $this->getPopularityHelper()->getLevel($webUserEnergy)) > $webUserLevel) {
                 $cacheKey = "user_{$this->webUserId}_level_$newWebUserLevel";
 
-                if (!$this->getRedis()->get($cacheKey)) {
-                    $this->getRedis()->setex($cacheKey, 24*3600, 1);
+                if (!$Redis->get($cacheKey)) {
+                    $Redis->setex($cacheKey, 24*3600, 1);
                     $levelUp = true;
                 }
             }
 
             /** Уменьшить энергию CurrentUser'a */
             if ($this->getSearchPreferencesHelper()->exists($this->currentUserId)) {
-                $currentUserEnergy = $this->getEnergyHelper()->get($this->currentUserId);
+                $currentUserEnergy = $Energy->get($this->currentUserId);
                 $currentUserLevel = $this->getPopularityHelper()->getLevel($currentUserEnergy);
 
                 /** мутная функция */
-                $this->getEnergyHelper()->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
+                $Energy->decr($this->currentUserId, 100*5*(($currentUserLevel < 3) ? 3 : $currentUserLevel));
             }
 
             /** Если я голосую за тебя положительно, то я должен к тебе в очередь подмешаться */
@@ -143,7 +151,7 @@ class DecisionController extends ApplicationController {
                     }
                 }
 
-                if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId) && !$this->getVariablesHelper()->get($this->currentUserId, 'lastaccess')) {
+                if ($Redis->sIsMember("contacts_by_{$this->webUserId}", $this->currentUserId) && !$Variables->get($this->currentUserId, 'lastaccess')) {
 
                     /**
                      * Тут нужно складывать айдишники таких пользователей в список
@@ -155,7 +163,7 @@ class DecisionController extends ApplicationController {
                     $Redis->lPush($spamQueueKey = "spamqueue-by-{$this->webUserId}", $this->currentUserId);
                     $spamQueueLength = $Redis->lSize($spamQueueKey);
                     if (($spamLimit = 10 - intval($this->getRedis()->hGet("mambaspam-by-{$this->webUserId}", date("dmy"))))) {
-                        if ($spamQueueLength >= 5) {
+                        if ($spamQueueLength >= 3) {
                             if ($spamQueue = $Redis->lRange($spamQueueKey, 0, $spamLimit)) {
                                 $this->json['data']['is_contact'] = true;
                                 $this->json['data']['spam_queue'] = array_map(function($el){return(int)$el;}, $spamQueue);
@@ -187,16 +195,16 @@ class DecisionController extends ApplicationController {
             /** Не спишком ли часто мы спамим? */
             foreach (range(-1, 1) as $decision) {
                 if ($decision == $this->decision) {
-                    if ($this->getCountersHelper()->incr($this->webUserId, "noretry-($decision)") >= 25) {
+                    if ($Counters->incr($this->webUserId, "noretry-($decision)") >= 25) {
                         $repeatWarningKey = "{$this->webUserId}_repeat_warning";
-                        if ($this->getMemcache()->add($repeatWarningKey, 1, 3600)) {
+                        if ($Memcache->add($repeatWarningKey, 1, 3600)) {
                             $this->json['data']['repeat_warning'] = $decision;
                         }
 
-                        $this->getCountersHelper()->set($this->webUserId, "noretry-($decision)", 0);
+                        $Counters->set($this->webUserId, "noretry-($decision)", 0);
                     }
                 } else {
-                    $this->getCountersHelper()->set($this->webUserId, "noretry-($decision)", 0);
+                    $Counters->set($this->webUserId, "noretry-($decision)", 0);
                 }
             }
 
@@ -208,9 +216,9 @@ class DecisionController extends ApplicationController {
                     $this->getPurchasedHelper()->add($this->webUserId, $this->currentUserId);
                     $this->getPurchasedHelper()->add($this->currentUserId, $this->webUserId);
 
-                    $this->getCountersHelper()->incr($this->webUserId, 'mutual');
-                    $this->getCountersHelper()->incr($this->currentUserId, 'mutual');
-                    $this->getCountersHelper()->incr($this->currentUserId, 'mutual_unread');
+                    $Counters->incr($this->webUserId, 'mutual');
+                    $Counters->incr($this->currentUserId, 'mutual');
+                    $Counters->incr($this->currentUserId, 'mutual_unread');
 
                     $this->getGearman()->getClient()->doLowBackground(
                         EncountersBundle::GEARMAN_MUTUAL_ICEBREAKER_FUNCTION_NAME,
@@ -238,7 +246,7 @@ class DecisionController extends ApplicationController {
                 )
             );
 
-            $this->json['data']['counters'] = $this->getCountersHelper()->getMulti([$this->webUserId], [
+            $this->json['data']['counters'] = $Counters->getMulti([$this->webUserId], [
                 'mychoice',
                 'visitors',
                 'visitors_unread',
@@ -250,7 +258,7 @@ class DecisionController extends ApplicationController {
 
             $this->json['data']['popularity'] = array_merge(
                 $this->getPopularityHelper()->getInfo($this->getEnergyHelper()->get($this->webUserId)),
-                array('level_up' => $levelUp)
+                ['level_up' => $levelUp]
             );
         }
 
