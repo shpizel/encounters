@@ -461,6 +461,8 @@ class Users extends Helper {
             }
         }
 
+        reset($users);
+
         if ($users) {
             $Mamba = $this->getMamba();
             $platformResult = null;
