@@ -14,7 +14,7 @@
             {% endif %}
 
             {% if metrics.memcache.requests|length > 0 %}
-            <strong>redis {{ (metrics.memcache.timeout*1000)|number_format(2) }} ms</strong>
+            <strong>memcache {{ (metrics.memcache.timeout*1000)|number_format(2) }} ms</strong>
             <div class="redis-metrics">
                 {% for item in metrics.memcache.requests %}
                     <strong>{{ loop.index }}</strong>) {{ item.method }} (<strong>{{ (item.timeout*1000)|number_format(2) }}</strong> ms):<pre>{{ item.args|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>

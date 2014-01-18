@@ -40,6 +40,8 @@ class AACommand extends Script {
      * @return null
      */
     protected function process() {
+        var_dump($this->getUsersHelper()->getInfo(1131850850));
+        exit();
         $this->log(1);
         var_dump($this->getMamba()->nocache()->Anketa()->isOnline([220234, 471319, 489860, 508227, 559639, 560671, 755130, 1029053, 1537847, 1542236, 2035502, 2085935, 2346600, 2834264, 3129819, 3134614, 3140871, 3646014, 3921115, 4683682, 5712512, 7330538, 8077093, 9325757, 10206985, 10424376, 11512622, 12100860, 12581030, 13954131]));
         $this->log(2);

@@ -21,6 +21,11 @@ class Users extends Helper {
         $apiRetryCount = 1,
 
         /**
+         * @var int
+         */
+        $apiRetryMaxTimeout = 5,
+
+        /**
          * @var bool
          */
         $skipDatabase = false
@@ -42,6 +47,11 @@ class Users extends Helper {
          */
         SQL_USERS_GET_INFO = "
             SELECT
+
+                -- EXISTS BLOCK
+                `exists`.`exists`,
+
+                -- INFO BLOCK
                 info.user_id as `user_id`,
                 info.name as `info.name`,
                 info.gender as `info.gender`,
@@ -52,12 +62,15 @@ class Users extends Helper {
                 info.lang as `info.lang`,
                 UNIX_TIMESTAMP(info.changed) as `info.changed`,
 
+                -- ORIENTATION BLOCK
                 orientation.orientation as `orientation`,
 
+                -- AVATAR BLOCK
                 avatar.small_photo_url as `avatar.small_photo_url`,
                 avatar.medium_photo_url as `avatar.medium_photo_url`,
                 avatar.square_photo_url as `avatar.square_photo_url`,
 
+                -- LOCATION BLOCK
                 location.country_id as `location.country_id`,
                 location.country_name as `location.country_name`,
                 location.region_id as `location.region_id`,
@@ -65,12 +78,14 @@ class Users extends Helper {
                 location.city_id as `location.city_id`,
                 location.city_name as `location.city_name`,
 
+                -- FLAGS BLOCK
                 flags.is_vip as `flags.is_vip`,
                 flags.is_real as `flags.is_real`,
                 flags.is_leader as `flags.is_leader`,
                 flags.maketop as `flags.maketop`,
                 flags.is_online as `flags.is_online`,
 
+                -- TYPE BLOCK
                 type.height as `type.height`,
                 type.weight as `type.weight`,
                 type.circumstance as `type.circumstance`,
@@ -81,40 +96,65 @@ class Users extends Helper {
                 type.language as `type.language`,
                 type.race as `type.race`,
 
+                -- FAMILIARITY BLOCK
                 familiarity.lookfor as `familiarity.lookfor`,
                 familiarity.waitingfor as `familiarity.waitingfor`,
                 familiarity.targets as `familiarity.targets`,
                 familiarity.marital as `familiarity.marital`,
                 familiarity.children as `familiarity.children`,
 
+                -- INTERESTS BLOCK
                 interests.interests as `interests`,
 
+                -- ALBUMS BLOCK
                 albums.albums as `albums`,
-                photos.photos as `photos`
 
+                -- PHOTOS BLOCK
+                photos.photos as `photos`
             FROM
-                `UserInfo` info
-            LEFT JOIN UserAvatar avatar ON
-                avatar.user_id = info.user_id
-            LEFT JOIN UserLocation location ON
-                location.user_id = info.user_id
-            LEFT JOIN UserOrientation orientation ON
-                orientation.user_id = info.user_id
-            LEFT JOIN UserInterests interests ON
-                interests.user_id = info.user_id
-            LEFT JOIN UserFlags flags ON
-                flags.user_id = info.user_id
-            LEFT JOIN UserType type ON
-                type.user_id = info.user_id
-            LEFT JOIN UserFamiliarity familiarity ON
-                familiarity.user_id = info.user_id
-            LEFT JOIN UserAlbums albums ON
-                albums.user_id = info.user_id
-            LEFT JOIN UserPhotos photos ON
-                photos.user_id = info.user_id
+                UserExists `exists`
+            LEFT JOIN
+                UserInfo info
+            ON
+                info.user_id = `exists`.user_id
+            LEFT JOIN
+                UserAvatar avatar
+            ON
+                avatar.user_id = `exists`.user_id
+            LEFT JOIN
+                UserLocation location
+            ON
+                location.user_id = `exists`.user_id
+            LEFT JOIN
+                UserOrientation orientation
+            ON
+                orientation.user_id = `exists`.user_id
+            LEFT JOIN
+                UserInterests interests
+            ON
+                interests.user_id = `exists`.user_id
+            LEFT JOIN
+                UserFlags flags
+            ON
+                flags.user_id = `exists`.user_id
+            LEFT JOIN
+                UserType type
+            ON
+                type.user_id = `exists`.user_id
+            LEFT JOIN
+                UserFamiliarity familiarity
+            ON
+                familiarity.user_id = `exists`.user_id
+            LEFT JOIN
+                UserAlbums albums
+            ON
+                albums.user_id = `exists`.user_id
+            LEFT JOIN
+                UserPhotos photos
+            ON
+                photos.user_id = `exists`.user_id
             WHERE
-                info.user_id IN (%s)
-        "
+                `exists`.user_id IN (%s)"
     ;
 
     /**
@@ -209,28 +249,35 @@ class Users extends Helper {
          */
         if (!$this->skipDatabase) {
 
-            /** Работа с кешем */
+            /**
+             * Работа с кешем
+             *
+             * @author shpizel
+             */
             $cacheKeys = [];
             foreach ($users as $userId) {
                 $cacheKeys[] = "user_{$userId}_info";
             }
 
             if ($memcacheResult = $this->getMemcache()->getMulti($cacheKeys)) {
-                foreach ($memcacheResult as $cacheKey=>$cacheResult) {
+                foreach ($memcacheResult as $cacheKey => $cacheResult) {
                     $cacheResult = json_decode($cacheResult, true);
                     $userId = (int) substr($cacheKey, 5, -5);
 
                     foreach ($defaultBlocks as $block) {
-                        if (!in_array($block, $blocks)) {
+                        if (!in_array($block, $blocks) && isset($cacheResult[$block])) {
                             unset($cacheResult[$block]);
                         }
                     }
 
-                    $result[$userId] = $cacheResult;
+                    /** удаленных пользователей просто пропускаем, удаляя из очереди и не занося в результаты */
+                    if (!isset($cacheResult['exists']) || $cacheResult['exists'] == 1) {
+                        $result[$userId] = $cacheResult;
+                    }
+
                     unset($users[array_search($userId, $users)]);
                 }
             }
-
 
             if ($users) {
                 $Query = $this->getMySQL()->getQuery(
@@ -245,9 +292,15 @@ class Users extends Helper {
                     while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $result[$userId = $row['user_id']] = [];
 
-                        if (time() - $row['info.changed'] > self::USER_INFO_LIFETIME) {
-                            $usersToUpdate[] = $userId;
-                        }
+                        /** если в кеше нету - пора обновлять */
+                        $usersToUpdate[] = $userId;
+
+                        /**
+                         * exists block
+                         *
+                         * [exists]
+                         */
+                        $userExists = (int) $row['exists'];
 
                         /**
                          * info block
@@ -255,21 +308,25 @@ class Users extends Helper {
                          * [name, gender, age, sign, about, is_app_user, lang]
                          */
                         if (in_array('info', $blocks)) {
-                            $result[$userId]['info'] = [
-                                'user_id'     => (int) $row['user_id'],
-                                'name'        => $row['info.name'],
-                                'gender'      => $row['info.gender'],
-                                'age'         => (int) $row['info.age'],
-                                'sign'        => $row['info.sign'],
-                                'about'       => $row['info.about'],
-                                'is_app_user' => $row['info.is_app_user'] == 1,
-                                'lang'        => $row['info.lang'],
-                            ];
+                            if ($userExists) {
+                                $result[$userId]['info'] = [
+                                    'user_id'     => (int) $row['user_id'],
+                                    'name'        => $row['info.name'],
+                                    'gender'      => $row['info.gender'],
+                                    'age'         => (int) $row['info.age'],
+                                    'sign'        => $row['info.sign'],
+                                    'about'       => $row['info.about'],
+                                    'is_app_user' => $row['info.is_app_user'] == 1,
+                                    'lang'        => $row['info.lang'],
+                                ];
+                            }
                         }
 
                         /** orientation block */
                         if (in_array('orientation', $blocks)) {
-                            $result[$userId]['orientation'] = $row['orientation'];
+                            if ($userExists) {
+                                $result[$userId]['orientation'] = $row['orientation'];
+                            }
                         }
 
                         /**
@@ -278,11 +335,13 @@ class Users extends Helper {
                          * [small_photo_url, medium_photo_url, square_photo_url]
                          */
                         if (in_array('avatar', $blocks)) {
-                            $result[$userId]['avatar'] = [
-                                'small_photo_url'  => $row['avatar.small_photo_url'],
-                                'medium_photo_url' => $row['avatar.medium_photo_url'],
-                                'square_photo_url' => $row['avatar.square_photo_url'],
-                            ];
+                            if ($userExists) {
+                                $result[$userId]['avatar'] = [
+                                    'small_photo_url'  => $row['avatar.small_photo_url'],
+                                    'medium_photo_url' => $row['avatar.medium_photo_url'],
+                                    'square_photo_url' => $row['avatar.square_photo_url'],
+                                ];
+                            }
                         }
 
                         /**
@@ -291,25 +350,29 @@ class Users extends Helper {
                          * [country_id, country_name, region_id, region_name, city_id, city_name]
                          */
                         if (in_array('location', $blocks)) {
-                            $result[$userId]['location'] = [
-                                'country' => [
-                                    'id'   => $row['location.country_id'],
-                                    'name' => $row['location.country_name'],
-                                ],
-                                'region' => [
-                                    'id'   => $row['location.region_id'],
-                                    'name' => $row['location.region_name'],
-                                ],
-                                'city' => [
-                                    'id'   => $row['location.city_id'],
-                                    'name' => $row['location.city_name'],
-                                ],
-                            ];
+                            if ($userExists) {
+                                $result[$userId]['location'] = [
+                                    'country' => [
+                                        'id'   => $row['location.country_id'],
+                                        'name' => $row['location.country_name'],
+                                    ],
+                                    'region' => [
+                                        'id'   => $row['location.region_id'],
+                                        'name' => $row['location.region_name'],
+                                    ],
+                                    'city' => [
+                                        'id'   => $row['location.city_id'],
+                                        'name' => $row['location.city_name'],
+                                    ],
+                                ];
+                            }
                         }
 
                         /** interests block */
                         if (in_array('interests', $blocks)) {
-                            $result[$userId]['interests'] = json_decode($row['interests']);
+                            if ($userExists) {
+                                $result[$userId]['interests'] = json_decode($row['interests']);
+                            }
                         }
 
                         /**
@@ -318,13 +381,15 @@ class Users extends Helper {
                          * [is_vip, is_real, is_leader, maketop, is_online]
                          */
                         if (in_array('flags', $blocks)) {
-                            $result[$userId]['flags'] = [
-                                'is_vip'    => (int) $row['flags.is_vip'],
-                                'is_real'   => (int) $row['flags.is_real'],
-                                'is_leader' => (int) $row['flags.is_leader'],
-                                'maketop'   => (int) $row['flags.maketop'],
-                                'is_online' => (int) $row['flags.is_online'],
-                            ];
+                            if ($userExists) {
+                                $result[$userId]['flags'] = [
+                                    'is_vip'    => (int) $row['flags.is_vip'],
+                                    'is_real'   => (int) $row['flags.is_real'],
+                                    'is_leader' => (int) $row['flags.is_leader'],
+                                    'maketop'   => (int) $row['flags.maketop'],
+                                    'is_online' => (int) $row['flags.is_online'],
+                                ];
+                            }
                         }
 
                         /**
@@ -333,17 +398,19 @@ class Users extends Helper {
                          * [height, weight, circumstance, constitution, smoke, drink, home, language^json, race]
                          */
                         if (in_array('type', $blocks)) {
-                            $result[$userId]['type'] = [
-                                'height'       => (int) $row['type.height'],
-                                'weight'       => (int) $row['type.weight'],
-                                'circumstance' => $row['type.circumstance'],
-                                'constitution' => $row['type.constitution'],
-                                'smoke'        => $row['type.smoke'],
-                                'drink'        => $row['type.drink'],
-                                'home'         => $row['type.home'],
-                                'language'     => json_decode($row['type.language']),
-                                'race'         => $row['type.race'],
-                            ];
+                            if ($userExists) {
+                                $result[$userId]['type'] = [
+                                    'height'       => (int) $row['type.height'],
+                                    'weight'       => (int) $row['type.weight'],
+                                    'circumstance' => $row['type.circumstance'],
+                                    'constitution' => $row['type.constitution'],
+                                    'smoke'        => $row['type.smoke'],
+                                    'drink'        => $row['type.drink'],
+                                    'home'         => $row['type.home'],
+                                    'language'     => json_decode($row['type.language']),
+                                    'race'         => $row['type.race'],
+                                ];
+                            }
                         }
 
                         /**
@@ -352,23 +419,33 @@ class Users extends Helper {
                          * [lookfor, waitingfor, targets, marital, children]
                          */
                         if (in_array('familiarity', $blocks)) {
-                            $result[$userId]['familiarity'] = [
-                                'lookfor'    => $row['familiarity.lookfor'],
-                                'waitingfor' => $row['familiarity.waitingfor'],
-                                'targets'    => json_decode($row['familiarity.targets']),
-                                'marital'    => $row['familiarity.marital'],
-                                'children'   => $row['familiarity.children'],
-                            ];
+                            if ($userExists) {
+                                $result[$userId]['familiarity'] = [
+                                    'lookfor'    => $row['familiarity.lookfor'],
+                                    'waitingfor' => $row['familiarity.waitingfor'],
+                                    'targets'    => json_decode($row['familiarity.targets']),
+                                    'marital'    => $row['familiarity.marital'],
+                                    'children'   => $row['familiarity.children'],
+                                ];
+                            }
                         }
 
                         /** albums block */
                         if (in_array('albums', $blocks)) {
-                            $result[$userId]['albums'] = json_decode($row['albums'], true);
+                            if ($userExists) {
+                                $result[$userId]['albums'] = json_decode($row['albums'], true);
+                            }
                         }
 
                         /** photos block */
                         if (in_array('photos', $blocks)) {
-                            $result[$userId]['photos'] = json_decode($row['photos'], true);
+                            if ($userExists) {
+                                $result[$userId]['photos'] = json_decode($row['photos'], true);
+                            }
+                        }
+
+                        if ($userExists) {
+                            unset($users[array_search($userId, $users)]);
                         }
                     }
                 }
@@ -384,14 +461,6 @@ class Users extends Helper {
             }
         }
 
-        /** прошла обработка базы данных, смотрим где нулы и работаем с ними */
-        $users = [];
-        foreach ($result as $userId=>$dataArray) {
-            if (null === $dataArray) {
-                $users[] = $userId;
-            }
-        }
-
         if ($users) {
             $Mamba = $this->getMamba();
             $platformResult = null;
@@ -400,10 +469,9 @@ class Users extends Helper {
                     $platformResult = $Mamba->Anketa()->getInfo($users);
                     break;
                 } catch (\Exception $e) {
-                    sleep(mt_rand(1, 5));
+                    sleep(mt_rand(1, $this->apiRetryMaxTimeout));
                 }
             }
-
 
             if ($platformResult) {
 

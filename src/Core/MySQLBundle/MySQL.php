@@ -155,6 +155,10 @@ class MySQL {
     public function getLastInsertId() {
         $this->Connection->lastInsertId();
     }
+
+    public function quote($input, $type = null) {
+        return $this->getConnection()->quote($input, $type);
+    }
 }
 
 /**

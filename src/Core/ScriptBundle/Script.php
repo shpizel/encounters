@@ -107,7 +107,8 @@ abstract class Script extends ContainerAwareCommand {
             try {
                 $this->process();
             } catch (\Exception $e) {
-                $this->log("Error: " . $e->getMessage(), 16);
+                $this->log("Error: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine(), 16);
+                $this->log($e->getTraceAsString());
             }
 
             fclose($this->lockFilePointer);
