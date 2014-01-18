@@ -521,32 +521,23 @@ abstract class ApplicationController extends Controller {
 
         $dataArray['gifts'] = \Mamba\EncountersBundle\Tools\Gifts\Gifts::getInstance()->toArray();
 
-        if ($contacts = $this->getMemcache()->get("non_app_users_contacts_{$webUserId}")) {
-            $dataArray['non_app_users_contacts'] = json_decode($contacts, true);
+        if ($nonAppUsers = $this->getMemcache()->get("non_app_users_contacts_{$webUserId}")) {
+            $dataArray['non_app_users_contacts'] = json_decode($nonAppUsers, true);
         } elseif ($this->getRedis()->sCard($redisContactsKey = "contacts_by_{$webUserId}")) {
-            $contacts = $this->getRedis()->sMembers($redisContactsKey);
-            foreach ($contacts as &$userId) {
-                $userId = (int) $userId;
-            }
+            $contacts = array_map(function($el){return(int)$el;}, $this->getRedis()->sMembers($redisContactsKey));
+            $nonAppUsers = [];
 
             $contacts = array_chunk($contacts, 100);
-            foreach ($contacts as $contactsChunkId=>$chunk) {
+            foreach ($contacts as $chunk) {
                 $userInfo = $this->getUsersHelper()->getInfo($chunk, ['info']);
-
-                foreach ($chunk as $chunkUserId) {
-                    if (!(isset($userInfo[$chunkUserId]['info']['is_app_user']) && $userInfo[$chunkUserId]['info']['is_app_user'] == 1)) {
-                        unset($contacts[$contactsChunkId][array_search($chunkUserId, $contacts[$contactsChunkId])]);
+                foreach ($userInfo as $userId => $userInfo) {
+                    if ($userInfo['info']['is_app_user'] == 0) {
+                        $nonAppUsers[] = $userId;
                     }
                 }
             }
 
-            $_contacts = $contacts;
-            $contacts = [];
-            foreach ($_contacts as $_contactsChunk) {
-                $contacts = array_merge($chunk, $_contactsChunk);
-            }
-
-            if ($contacts) {
+            if ($nonAppUsers) {
                 $dataArray['non_app_users_contacts'] = $contacts;
                 $this->getMemcache()->set("non_app_users_contacts_{$webUserId}", json_encode($contacts), 86400);
             }
