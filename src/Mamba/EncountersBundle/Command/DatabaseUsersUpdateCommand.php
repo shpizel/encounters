@@ -111,8 +111,17 @@ class DatabaseUsersUpdateCommand extends CronScript {
             foreach ($notExistsUsers as $userId) {
                 try {
                     if (!$this->getMamba()->nocache()->Anketa()->getInfo($userId)) {
+
                         /** закешируем */
-                        $this->getMemcache()->set("user_{$userId}_info", json_encode(['exists' => 0]), Users::USER_INFO_LIFETIME);
+                        $this->getMemcache()->set(
+                            "user_{$userId}_info",
+                            json_encode(
+                                [
+                                    'exists' => 0,
+                                    'expires' => time() + Users::USER_INFO_LIFETIME
+                                ]
+                            )
+                        );
 
                         $sql[] =
 <<<EOL
@@ -151,7 +160,17 @@ EOL;
                 /**
                  * @todo: использовать multiset
                  */
-                $this->getMemcache()->set("user_{$userId}_info", json_encode($userData), Users::USER_INFO_LIFETIME);
+                $this->getMemcache()->set(
+                    "user_{$userId}_info",
+                    json_encode(
+                        array_merge(
+                            $userData,
+                            [
+                                'expires' => time() + Users::USER_INFO_LIFETIME
+                            ]
+                        )
+                    )
+                );
             }
 
 

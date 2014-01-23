@@ -218,7 +218,7 @@ class Users extends Helper {
         if (is_int($users)) {
             $users = [$users];
         } elseif (is_array($users)) {
-            foreach ($users as $k=>$userId) {
+            foreach ($users as $k => $userId) {
                 if (!is_int($userId) && !is_numeric($userId)) {
                     throw new UsersException("Invalid user id: " . var_export(gettype($userId), true));
                 } else {
@@ -230,6 +230,8 @@ class Users extends Helper {
         } else {
             throw new UsersException("Invalid user id: " . var_export(gettype($users), true));
         }
+
+        $users = array_unique($users);
 
         if (count($users) > 100) {
             throw new UsersException("Too much users to get: " . count($users). ", max = 100");
@@ -259,11 +261,17 @@ class Users extends Helper {
                 $cacheKeys[] = "user_{$userId}_info";
             }
 
+            $usersToUpdate = [];
             if ($memcacheResult = $this->getMemcache()->getMulti($cacheKeys)) {
                 foreach ($memcacheResult as $cacheKey => $cacheResult) {
                     $cacheResult = json_decode($cacheResult, true);
                     $userId = (int) substr($cacheKey, 5, -5);
 
+                    if (!isset($cacheResult['expires']) || $cacheResult['expires'] > time()) {
+                        $usersToUpdate[] = $userId;
+                    }
+
+                    /** удаляем ненужные блоки */
                     foreach ($defaultBlocks as $block) {
                         if (!in_array($block, $blocks) && isset($cacheResult[$block])) {
                             unset($cacheResult[$block]);
@@ -272,9 +280,11 @@ class Users extends Helper {
 
                     /** удаленных пользователей просто пропускаем, удаляя из очереди и не занося в результаты */
                     if (!isset($cacheResult['exists']) || $cacheResult['exists'] == 1) {
+                        /** если юзер существует */
                         $result[$userId] = $cacheResult;
                     }
 
+                    /** т.к. в кеше взяли - достаем из очереди на обработку */
                     unset($users[array_search($userId, $users)]);
                 }
             }
@@ -287,7 +297,6 @@ class Users extends Helper {
                     )
                 );
 
-                $usersToUpdate = [];
                 if ($Query->execute()->getResult()) {
                     while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $result[$userId = $row['user_id']] = [];
@@ -449,16 +458,18 @@ class Users extends Helper {
                         }
                     }
                 }
-
-                /** Отправим задачу в очередь на заполнение БД */
-                $usersToUpdate && $this->getGearman()->getClient()->doLowBackground(
-                    EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
-                    serialize($dataArray = array(
-                        'users' => $usersToUpdate,
-                        'time'  => time(),
-                    ))
-                );
             }
+        }
+
+        /** Отправим задачу в очередь на заполнение БД */
+        if ($usersToUpdate) {
+            $this->getGearman()->getClient()->doLowBackground(
+                EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
+                serialize($dataArray = array(
+                    'users' => array_unique($usersToUpdate),
+                    'time'  => time(),
+                ))
+            );
         }
 
         $users = array_values($users);
@@ -694,7 +705,7 @@ class Users extends Helper {
                 $this->getGearman()->getClient()->doLowBackground(
                     EncountersBundle::GEARMAN_DATABASE_USERS_UPDATE_FUNCTION_NAME,
                     serialize($dataArray = array(
-                        'users' => $users,
+                        'users' => array_unique($users),
                         'time'  => time(),
                     ))
                 );
