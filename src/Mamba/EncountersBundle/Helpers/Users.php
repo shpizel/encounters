@@ -242,6 +242,8 @@ class Users extends Helper {
             $result[$userId] = null;
         }
 
+        $usersToUpdate = [];
+
         /**
          * Пытаемся взять данные из базы, если там нету, берем из API
          * Если данных нету - задачу на заполнение
@@ -250,7 +252,6 @@ class Users extends Helper {
          * @author shpizel
          */
         if (!$this->skipDatabase) {
-
             /**
              * Работа с кешем
              *
@@ -261,7 +262,6 @@ class Users extends Helper {
                 $cacheKeys[] = "user_{$userId}_info";
             }
 
-            $usersToUpdate = [];
             if ($memcacheResult = $this->getMemcache()->getMulti($cacheKeys)) {
                 foreach ($memcacheResult as $cacheKey => $cacheResult) {
                     $cacheResult = json_decode($cacheResult, true);
@@ -290,6 +290,10 @@ class Users extends Helper {
             }
 
             if ($users) {
+                foreach ($users as $userId) {
+                    $usersToUpdate[] = $userId;
+                }
+
                 $Query = $this->getMySQL()->getQuery(
                     sprintf(
                         self::SQL_USERS_GET_INFO,
@@ -300,9 +304,6 @@ class Users extends Helper {
                 if ($Query->execute()->getResult()) {
                     while ($row = $Query->fetch(PDO::FETCH_ASSOC)) {
                         $result[$userId = $row['user_id']] = [];
-
-                        /** если в кеше нету - пора обновлять */
-                        $usersToUpdate[] = $userId;
 
                         /**
                          * exists block
