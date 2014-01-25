@@ -252,6 +252,7 @@ class Users extends Helper {
          * @author shpizel
          */
         if (!$this->skipDatabase) {
+
             /**
              * Работа с кешем
              *
@@ -267,7 +268,7 @@ class Users extends Helper {
                     $cacheResult = json_decode($cacheResult, true);
                     $userId = (int) substr($cacheKey, 5, -5);
 
-                    if (!isset($cacheResult['expires']) || $cacheResult['expires'] > time()) {
+                    if (!isset($cacheResult['expires']) || $cacheResult['expires'] <= time()) {
                         $usersToUpdate[] = $userId;
                     }
 
