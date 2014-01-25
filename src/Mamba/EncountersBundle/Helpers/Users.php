@@ -268,7 +268,11 @@ class Users extends Helper {
                     $cacheResult = json_decode($cacheResult, true);
                     $userId = (int) substr($cacheKey, 5, -5);
 
-                    if (!isset($cacheResult['expires']) || $cacheResult['expires'] <= time()) {
+                    if (isset($cacheResult['expires'])) {
+                        if ($cacheResult['expires'] <= time()) {
+                            $usersToUpdate[] = $userId;
+                        }
+                    } else {
                         $usersToUpdate[] = $userId;
                     }
 
