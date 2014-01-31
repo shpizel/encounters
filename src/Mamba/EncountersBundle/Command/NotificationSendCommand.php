@@ -44,7 +44,7 @@ class NotificationSendCommand extends CronScript {
                 info.user_id as user_id,
                 lastaccess.lastaccess as lastaccess,
                 lastonline.last_online as last_online,
-                notifications.last_notification_sent as last_notification_sent,
+                UNIX_TIMESTAMP(notifications.last_notification_sent) as last_notification_sent,
                 notifications.last_notification_metrics as last_notification_metrics,
                 counters.visitors_unread as visitors_unread,
                 counters.mutual_unread as mutual_unread,
